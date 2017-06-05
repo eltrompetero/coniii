@@ -1,5 +1,8 @@
 from __future__ import division
 import numpy as np
+from numba import jit
+from scipy.misc import logsumexp
+
 
 def calc_overlap(sample,ignore_zeros=False):
     """
@@ -103,15 +106,11 @@ def bin_states(n,sym=False):
 def define_ising_mch_helpers():
     """
     Functions for plugging into GeneralMaxentSolver for solving +/-1 Ising model.
-    2017-01-22
 
     Value:
     ------
     calc_e,mch_approximation
     """
-    from mc_hist import GeneralMaxentSolver
-    from entropy.entropy import calc_sisj
-
     # Defime functions necessary for solving.
     @jit(nopython=True,cache=True)
     def fast_sum(J,s):
@@ -142,7 +141,7 @@ def define_ising_mch_helpers():
         dE = calc_e(samples,dlamda)
         dE -= dE.min()
         ZFraction = 1. / np.mean(np.exp(-dE))
-        predsisj=calc_sisj( samples, weighted=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
+        predsisj=pair_corr( samples, weighted=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
         if np.any(predsisj<-1.00000001) or np.any(predsisj>1.000000001):
             print(predsisj.min(),predsisj.max())
             raise Exception("Predicted values are beyond limits.")

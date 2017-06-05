@@ -1,10 +1,9 @@
 # Module for class-based solvers for different Inverse Ising methods.
 from __future__ import division
 import entropy.entropy as entropy
-import scipy.optimize as opt
+from scipy.optimize import minimize
 from multiprocessing import Pool,Array,Queue,Process
 from misc.utils import unique_rows
-from numba import jit
 from utils import *
 
 
@@ -21,11 +20,7 @@ class Solver(object):
     calc_e (function)
         lambda samples,params: return energy
     calc_observables (function)
-        For MCH: lambda samples: return observables
         For exact: lambda params: return observables
-    sample_method (str)
-        Type of sample method. Current options are 'wolff', 'metropolis', 'remc'.
-    mch_approximation (function=None)
     multipliers (ndarray=None)
     nJobs (int=None)
 
@@ -36,12 +31,10 @@ class Solver(object):
         with args (sample,parameters) where sample is 2d
     calc_observables (function)
         takes in samples as argument
-    mch_approximation (function)
-    sampleSize (int)
     multipliers (ndarray)
         set the Langrangian multipliers
     """
-    def __init__(self, n, constraints, calc_e, calc_observables,sample_method,
+    def __init__(self, n, constraints, calc_e, calc_observables,
                  multipliers=None,
                  nJobs=None):
         # Do basic checks on the inputs.
@@ -110,7 +103,7 @@ class Exact(Solver):
         set the Langrangian multipliers
     """
     def __init__(self, *args, **kwargs):
-        super(Solver,self).__init__(*args,**kwargs)
+        super(Exact,self).__init__(*args,**kwargs)
 
     def solve(self,
               lamda0=None,
@@ -135,6 +128,7 @@ class Exact(Solver):
 
         Returns:
         --------
+        Output from scipy.optimize.minimize
         """
         if not lamda0 is None:
             assert len(lamda0)==len(self.multipliers)
@@ -144,9 +138,9 @@ class Exact(Solver):
         def f(params):
             if np.any(np.abs(params)>max_param_value):
                 return [1e30]*len(params)
-            return self.calc_observables(params)-self.constraints
+            return np.linalg.norm( self.calc_observables(params)-self.constraints )
 
-        return opt.leastsq(f,lamda0,**fsolve_kwargs)
+        return minimize(f,lamda0,**fsolve_kwargs)
 
     def estimate_jac(self,eps=1e-3):
         """

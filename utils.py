@@ -3,6 +3,7 @@ import numpy as np
 from numba import jit
 from scipy.misc import logsumexp
 from itertools import combinations
+from scipy.spatial.distance import squareform
 
 def calc_overlap(sample,ignore_zeros=False):
     """
@@ -107,6 +108,42 @@ def bin_states(n,sym=False):
     else:
         return v*2.-1
 
+def convert_params(h,J,convertTo='01',concat=False):
+    """
+    Convert parameters from {0,1} basis to +/-1 and vice versa.
+
+    Params:
+    -------
+    h (ndarray)
+    J (ndarray)
+    convertTo (str)
+        '01' or '11'
+    
+    Returns:
+    --------
+    h (ndarray)
+    J (ndarray)
+    """
+    if len(J.shape)!=2:
+        Jmat = squareform(J)
+    else:
+        Jmat = J
+        J = squareform(J)
+    
+    if convertTo=='11':
+        # Convert from 0,1 to -/+1
+        Jp = J/4.
+        hp = h/2 + np.sum(Jmat,1)/4.
+    elif convertTo=='01':
+        # Convert from -/+1 to 0,1
+        hp = 2.*(h - np.sum(Jmat,1))
+        Jp = J*4.
+
+    if concat:
+        return np.concatenate((hp,Jp))
+    return hp,Jp
+
+
 
 # ========================================= #
 # Helper functions for solving Ising model. # 
@@ -156,4 +193,74 @@ def define_ising_mch_helpers():
         return predsisj
     return calc_e,mch_approximation
 
+@jit(nopython=True)
+def adj(s,n_random_neighbors=False):
+    """
+    Return one-flip neighbors and a set of random neighbors.
+    
+    NOTE: No check to make sure neighbors don't repeat but this shouldn't be a
+    problem as long as state space is large enough.
 
+    Params:
+    -------
+    s (ndarray)
+        Set of states for which to find neighbors.
+    n_random_neighbors (int=False)
+        If >0, return this many random one-flip neighbors.
+    """
+    neighbors = np.zeros((s.size+n_random_neighbors,s.size))
+    for i in xrange(s.size):
+        s[i] = 1-s[i]
+        neighbors[i] = s.copy()
+        s[i] = 1-s[i]
+    if n_random_neighbors:
+        for i in xrange(n_random_neighbors):
+            match=True
+            while match:
+                newneighbor=(np.random.rand(s.size)<.5)*1.
+                if np.sum(newneighbor*s)!=s.size:
+                    match=False
+            neighbors[i+s.size]=newneighbor
+    return neighbors
+
+@jit(nopython=True)
+def adj_sym(s,n_random_neighbors=False):
+    """
+    Symmetric version of adj().
+    """
+    neighbors = np.zeros((s.size+n_random_neighbors,s.size))
+    for i in xrange(s.size):
+        s[i] = -1*s[i]
+        neighbors[i] = s.copy()
+        s[i] = -1*s[i]
+    if n_random_neighbors:
+        for i in xrange(n_random_neighbors):
+            match=True
+            while match:
+                newneighbor=(np.random.rand(s.size)<.5)*2.-1
+                if np.sum(newneighbor*s)!=s.size:
+                    match=False
+            neighbors[i+s.size]=newneighbor
+    return neighbors
+
+@jit(nopython=True,cache=True)
+def sub_to_pair_idx(ix,n):
+    k = 0
+    for i in xrange(n-1):
+        for j in xrange(i+1,n):
+            if k==ix:
+                return (i,j)
+            k += 1
+                
+def calc_de(s,i):
+    """
+    Calculate the derivative of the energy wrt parameters given the state and
+    index of the parameter. In this case, the parameters are the concatenated
+    vector of {h_i,J_ij}.
+    """
+    if i<s.shape[1]:
+        return -s[:,i]
+    else:
+        i-=s.shape[1]
+        i,j=sub_to_pair_idx(i,s.shape[1])
+        return -s[:,i]*s[:,j]

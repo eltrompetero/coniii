@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 from numba import jit
 from scipy.misc import logsumexp
-
+from itertools import combinations
 
 def calc_overlap(sample,ignore_zeros=False):
     """
@@ -22,7 +22,8 @@ def calc_overlap(sample,ignore_zeros=False):
         return overlap / (sample.shape[1]-countZeros.max(2))
     return overlap / sample.shape[1]
 
-def pair_corr(data,weights=None,concat=False,exclude_empty=False):
+def pair_corr(data,weights=None,concat=False,exclude_empty=False,
+              subtract_mean=False):
     """
     Calculate averages and pairwise correlations of spins.
 
@@ -39,6 +40,8 @@ def pair_corr(data,weights=None,concat=False,exclude_empty=False):
     exclude_empty (bool,False)
         when using with {-1,1}, can leave entries with 0 and those will not be counted for any pair
         weights option doesn't do anything here
+    subtract_mean (bool=False)
+        If True, return pairwise correlations with product of individual means subtracted.
 
     Returns:
     --------
@@ -67,10 +70,15 @@ def pair_corr(data,weights=None,concat=False,exclude_empty=False):
                 k+=1
         si = np.nansum(data*weights[:,None],0)
 
+    if subtract_mean:
+        sisj = np.array([sisj[i]-si[ix[0]]*si[ix[1]] for i,ix in enumerate(combinations(range(N),2))])
+
     if concat:
         return np.concatenate((si,sisj))
     else:
         return si, sisj
+
+
 
 def bin_states(n,sym=False):
     """

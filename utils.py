@@ -19,6 +19,82 @@ def calc_overlap(sample,ignore_zeros=False):
         return overlap / (sample.shape[1]-countZeros.max(2))
     return overlap / sample.shape[1]
 
+def pair_corr(data,weights=None,concat=False,exclude_empty=False):
+    """
+    Calculate averages and pairwise correlations of spins.
+
+    Params:
+    -------
+    data (ndarray)
+        (n_samples,n_dim).
+    weights (np.ndarray,None) : 
+        Calculate single and pairwise means given fractional weights for each state in
+        the data such that a state only appears with some weight, typically less than
+        one
+    concat (bool,False)
+        return concatenated means if true
+    exclude_empty (bool,False)
+        when using with {-1,1}, can leave entries with 0 and those will not be counted for any pair
+        weights option doesn't do anything here
+
+    Returns:
+    --------
+    (si,sisj) or np.concatenate((si,sisj))
+    """
+    S,N = data.shape
+    sisj = np.zeros(N*(N-1)//2)
+    
+    if weights is None:
+        weights = np.ones((data.shape[0]))/data.shape[0]
+
+    if exclude_empty:
+        assert np.array_equal( np.unique(data),np.array([-1,0,1]) ) or \
+            np.array_equal( np.unique(data),np.array([-1,1]) ), "Only handles -1,1 data sets."
+        k=0
+        for i in xrange(N-1):
+            for j in xrange(i+1,N):
+                sisj[k] = np.nansum(data[:,i]*data[:,j]) / np.nansum(np.logical_and(data[:,i]!=0,data[:,j]!=0))
+                k+=1
+        si = np.array([ np.nansum(col[col!=0]) / np.nansum(col!=0) for col in data.T ])
+    else:
+        k=0
+        for i in xrange(N-1):
+            for j in xrange(i+1,N):
+                sisj[k] = np.nansum(data[:,i]*data[:,j]*weights)
+                k+=1
+        si = np.nansum(data*weights[:,None],0)
+
+    if concat:
+        return np.concatenate((si,sisj))
+    else:
+        return si, sisj
+
+def bin_states(n,sym=False):
+    """
+    Get all possible binary spin states. 
+    
+    Params:
+    -------
+    n (int)
+        number of spins
+    sym (bool)
+        if true, return {-1,1} basis
+
+    Returns:
+    --------
+    v (ndarray)
+    """
+    if n<0:
+        raise Exception("n cannot be <0")
+    if n>20:
+        raise Exception("n is too large to enumerate all states.")
+    
+    v = np.array([list(np.binary_repr(i,width=n)) for i in range(2**n)]).astype('uint8')
+
+    if sym is False:
+        return v
+    else:
+        return v*2.-1
 
 
 # ========================================= #

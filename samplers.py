@@ -1170,10 +1170,9 @@ class FastMCIsing(object):
     def __init__(self,n,theta,calc_e,nJobs=0,rng=None):
         """
         MC sample on Ising model with +/-1 formulation.
-        2017-01-15
 
-        Params:
-        -------
+        Attributes:
+        -----------
         n (int)
             Number of elements in system.
         theta (ndarray)

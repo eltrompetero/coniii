@@ -3,6 +3,7 @@ from __future__ import division
 import entropy.entropy as entropy
 from scipy.optimize import minimize
 from multiprocessing import Pool,Array,Queue,Process
+import multiprocess as mp
 from misc.utils import unique_rows
 from utils import *
 
@@ -41,7 +42,7 @@ class Solver(object):
                  calc_observables=None,
                  adj=None,
                  multipliers=None,
-                 nWorkers=0):
+                 nWorkers=None):
         # Do basic checks on the inputs.
         assert type(n) is int
         assert (not calc_e is None), "Must define calc_e()."
@@ -55,7 +56,7 @@ class Solver(object):
         self.calc_observables = calc_observables
         self.adj = adj
         
-        self.nWorkers = nWorkers
+        self.nWorkers = nWorkers or mp.cpucount()
 
     def solve(self):
         return
@@ -79,6 +80,87 @@ class Solver(object):
             jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
             dlamda[i] += eps
         return jac
+
+    def setup_sampler(self,
+                      sample_method=None,
+                      sampler_kwargs={},
+                      optimize_kwargs={}):
+        """
+        Instantiate sampler class object.
+
+        Params:
+        -------
+        sample_method (str)
+            'wolff', 'metropolic', 'remc'
+        sampler_kwargs (dict)
+        optimize_kwargs (dict)
+        """
+        sample_method = sample_method or self.sampleMethod
+        
+        if sample_method=='wolff':
+            raise NotImplementedError("Need to update call.")
+            h,J = self._multipliers[:self.n],self.multipliers[self.n:]
+            self.sampler = WolffIsing( J,h )
+
+        elif sample_method=='metropolis':
+            self.sampler = FastMCIsing( self.n,self._multipliers,self.calc_e )
+        
+        elif sample_method=='remc':
+            self.sampler = ParallelTempering( self.n,
+                                              self._multipliers,
+                                              self.calc_e,
+                                              sampler_kwargs['temps'],
+                                              sample_size=self.sampleSize )
+            # Parallel tempering needs to optimize choice of temperatures.
+            self.sampler.optimize(**optimize_kwargs)
+            
+        else:
+           raise NotImplementedError("Unrecognized sampler.")
+
+    def generate_samples(self,n_iters,
+                         sample_size=None,
+                         sample_method=None,
+                         initial_sample=None,
+                         generate_kwargs={}):
+        """
+        Wrapper around generate_samples_parallel() from available samplers.
+
+        Params:
+        -------
+        n_iters (int)
+        sample_size (int)
+        sample_method (str)
+        initial_sample (ndarray)
+        generate_kwargs (dict)
+        """
+        assert not (self.sampler is None), "Must call setup_sampler() first."
+
+        sample_method = sample_method or self.sampleMethod
+        sample_size = sample_size or self.sample_size
+        if initial_sample is None:
+            initial_sample = self.samples
+        
+        if sample_method=='wolff':
+            self.sampler.update_parameters(self._multipliers[self.n:],self.multipliers[:self.n])
+            self.samples = self.sampler.generate_sample_parallel( sample_size,n_iters,
+                                                                  initial_sample=initial_sample )
+
+        elif sample_method=='metropolis':
+            self.sampler.theta = self._multipliers
+            self.sampler.generate_samples_parallel( sample_size,
+                                                    n_iters=n_iters,
+                                                    cpucount=self.nWorkers,
+                                                    initial_sample=initial_sample )
+            self.samples = self.sampler.samples
+
+        elif sample_method=='remc':
+            self.sampler.update_parameters(self._multipliers)
+            self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
+            self.samples = self.sampler.replicas[0].samples
+
+        else:
+           raise NotImplementedError("Unrecognized sampler.")
+
 # end Solver
 
 
@@ -170,120 +252,6 @@ class Exact(Solver):
             jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
             dlamda[i] += eps
         return jac
-
-    def setup_sampler(self,
-                      sample_method=None,
-                      sampler_kwargs={},
-                      optimize_kwargs={}):
-        """
-        Setup sampler.
-        2017-04-03
-        """
-        sample_method = sample_method or self.sampleMethod
-        
-        if sample_method=='wolff':
-            raise NotImplementedError("Need to update call.")
-            h,J = self.multipliers[:self.n],self.multipliers[self.n:]
-            self.sampler = WolffIsing( J,h )
-
-        elif sample_method=='metropolis':
-            raise NotImplementedError("Need to update call.")
-            self.sampler = MCIsing( self.n,self.multipliers,self.calc_e )
-            
-        elif sample_method=='remc':
-            self.sampler = ParallelTempering( self.n,
-                                              self.multipliers,
-                                              self.calc_e,
-                                              sampler_kwargs['temps'],
-                                              sample_size=self.sampleSize )
-            # Parallel tempering needs to optimize choice of temperatures.
-            self.sampler.optimize(**optimize_kwargs)
-            
-        else:
-           raise NotImplementedError("Unrecognized sampler.")
-
-    def generate_samples(self,n_iters,
-                         sampleSize=None,
-                         sample_method=None,
-                         initial_sample=None,
-                         generate_kwargs={}):
-        """
-        Wrapper around generate_samples_parallel() from available samplers.
-        2017-04-03
-        """
-        assert not (self.sampler is None), "Must call setup_sampler() first."
-
-        sample_method = sample_method or self.sampleMethod
-        sampleSize = sampleSize or self.sampleSize
-        if initial_sample is None:
-            initial_sample = self.samples
-        
-        if sample_method=='wolff':
-            self.sampler.update_parameters(self.multipliers[self.n:],self.multipliers[:self.n])
-            self.samples = self.sampler.generate_sample_parallel( sampleSize,n_iters,
-                                                                  initial_sample=initial_sample )
-
-        elif sample_method=='metropolis':
-            self.sampler.theta = self.multipliers
-            self.sampler.generate_samples_parallel( sampleSize,
-                                                    n_iters=n_iters,
-                                                    cpucount=cpucount,
-                                                    initial_sample=initial_sample )
-            self.samples = self.sampler.samples
-
-        elif sample_method=='remc':
-            self.sampler.update_parameters(self.multipliers)
-            self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
-            self.samples = self.sampler.replicas[0].samples
-
-        else:
-           raise NotImplementedError("Unrecognized sampler.")
-
-    def learn_parameters_mch(self, thisConstraints,
-                             maxdlamda=1,
-                             maxdlamdaNorm=1, 
-                             maxLearningSteps=50,
-                             eta=1 ):
-        """
-        2015-08-14
-
-        Params:
-        -------
-        thisConstraints (ndarray)
-        maxdlamda (1,float)
-        maxdlamdaNorm (1,float),
-        maxLearningSteps (int)
-            max learning steps before ending MCH
-        eta (1,float)
-            factor for changing dlamda
-        """
-        keepLearning = True
-        dlamda = np.zeros((self.constraints.size))
-        learningSteps = 0
-        distance = 1
-        
-        while keepLearning:
-            # Get change in parameters.
-            # If observable is too large, then corresponding energy term has to go down 
-            # (think of double negative).
-            dlamda += -(thisConstraints-self.constraints) * np.min([distance,1.]) * eta
-            #dMultipliers /= dMultipliers.max()
-            
-            # Predict distribution with new parameters.
-            thisConstraints = self.mch_approximation( self.samples, dlamda )
-            distance = np.linalg.norm( thisConstraints-self.constraints )
-                        
-            # Counter.
-            learningSteps += 1
-
-            # Evaluate exit criteria.
-            if np.linalg.norm(dlamda)>maxdlamdaNorm or np.any(np.abs(dlamda)>maxdlamda):
-                keepLearning = False
-            elif learningSteps>maxLearningSteps:
-                keepLearning = False
-
-        self.multipliers += dlamda
-        return thisConstraints
 # End Exact
 
 
@@ -530,7 +498,7 @@ class MPF(Solver):
 
 
 
-class GeneralMaxentSolver():
+class MCH(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.  I chose the symmetric model since that seems more natural for parameter
@@ -564,119 +532,122 @@ class GeneralMaxentSolver():
     multipliers (ndarray)
         set the Langrangian multipliers
     """
-    def __init__(self, n, constraints, calc_e, calc_observables,sample_method,
-                 mch_approximation=None,
-                 sampleSize=1000,
-                 multipliers=None,
-                 nJobs=None):
-        assert type(n) is int
-
-        self.n = n
-        self.constraints = constraints
-        if multipliers is None:
-            self.multipliers = np.zeros(constraints.shape)
-        else:
-            self.multipliers=multipliers
-        self.calc_e = calc_e
-        self.calc_observables = calc_observables
-        self.mch_approximation = mch_approximation
-        self.sampleSize = sampleSize
+    def __init__(self, *args, **kwargs):
+        """
+        Params:
+        -------
+        calc_e (lambda state,params)
+            function for computing energies of given state and parameters.  Should take in a 2D state array
+            and vector of parameters to compute energies.
+        adj (lambda state)
+            function for getting all the neighbors of any given state
+        calc_de (lambda=None)
+            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
+            the parameter.
+        nWorkers (int=0)
+            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
+        Attributes:
+        -----------
+        
+        Methods:
+        --------
+        """
+        super(MCH,self).__init__(*args,**kwargs)
+
+        self.mch_approximation = mch_approximation
+        
+        # Sampling parameters.
+        self.sampleSize = sample_size
         self.sampleMethod = sample_method
         self.sampler = None
         self.samples = None
-        self.E = None
-        self.nJobs = nJobs
 
     def solve(self,
-              lamda0=None,
-              method='slow',
+              initial_guess=None,
               tol=None,
               tolNorm=None,
-              nIters=30,
+              n_iters=30,
               maxiter=10,
               disp=False,
-              max_param_value=50,
               learn_params_kwargs={},
               generate_kwargs={},
               fsolve_kwargs={}):
         """
-        Solve for parameters using MCH routine. Commented part relies on gradient descent but doesn't seem to
+        Solve for parameters using MCH routine.
+        
+        NOTE: Commented part relies on gradient descent but doesn't seem to
         be very good at converging to the right answer with some tests on small systems.
-        2017-04-04
-
+        
         Params:
         ------
-        lamda0 (ndarray=None)
+        initial_guess (ndarray=None)
             initial starting point
         tol (float=None)
             maximum error allowed in any observable
         tolNorm (float)
             norm error allowed in found solution
-        nIters (int=30)
+        n_iters (int=30)
             number of iterations to make when sampling
         disp (bool=False)
         learn_parameters_kwargs
         generate_kwargs
+
+        Returns:
+        --------
+        parameters (ndarray)
+            Found solution.
+        errflag (int)
+        errors (ndarray)
+            Errors in matching constraints at each step of iteration.
         """
-        if not lamda0 is None:
-            assert len(lamda0)==len(self.multipliers)
-            self.multipliers=lamda0.copy()
-        else: lamda0 = np.zeros((len(self.multipliers)))
-        tol = tol or 1/np.sqrt(self.sampleSize)
-        tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self.multipliers)
-        errors = []
-        
-        assert tol>0 and tolNorm>0 and nIters>0
-        
-        if method=='slow':
-            self.generate_samples(nIters,
-                                  generate_kwargs=generate_kwargs)
-            thisConstraints = self.calc_observables(self.samples)
-            errors.append( thisConstraints-self.constraints )
-            if disp=='detailed': print self.multipliers
-            
-            # MCH iterations.
-            counter=0
-            keepLoop=True
-            while keepLoop:
-                if disp:
-                    print "Iterating parameters with MCH..."
-                self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
-                if disp=='detailed':
-                    print "After MCH step, the multipliers are..."
-                    print self.multipliers
-                if disp:
-                    print "Sampling..."
-                self.generate_samples( nIters,
-                                       generate_kwargs=generate_kwargs )
-                thisConstraints = self.calc_observables(self.samples)
-                counter += 1
-                
-                # Exit criteria.
-                errors.append( thisConstraints-self.constraints )
-                if ( np.linalg.norm(errors[-1])<tolNorm
-                     and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
-                    print "Solved."
-                    errflag=0
-                    keepLoop=False
-                elif counter>maxiter:
-                    print "Over maxiter"
-                    errflag=1
-                    keepLoop=False
-
-            return self.multipliers,errflag,np.vstack((errors))
-
-        elif method=='exact':
-            # In the case where we enumerate the energies of every state exactly.
-            def f(params):
-                if np.any(np.abs(params)>max_param_value):
-                    return [1e30]*len(params)
-                return self.calc_observables(params)-self.constraints
-
-            return opt.leastsq(f,lamda0,**fsolve_kwargs)
+        if not (initial_guess is None):
+            assert len(initial_guess)==len(self.constraints)
+            self._multipliers = initial_guess.copy()
         else:
-            raise Exception("Invalid solving method.")
+            initial_guess = np.zeros((len(self.constraints)))
+        tol = tol or 1/np.sqrt(self.sampleSize)
+        tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
+
+        errors = []  # history of errors to track
+        
+        self.generate_samples(n_iters,
+                              generate_kwargs=generate_kwargs)
+        thisConstraints = self.calc_observables(self.samples)
+        errors.append( thisConstraints-self.constraints )
+        if disp=='detailed': print self._multipliers
+        
+        # MCH iterations.
+        counter = 0
+        keepLoop = True
+        while keepLoop:
+            if disp:
+                print "Iterating parameters with MCH..."
+            self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
+            if disp=='detailed':
+                print "After MCH step, the parameters are..."
+                print self._multipliers
+            if disp:
+                print "Sampling..."
+            self.generate_samples( n_iters,
+                                   generate_kwargs=generate_kwargs )
+            thisConstraints = self.calc_observables(self.samples)
+            counter += 1
+            
+            # Exit criteria.
+            errors.append( thisConstraints-self.constraints )
+            if ( np.linalg.norm(errors[-1])<tolNorm
+                 and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
+                print "Solved."
+                errflag=0
+                keepLoop=False
+            elif counter>maxiter:
+                print "Over maxiter"
+                errflag=1
+                keepLoop=False
+
+        return self._multipliers,errflag,np.vstack((errors))
+
         #def f(lamda):
         #    if np.any(np.abs(lamda)>10):
         #        return [1e30]*len(lamda)
@@ -686,9 +657,9 @@ class GeneralMaxentSolver():
         #    thisConstraints = self.calc_observables(self.samples)
         #    return thisConstraints-self.constraints
 
-        #if lamda0 is None:
-        #    lamda0 = self.multipliers
-        #soln = opt.leastsq(f, lamda0, Dfun=lambda x: self.estimate_jac(), full_output=True,**kwargs)
+        #if initial_guess is None:
+        #    initial_guess = self.multipliers
+        #soln = opt.leastsq(f, initial_guess, Dfun=lambda x: self.estimate_jac(), full_output=True,**kwargs)
         #self.multipliers = soln[0]
         #return soln
 
@@ -699,10 +670,10 @@ class GeneralMaxentSolver():
         For calculation, seeing Voting I pg 83
         2015-08-14
         """
-        dlamda = np.zeros(self.multipliers.shape)
-        jac = np.zeros((self.multipliers.size,self.multipliers.size))
+        dlamda = np.zeros(self._multipliers.shape)
+        jac = np.zeros((self._multipliers.size,self._multipliers.size))
         print "evaluating jac"
-        for i in xrange(len(self.multipliers)):
+        for i in xrange(len(self._multipliers)):
             dlamda[i] += eps
             dConstraintsPlus = self.mch_approximation(self.samples,dlamda)     
 
@@ -713,73 +684,6 @@ class GeneralMaxentSolver():
             dlamda[i] += eps
         return jac
 
-    def setup_sampler(self,
-                      sample_method=None,
-                      sampler_kwargs={},
-                      optimize_kwargs={}):
-        """
-        Setup sampler.
-        2017-04-03
-        """
-        sample_method = sample_method or self.sampleMethod
-        
-        if sample_method=='wolff':
-            raise NotImplementedError("Need to update call.")
-            h,J = self.multipliers[:self.n],self.multipliers[self.n:]
-            self.sampler = WolffIsing( J,h )
-
-        elif sample_method=='metropolis':
-            raise NotImplementedError("Need to update call.")
-            self.sampler = MCIsing( self.n,self.multipliers,self.calc_e )
-            
-        elif sample_method=='remc':
-            self.sampler = ParallelTempering( self.n,
-                                              self.multipliers,
-                                              self.calc_e,
-                                              sampler_kwargs['temps'],
-                                              sample_size=self.sampleSize )
-            # Parallel tempering needs to optimize choice of temperatures.
-            self.sampler.optimize(**optimize_kwargs)
-            
-        else:
-           raise NotImplementedError("Unrecognized sampler.")
-
-    def generate_samples(self,n_iters,
-                         sampleSize=None,
-                         sample_method=None,
-                         initial_sample=None,
-                         generate_kwargs={}):
-        """
-        Wrapper around generate_samples_parallel() from available samplers.
-        2017-04-03
-        """
-        assert not (self.sampler is None), "Must call setup_sampler() first."
-
-        sample_method = sample_method or self.sampleMethod
-        sampleSize = sampleSize or self.sampleSize
-        if initial_sample is None:
-            initial_sample = self.samples
-        
-        if sample_method=='wolff':
-            self.sampler.update_parameters(self.multipliers[self.n:],self.multipliers[:self.n])
-            self.samples = self.sampler.generate_sample_parallel( sampleSize,n_iters,
-                                                                  initial_sample=initial_sample )
-
-        elif sample_method=='metropolis':
-            self.sampler.theta = self.multipliers
-            self.sampler.generate_samples_parallel( sampleSize,
-                                                    n_iters=n_iters,
-                                                    cpucount=cpucount,
-                                                    initial_sample=initial_sample )
-            self.samples = self.sampler.samples
-
-        elif sample_method=='remc':
-            self.sampler.update_parameters(self.multipliers)
-            self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
-            self.samples = self.sampler.replicas[0].samples
-
-        else:
-           raise NotImplementedError("Unrecognized sampler.")
 
     def learn_parameters_mch(self, thisConstraints,
                              maxdlamda=1,
@@ -824,6 +728,6 @@ class GeneralMaxentSolver():
             elif learningSteps>maxLearningSteps:
                 keepLearning = False
 
-        self.multipliers += dlamda
+        self._multipliers += dlamda
         return thisConstraints
 # End GeneralMaxentSolver

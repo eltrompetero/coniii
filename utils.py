@@ -98,7 +98,7 @@ def bin_states(n,sym=False):
     """
     if n<0:
         raise Exception("n cannot be <0")
-    if n>20:
+    if n>30:
         raise Exception("n is too large to enumerate all states.")
     
     v = np.array([list(np.binary_repr(i,width=n)) for i in range(2**n)]).astype('uint8')
@@ -143,6 +143,54 @@ def convert_params(h,J,convertTo='01',concat=False):
         return np.concatenate((hp,Jp))
     return hp,Jp
 
+def state_probs(v,allstates=None,weights=None,normalized=True):
+    """
+    Get probability of unique states. There is an option to allow for weights counting of the words.
+    
+    Params:
+    -------
+    states (ndarray)
+        (n_samples,n_dim)
+    weights (vector)
+    normalized (bool=True)
+        Return probability distribution instead of frequency count
+    
+    Returns:
+    --------
+    freq (ndarray)
+        Vector of the probabilities of each state
+    allstates (ndarray)
+        All unique states found in the data.
+    """
+    from misc.utils import unique_rows
+
+    n = v.shape[1]
+    j = 0
+    returnAllStates = False
+
+    if allstates is None:
+        allstates = unique_rows(v,return_inverse=True)
+        freq = np.bincount( allstates )
+        x = range(len(freq))
+        returnAllStates = True
+    else:
+        if weights is None:
+            weights = np.ones((v.shape[0]))
+        
+        freq = np.zeros(allstates.shape[0])
+        for vote in allstates:
+            ix = ( vote==v ).sum(1)==n
+            freq[j] = (ix*weights).sum()
+            j+=1
+        if np.isclose(np.sum(freq),np.sum(weights))==0:
+            import warnings
+            warnings.warn("States not found in given list of all states.")
+    if normalized:
+        freq = freq.astype(float)/np.sum(freq)
+
+    if returnAllStates:
+        return freq,allstates
+    return freq
 
 
 # ========================================= #
@@ -186,10 +234,10 @@ def define_ising_mch_helpers():
         dE = calc_e(samples,dlamda)
         dE -= dE.min()
         ZFraction = 1. / np.mean(np.exp(-dE))
-        predsisj=pair_corr( samples, weighted=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
-        if np.any(predsisj<-1.00000001) or np.any(predsisj>1.000000001):
-            print(predsisj.min(),predsisj.max())
-            raise Exception("Predicted values are beyond limits.")
+        predsisj = pair_corr( samples, weighted=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
+        assert not (np.any(predsisj<-1.00000001) or
+                np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
+                                                                                                   predsisj.max())
         return predsisj
     return calc_e,mch_approximation
 

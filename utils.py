@@ -229,12 +229,11 @@ def define_ising_mch_helpers():
         e -= np.dot(s,params[:s.shape[1]])
         return e
 
-    @jit
     def mch_approximation( samples, dlamda ):
         dE = calc_e(samples,dlamda)
         dE -= dE.min()
         ZFraction = 1. / np.mean(np.exp(-dE))
-        predsisj = pair_corr( samples, weighted=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
+        predsisj = pair_corr( samples, weights=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
         assert not (np.any(predsisj<-1.00000001) or
                 np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
                                                                                                    predsisj.max())

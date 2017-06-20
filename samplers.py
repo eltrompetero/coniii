@@ -1167,9 +1167,10 @@ class SimulatedTempering(object):
 # Metropolis sampler. #
 # =================== #
 class FastMCIsing(object):
-    def __init__(self,n,theta,calc_e,nJobs=0,rng=None):
+    def __init__(self,n,theta,calc_e,n_jobs=0,rng=None):
         """
-        MC sample on Ising model with +/-1 formulation.
+        MC sample on Ising model with +/-1 formulation. Fast metropolis sampling by assuming form of
+        Hamiltonian is an Ising model.
 
         Attributes:
         -----------
@@ -1179,17 +1180,14 @@ class FastMCIsing(object):
             Vector of parameters in Hamiltonian.
         calc_e (function)
             f( states, params )
-        nJobs (int=0)
+        n_jobs (int=0)
             If None, then will use all available CPUs.
         rng (RandomState=None)
         """
         self.n = n
         self.theta = theta
         self.h,self.J = theta[:n],squareform(theta[n:])
-        if nJobs is None:
-            self.nJobs = mp.cpu_count()
-        else:
-            self.nJobs = nJobs
+        self.nJobs = n_jobs or mp.cpu_count()
         
         self.calc_e = calc_e
 
@@ -1239,9 +1237,9 @@ class FastMCIsing(object):
                         self.E[i] += de
 
     def generate_samples_parallel(self,sampleSize,
-                                  nIters=1000,
+                                  n_iters=1000,
                                   cpucount=None,
-                                  initialSample=None,
+                                  initial_sample=None,
                                   systematic_iter=False,
                                   ):
         """
@@ -1251,13 +1249,17 @@ class FastMCIsing(object):
         Params:
         -------
         sampleSize
-        nIters (int=1000)
+        n_iters (int=1000)
         cpucount (int=None)
+        initial_sample (ndarray=None)
+        systematic_iter (bool=False)
+            Iterate through spins systematically instead of choosing them randomly.
         """
         cpucount=cpucount or mp.cpu_count()
-        if initialSample is None:
+        if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
-        else: self.samples = initialSample
+        else:
+            self.samples = initial_sample
         self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
        
         # Parallel sample.
@@ -1265,7 +1267,7 @@ class FastMCIsing(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(nIters):
+                for j in xrange(n_iters):
                     de = self.sample_metropolis( s,rng=rng )
                     E += de
                 return s,E
@@ -1273,11 +1275,11 @@ class FastMCIsing(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(nIters):
+                for j in xrange(n_iters):
                     de = self.sample_metropolis( s,rng=rng,flip_site=j%self.n )
                     E += de
                 return s,E
-
+        
         pool=mp.Pool(cpucount)
         self.samples,self.E=zip(*pool.map(f,zip(self.samples,
                                                 self.E,
@@ -1315,7 +1317,7 @@ class FastMCIsing(object):
 # Metropolis sampler. #
 # =================== #
 class MCIsing(object):
-    def __init__(self,n,theta,calc_e,nJobs=0,rng=None):
+    def __init__(self,n,theta,calc_e,n_jobs=None,rng=None):
         """
         MC sample on Ising model with +/-1 formulation.
         2017-01-15
@@ -1328,78 +1330,78 @@ class MCIsing(object):
             Vector of parameters in Hamiltonian.
         calc_e (function)
             f( states, params )
-        nJobs (int=0)
+        n_jobs (int=0)
             If None, then will use all available CPUs.
         rng (RandomState=None)
         """
         self.n = n
         self.theta = theta
-        if nJobs is None:
-            self.nJobs = mp.cpu_count()
-        else:
-            self.nJobs = nJobs
+        self.nJobs = n_jobs or mp.cpu_count()
         
         self.calc_e = calc_e
 
         if rng is None:
             self.rng=np.random.RandomState()
     
-    def generate_samples(self,sampleSize,
-                         nIters=1000,
+    def generate_samples(self,sample_size,
+                         n_iters=1000,
                          saveHistory=False,
-                         initialSample=None):
+                         initial_sample=None):
         """
         Generate Metropolis samples using a for loop.
         2017-01-15
 
         Params:
         -------
-        sampleSize (int)
-        nIters (int=1000)
+        sample_size (int)
+        n_iters (int=1000)
         saveHistory (bool=False)
-        initialSample (ndarray=None)
+        initial_sample (ndarray=None)
         """
-        if initialSample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
-        else: self.samples = initialSample
+        if initial_sample is None:
+            self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
+        else: self.samples = initial_sample
         self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
 
         if saveHistory:
-            history=np.zeros((sampleSize,nIters+1))
+            history=np.zeros((sample_size,n_iters+1))
             history[:,0]=self.E.ravel()
-            for i in xrange(sampleSize):
-                for j in xrange(nIters):
+            for i in xrange(sample_size):
+                for j in xrange(n_iters):
                     de = self.sample_metropolis( self.samples[i],self.E[i] )
                     self.E[i] += de
                     history[i,j+1]=self.E[i]
             return history
         else:
-            for i in xrange(sampleSize):
-                for j in xrange(nIters):
+            for i in xrange(sample_size):
+                for j in xrange(n_iters):
                     de = self.sample_metropolis( self.samples[i],self.E[i] )
                     self.E[i] += de
             return
 
-    def generate_samples_parallel(self,sampleSize,
-                                  nIters=1000,
+    def generate_samples_parallel(self,sample_size,
+                                  n_iters=1000,
                                   cpucount=None,
-                                  initialSample=None,
+                                  initial_sample=None,
                                   systematic_iter=False,
                                   ):
         """
         Generate samples in parallel and save them into self.samples.
-        2017-01-15
 
         Params:
         -------
-        sampleSize
-        nIters (int=1000)
+        sample_size
+        n_iters (int=1000)
         cpucount (int=None)
+        initial_sample (ndarray=None)
+        systematic_iter (bool=False)
+            Iterate through spins systematically instead of choosing them randomly.
         """
         cpucount=cpucount or mp.cpu_count()
-        if initialSample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
-        else: self.samples = initialSample
+        if initial_sample is None:
+            self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
+        else:
+            self.samples = initial_sample
         self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
        
         # Parallel sample.
@@ -1407,7 +1409,7 @@ class MCIsing(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(nIters):
+                for j in xrange(n_iters):
                     de = self.sample_metropolis( s,E,rng=rng )
                     E += de
                 return s,E
@@ -1415,15 +1417,15 @@ class MCIsing(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(nIters):
+                for j in xrange(n_iters):
                     de = self.sample_metropolis( s,E,rng=rng,flip_site=j%self.n )
                     E += de
                 return s,E
-
+        
         pool=mp.Pool(cpucount)
         self.samples,self.E=zip(*pool.map(f,zip(self.samples,
                                                 self.E,
-                                                np.random.randint(2**31-1,size=sampleSize))))
+                                                np.random.randint(2**31-1,size=sample_size))))
         pool.close()
 
         self.samples=np.vstack(self.samples)
@@ -1433,7 +1435,6 @@ class MCIsing(object):
         """
         Metropolis sampling.
         Seems to return more accurate answers with J = [1,1,1] test case.
-        2014-01-27
         """
         rng = rng or self.rng
         flipSite = flip_site or rng.randint(sample0.size)

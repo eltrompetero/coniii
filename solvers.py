@@ -6,7 +6,7 @@ from multiprocessing import Pool,Array,Queue,Process
 import multiprocess as mp
 from misc.utils import unique_rows
 from utils import *
-
+from samplers import *
 
 
 class Solver(object):
@@ -56,7 +56,7 @@ class Solver(object):
         self.calc_observables = calc_observables
         self.adj = adj
         
-        self.nWorkers = nWorkers or mp.cpucount()
+        self.nWorkers = nWorkers or mp.cpu_count()
 
     def solve(self):
         return
@@ -103,7 +103,7 @@ class Solver(object):
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
-            self.sampler = FastMCIsing( self.n,self._multipliers,self.calc_e )
+            self.sampler = MCIsing( self.n,self._multipliers,self.calc_e )
         
         elif sample_method=='remc':
             self.sampler = ParallelTempering( self.n,
@@ -117,7 +117,7 @@ class Solver(object):
         else:
            raise NotImplementedError("Unrecognized sampler.")
 
-    def generate_samples(self,n_iters,
+    def generate_samples(self,n_iters,burnin,
                          sample_size=None,
                          sample_method=None,
                          initial_sample=None,
@@ -128,29 +128,43 @@ class Solver(object):
         Params:
         -------
         n_iters (int)
+        burnin (int) 
+            I think burn in is handled automatically in REMC.
         sample_size (int)
         sample_method (str)
         initial_sample (ndarray)
         generate_kwargs (dict)
+
+        Returns:
+        --------
+        None
         """
         assert not (self.sampler is None), "Must call setup_sampler() first."
 
         sample_method = sample_method or self.sampleMethod
-        sample_size = sample_size or self.sample_size
-        if initial_sample is None:
+        sample_size = sample_size or self.sampleSize
+        if initial_sample is None and (not self.samples is None) and len(self.samples)==self.sampleSize:
             initial_sample = self.samples
         
         if sample_method=='wolff':
             self.sampler.update_parameters(self._multipliers[self.n:],self.multipliers[:self.n])
-            self.samples = self.sampler.generate_sample_parallel( sample_size,n_iters,
+            # Burn in.
+            self.samples = self.sampler.generate_sample_parallel( sample_size,burnin,
                                                                   initial_sample=initial_sample )
+            self.samples = self.sampler.generate_sample_parallel( sample_size,n_iters,
+                                                                  initial_sample=self.sampler.samples )
 
         elif sample_method=='metropolis':
             self.sampler.theta = self._multipliers
+            # Burn in.
+            self.sampler.generate_samples_parallel( sample_size,
+                                                    n_iters=burnin,
+                                                    cpucount=self.nWorkers,
+                                                    initial_sample=initial_sample )
             self.sampler.generate_samples_parallel( sample_size,
                                                     n_iters=n_iters,
                                                     cpucount=self.nWorkers,
-                                                    initial_sample=initial_sample )
+                                                    initial_sample=self.sampler.samples)
             self.samples = self.sampler.samples
 
         elif sample_method=='remc':
@@ -160,7 +174,6 @@ class Solver(object):
 
         else:
            raise NotImplementedError("Unrecognized sampler.")
-
 # end Solver
 
 
@@ -553,6 +566,10 @@ class MCH(Solver):
         Methods:
         --------
         """
+        sample_size,sample_method,mch_approximation = (kwargs['sample_size'],
+                                                       kwargs['sample_method'],
+                                                       kwargs['mch_approximation'])
+        del kwargs['sample_size'],kwargs['sample_method'],kwargs['mch_approximation']
         super(MCH,self).__init__(*args,**kwargs)
 
         self.mch_approximation = mch_approximation
@@ -562,21 +579,27 @@ class MCH(Solver):
         self.sampleMethod = sample_method
         self.sampler = None
         self.samples = None
+        
+        if self.multipliers is None:
+            self._multipliers = np.zeros_like(self.constraints)
+        else:
+            self._multipliers = self.multipliers
+        self.setup_sampler(self.sampleMethod)
 
     def solve(self,
               initial_guess=None,
               tol=None,
               tolNorm=None,
               n_iters=30,
+              burnin=30,
               maxiter=10,
               disp=False,
               learn_params_kwargs={},
-              generate_kwargs={},
-              fsolve_kwargs={}):
+              generate_kwargs={}):
         """
         Solve for parameters using MCH routine.
         
-        NOTE: Commented part relies on gradient descent but doesn't seem to
+        NOTE: Commented part relies on stochastic gradient descent but doesn't seem to
         be very good at converging to the right answer with some tests on small systems.
         
         Params:
@@ -588,7 +611,8 @@ class MCH(Solver):
         tolNorm (float)
             norm error allowed in found solution
         n_iters (int=30)
-            number of iterations to make when sampling
+            Number of iterations to make between samples in MCMC sampling.
+        burnin (int=30)
         disp (bool=False)
         learn_parameters_kwargs
         generate_kwargs
@@ -611,7 +635,7 @@ class MCH(Solver):
 
         errors = []  # history of errors to track
         
-        self.generate_samples(n_iters,
+        self.generate_samples(n_iters,burnin,
                               generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.samples)
         errors.append( thisConstraints-self.constraints )
@@ -629,7 +653,7 @@ class MCH(Solver):
                 print self._multipliers
             if disp:
                 print "Sampling..."
-            self.generate_samples( n_iters,
+            self.generate_samples( n_iters,burnin,
                                    generate_kwargs=generate_kwargs )
             thisConstraints = self.calc_observables(self.samples)
             counter += 1
@@ -685,23 +709,25 @@ class MCH(Solver):
         return jac
 
 
-    def learn_parameters_mch(self, thisConstraints,
+    def learn_parameters_mch(self, estConstraints,
                              maxdlamda=1,
                              maxdlamdaNorm=1, 
                              maxLearningSteps=50,
                              eta=1 ):
         """
-        2015-08-14
-
         Params:
         -------
-        thisConstraints (ndarray)
-        maxdlamda (1,float)
-        maxdlamdaNorm (1,float),
+        estConstraints (ndarray)
+        maxdlamda (float=1)
+        maxdlamdaNorm (float=1)
         maxLearningSteps (int)
             max learning steps before ending MCH
-        eta (1,float)
+        eta (float=1)
             factor for changing dlamda
+
+        Returns:
+        --------
+        estimatedConstraints (ndarray)
         """
         keepLearning = True
         dlamda = np.zeros((self.constraints.size))
@@ -712,12 +738,12 @@ class MCH(Solver):
             # Get change in parameters.
             # If observable is too large, then corresponding energy term has to go down 
             # (think of double negative).
-            dlamda += -(thisConstraints-self.constraints) * np.min([distance,1.]) * eta
+            dlamda += -(estConstraints-self.constraints) * np.min([distance,1.]) * eta
             #dMultipliers /= dMultipliers.max()
             
             # Predict distribution with new parameters.
-            thisConstraints = self.mch_approximation( self.samples, dlamda )
-            distance = np.linalg.norm( thisConstraints-self.constraints )
+            estConstraints = self.mch_approximation( self.samples, dlamda )
+            distance = np.linalg.norm( estConstraints-self.constraints )
                         
             # Counter.
             learningSteps += 1
@@ -729,5 +755,5 @@ class MCH(Solver):
                 keepLearning = False
 
         self._multipliers += dlamda
-        return thisConstraints
+        return estConstraints
 # End GeneralMaxentSolver

@@ -1320,7 +1320,6 @@ class MCIsing(object):
     def __init__(self,n,theta,calc_e,n_jobs=None,rng=None):
         """
         MC sample on Ising model with +/-1 formulation.
-        2017-01-15
 
         Params:
         -------
@@ -1349,7 +1348,6 @@ class MCIsing(object):
                          initial_sample=None):
         """
         Generate Metropolis samples using a for loop.
-        2017-01-15
 
         Params:
         -------
@@ -1431,15 +1429,84 @@ class MCIsing(object):
         self.samples=np.vstack(self.samples)
         self.E=np.concatenate(self.E)
 
-    def sample_metropolis(self,sample0,E0,rng=None,flip_site=None):
+    def generate_cond_samples(self,sample_size,
+                              fixed_subset,
+                              n_iters=1000,
+                              cpucount=None,
+                              initial_sample=None,
+                              systematic_iter=False,
+                              ):
+        """
+        Generate samples in parallel while a subset of the spins are held fixed.
+
+        Params:
+        -------
+        sample_size
+        fixed_subset (list of duples)
+            Each duple is the index of the spin and the value to fix it at. These should be ordered by spin
+            index.
+        n_iters (int=1000)
+        cpucount (int=None)
+        initial_sample (ndarray=None)
+        systematic_iter (bool=False)
+            Iterate through spins systematically instead of choosing them randomly.
+        """
+        cpucount=cpucount or mp.cpu_count()
+        nSubset = self.n-len(fixed_subset)
+        if initial_sample is None:
+            self.samples = self.rng.choice([-1.,1.],size=(sample_size,nSubset))
+        else:
+            self.samples = initial_sample
+        
+        # Redefine calc_e to account for fixed spins.
+        def cond_calc_e(state,theta):
+            for i,s in fixed_subset:
+                state = np.insert(state,i,s)
+            return self.calc_e(state[None,:],theta)
+        self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
+        
+        # Parallel sample.
+        if not systematic_iter:
+            def f(args):
+                s,E,seed = args
+                rng = np.random.RandomState(seed)
+                for j in xrange(n_iters):
+                    de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
+                    E += de
+                return s,E
+        else:
+            def f(args):
+                s,E,seed=args
+                rng=np.random.RandomState(seed)
+                for j in xrange(n_iters):
+                    de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                    E += de
+                return s,E
+        
+        pool=mp.Pool(cpucount)
+        self.samples,self.E=zip(*pool.map(f,zip(self.samples,
+                                self.E,
+                                np.random.randint(2**31-1,size=sample_size))))
+        pool.close()
+
+        self.samples = np.vstack(self.samples)
+        counter = 0
+        for i,s in fixed_subset:
+            self.samples = np.insert(self.samples,range(i,self.samples.size,nSubset+counter),s)
+            counter += 1
+        self.samples = np.reshape(self.samples,(sample_size,self.n))
+        self.E = np.concatenate(self.E)
+
+    def sample_metropolis(self,sample0,E0,rng=None,flip_site=None,calc_e=None):
         """
         Metropolis sampling.
-        Seems to return more accurate answers with J = [1,1,1] test case.
         """
         rng = rng or self.rng
         flipSite = flip_site or rng.randint(sample0.size)
+        calc_e = calc_e or self.calc_e
+
         sample0[flipSite] *= -1
-        E1 = self.calc_e( sample0[None,:], self.theta )
+        E1 = calc_e( sample0[None,:], self.theta )
         
         de = E1-E0
 

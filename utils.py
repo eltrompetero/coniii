@@ -164,15 +164,17 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
     """
     from misc.utils import unique_rows
 
+    if v.ndim==1:
+        v = v[:,None]
     n = v.shape[1]
     j = 0
-    returnAllStates = False
+    return_all_states = False
 
     if allstates is None:
-        allstates = unique_rows(v,return_inverse=True)
-        freq = np.bincount( allstates )
-        x = range(len(freq))
-        returnAllStates = True
+        allstates = v[unique_rows(v)]
+        uniqIx = unique_rows(v,return_inverse=True)
+        freq = np.bincount( uniqIx )
+        return_all_states = True
     else:
         if weights is None:
             weights = np.ones((v.shape[0]))
@@ -188,11 +190,11 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
     if normalized:
         freq = freq.astype(float)/np.sum(freq)
 
-    if returnAllStates:
+    if return_all_states:
         return freq,allstates
     return freq
 
-
+    
 # ========================================= #
 # Helper functions for solving Ising model. # 
 # ========================================= #

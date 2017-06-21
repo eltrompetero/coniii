@@ -1395,7 +1395,7 @@ class MCIsing(object):
         systematic_iter (bool=False)
             Iterate through spins systematically instead of choosing them randomly.
         """
-        cpucount=cpucount or mp.cpu_count()
+        cpucount = cpucount or self.nJobs
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
         else:
@@ -1451,7 +1451,7 @@ class MCIsing(object):
         systematic_iter (bool=False)
             Iterate through spins systematically instead of choosing them randomly.
         """
-        cpucount=cpucount or mp.cpu_count()
+        cpucount = cpucount or self.nJobs
         nSubset = self.n-len(fixed_subset)
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sample_size,nSubset))
@@ -1463,7 +1463,7 @@ class MCIsing(object):
             for i,s in fixed_subset:
                 state = np.insert(state,i,s)
             return self.calc_e(state[None,:],theta)
-        self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
+        self.E = np.array([ cond_calc_e( s, self.theta ) for s in self.samples ])
         
         # Parallel sample.
         if not systematic_iter:
@@ -1488,7 +1488,7 @@ class MCIsing(object):
                                 self.E,
                                 np.random.randint(2**31-1,size=sample_size))))
         pool.close()
-
+        
         self.samples = np.vstack(self.samples)
         counter = 0
         for i,s in fixed_subset:

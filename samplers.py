@@ -1492,7 +1492,10 @@ class MCIsing(object):
         self.samples = np.vstack(self.samples)
         counter = 0
         for i,s in fixed_subset:
-            self.samples = np.insert(self.samples,range(i,self.samples.size,nSubset+counter),s)
+            if i==0:
+                self.samples = np.insert(self.samples,range(i,self.samples.size,nSubset+counter),s)
+            else:
+                self.samples = np.insert(self.samples,range(i,self.samples.size+1,nSubset+counter),s)
             counter += 1
         self.samples = np.reshape(self.samples,(sample_size,self.n))
         self.E = np.concatenate(self.E)

@@ -1,10 +1,7 @@
 # Module for class-based solvers for different Inverse Ising methods.
 from __future__ import division
-import entropy.entropy as entropy
 from scipy.optimize import minimize
-from multiprocessing import Pool,Array,Queue,Process
 import multiprocess as mp
-from misc.utils import unique_rows
 from utils import *
 from samplers import *
 
@@ -23,7 +20,7 @@ class Solver(object):
     calc_observables (function)
         For exact: lambda params: return observables
     multipliers (ndarray=None)
-    nWorkers (int=None)
+    n_jobs (int=None)
 
     Attributes:
     -----------
@@ -42,7 +39,7 @@ class Solver(object):
                  calc_observables=None,
                  adj=None,
                  multipliers=None,
-                 nWorkers=None):
+                 n_jobs=None):
         # Do basic checks on the inputs.
         assert type(n) is int
         assert (not calc_e is None), "Must define calc_e()."
@@ -56,7 +53,7 @@ class Solver(object):
         self.calc_observables = calc_observables
         self.adj = adj
         
-        self.nWorkers = nWorkers or mp.cpu_count()
+        self.n_jobs = n_jobs or mp.cpu_count()
 
     def solve(self):
         return
@@ -159,11 +156,11 @@ class Solver(object):
             # Burn in.
             self.sampler.generate_samples_parallel( sample_size,
                                                     n_iters=burnin,
-                                                    cpucount=self.nWorkers,
+                                                    cpucount=self.n_jobs,
                                                     initial_sample=initial_sample )
             self.sampler.generate_samples_parallel( sample_size,
                                                     n_iters=n_iters,
-                                                    cpucount=self.nWorkers,
+                                                    cpucount=self.n_jobs,
                                                     initial_sample=self.sampler.samples)
             self.samples = self.sampler.samples
 
@@ -288,7 +285,7 @@ class MPF(Solver):
         calc_de (lambda=None)
             Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
             the parameter.
-        nWorkers (int=0)
+        n_jobs (int=0)
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
         Attributes:
@@ -299,8 +296,6 @@ class MPF(Solver):
         """
         super(MPF,self).__init__(*args,**kwargs)
         self.adj = adj
-        if self.nWorkers>0:
-            self.solve = self.solve_parallel
         
     @staticmethod
     def worker_objective_task( s, Xcount, adjacentStates, params, calc_e ):
@@ -471,7 +466,7 @@ class MPF(Solver):
             includeGrad = False
         X = X.astype(float)
         if initial_guess is None:
-            initial_guess = entropy.calc_sisj( X, concat=True )
+            initial_guess = pair_corr( X, concat=True )
    
         # Get list of unique data states and how frequently they appear.
         Xuniq = X[unique_rows(X)]
@@ -513,37 +508,10 @@ class MPF(Solver):
 
 class MCH(Solver):
     """
-    Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
-    in arbitrary constraints.  I chose the symmetric model since that seems more natural for parameter
-    interpretation and it does not usually take up much more space for code.
+    Class for solving maxent problems using the Monte Carlo Histogram method.
 
-    Params:
-    -------
-    n (int)
-        System size.
-    constraints (ndarray)
-    calc_e (function)
-        lambda samples,params: return energy
-    calc_observables (function)
-        For MCH: lambda samples: return observables
-        For exact: lambda params: return observables
-    sample_method (str)
-        Type of sample method. Current options are 'wolff', 'metropolis', 'remc'.
-    mch_approximation (function=None)
-    multipliers (ndarray=None)
-    nJobs (int=None)
-
-    Attributes:
-    -----------
-    constraints (ndarray)
-    calc_e (function)
-        with args (sample,parameters) where sample is 2d
-    calc_observables (function)
-        takes in samples as argument
-    mch_approximation (function)
-    sampleSize (int)
-    multipliers (ndarray)
-        set the Langrangian multipliers
+    Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the inverse
+    pairwise Ising problem. arXiv 1-8 (2007).
     """
     def __init__(self, *args, **kwargs):
         """
@@ -557,12 +525,21 @@ class MCH(Solver):
         calc_de (lambda=None)
             Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
             the parameter.
-        nWorkers (int=0)
+        n_jobs (int=0)
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
         Attributes:
         -----------
-        
+        constraints (ndarray)
+        calc_e (function)
+            with args (sample,parameters) where sample is 2d
+        calc_observables (function)
+            takes in samples as argument
+        mch_approximation (function)
+        sampleSize (int)
+        multipliers (ndarray)
+            set the Langrangian multipliers
+
         Methods:
         --------
         """

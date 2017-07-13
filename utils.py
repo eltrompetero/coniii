@@ -5,6 +5,65 @@ from scipy.misc import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
 
+
+@jit(nopython=True,nogil=True,cache=True)
+def sub_to_ind(n,i,j):
+    """
+    Convert pair of coordinates of a symmetric square array into consecutive
+    index of flattened upper triangle. This is slimmed down so it won't throw
+    errors like if i>n or j>n or if they're negative. Only checking for if the
+    returned index is negative which could be problematic with wrapped indices.
+    
+    Params:
+    -------
+    n (int)
+        Dimension of square array
+    i,j (int)
+        coordinates
+    """
+    if i<j:
+        k = 0
+        for l in xrange(1,i+2):
+            k += n-l
+        assert k>=0
+        return k-n+j
+    elif i>j:
+        k = 0
+        for l in xrange(1,j+2):
+            k += n-l
+        assert k>=0
+        return k-n+i
+    else:
+        raise Exception("Indices cannot be the same.")
+
+def unique_rows(mat,return_inverse=False):
+    """
+    Return unique rows indices of a numeric numpy array.
+
+    Params:
+    -------
+    mat (ndarray)
+    **kwargs
+    return_inverse (bool)
+        If True, return inverse that returns back indices of unique array that
+        would return the original array 
+
+    Returns:
+    --------
+    u (ndarray)
+        Unique elements of matrix.
+    idx (ndarray)
+        row indices of given mat that will give unique array
+    """
+    b = np.ascontiguousarray(mat).view(np.dtype((np.void, mat.dtype.itemsize * mat.shape[1])))
+    if not return_inverse:
+        _, idx = np.unique(b, return_index=True)
+    else:
+        _, idx = np.unique(b, return_inverse=True)
+    
+    return idx
+
+
 def calc_overlap(sample,ignore_zeros=False):
     """
     <si_a si_b> between all pairs of replicas a and b

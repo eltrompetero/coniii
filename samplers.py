@@ -8,10 +8,9 @@ from __future__ import division
 #from numdifftools import Gradient
 from numba import jit,float64
 from numpy import sin,cos,exp
-import numpy as np
-from misc.utils import sub_to_ind
 from scipy.spatial.distance import squareform
 import multiprocess as mp
+from utils import *
 
 # ---------------------------------------------------------------------------- #
 # Define calc_e() and grad_e() functions here if you wish to use jit speedup!  #

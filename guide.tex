@@ -1,0 +1,93 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{CONIII: Convenient Interface to Inverse Ising}
+\author{Edward D Lee, Bryan C Daniels, Colin Twomey, Colin Clement}
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\begin{abstract}
+CONIII is a project for providing an interface to various algorithms for solving the inverse maximum entropy problem. In this guide, we provide details sufficient for graduate students who are new to this area to understand how the algorithms work and plug-and-play code to run them on their data sets. We hope that this interface will provide the means for maximum entropy modeling techniques to become more widespread and provide a platform for organizing the various techniques into a convenient environment.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+Recently, with the advent of numerical, analytic, and computation tools, the inverse problem in statistical physics has become widely used in a variety of areas. The typical problem in statistical physics involves postulating the Hamiltonian and working out the physical behavior of the system, but the \textit{inverse} problem consists of finding the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation or numerical cum computational techniques to find the corresponding parameters.
+
+The inverse problem can be derived from a maximum entropy principle. The idea behind maximum entropy, or maxent, is to build a model that is consistent with the data but otherwise as structureless as possible.
+
+\section{Notes on Monte Carlo Markov Chain sampling}
+The key points behind MCMC sampling is ergodicity and detailed balance. Ergodicity just means that we can get from one state to another in a finite number of steps, and this ensures that we don't get stuck in a few states. Detailed balance is a sufficient but not necessary condition (stronger than needed) for ensuring that the equilibrium distribution matches the distribution that we seek. There are some specialized algorithms that don't satisfy detailed balance but do produce the desired distribution.
+
+To check whether an algorithm works, one must prove that both these conditions are satisfied. Ergodicity is usually trivial. Typically, we write down the condition for detailed balance for any two states $a$ and $b$,
+\begin{align}
+	p(a|b)p(b) &= p(b|a)p(a) \\
+	p(b)/p(a) &= p(b|a)/p(a|b) \\
+	e^{-(E_b-E_a)} &= 
+\end{align}
+A reasonable way to do this would be to take $p(b|a) = e^{-(E_b-E_a)}$ and $p(a|b) = 1$ when $E_b>E_a$.
+
+\begin{align}
+	p_a\,T(a\rightarrow b)A(a\rightarrow b) &= p_b\,T(b\rightarrow a)A(b\rightarrow a)\\
+	p_a/p_b &= T(b\rightarrow a)A(b\rightarrow a)/T(a\rightarrow b)A(a\rightarrow b)
+\end{align}
+where $T$ is the transition probability and $A$ is the acceptance probability. For a Boltzmann type model, this means that this ratio must be equal to $\exp(-\beta(E_a-E_b))$.
+
+\subsection{Swendsen-Wang}
+As an example, we consider the Swendsen-Wang cluster algorithm. In this algorithm, the first step is to form bonds between like spins (to grow clusters) then we flip to any configuration permitted by the current bond structure which is uniform. If you work through the calculations (GNB V pg 81), you will find that the probability of transitioning between states depend on the bonds that could have formed between like spins but didn't, and this is equal to the energy difference between the states.
+
+\subsection{Wolff}
+Another example is the Wolff algorithm (see GNB V pg 83) which is like the SW algorithm except that only a single cluster is build and flipped at a time with probability 1, i.e. the acceptance probability is 1 in the original algorithm. We start with any random site as the initial spin then we build a cluster spreading out from that spin to its nearest neighbors where the choose the probability of choosing a neighbor to be $1-\exp(-2J_{ij})$.
+
+The random fields can be accounted for in the acceptance probabilities (so the probability of a cluster flipping is no longer 1). Working through the math, you will find that the cluster growth accounts for the ratio of the energies that come from the couplings but to account for the fields, the probability of a particular orientation of the clusters has to be
+\begin{align}
+	p(\Sigma_n) &\propto \exp\left(\sum_i h_i\sigma_i\right)
+\end{align}
+which we can easily simulate using something like the Metropolis algorithm. Obviously, this will increase the correlation time between samples because we will not always accept a cluster flip. This can be especially problematic when the clusters become large and have similar fields, but as long as the sum of the distribution of local fields for spins in a cluster is symmetric about 0, this will not be too slow. Certainly, it is faster than any local flip algorithm.
+
+A simple example that I worked through is with 4 spins and the transition probability between two different states. Here, we can easily enumerate all possible ways of transitioning between these two states using the Wolff algorithm.
+
+\section{Replica exchange Monte Carlo (REMC)}
+REMC simulates multiple replicas of the system at different temperatures simulaneously and allow states to be exchanged between them. The idea is that an energy barrier may be very difficult to cross below a certain critical temperature, but there may be a trajectory allowed by diffusing through higher temperatures to cross the boundary.
+
+Instead of considering the ensemble of a single system, we consider the ensemble of multiple independent systems. Thus, the joint probability distribution on the extended state space is
+\begin{align}
+	p(\sigma,\beta_n).
+\end{align}
+where $\beta_n = 1/T_n$ is the inverse temperature.
+
+The simplest possible assumption for the shape of this distribution would be that the probability of occupying any particular temperature $\beta_n$ is uniform $p(n) = 1/N_T$. It turns out that this is optimal according to some criterion (see citation in Kerler and Rehberg). Note that this is not the same as just simulating a set of replicas for which the partition funtion would be
+\begin{align}
+	Z &= \prod_{m} \sum_\sigma \exp\left[ -\beta_m H(\sigma) \right] \label{eq:equi Z}
+\end{align}
+This is for the obvious reason that the average energy is a function of $T$ so a simulation of Eq \ref{eq:equi Z} would spend much more time exploring lower temperatures than higher temperatures. This makes it difficult to have the system use higher energy states to cross energy barriers. 
+
+So instead of Eq \ref{eq:equi Z}, we can include a term $g_n$ to compensate
+\begin{align}
+	Z &= \prod_{m} \sum_\sigma \exp\left[ -\beta_m H(\sigma) +g_m \right]
+\end{align}
+How do we find $g_n$?
+
+Under the assumption that the probability $p(n)$ is a constant,
+\begin{align}
+	p(n) &= e^{g_n} \sum_\sigma \exp\left[ -\beta_n H(\sigma) \right]/Z\\
+	g_n &= \log[p(n)\,Z] + \tilde{Z}_n\\
+	g_n &\rightarrow \tilde{Z}_n
+\end{align}
+(remembering that constants don't matter in the relation between energy and probability) where 
+\begin{align}
+	\tilde{Z}_n &= \sum_\sigma \exp\left[ -\beta_n H(\sigma) \right]
+\end{align}
+One way to find the $g_n$ that satisfy this condition is to come up with an iterative algorithm that converges to a fixed point. One suggestion is to estimate $g_n$ by reweighting the distributions from adjacent replicas.
+
+Now, it remains to find a set of $\beta_n$ that is optimal for simulating relaxing into equilibrium quickly. One suggestion to make the algorithm spend an equal amount of time at each temperature. Kerler and Rehberg suggest a method.
+
+\end{document}  

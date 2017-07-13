@@ -221,8 +221,6 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
     allstates (ndarray)
         All unique states found in the data.
     """
-    from misc.utils import unique_rows
-
     if v.ndim==1:
         v = v[:,None]
     n = v.shape[1]

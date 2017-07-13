@@ -1,83 +1,26 @@
 # Module for solving small n Ising models exactly.
-# Code written by Eddie Lee (edlee@alumni.princeton.edu), provided on webpage
-# http://pages.discovery.wisc.edu/~elee/research.html with no guarantees
-# whatsoever.
-# 2014-08-26
+# Code written by Eddie Lee
+# edl56@cornell.edu
 
 import numpy as np
 import scipy.special as ss
 import string
 
-def solve_ising(n,C,params0,sym,method='fast', maxParameterValue=50, nTries=5, **kwargs):
-    """
-    Solve Ising model given pairwise correlations.
-    2015-08-19
-
-    Params:
-    --------
-    n (int)
-        suffix of tosolve module
-    C (ndarray)
-        vector of concatenate((si,sisj))
-    params0 (ndarray)
-        starting point
-    sym (bool)
-        If True, will use {+1,-1} formulation.
-    method (str, 'fast')
-        'slow' is for LMNPACK and 'fast' is for less accurate Powell method
-    maxParameterValue (50, float)
-        Maximum allowed parameter values so that we don't run into overflow errors while searching for viable
-        parameters. May need to cahnge this limit for badly constrained problems.
-    """
-    import scipy.optimize as sopt
-    import importlib
-   
-    assert C.size==(n+n*(n-1)/2)
-    assert C.size==params0.size, "Given constraints must number same as parameters."
-    assert n>0
-    
-    if sym:
-        tosolve = importlib.import_module('tosolve11.tosolve%d'%n)
-    else:
-        tosolve = importlib.import_module('tosolve01.tosolve%d'%n)
-
-    def f(params):
-        if (np.abs(params)>maxParameterValue).any():
-            return [1e30]*len(params)
-        return tosolve.get_stats(params) - C
-    
-    if method=='slow':
-        soln = sopt.leastsq( lambda x: f(x), params0, **kwargs )
-        print "Distance is %f\n" %np.linalg.norm( f(soln[0]) )
-        return soln
-    elif method=='fast':
-        i = 0
-        soln = sopt.fsolve(lambda x: f(x), params0, **kwargs)
-        while i<(nTries-1) and soln[2]!=1:
-            soln = sopt.fsolve(lambda x: f(x), params0+np.random.normal(size=len(params0),scale=.1), **kwargs)
-            i += 1
-        print "Distance is %f\n" %np.linalg.norm( f(soln) )
-        return soln
-        #return sopt.fmin_slsqp(lambda x: np.abs(f(x,C,tosolve)),np.hstack(params0))
-        #return sopt.fmin_tnc(lambda x: np.abs(f(x,C,tosolve)),np.hstack(params0))
-        #return sopt.fmin_l_bfgs_b(lambda x: np.abs(f(x,C,tosolve)),np.hstack(params1))
-    else:
-        raise Exception("Choose valid method.")
-
 def write_eqns(n,sym,terms,writeto="matlab"):
     """
-        Args:
-            n : number of spins
-            sym : value of 1 will use {-1,1} formulation, 0 means {0,1}
-            terms : list of numpy index arrays as would be returned by np.where that 
-                specify which terms to include, each consecutive array should 
-                specify indices in an array with an extra dimension of N, 
-                [Nx1,NxN,NxNxN,...]
-                note that the last dimension is the first to be iterated
-            writeto (str,'matlab') : filetype to choose, 'matlab' or 'python'
-        Val:
-            None
-    2013-12-18
+    Params:
+    -------
+    n (int)
+        number of spins
+    sym (int)
+        value of 1 will use {-1,1} formulation, 0 means {0,1}
+    terms
+        list of numpy index arrays as would be returned by np.where that 
+        specify which terms to include, each consecutive array should 
+        specify indices in an array with an extra dimension of N, 
+        [Nx1,NxN,NxNxN,...]
+        note that the last dimension is the first to be iterated
+    writeto (str,'matlab') : filetype to choose, 'matlab' or 'python'
     """
     import re
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
@@ -138,22 +81,16 @@ def write_eqns(n,sym,terms,writeto="matlab"):
     else:
         raise Exception("Must choose between \"matlab\" and \"py\".")
 
-    # print(Z)
-#     for i in fitterms:
-#         print(i)
-    return
-
 def write_matlab(n,terms,fitterms,expterms,Z):
     """
-    2013-12-18
-        Write out equations to solve for matlab.
+    Write out equations to solve for matlab.
     """
     import time
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
     vardec = ''
 
     # Write function to solve to file.
-    f = open('tosolve'+str(n)+'.m','w')
+    f = open('ising_eqn_'+str(n)+'.m','w')
     f.write("% File for solving the Ising model.\n% ")
     f.write(time.strftime("%Y/%m/%d")+"\n")
     f.write("% Give each set of parameters separately in an array.\n\n")
@@ -191,20 +128,20 @@ def write_matlab(n,terms,fitterms,expterms,Z):
         g.write('\tPout('+str(i+1)+') = '+expterms[i]+'/Z;\n')
 
     g.close()
-    return
 
 def write_py(n,terms,fitterms,expterms,Z,extra=''):
     """
-    2013-12-18
-        Write out equations to solve for Python.
-        Args:
-            extra (str,'') : any extra lines to add at the end
+    Write out equations to solve for Python.
+
+    Params:
+    -------
+    extra (str,'') : any extra lines to add at the end
     """
     import time
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
 
     # Write function to solve to file.
-    f = open('tosolve'+str(n)+'.py','w')
+    f = open('ising_eqn_'+str(n)+'.py','w')
     f.write("# File for solving the Ising model.\n\n")
     f.write("# ")
     f.write(time.strftime("%d/%m/%Y")+"\n")
@@ -252,11 +189,9 @@ def write_py(n,terms,fitterms,expterms,Z,extra=''):
     f.write(extra)
     f.write("\n\treturn(Pout)\n")
     f.close()
-    return
 
 def add_to_fitterm11(fitterm,subix,expterm,binstate):
     """
-    2013-12-05
     """
     if len(subix)==0:
         return
@@ -273,11 +208,9 @@ def add_to_fitterm11(fitterm,subix,expterm,binstate):
             else:
                 fitterm.append(expterm)
         j+=1
-    return
 
 def add_to_fitterm01(fitterm,subix,expterm,binstate):
     """
-    2013-12-05
     """
     if len(subix)==0:
         return
@@ -287,12 +220,10 @@ def add_to_fitterm01(fitterm,subix,expterm,binstate):
         # If all members of the relevant tuple are ==1, include term.
         if np.all( [binstate[k[i]]=="1" for k in subix] ):
             fitterm[i] += expterm
-    return
 
 def get_terms11(subix,prefix,binstate,br,ix0):
     """
-    2013-12-04
-        Specific to {-1,1}.
+    Specific to {-1,1}.
     """
     j = 0
     s = ''
@@ -306,12 +237,11 @@ def get_terms11(subix,prefix,binstate,br,ix0):
         s += prefix+br[0]+str(j+ix0)+br[1]
         j += 1
 
-    return(s)
+    return s
 
 def get_terms01(subix,prefix,binstate,br,ix0):
     """
-    2013-12-04
-        Specific to {0,1}.
+    Specific to {0,1}.
     """
     j = 0
     s = ''
@@ -325,12 +255,11 @@ def get_terms01(subix,prefix,binstate,br,ix0):
     if s=='':
         s = '+0'
 
-    return(s)
+    return s
 
 def get_terms(subix,prefix,binstate,br,ix0):
     """
-    2013-12-04
-        Spins are put in explicitly
+    Spins are put in explicitly
     """
     j = 0
     s = ''
@@ -345,16 +274,15 @@ def get_terms(subix,prefix,binstate,br,ix0):
     if s=='':
         s = '+0'
 
-    return(s)
+    return s
 
 def get_3idx(n):
     """
-    2013-12-18
-        Get binary 3D matrix with truth values where index values correspond to the index
-        of all possible ijk parameters.
-        We can do this by recognizing that the pattern along each plane in the third
-        dimension is like the upper triangle pattern that just moves up and over by one
-        block each cut lower into the box.
+    Get binary 3D matrix with truth values where index values correspond to the index
+    of all possible ijk parameters.
+    We can do this by recognizing that the pattern along each plane in the third
+    dimension is like the upper triangle pattern that just moves up and over by one
+    block each cut lower into the box.
     """
     b = np.zeros((n,n,n))
     c = np.triu(np.ones((n-1,n-1))==1,1)
@@ -369,21 +297,20 @@ def get_3idx(n):
 
 def get_nidx(k,n):
     """
-    2014-08-22
-        Get the kth order indices corresponding to all the states in which k elements
-        are firing up out of n spins. The ordering correspond to that returned by
-        entropy.get_all_states().
+    Get the kth order indices corresponding to all the states in which k elements
+    are firing up out of n spins. The ordering correspond to that returned by
+    entropy.get_all_states().
 
-        One can check this code for correctness by comparing with get_3idx()
-        Example:
-            print where(exact.get_3idx(4))
-            print where(exact.get_nidx(3,4))
+    One can check this code for correctness by comparing with get_3idx()
+    >>>>>
+    print where(exact.get_3idx(4))
+    print where(exact.get_nidx(3,4))
+    <<<<<
     """
     if k==n:
         return np.reshape(range(n),(n,1))
     elif k<n:
-        from entropy.entropy import get_all_states
-        allStates = get_all_states(n)
+        allStates = bin_states(n)
         statesix = np.sum(allStates,1)==k
         ix = []
         for s in allStates[statesix,:]:
@@ -394,4 +321,10 @@ def get_nidx(k,n):
                 ix[j].append(i)
                 j += 1
         return np.array(ix)[:,::-1] # make sure last idx increases first
-        
+
+if __name__=='__main__':
+    import sys
+    n = int(sys.argv[1])
+    print "Writing equations for Ising model with %d spins."%n
+    write_eqns(n,0,[np.where(np.ones((n))==1),np.where(np.triu(np.ones((n,n)),k=1)==1)],
+               writeto="py")

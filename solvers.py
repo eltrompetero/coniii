@@ -741,3 +741,4 @@ class MCH(Solver):
         self._multipliers += dlamda
         return estConstraints
 # End GeneralMaxentSolver
+

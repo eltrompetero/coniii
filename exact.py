@@ -6,7 +6,7 @@ import numpy as np
 import scipy.special as ss
 import string
 
-def write_eqns(n,sym,terms,writeto="matlab"):
+def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
     """
     Params:
     -------
@@ -70,18 +70,18 @@ def write_eqns(n,sym,terms,writeto="matlab"):
     Z = string.join(expterms,sep="")
 
     if writeto=="matlab":
-        write_matlab(n,terms,fitterms,expterms,Z)
+        write_matlab(n,terms,fitterms,expterms,Z,suffix=suffix)
     elif writeto=="py":
         # Account for fact that symmetric Python had inverted the order of the states.
         if sym==1:
             extra = '\n\tPout = Pout[::-1]'
         else:
             extra = ''
-        write_py(n,terms,fitterms,expterms,Z,extra=extra)
+        write_py(n,terms,fitterms,expterms,Z,extra=extra,suffix=suffix)
     else:
         raise Exception("Must choose between \"matlab\" and \"py\".")
 
-def write_matlab(n,terms,fitterms,expterms,Z):
+def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
     """
     Write out equations to solve for matlab.
     """
@@ -90,7 +90,7 @@ def write_matlab(n,terms,fitterms,expterms,Z):
     vardec = ''
 
     # Write function to solve to file.
-    f = open('ising_eqn_'+str(n)+'.m','w')
+    f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
     f.write("% File for solving the Ising model.\n% ")
     f.write(time.strftime("%Y/%m/%d")+"\n")
     f.write("% Give each set of parameters separately in an array.\n\n")
@@ -129,7 +129,7 @@ def write_matlab(n,terms,fitterms,expterms,Z):
 
     g.close()
 
-def write_py(n,terms,fitterms,expterms,Z,extra=''):
+def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     """
     Write out equations to solve for Python.
 
@@ -141,7 +141,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra=''):
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
 
     # Write function to solve to file.
-    f = open('ising_eqn_'+str(n)+'.py','w')
+    f = open('ising_eqn_%d%s.py'%(n,suffix),'w')
     f.write("# File for solving the Ising model.\n\n")
     f.write("# ")
     f.write(time.strftime("%d/%m/%Y")+"\n")
@@ -325,6 +325,18 @@ def get_nidx(k,n):
 if __name__=='__main__':
     import sys
     n = int(sys.argv[1])
+    if len(sys.argv)>2:
+        sym = int(sys.argv[2])
+        assert sym==0 or sym==1
+    else:
+        sym = 0
+
     print "Writing equations for Ising model with %d spins."%n
-    write_eqns(n,0,[np.where(np.ones((n))==1),np.where(np.triu(np.ones((n,n)),k=1)==1)],
-               writeto="py")
+    if sym:
+        write_eqns(n,sym,[np.where(np.ones((n))==1),
+                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
+                   writeto="py",suffix='_sym')
+    else:
+        write_eqns(n,sym,[np.where(np.ones((n))==1),
+                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
+                   writeto="py",suffix='_sym')

@@ -169,7 +169,7 @@ def bin_states(n,sym=False):
 
 def convert_params(h,J,convertTo='01',concat=False):
     """
-    Convert parameters from {0,1} basis to +/-1 and vice versa.
+    Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.
 
     Params:
     -------
@@ -177,6 +177,8 @@ def convert_params(h,J,convertTo='01',concat=False):
     J (ndarray)
     convertTo (str)
         '01' or '11'
+    concat (bool=False)
+        If True, return a vector concatenating fields and couplings.
     
     Returns:
     --------
@@ -201,6 +203,46 @@ def convert_params(h,J,convertTo='01',concat=False):
     if concat:
         return np.concatenate((hp,Jp))
     return hp,Jp
+
+def convert_corr(si,sisj,convertTo='11',concat=False):
+    """
+    Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.
+
+    Params:
+    -------
+    si (ndarray)
+    sisj (ndarray)
+    convertTo (str,'11')
+        '11' will convert {0,1} formulation to +/-1 and '01' will convert +/-1 formulation to {0,1}
+    concat (bool=False)
+        If True, return concatenation of means and pairwise correlations.
+
+    Returns:
+    --------
+    si
+        Converted to appropriate basis
+    sisj
+        converted to appropriate basis
+    """
+    if convertTo=='11':
+        newsisj = np.zeros(sisj.shape)
+        k = 0
+        for i in range(len(si)-1):
+            for j in range(i+1,len(si)):
+                newsisj[k] = 4*sisj[k] - 2*si[i] - 2*si[j] + 1
+                k += 1
+        newsi = si*2-1
+    else:
+        newsisj = np.zeros(sisj.shape)
+        k = 0
+        for i in range(len(si)-1):
+            for j in range(i+1,len(si)):
+                newsisj[k] = ( sisj[k] + si[i] + si[j] + 1 )/4.
+                k += 1
+        newsi = (si+1)/2
+    if concat:
+        return np.concatenate((newsi,newsisj))
+    return newsi,newsisj
 
 def state_probs(v,allstates=None,weights=None,normalized=True):
     """

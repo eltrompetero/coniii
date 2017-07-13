@@ -100,7 +100,7 @@ class Solver(object):
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
-            self.sampler = MCIsing( self.n,self._multipliers,self.calc_e )
+            self.sampler = MCIsing( self.n,self.multipliers,self.calc_e )
         
         elif sample_method=='remc':
             self.sampler = ParallelTempering( self.n,
@@ -543,12 +543,16 @@ class MCH(Solver):
         Methods:
         --------
         """
-        sample_size,sample_method,mch_approximation = (kwargs['sample_size'],
-                                                       kwargs['sample_method'],
-                                                       kwargs['mch_approximation'])
+        sample_size,sample_method,mch_approximation = (kwargs.get('sample_size',None),
+                                                       kwargs.get('sample_method',None),
+                                                       kwargs.get('mch_approximation',None))
+        assert not sample_size is None, "Must specify sample_size."
+        assert not sample_method is None, "Must specify sample_method."
+        assert not mch_approximation is None, "Must specify mch_approximation."
         del kwargs['sample_size'],kwargs['sample_method'],kwargs['mch_approximation']
         super(MCH,self).__init__(*args,**kwargs)
-
+        assert not self.calc_observables is None, "Must specify calc_observables."
+        
         self.mch_approximation = mch_approximation
         
         # Sampling parameters.
@@ -557,13 +561,10 @@ class MCH(Solver):
         self.sampler = None
         self.samples = None
         
-        if self.multipliers is None:
-            self._multipliers = np.zeros_like(self.constraints)
-        else:
-            self._multipliers = self.multipliers
         self.setup_sampler(self.sampleMethod)
-
+    
     def solve(self,
+              constraints,
               initial_guess=None,
               tol=None,
               tolNorm=None,
@@ -571,6 +572,7 @@ class MCH(Solver):
               burnin=30,
               maxiter=10,
               disp=False,
+              full_output=False,
               learn_params_kwargs={},
               generate_kwargs={}):
         """
@@ -602,11 +604,15 @@ class MCH(Solver):
         errors (ndarray)
             Errors in matching constraints at each step of iteration.
         """
+        # Read in constraints.
+        self.constraints = constraints
+        
+        # Set initial guess for parameters.
         if not (initial_guess is None):
             assert len(initial_guess)==len(self.constraints)
             self._multipliers = initial_guess.copy()
         else:
-            initial_guess = np.zeros((len(self.constraints)))
+            self._multipliers = np.zeros((len(self.constraints)))
         tol = tol or 1/np.sqrt(self.sampleSize)
         tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
 
@@ -646,8 +652,10 @@ class MCH(Solver):
                 print "Over maxiter"
                 errflag=1
                 keepLoop=False
-
-        return self._multipliers,errflag,np.vstack((errors))
+        
+        if full_output:
+            return self._multipliers,errflag,np.vstack((errors))
+        return self._multipliers
 
         #def f(lamda):
         #    if np.any(np.abs(lamda)>10):
@@ -684,7 +692,6 @@ class MCH(Solver):
             jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
             dlamda[i] += eps
         return jac
-
 
     def learn_parameters_mch(self, estConstraints,
                              maxdlamda=1,

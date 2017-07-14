@@ -278,11 +278,9 @@ def get_terms(subix,prefix,binstate,br,ix0):
 
 def get_3idx(n):
     """
-    Get binary 3D matrix with truth values where index values correspond to the index
-    of all possible ijk parameters.
-    We can do this by recognizing that the pattern along each plane in the third
-    dimension is like the upper triangle pattern that just moves up and over by one
-    block each cut lower into the box.
+    Get binary 3D matrix with truth values where index values correspond to the index of all possible ijk
+    parameters.  We can do this by recognizing that the pattern along each plane in the third dimension is
+    like the upper triangle pattern that just moves up and over by one block each cut lower into the box.
     """
     b = np.zeros((n,n,n))
     c = np.triu(np.ones((n-1,n-1))==1,1)
@@ -299,7 +297,7 @@ def get_nidx(k,n):
     """
     Get the kth order indices corresponding to all the states in which k elements
     are firing up out of n spins. The ordering correspond to that returned by
-    entropy.get_all_states().
+    bin_states().
 
     One can check this code for correctness by comparing with get_3idx()
     >>>>>

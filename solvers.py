@@ -737,7 +737,6 @@ class MCH(Solver):
 
 
 class Pseudo(Solver):
-
     def __init__(self, *args, **kwargs):
         """
         Pseudolikelihood approximation to solving the inverse Ising problem as described in

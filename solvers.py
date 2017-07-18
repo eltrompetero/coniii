@@ -33,7 +33,6 @@ class Solver(object):
         set the Langrangian multipliers
     """
     def __init__(self, n,
-                 constraints=None,
                  calc_e=None,
                  calc_de=None,
                  calc_observables=None,
@@ -45,7 +44,6 @@ class Solver(object):
         assert (not calc_e is None), "Must define calc_e()."
         
         self.n = n
-        self.constraints = constraints
         self.multipliers = multipliers
         
         self.calc_e = calc_e
@@ -202,10 +200,10 @@ class Exact(Solver):
     """
     def __init__(self, *args, **kwargs):
         super(Exact,self).__init__(*args,**kwargs)
-        if self.multipliers is None:
-            self.multipliers = np.zeros(self.constraints.shape)
 
     def solve(self,
+              constraints=None,
+              samples=None,
               initial_guess=None,
               tol=None,
               tolNorm=None,
@@ -215,6 +213,9 @@ class Exact(Solver):
         """
         Params:
         ------
+        constraints (array-like)
+        samples (array-like)
+            (n_samples,n_dim)
         initial_guess (ndarray=None)
             initial starting point
         tol (float=None)
@@ -230,10 +231,16 @@ class Exact(Solver):
         --------
         Output from scipy.optimize.minimize
         """
+        if not constraints is None:
+            self.constraints = constraints
+        elif not samples is None:
+            self.constraints = self.calc_observables(samples) 
+        else:
+            raise Exception("Must specify either constraints or samples.")
+        
         if not initial_guess is None:
-            assert len(initial_guess)==len(self.multipliers)
             self.multipliers = initial_guess.copy()
-        else: initial_guess = np.zeros((len(self.multipliers)))
+        else: initial_guess = np.zeros((len(self.constraints)))
         
         def f(params):
             if np.any(np.abs(params)>max_param_value):
@@ -241,27 +248,6 @@ class Exact(Solver):
             return np.linalg.norm( self.calc_observables(params)-self.constraints )
 
         return minimize(f,initial_guess,**fsolve_kwargs)
-
-    def estimate_jac(self,eps=1e-3):
-        """
-        Jacobian is an n x n matrix where each row corresponds to the behavior
-        of fvec wrt to a single parameter.
-        For calculation, seeing Voting I pg 83
-        2015-08-14
-        """
-        dlamda = np.zeros(self.multipliers.shape)
-        jac = np.zeros((self.multipliers.size,self.multipliers.size))
-        print "evaluating jac"
-        for i in xrange(len(self.multipliers)):
-            dlamda[i] += eps
-            dConstraintsPlus = self.mch_approximation(self.samples,dlamda)     
-
-            dlamda[i] -= 2*eps
-            dConstraintsMinus = self.mch_approximation(self.samples,dlamda)     
-
-            jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
-            dlamda[i] += eps
-        return jac
 # End Exact
 
 
@@ -419,7 +405,8 @@ class MPF(Solver):
             return obj / Xcount.sum()
     # End logK
 
-    def solve( self, X, 
+    def solve( self,
+               X=None, 
                initial_guess=None,
                method='L-BFGS-B',
                all_connected=True,
@@ -456,6 +443,7 @@ class MPF(Solver):
             full output from minimize solver
         """
         assert parameter_limits>0
+        assert not X is None, "samples must be provided by MPF"
 
         # Convert from {0,1} to {+/-1} asis.
         X = (X+1)/2
@@ -564,7 +552,8 @@ class MCH(Solver):
         self.setup_sampler(self.sampleMethod)
     
     def solve(self,
-              constraints,
+              X=None,
+              constraints=None,
               initial_guess=None,
               tol=None,
               tolNorm=None,
@@ -605,7 +594,10 @@ class MCH(Solver):
             Errors in matching constraints at each step of iteration.
         """
         # Read in constraints.
-        self.constraints = constraints
+        if not constraints is None:
+            self.constraints = constraints
+        elif not X is None:
+            self.constraints = self.calc_observables(X)
         
         # Set initial guess for parameters.
         if not (initial_guess is None):
@@ -776,13 +768,13 @@ class Pseudo(Solver):
         """
         super(Pseudo,self).__init__(*args,**kwargs)
 
-    def solve(self,samples):
-        ell = len(samples[0])
+    def solve(self,X=None):
+        ell = len(X[0])
         
-        samples = (samples + 1)/2. # change from {-1,1} to {0,1}
+        X = (X + 1)/2. # change from {-1,1} to {0,1}
         
         # start at freq. model params?
-        freqs = scipy.mean(samples,axis=0)
+        freqs = scipy.mean(X,axis=0)
         hList = -scipy.log(freqs/(1.-freqs))
 
         Jfinal = scipy.zeros((ell,ell))
@@ -795,17 +787,17 @@ class Pseudo(Solver):
             Jr0[r] = hList[r]
             
             # 12.10.2013
-            samplesRhat = samples.copy()
-            samplesRhat[:,r] = scipy.ones(len(samples))
+            XRhat = X.copy()
+            XRhat[:,r] = scipy.ones(len(X))
             # calculate once and pass to hessian algorithm for speed
-            pairCoocRhat = self.pairCoocMat(samplesRhat)
+            pairCoocRhat = self.pairCoocMat(XRhat)
             
             Lr = lambda Jr:                                             \
-                - self.conditionalLogLikelihood(r,samples,Jr)
+                - self.conditionalLogLikelihood(r,X,Jr)
             fprime = lambda Jr:                                         \
-                self.conditionalJacobian(r,samples,Jr)
+                self.conditionalJacobian(r,X,Jr)
             fhess = lambda Jr:                                          \
-                self.conditionalHessian(r,samples,Jr,pairCoocRhat=pairCoocRhat)
+                self.conditionalHessian(r,X,Jr,pairCoocRhat=pairCoocRhat)
             
             Jr = scipy.optimize.fmin_ncg(Lr,Jr0,fprime,fhess=fhess)
         

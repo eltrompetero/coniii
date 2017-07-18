@@ -552,8 +552,8 @@ class MCH(Solver):
         self.setup_sampler(self.sampleMethod)
     
     def solve(self,
-              X=None,
               constraints=None,
+              X=None,
               initial_guess=None,
               tol=None,
               tolNorm=None,

@@ -4,6 +4,7 @@ from scipy.optimize import minimize
 import multiprocess as mp
 from utils import *
 from samplers import *
+import copy
 
 
 class Solver(object):
@@ -926,6 +927,609 @@ class Pseudo(Solver):
         return scipy.sum([ conditionalLogLikelihood(r,samples,J,minSize) \
                            for r in range(len(J)) ])
 
+#from meanFieldIsing import *
+import meanFieldIsing
+
+class ClusterExpansion(Solver):
 
 
+    def __init__(self, *args, **kwargs):
+        """
+        Implementation of Adaptive Cluster Expansion for
+        solving the inverse Ising problem, as described in
+        John Barton and Simona Cocco, J. of Stat. Mech.
+        P03002 (2013).
+        
+        Specific to pairwise Ising constraints
+        
+        Params:
+        -------
+        calc_e (lambda state,params)
+            function for computing energies of given state and parameters.  Should take in a 2D state array
+            and vector of parameters to compute energies.
+        adj (lambda state)
+            function for getting all the neighbors of any given state
+        calc_de (lambda=None)
+            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
+            the parameter.
+        n_jobs (int=0)
+            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
+        
+        Attributes:
+        -----------
+        
+        Methods:
+        --------
+        """
+        super(ClusterExpansion,self).__init__(*args,**kwargs)
+        
+        self.setup_sampler('metropolis')
+    
+
+    # selectiveClusterExpansion.py
+    #
+    # Bryan Daniels
+    # 2.17.2014
+    #
+    #
+    #
+
+    #from inverseIsing import *
+
+    log = scipy.log
+
+    def S(self,cluster,coocMat,deltaJdict={},
+        useAnalyticResults=False,priorLmbda=0.,
+        numSamples=None):
+        """
+        Calculate pairwise entropy of cluster.
+        (First fits pairwise Ising model.)
+        
+        useAnalyticResults (False)  : probably want False until 
+                                      analytic formulas are
+                                      changed to include
+                                      prior on J
+        """
+        if len(cluster) == 0:
+            raise Exception
+        elif (len(cluster) == 1) and useAnalyticResults:
+            p = coocMat[cluster[0],cluster[0]]
+            J = scipy.array( [ [ -log( p / (1.-p) ) ] ] )
+        elif (len(cluster) == 2) and useAnalyticResults:
+            i = min(cluster[0],cluster[1])
+            j = max(cluster[0],cluster[1])
+            pi = coocMat[i,i]
+            pj = coocMat[j,j]
+            pij = coocMat[i,j]
+            Jii1 = -log( pi / (1.-pi) )
+            Jjj1 = -log( pj / (1.-pj) )
+            Jii = -log( (pi - pij)/(1.-pi-pj+pij) )
+            Jjj = -log( (pj - pij)/(1.-pi-pj+pij) )
+            Jij = - log( pij ) + log( pi - pij ) + log( pj - pij )    \
+                - log( 1.-pi-pj+pij )
+            J = scipy.array( [ [ Jii, 0.5*Jij ], [ 0.5*Jij, Jjj ] ] )
+        else:
+            coocMatCluster = meanFieldIsing.coocCluster(coocMat,cluster)
+            Jinit = None # <--- potential for speed-up here
+            J = meanFieldIsing.findJmatrixAnalytic_CoocMat(coocMatCluster,
+                                            Jinit=Jinit,
+                                            priorLmbda=priorLmbda,
+                                            numSamples=numSamples)
+
+        # make 'full' version of J (of size NxN)
+        N = len(coocMat)
+        Jfull = meanFieldIsing.JfullFromCluster(J,cluster,N)
+        
+        ent = meanFieldIsing.analyticEntropy(J)
+
+        return ent,Jfull 
+
+
+
+
+    # 3.24.2014
+    def Sindependent(self,cluster,coocMat):
+        """
+        """
+        coocMatCluster = meanFieldIsing.coocCluster(coocMat,cluster)
+        # in case we're given an upper-triangular coocMat:
+        coocMatCluster = meanFieldIsing.symmetrizeUsingUpper(coocMatCluster)
+        
+        N = len(cluster)
+        
+        freqs = scipy.diag(coocMatCluster).copy()
+
+        h = - scipy.log(freqs/(1.-freqs))
+        Jind = scipy.diag(h)
+
+        Sinds = -freqs*scipy.log(freqs)             \
+            -(1.-freqs)*scipy.log(1.-freqs)
+        Sind = scipy.sum(Sinds)
+
+        # make 'full' version of J (of size NfullxNfull)
+        Nfull = len(coocMat)
+        Jfull = meanFieldIsing.JfullFromCluster(Jind,cluster,Nfull)
+
+        return Sind,Jfull
+
+
+
+    # "Algorithm 1"
+    def deltaS(self,cluster,coocMat,deltaSdict=None,deltaJdict=None,
+        verbose=True,meanFieldRef=False,priorLmbda=0.,
+        numSamples=None,independentRef=False,meanFieldPriorLmbda=None):
+        """
+        cluster         : List of indices in cluster
+        independentRef  : If True, expand about independent entropy
+        meanFieldRef    : If True, expand about mean field entropy
+        """
+        if deltaSdict is None: deltaSdict = {}
+        if deltaJdict is None: deltaJdict = {}
+        
+        if (independentRef and meanFieldRef) or \
+           not (independentRef or meanFieldRef): raise Exception
+        
+        if meanFieldPriorLmbda is None:
+            meanFieldPriorLmbda = priorLmbda
+        
+        cID = self.clusterID(cluster)
+        if cID in deltaSdict:
+            #print "deltaS: found answer for",cluster
+            return deltaSdict[cID],deltaJdict[cID]
+        elif verbose:
+            print "deltaS: Calculating entropy for cluster",cluster
+        
+        # start with full entropy (and J)
+        deltaScluster,deltaJcluster = self.S(cluster,coocMat,
+                                        deltaJdict,
+                                        priorLmbda=priorLmbda,
+                                        numSamples=numSamples)
+        
+        if independentRef:
+            # subtract independent reference entropy
+            S0cluster,J0cluster = self.Sindependent(cluster,coocMat)
+            deltaScluster -= S0cluster
+            deltaJcluster -= J0cluster
+        elif meanFieldRef:
+            # subtract mean field reference entropy
+            S0cluster,J0cluster = SmeanField(cluster,coocMat,
+                meanFieldPriorLmbda,numSamples)
+            deltaScluster -= S0cluster
+            deltaJcluster -= J0cluster
+        
+        # subtract entropies of sub-clusters
+        for size in range(len(cluster)-1,0,-1):
+          subclusters = self.subsets(cluster,size)
+          for subcluster in subclusters:
+            deltaSsubcluster,deltaJsubcluster = \
+                self.deltaS(subcluster,coocMat,deltaSdict,deltaJdict,
+                       verbose=verbose,
+                       meanFieldRef=meanFieldRef,priorLmbda=priorLmbda,
+                       numSamples=numSamples,
+                       independentRef=independentRef,
+                       meanFieldPriorLmbda=meanFieldPriorLmbda)
+            deltaScluster -= deltaSsubcluster
+            deltaJcluster -= deltaJsubcluster
+
+        deltaSdict[cID] = deltaScluster
+        deltaJdict[cID] = deltaJcluster
+
+        return deltaScluster,deltaJcluster
+
+    def clusterID(self,cluster):
+        return tuple(scipy.sort(cluster))
+
+    def subsets(self,set,size,sort=False):
+        """
+        Given a list, returns a list of all unique subsets
+        of that list with given size.
+        """
+        if len(set) != len(scipy.unique(set)): raise Exception
+        
+        if size == len(set): return [set]
+        if size > len(set): return []
+        if size <= 0: return []
+        if size == 1: return [ [s,] for s in set ]
+        
+        sub = []
+        rest = copy.copy(set)
+        s = rest[0]
+        rest.remove(s)
+        
+        subrest1 = self.subsets(rest,size)
+        sub.extend(subrest1)
+        
+        subrest2 = self.subsets(rest,size-1)
+        [ srest.append(s) for srest in subrest2 ]
+        sub.extend(subrest2)
+        
+        if sort:
+            return scipy.sort(sub)
+        return sub
+
+
+    # "Algorithm 2"
+    # was "adaptiveClusterExpansion"
+    def solve(self,samples,threshold,
+        cluster=None,deltaSdict=None,deltaJdict=None,
+        verbose=True,priorLmbda=0.,numSamples=None,
+        meanFieldRef=False,independentRef=True,veryVerbose=False,
+        meanFieldPriorLmbda=None,retall=False):
+        """
+        samples         :
+        threshold       :
+        meanFieldRef (False)    : Expand about mean-field reference
+        independentRef (True)   : Expand about independent reference
+        priorLmbda (0.) : Strength of non-interacting prior
+        meanFieldPriorLmbda (None): Strength of non-interacting prior in
+                                    mean field calculation (defaults
+                                    to priorLmbda)
+        
+        With retall=False, returns
+            J           : Estimated interaction matrix
+        
+        With retall=True, returns
+            ent         : Estimated entropy
+            J           : Estimated interaction matrix
+            clusters    : List of clusters
+            deltaSdict  : 
+            deltaJdict  :
+        """
+        # 7.18.2017 convert input to coocMat
+        coocMat = self.cooccurrenceMatrix((samples+1)/2)
+        
+        if deltaSdict is None: deltaSdict = {}
+        if deltaJdict is None: deltaJdict = {}
+        
+        if independentRef and meanFieldRef: raise Exception
+        
+        if meanFieldPriorLmbda is None:
+            meanFieldPriorLmbda = priorLmbda
+        
+        N = len(coocMat)
+        T = threshold
+        if cluster is None: cluster = range(N)
+
+        clusters = {} # LIST
+        size = 1
+        clusters[1] = [ [i] for i in cluster ]
+
+        while len(clusters[size]) > 0:
+            clusters[ size+1 ] = []
+            numClusters = len(clusters[size])
+            if verbose:
+                print "adaptiveClusterExpansion: Clusters of size", \
+                    size+1
+            for i in range(numClusters):
+              for j in range(i+1,numClusters): # some are not unique!
+                gamma1 = clusters[size][i]
+                gamma2 = clusters[size][j]
+                gammaI = scipy.intersect1d(gamma1,gamma2)
+                gammaU = scipy.sort( scipy.union1d(gamma1,gamma2) )
+                gammaU = list(gammaU)
+                if (len(gammaI) == size-1):
+                  deltaSgammaU,deltaJgammaU =                       \
+                    self.deltaS(gammaU,coocMat,deltaSdict,deltaJdict,
+                    verbose=veryVerbose,
+                    meanFieldRef=meanFieldRef,
+                    priorLmbda=priorLmbda,
+                    numSamples=numSamples,
+                    independentRef=independentRef,
+                    meanFieldPriorLmbda=meanFieldPriorLmbda)
+                  if (abs(deltaSgammaU) > T)                        \
+                    and (gammaU not in clusters[size+1]):
+                    clusters[ size+1 ].append(gammaU)
+            size += 1
+        
+        if independentRef:
+            ent,J0 = self.Sindependent(cluster,coocMat)
+        elif meanFieldRef:
+            ent,J0 = SmeanField(cluster,coocMat,
+                                meanFieldPriorLmbda,numSamples)
+        else:
+            ent = 0.
+            J0 = scipy.zeros((N,N))
+        J = J0.copy()
+
+        for size in clusters.keys():
+            for cluster in clusters[size]:
+                cID = self.clusterID(cluster)
+                ent += deltaSdict[cID]
+                J += deltaJdict[cID]
+
+        # 7.18.2017 convert J to {-1,1}
+        h = -J.diagonal()
+        J = -meanFieldIsing.zeroDiag(J)
+        self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
+
+        if retall:
+            return ent,self.multipliers,clusters,deltaSdict,deltaJdict
+        else:
+            return self.multipliers
+
+
+    # 8.13.2014 took code from runSelectiveClusterExpansion
+    def iterateClusterExpansion(coocMat,
+        retall=False,
+        epsThreshold=1.,
+        gammaPrime=0.1,
+        logThresholdRange=(-6,-2),
+        numThresholds=1000,
+        verbose=True,veryVerbose=False,numSamplesData=None,
+        numSamplesError=1e4,
+        saveSamplesAtEveryStep=False,
+        numProcs=1,
+        minimizeIndependent=True,
+        minimizeCovariance=False,
+        maxMaxClusterSize=None,
+        fileStr=None,
+        meanFieldGammaPrime=None,
+        minThreshold=0.,
+        bruteForceMin=False,
+        **kwargs):
+      """
+      ***  As of 7.18.2017, not yet converted to be usable in coniii. ***
+      
+      Solve adaptive cluster expansion over a range of thresholds.
+      
+      gammaPrime (0.1)          : Strength of noninteracting prior
+      numSamplesData (None)     : Number of data samples (used to
+                                  scale strength of prior)
+      numSamplesError (1e4)     : Number of Ising samples used to
+                                  estimate error
+      bruteForceMin (False)     : If True, use J from the cluster
+                                  expansion as the starting parameters
+                                  for a brute force estimation
+                                  (not used recently?)
+      """
+
+      thresholds = scipy.logspace(logThresholdRange[0],
+                                  logThresholdRange[1],
+                                  numThresholds)[::-1]
+
+      thresholdIndex = 0
+      stop = False
+        
+      deltaSdict = {}
+      deltaJdict = {}
+      samplesDict = {}
+      epsValsList = []
+      thresholdList = []
+      meanFightSizeList = []
+      numClustersList = []
+      maxClusterSizeList = []
+        
+      clusters = {}
+        
+      bestEps = scipy.inf
+      
+      if maxMaxClusterSize is None: maxMaxClusterSize = len(coocMat)
+      if meanFieldGammaPrime is None: meanFieldGammaPrime = gammaPrime # 3.25.2014
+        
+      # 3.31.2014 calculate prior strength
+      pmean = scipy.mean(scipy.diag(coocMat))
+      priorLmbda = gammaPrime / (pmean**2 * (1.-pmean)**2) #10.
+      meanFieldPriorLmbda = meanFieldGammaPrime / (pmean**2 * (1.-pmean)**2) #10.
+
+      while not stop:
+        
+        thresholdIndex += 1
+        threshold = thresholds[thresholdIndex]
+        
+        if veryVerbose:
+            print 'threshold =',threshold
+            
+        clustersOldLength = scipy.sum([ len(clusterlist) for clusterlist in clusters.values() ])
+        
+        # do fitting for decreasing thresholds
+        raise Exception,"Not implemented: Need to change function call to use coniii interface"
+        ent,J,clusters,deltaSdict,deltaJdict = \
+            self.solve(coocMat,threshold,priorLmbda=priorLmbda,
+                 numSamples=numSamplesData,deltaSdict=deltaSdict,
+                 deltaJdict=deltaJdict,verbose=veryVerbose,
+                 meanFieldPriorLmbda=meanFieldPriorLmbda,**kwargs)
+        
+        if fileStr is not None:
+            save(deltaSdict,fileStr+'_deltaSdict.data')
+            save(deltaJdict,fileStr+'_deltaJdict.data')
+        
+        clustersNewLength = scipy.sum([ len(clusterlist) for clusterlist in clusters.values() ])
+        
+        if clustersNewLength > clustersOldLength:
+            
+            if verbose:
+                print
+                print 'threshold =',threshold
+                print 'old number of clusters =',clustersOldLength
+                print 'new number of clusters =',clustersNewLength
+            
+            #m = IsingModel(J,numProcs=numProcs)
+            
+    #        if saveSamplesAtEveryStep and (fileStr is not None):
+    #            # go ahead and take samples to compare with data later
+    #            #samples = m.metropolisSamples(1e4,minSize=0)[0]
+    #            samples = m.metropolisSamples(numSamplesError)[0]
+    #            samplesDict[threshold] = samples
+    #            
+    #            save(samplesDict,fileStr+'_samplesDict.data')
+
+            # 2.20.2014 calculate individual and pair errors
+            #samplesCorrected = m.metropolisSamples(numSamplesError,minSize=0)[0]
+            nSkipDefault = 10*self.n
+            burninDefault = 100*self.n
+            self._multipliers = scipy.concatenate([J.diagonal(),squareform(zeroDiag(-J))])
+            samplesCorrected = self.generate_samples(nSkipDefault,burninDefault,
+                                        numSamplesError,'metropolis')
+            if minimizeCovariance:
+                raise Exception # 3.31.2014 are you sure you want to do this?
+                covStdevs = covarianceTildeStdevsFlat(coocMat,
+                            numSamplesData,scipy.diag(coocMat))
+                covData = cooccurrences2covariances(coocMat)
+                deltaCov = isingDeltaCovTilde(samplesCorrected,covData,scipy.diag(covData))
+                zvals = deltaCov/covStdevs
+                
+                ell = len(coocMat)
+                epsilonp = scipy.sqrt(scipy.mean(zvals[:ell]**2))
+                epsilonc = scipy.sqrt(scipy.mean(zvals[ell:]**2))
+                if verbose:
+                    print "epsilonp =",epsilonp
+                    print "epsilonc =",epsilonc
+                epsVals = [epsilonp,epsilonc]
+            elif minimizeIndependent: # independent residuals; method of CocMon11
+                #
+                # 6.27.2014 NOTE!
+                # epsilonc is NOT the same as CocMon11.
+                # CocMon11 uses connected correlation pij - pi*pj,
+                # whereas we use the cooccurrences pij.
+                #
+                # (future: encapsulate into function?)
+                coocStdevs = coocStdevsFlat(coocMat,numSamplesData)
+                deltaCooc = isingDeltaCooc(samplesCorrected,coocMat)
+                zvals = deltaCooc/coocStdevs
+                
+                ell = len(coocMat)
+                epsilonp = scipy.sqrt(scipy.mean(zvals[:ell]**2))
+                epsilonc = scipy.sqrt(scipy.mean(zvals[ell:]**2))
+                if verbose:
+                    print "epsilonp =",epsilonp
+                    print "epsilonc =",epsilonc
+                epsVals = [epsilonp,epsilonc]
+            else: # correlated residuals 3.10.2014
+                # (future: encapsulate into function?)
+                deltaCooc = isingDeltaCooc(samplesCorrected,coocMat)
+                # cov = residual covariance
+                zvals = scipy.dot( deltaCooc,U ) / scipy.sqrt(s)
+                coocMatMeanZSq = scipy.mean( numSamplesData * zvals**2 )
+                if verbose:
+                    print "coocMatMeanZSq =",coocMatMeanZSq
+                epsVals = [coocMatMeanZSq]
+
+            # keep track of mean event size
+            meanFightSize = scipy.mean(scipy.sum(samplesCorrected,axis=1))
+            meanFightSizeList.append(meanFightSize)
+            if verbose:
+                print "mean event size =",meanFightSize
+
+            # keep track of epsValsList
+            epsValsList.append(epsVals)
+            #save(epsValsList,fileStr+"_epsValsList.data")
+
+            # 5.21.2014 keep track of thresholds with new clusters,
+            # number of clusters, and maximum cluster size
+            thresholdList.append(threshold)
+            numClustersList.append(clustersNewLength)
+            maxClusterSize = max(clusters.keys())
+            maxClusterSizeList.append(maxClusterSize)
+            if verbose:
+                print "max cluster size =",maxClusterSize
+
+            # 5.21.2014
+            d = {'meanFightSizeList':meanFightSizeList,
+                'epsValsList':epsValsList,
+                'thresholdList':thresholdList,
+                'numClustersList':numClustersList,
+                'maxClusterSizeList':maxClusterSizeList,
+            }
+            if fileStr is not None:
+                save(d,fileStr+"_expansionData.data")
+
+            # keep track of best found so far
+            if scipy.sum(epsVals) < bestEps:
+                bestEps = scipy.sum(epsVals)
+                Jbest = J
+                clustersBest = clusters
+                thresholdBest = threshold
+
+            if scipy.all( scipy.array(epsVals) < epsThreshold ):
+                stop = True
+                if verbose:
+                    print
+                    print "Using result from threshold =",threshold
+                    print
+            if threshold < minThreshold:
+                stop = True
+                
+                # go back to best found so far
+                if verbose:
+                    print "Minimum threshold passed ("+str(minThreshold)+")"
+                J = Jbest
+                clusters = clustersBest
+                threshold = thresholdBest
+
+                if verbose:
+                    print
+                    print "Using result from threshold =",threshold
+                    print
+
+            if maxClusterSize > maxMaxClusterSize: # 5.21.2014
+                stop = True
+                
+                # go back to best found so far
+                if verbose:
+                    print "Maximum largest cluster size passed ("+str(maxMaxClusterSize)+")"
+                J = Jbest
+                clusters = clustersBest
+                threshold = thresholdBest
+                
+                if verbose:
+                    print
+                    print "Using result from threshold =",threshold
+                    print
+
+            if stop and bruteForceMin:
+                # 3.6.2014 use brute force optimization to get better fit
+                thresholdMeanZSq = 1.
+                fitAlpha = 20.
+                numSamplesBF = int( fitAlpha * numSamplesData / thresholdMeanZSq )
+                BFkwargs = {'maxfev':10,
+                    'maxnumiter':100,
+                    'numProcs':numProcs,
+                    'gradFunc':coocJacobianDiagonal,
+                    'thresholdMeanZSq':thresholdMeanZSq,
+                    'minSize':2,
+                    'Jinit':J,
+                    'minimizeIndependent':minimizeIndependent,
+                    'minimizeCovariance':minimizeCovariance,
+                    'priorLmbda':priorLmbda,
+                    'numSamples':numSamplesBF,
+                    'numFights':numSamplesData}
+                if (not minimizeIndependent) and (not minimizeCovariance):
+                    coocCov = coocSampleCovariance(data)
+                else:
+                    coocCov = None
+                if verbose:
+                    print "Optimizing using findJmatrixBruteForce_CoocMat..."
+                J = findJmatrixBruteForce_CoocMat(coocMatObserved,
+                                                  coocCov=coocCov,**BFkwargs)
+
+      if retall:
+        return J,threshold,clusters,d
+      else:
+        return J
+
+    # 3.17.2014 copied from generateFightData.py
+    # 4.1.2011
+    # 7.18.2017 from SparsenessTools.py
+    def cooccurrenceMatrix(self,samples,keepDiag=True):
+        """
+        """
+        samples = scipy.array(samples,dtype=float)
+        mat = scipy.dot(samples.T,samples)
+        if keepDiag: k=-1
+        else: k=0
+        mat *= (1 - scipy.tri(len(mat),k=k)) # only above diagonal
+        mat /= float(len(samples)) # mat /= scipy.sum(mat)
+        return mat
+
+
+
+
+
+
+
+
+
+
+
+        
 

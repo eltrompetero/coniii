@@ -1,6 +1,6 @@
 # Module for class-based solvers for different Inverse Ising methods.
 from __future__ import division
-from scipy.optimize import minimize
+from scipy.optimize import minimize,fmin_ncg
 import multiprocess as mp
 from utils import *
 from samplers import *
@@ -735,30 +735,15 @@ class MCH(Solver):
 # End GeneralMaxentSolver
 
 
-import scipy # eventually change to np
-exp,log,sum,array = np.exp,np.log,np.sum,np.array
 
 class Pseudo(Solver):
-
     def __init__(self, *args, **kwargs):
         """
-        the 'pseudolikelihood' approach described in
-        Aurell and Ekeberg, PRL 108, 090201 (2012)
-        
-        Specific to pairwise Ising constraints
+        Pseudolikelihood approximation to solving the inverse Ising problem as described in
+        Aurell and Ekeberg, PRL 108, 090201 (2012).
         
         Params:
         -------
-        calc_e (lambda state,params)
-            function for computing energies of given state and parameters.  Should take in a 2D state array
-            and vector of parameters to compute energies.
-        adj (lambda state)
-            function for getting all the neighbors of any given state
-        calc_de (lambda=None)
-            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
-            the parameter.
-        n_jobs (int=0)
-            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
         Attributes:
         -----------
@@ -769,155 +754,138 @@ class Pseudo(Solver):
         super(Pseudo,self).__init__(*args,**kwargs)
 
     def solve(self,X=None):
-        ell = len(X[0])
-        
-        X = (X + 1)/2. # change from {-1,1} to {0,1}
+        """
+        Params:
+        -------
+        X
+        """
+        X = (X + 1)/2  # change from {-1,1} to {0,1}
         
         # start at freq. model params?
-        freqs = scipy.mean(X,axis=0)
-        hList = -scipy.log(freqs/(1.-freqs))
+        freqs = np.mean(X,axis=0)
+        hList = -np.log(freqs/(1.-freqs))
+        Jfinal = np.zeros((self.n,self.n))
 
-        Jfinal = scipy.zeros((ell,ell))
-
-        for r in xrange(ell):
-            
+        for r in xrange(self.n):
             print "Minimizing for r =",r
             
-            Jr0 = scipy.zeros(ell) #scipy.ones(ell)
+            Jr0 = np.zeros(self.n)
             Jr0[r] = hList[r]
             
-            # 12.10.2013
             XRhat = X.copy()
-            XRhat[:,r] = scipy.ones(len(X))
+            XRhat[:,r] = np.ones(len(X))
             # calculate once and pass to hessian algorithm for speed
-            pairCoocRhat = self.pairCoocMat(XRhat)
+            pairCoocRhat = self.pair_cooc_mat(XRhat)
             
-            Lr = lambda Jr:                                             \
-                - self.conditionalLogLikelihood(r,X,Jr)
-            fprime = lambda Jr:                                         \
-                self.conditionalJacobian(r,X,Jr)
-            fhess = lambda Jr:                                          \
-                self.conditionalHessian(r,X,Jr,pairCoocRhat=pairCoocRhat)
+            Lr = lambda Jr: - self.cond_log_likelihood(r,X,Jr)
+            fprime = lambda Jr: self.cond_jac(r,X,Jr)
+            fhess = lambda Jr: self.cond_hess(r,X,Jr,pairCoocRhat=pairCoocRhat)
             
-            Jr = scipy.optimize.fmin_ncg(Lr,Jr0,fprime,fhess=fhess)
-        
-            #return Jr
-
+            Jr = fmin_ncg(Lr,Jr0,fprime,fhess=fhess)
             Jfinal[r] = Jr
 
         Jfinal = -0.5*( Jfinal + Jfinal.T )
-        hfinal = Jfinal[np.diag_indices(ell)]
-        Jfinal[np.diag_indices(ell)] = 0
+        hfinal = Jfinal[np.diag_indices(self.n)]
+        Jfinal[np.diag_indices(self.n)] = 0
         self.multipliers = convert_params( hfinal,squareform(Jfinal)*2,'11',concat=True )
 
         return self.multipliers
 
-
-
-    def conditionalLogLikelihood(self,r,samples,Jr,minSize=0):
+    def cond_log_likelihood(self,r,samples,Jr):
         """
-        (Equals -L_r from my notes.)
+        Equals -L_r.
         
-        r           : individual index
-        samples     : binary matrix, (# samples) x (dimension of system)
-        Jr          : (dimension of system) x (1)
-        minSize (0) : minimum number of participants (set to 2 for fights)
+        Params:
+        -------
+        r (int)
+            individual index
+        samples (ndarray)
+            binary matrix, (# samples) x (dimension of system)
+        Jr (ndarray)
+            (dimension of system) x (1)
         """
-        samples,Jr = array(samples),array(Jr)
+        samples,Jr = np.array(samples),np.array(Jr)
         
         sigmaRtilde = (2.*samples[:,r] - 1.)
         samplesRhat = 2.*samples.copy()
-        samplesRhat[:,r] = scipy.ones(len(samples))
-        localFields = scipy.dot(Jr,samplesRhat.T) # (# samples)x(1)
+        samplesRhat[:,r] = np.ones(len(samples))
+        localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
         energies = sigmaRtilde * localFields # (# samples)x(1)
         
-        # vector with zeros on samples affected by minSize
-        filterVec = 1 - samples[:,r] * ( sum(samples,axis=1) <= minSize )
+        invPs = 1. + np.exp( energies )
+        logLs = np.log( invPs )
 
-        invPs = 1. + exp( energies )
-        logLs = - filterVec * log( invPs )
+        return -logLs.sum()
 
-        return scipy.sum( logLs )
-
-    def conditionalJacobian(self,r,samples,Jr,minSize=0):
+    def cond_jac(self,r,samples,Jr):
         """
-        Returns d conditionalLogLikelihood / d Jr,
+        Returns d cond_log_likelihood / d Jr,
         with shape (dimension of system)
         """
-        samples,Jr = array(samples),array(Jr)
-        ell = len(Jr)
+        samples,Jr = np.array(samples),np.array(Jr)
         
         sigmaRtilde = (2.*samples[:,r] - 1.)
         samplesRhat = 2.*samples.copy()
-        samplesRhat[:,r] = scipy.ones(len(samples))
-        localFields = scipy.dot(Jr,samplesRhat.T) # (# samples)x(1)
+        samplesRhat[:,r] = np.ones(len(samples))
+        localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
         energies = sigmaRtilde * localFields # (# samples)x(1)
         
-        # vector with zeros on samples affected by minSize
-        filterVec = 1 - samples[:,r] * ( sum(samples,axis=1) <= minSize )
-        
-        coocs = scipy.repeat([sigmaRtilde],ell,axis=0).T * samplesRhat # (#samples)x(ell)
+        coocs = np.repeat([sigmaRtilde],self.n,axis=0).T * samplesRhat # (#samples)x(self.n)
 
-        return scipy.dot( coocs.T, filterVec * 1./(1. + exp(-energies)) )
+        return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
 
-    def conditionalHessian(self,r,samples,Jr,minSize=0,pairCoocRhat=None):
+    def cond_hess(self,r,samples,Jr,pairCoocRhat=None):
         """
-        Returns d^2 conditionalLogLikelihood / d Jri d Jrj,
-        with shape (dimension of system)x(dimension of system)
-        
-        pairCooc (None)     : Pass pairCoocMat(samples) to speed
-                              calculation.
-        
+        Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
+        (dimension of system)x(dimension of system)
+
         Current implementation uses more memory for speed.
         For large #samples, it may make sense to break up differently
         if too much memory is being used.
+
+        Params:
+        -------
+        pairCooc (None)
+            Pass pair_cooc_mat(samples) to speed calculation.
         """
-        samples,Jr = array(samples),array(Jr)
-        ell = len(Jr)
+        samples,Jr = np.array(samples),np.array(Jr)
         
         sigmaRtilde = (2.*samples[:,r] - 1.)
         samplesRhat = 2.*samples.copy()
-        samplesRhat[:,r] = scipy.ones(len(samples))
-        localFields = scipy.dot(Jr,samplesRhat.T) # (# samples)x(1)
+        samplesRhat[:,r] = np.ones(len(samples))
+        localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
         energies = sigmaRtilde * localFields # (# samples)x(1)
         
-        # pairCooc has shape (# samples)x(ell)x(ell)
+        # pairCooc has shape (# samples)x(n)x(n)
         if pairCoocRhat is None:
-            pairCoocRhat = self.pairCoocMat(samplesRhat)
+            pairCoocRhat = self.pair_cooc_mat(samplesRhat)
         
-        # vector with zeros on samples affected by minSize
-        filterVec = 1 - samples[:,r] * ( sum(samples,axis=1) <= minSize )
-
-        energyMults = exp(-energies)/( (1.+exp(-energies))**2 ) # (# samples)x(1)
+        energyMults = np.exp(-energies)/( (1.+np.exp(-energies))**2 ) # (# samples)x(1)
         #filteredSigmaRtildeSq = filterVec * (2.*samples[:,r] + 1.) # (# samples)x(1)
-        filteredSigmaRtildeSq = filterVec # (sigmaRtildeSq = 1)
+        return np.dot( energyMults, pairCoocRhat )
 
-        #return energyMults,filteredSigmaR
-        return scipy.dot( filteredSigmaRtildeSq * energyMults, pairCoocRhat )
-
-    def pairCoocMat(self,samples):
+    def pair_cooc_mat(self,samples):
         """
-        Returns matrix of shape (ell)x(# samples)x(ell).
+        Returns matrix of shape (self.n)x(# samples)x(self.n).
         
-        For use with conditionalHessian.
+        For use with cond_hess.
         
         Slow because I haven't thought of a better way of doing it yet.
         """
-        p = [ scipy.outer(f,f) for f in samples ]
-        return scipy.transpose(p,(1,0,2))
+        p = [ np.outer(f,f) for f in samples ]
+        return np.transpose(p,(1,0,2))
 
-
-    def pseudoLogLikelihood(self,samples,J,minSize=0):
+    def pseudo_log_likelhood(self,samples,J):
         """
-        samples     : binary matrix, (# samples) x (dimension of system)
-        J           : (dimension of system) x (dimension of system)
-                    : J should be symmetric
-                    
         (Could probably be made more efficient.)
+
+        Params:
+        -------
+        samples
+            binary matrix, (# samples) x (dimension of system)
+        J
+            (dimension of system) x (dimension of system)
+            J should be symmetric
         """
-        return scipy.sum([ conditionalLogLikelihood(r,samples,J,minSize) \
-                           for r in range(len(J)) ])
-
-
-
-
+        return np.sum([ cond_log_likelihood(r,samples,J) \
+                           for r in xrange(len(J)) ])

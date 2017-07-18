@@ -5,6 +5,7 @@ import multiprocess as mp
 from utils import *
 from samplers import *
 import copy
+import meanFieldIsing
 
 
 class Solver(object):
@@ -894,7 +895,6 @@ class Pseudo(Solver):
 
 
 
-import meanFieldIsing
 class ClusterExpansion(Solver):
     def __init__(self, *args, **kwargs):
         """
@@ -1125,7 +1125,7 @@ class ClusterExpansion(Solver):
             deltaJdict  :
         """
         # 7.18.2017 convert input to coocMat
-        coocMat = self.cooccurrenceMatrix((samples+1)/2)
+        coocMat = self.coocurrence_matrix((samples+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}
@@ -1198,7 +1198,7 @@ class ClusterExpansion(Solver):
 
 
     # 8.13.2014 took code from runSelectiveClusterExpansion
-    def iterateClusterExpansion(coocMat,
+    def iterate_cluster_expansion(coocMat,
         retall=False,
         epsThreshold=1.,
         gammaPrime=0.1,
@@ -1459,7 +1459,7 @@ class ClusterExpansion(Solver):
     # 3.17.2014 copied from generateFightData.py
     # 4.1.2011
     # 7.18.2017 from SparsenessTools.py
-    def cooccurrenceMatrix(self,samples,keepDiag=True):
+    def coocurrence_matrix(self,samples,keepDiag=True):
         """
         """
         samples = np.array(samples,dtype=float)

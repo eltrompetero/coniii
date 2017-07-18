@@ -1,6 +1,7 @@
 # coniii
 Convenient Interface to Inverse Ising
 
-BC Daniels
 ED Lee
+BC Daniels
 C Twomey
+C Clement

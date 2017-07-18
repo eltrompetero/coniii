@@ -776,11 +776,11 @@ class Pseudo(Solver):
             XRhat = X.copy()
             XRhat[:,r] = np.ones(len(X))
             # calculate once and pass to hessian algorithm for speed
-            pairCoocRhat = self.pairCoocMat(XRhat)
+            pairCoocRhat = self.pair_cooc_mat(XRhat)
             
-            Lr = lambda Jr: - self.conditionalLogLikelihood(r,X,Jr)
-            fprime = lambda Jr: self.conditionalJacobian(r,X,Jr)
-            fhess = lambda Jr: self.conditionalHessian(r,X,Jr,pairCoocRhat=pairCoocRhat)
+            Lr = lambda Jr: - self.cond_log_likelihood(r,X,Jr)
+            fprime = lambda Jr: self.cond_jac(r,X,Jr)
+            fhess = lambda Jr: self.cond_hess(r,X,Jr,pairCoocRhat=pairCoocRhat)
             
             Jr = fmin_ncg(Lr,Jr0,fprime,fhess=fhess)
             Jfinal[r] = Jr
@@ -792,7 +792,7 @@ class Pseudo(Solver):
 
         return self.multipliers
 
-    def conditionalLogLikelihood(self,r,samples,Jr):
+    def cond_log_likelihood(self,r,samples,Jr):
         """
         Equals -L_r.
         
@@ -818,13 +818,12 @@ class Pseudo(Solver):
 
         return -logLs.sum()
 
-    def conditionalJacobian(self,r,samples,Jr):
+    def cond_jac(self,r,samples,Jr):
         """
-        Returns d conditionalLogLikelihood / d Jr,
+        Returns d cond_log_likelihood / d Jr,
         with shape (dimension of system)
         """
         samples,Jr = np.array(samples),np.array(Jr)
-        ell = len(Jr)
         
         sigmaRtilde = (2.*samples[:,r] - 1.)
         samplesRhat = 2.*samples.copy()
@@ -832,13 +831,13 @@ class Pseudo(Solver):
         localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
         energies = sigmaRtilde * localFields # (# samples)x(1)
         
-        coocs = np.repeat([sigmaRtilde],ell,axis=0).T * samplesRhat # (#samples)x(ell)
+        coocs = np.repeat([sigmaRtilde],self.n,axis=0).T * samplesRhat # (#samples)x(self.n)
 
         return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
 
-    def conditionalHessian(self,r,samples,Jr,pairCoocRhat=None):
+    def cond_hess(self,r,samples,Jr,pairCoocRhat=None):
         """
-        Returns d^2 conditionalLogLikelihood / d Jri d Jrj, with shape
+        Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
         (dimension of system)x(dimension of system)
 
         Current implementation uses more memory for speed.
@@ -848,10 +847,9 @@ class Pseudo(Solver):
         Params:
         -------
         pairCooc (None)
-            Pass pairCoocMat(samples) to speed calculation.
+            Pass pair_cooc_mat(samples) to speed calculation.
         """
         samples,Jr = np.array(samples),np.array(Jr)
-        ell = len(Jr)
         
         sigmaRtilde = (2.*samples[:,r] - 1.)
         samplesRhat = 2.*samples.copy()
@@ -859,36 +857,36 @@ class Pseudo(Solver):
         localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
         energies = sigmaRtilde * localFields # (# samples)x(1)
         
-        # pairCooc has shape (# samples)x(ell)x(ell)
+        # pairCooc has shape (# samples)x(n)x(n)
         if pairCoocRhat is None:
-            pairCoocRhat = self.pairCoocMat(samplesRhat)
+            pairCoocRhat = self.pair_cooc_mat(samplesRhat)
         
         energyMults = np.exp(-energies)/( (1.+np.exp(-energies))**2 ) # (# samples)x(1)
         #filteredSigmaRtildeSq = filterVec * (2.*samples[:,r] + 1.) # (# samples)x(1)
         return np.dot( energyMults, pairCoocRhat )
 
-    def pairCoocMat(self,samples):
+    def pair_cooc_mat(self,samples):
         """
         Returns matrix of shape (self.n)x(# samples)x(self.n).
         
-        For use with conditionalHessian.
+        For use with cond_hess.
         
         Slow because I haven't thought of a better way of doing it yet.
         """
         p = [ np.outer(f,f) for f in samples ]
         return np.transpose(p,(1,0,2))
 
-    def pseudoLogLikelihood(self,samples,J):
+    def pseudo_log_likelhood(self,samples,J):
         """
         (Could probably be made more efficient.)
 
         Params:
         -------
-        samples     : binary matrix, (# samples) x (dimension of system)
-        J           : (dimension of system) x (dimension of system)
-                    : J should be symmetric
+        samples
+            binary matrix, (# samples) x (dimension of system)
+        J
+            (dimension of system) x (dimension of system)
+            J should be symmetric
         """
-        return np.sum([ conditionalLogLikelihood(r,samples,J) \
-                           for r in range(len(J)) ])
-
-
+        return np.sum([ cond_log_likelihood(r,samples,J) \
+                           for r in xrange(len(J)) ])

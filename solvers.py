@@ -890,15 +890,12 @@ class Pseudo(Solver):
         """
         return np.sum([ cond_log_likelihood(r,samples,J) \
                            for r in xrange(len(J)) ])
+# End Pseudo
 
 
 
-#from meanFieldIsing import *
 import meanFieldIsing
-
 class ClusterExpansion(Solver):
-
-
     def __init__(self, *args, **kwargs):
         """
         Implementation of Adaptive Cluster Expansion for
@@ -928,25 +925,11 @@ class ClusterExpansion(Solver):
         --------
         """
         super(ClusterExpansion,self).__init__(*args,**kwargs)
-        
         self.setup_sampler('metropolis')
     
-
-    # selectiveClusterExpansion.py
-    #
-    # Bryan Daniels
-    # 2.17.2014
-    #
-    #
-    #
-
-    #from inverseIsing import *
-
-    log = scipy.log
-
     def S(self,cluster,coocMat,deltaJdict={},
-        useAnalyticResults=False,priorLmbda=0.,
-        numSamples=None):
+          useAnalyticResults=False,priorLmbda=0.,
+          numSamples=None):
         """
         Calculate pairwise entropy of cluster.
         (First fits pairwise Ising model.)
@@ -960,7 +943,7 @@ class ClusterExpansion(Solver):
             raise Exception
         elif (len(cluster) == 1) and useAnalyticResults:
             p = coocMat[cluster[0],cluster[0]]
-            J = scipy.array( [ [ -log( p / (1.-p) ) ] ] )
+            J = np.array( [ [ -log( p / (1.-p) ) ] ] )
         elif (len(cluster) == 2) and useAnalyticResults:
             i = min(cluster[0],cluster[1])
             j = max(cluster[0],cluster[1])
@@ -973,7 +956,7 @@ class ClusterExpansion(Solver):
             Jjj = -log( (pj - pij)/(1.-pi-pj+pij) )
             Jij = - log( pij ) + log( pi - pij ) + log( pj - pij )    \
                 - log( 1.-pi-pj+pij )
-            J = scipy.array( [ [ Jii, 0.5*Jij ], [ 0.5*Jij, Jjj ] ] )
+            J = np.array( [ [ Jii, 0.5*Jij ], [ 0.5*Jij, Jjj ] ] )
         else:
             coocMatCluster = meanFieldIsing.coocCluster(coocMat,cluster)
             Jinit = None # <--- potential for speed-up here
@@ -1003,14 +986,14 @@ class ClusterExpansion(Solver):
         
         N = len(cluster)
         
-        freqs = scipy.diag(coocMatCluster).copy()
+        freqs = np.diag(coocMatCluster).copy()
 
-        h = - scipy.log(freqs/(1.-freqs))
-        Jind = scipy.diag(h)
+        h = - np.log(freqs/(1.-freqs))
+        Jind = np.diag(h)
 
-        Sinds = -freqs*scipy.log(freqs)             \
-            -(1.-freqs)*scipy.log(1.-freqs)
-        Sind = scipy.sum(Sinds)
+        Sinds = -freqs*np.log(freqs)             \
+            -(1.-freqs)*np.log(1.-freqs)
+        Sind = np.sum(Sinds)
 
         # make 'full' version of J (of size NfullxNfull)
         Nfull = len(coocMat)
@@ -1083,14 +1066,14 @@ class ClusterExpansion(Solver):
         return deltaScluster,deltaJcluster
 
     def clusterID(self,cluster):
-        return tuple(scipy.sort(cluster))
+        return tuple(np.sort(cluster))
 
     def subsets(self,set,size,sort=False):
         """
         Given a list, returns a list of all unique subsets
         of that list with given size.
         """
-        if len(set) != len(scipy.unique(set)): raise Exception
+        if len(set) != len(np.unique(set)): raise Exception
         
         if size == len(set): return [set]
         if size > len(set): return []
@@ -1110,7 +1093,7 @@ class ClusterExpansion(Solver):
         sub.extend(subrest2)
         
         if sort:
-            return scipy.sort(sub)
+            return np.sort(sub)
         return sub
 
 
@@ -1170,8 +1153,8 @@ class ClusterExpansion(Solver):
               for j in range(i+1,numClusters): # some are not unique!
                 gamma1 = clusters[size][i]
                 gamma2 = clusters[size][j]
-                gammaI = scipy.intersect1d(gamma1,gamma2)
-                gammaU = scipy.sort( scipy.union1d(gamma1,gamma2) )
+                gammaI = np.intersect1d(gamma1,gamma2)
+                gammaU = np.sort( np.union1d(gamma1,gamma2) )
                 gammaU = list(gammaU)
                 if (len(gammaI) == size-1):
                   deltaSgammaU,deltaJgammaU =                       \
@@ -1194,7 +1177,7 @@ class ClusterExpansion(Solver):
                                 meanFieldPriorLmbda,numSamples)
         else:
             ent = 0.
-            J0 = scipy.zeros((N,N))
+            J0 = np.zeros((N,N))
         J = J0.copy()
 
         for size in clusters.keys():
@@ -1249,7 +1232,7 @@ class ClusterExpansion(Solver):
                                   (not used recently?)
       """
 
-      thresholds = scipy.logspace(logThresholdRange[0],
+      thresholds = np.logspace(logThresholdRange[0],
                                   logThresholdRange[1],
                                   numThresholds)[::-1]
 
@@ -1267,13 +1250,13 @@ class ClusterExpansion(Solver):
         
       clusters = {}
         
-      bestEps = scipy.inf
+      bestEps = np.inf
       
       if maxMaxClusterSize is None: maxMaxClusterSize = len(coocMat)
       if meanFieldGammaPrime is None: meanFieldGammaPrime = gammaPrime # 3.25.2014
         
       # 3.31.2014 calculate prior strength
-      pmean = scipy.mean(scipy.diag(coocMat))
+      pmean = np.mean(np.diag(coocMat))
       priorLmbda = gammaPrime / (pmean**2 * (1.-pmean)**2) #10.
       meanFieldPriorLmbda = meanFieldGammaPrime / (pmean**2 * (1.-pmean)**2) #10.
 
@@ -1285,7 +1268,7 @@ class ClusterExpansion(Solver):
         if veryVerbose:
             print 'threshold =',threshold
             
-        clustersOldLength = scipy.sum([ len(clusterlist) for clusterlist in clusters.values() ])
+        clustersOldLength = np.sum([ len(clusterlist) for clusterlist in clusters.values() ])
         
         # do fitting for decreasing thresholds
         raise Exception,"Not implemented: Need to change function call to use coniii interface"
@@ -1299,7 +1282,7 @@ class ClusterExpansion(Solver):
             save(deltaSdict,fileStr+'_deltaSdict.data')
             save(deltaJdict,fileStr+'_deltaJdict.data')
         
-        clustersNewLength = scipy.sum([ len(clusterlist) for clusterlist in clusters.values() ])
+        clustersNewLength = np.sum([ len(clusterlist) for clusterlist in clusters.values() ])
         
         if clustersNewLength > clustersOldLength:
             
@@ -1323,20 +1306,20 @@ class ClusterExpansion(Solver):
             #samplesCorrected = m.metropolisSamples(numSamplesError,minSize=0)[0]
             nSkipDefault = 10*self.n
             burninDefault = 100*self.n
-            self._multipliers = scipy.concatenate([J.diagonal(),squareform(zeroDiag(-J))])
+            self._multipliers = np.concatenate([J.diagonal(),squareform(zeroDiag(-J))])
             samplesCorrected = self.generate_samples(nSkipDefault,burninDefault,
                                         numSamplesError,'metropolis')
             if minimizeCovariance:
                 raise Exception # 3.31.2014 are you sure you want to do this?
                 covStdevs = covarianceTildeStdevsFlat(coocMat,
-                            numSamplesData,scipy.diag(coocMat))
+                            numSamplesData,np.diag(coocMat))
                 covData = cooccurrences2covariances(coocMat)
-                deltaCov = isingDeltaCovTilde(samplesCorrected,covData,scipy.diag(covData))
+                deltaCov = isingDeltaCovTilde(samplesCorrected,covData,np.diag(covData))
                 zvals = deltaCov/covStdevs
                 
                 ell = len(coocMat)
-                epsilonp = scipy.sqrt(scipy.mean(zvals[:ell]**2))
-                epsilonc = scipy.sqrt(scipy.mean(zvals[ell:]**2))
+                epsilonp = np.sqrt(np.mean(zvals[:ell]**2))
+                epsilonc = np.sqrt(np.mean(zvals[ell:]**2))
                 if verbose:
                     print "epsilonp =",epsilonp
                     print "epsilonc =",epsilonc
@@ -1354,8 +1337,8 @@ class ClusterExpansion(Solver):
                 zvals = deltaCooc/coocStdevs
                 
                 ell = len(coocMat)
-                epsilonp = scipy.sqrt(scipy.mean(zvals[:ell]**2))
-                epsilonc = scipy.sqrt(scipy.mean(zvals[ell:]**2))
+                epsilonp = np.sqrt(np.mean(zvals[:ell]**2))
+                epsilonc = np.sqrt(np.mean(zvals[ell:]**2))
                 if verbose:
                     print "epsilonp =",epsilonp
                     print "epsilonc =",epsilonc
@@ -1364,14 +1347,14 @@ class ClusterExpansion(Solver):
                 # (future: encapsulate into function?)
                 deltaCooc = isingDeltaCooc(samplesCorrected,coocMat)
                 # cov = residual covariance
-                zvals = scipy.dot( deltaCooc,U ) / scipy.sqrt(s)
-                coocMatMeanZSq = scipy.mean( numSamplesData * zvals**2 )
+                zvals = np.dot( deltaCooc,U ) / np.sqrt(s)
+                coocMatMeanZSq = np.mean( numSamplesData * zvals**2 )
                 if verbose:
                     print "coocMatMeanZSq =",coocMatMeanZSq
                 epsVals = [coocMatMeanZSq]
 
             # keep track of mean event size
-            meanFightSize = scipy.mean(scipy.sum(samplesCorrected,axis=1))
+            meanFightSize = np.mean(np.sum(samplesCorrected,axis=1))
             meanFightSizeList.append(meanFightSize)
             if verbose:
                 print "mean event size =",meanFightSize
@@ -1400,13 +1383,13 @@ class ClusterExpansion(Solver):
                 save(d,fileStr+"_expansionData.data")
 
             # keep track of best found so far
-            if scipy.sum(epsVals) < bestEps:
-                bestEps = scipy.sum(epsVals)
+            if np.sum(epsVals) < bestEps:
+                bestEps = np.sum(epsVals)
                 Jbest = J
                 clustersBest = clusters
                 thresholdBest = threshold
 
-            if scipy.all( scipy.array(epsVals) < epsThreshold ):
+            if np.all( np.array(epsVals) < epsThreshold ):
                 stop = True
                 if verbose:
                     print
@@ -1479,23 +1462,11 @@ class ClusterExpansion(Solver):
     def cooccurrenceMatrix(self,samples,keepDiag=True):
         """
         """
-        samples = scipy.array(samples,dtype=float)
-        mat = scipy.dot(samples.T,samples)
+        samples = np.array(samples,dtype=float)
+        mat = np.dot(samples.T,samples)
         if keepDiag: k=-1
         else: k=0
-        mat *= (1 - scipy.tri(len(mat),k=k)) # only above diagonal
-        mat /= float(len(samples)) # mat /= scipy.sum(mat)
+        mat *= (1 - np.tri(len(mat),k=k)) # only above diagonal
+        mat /= float(len(samples)) # mat /= np.sum(mat)
         return mat
-
-
-
-
-
-
-
-
-
-
-
-        
 

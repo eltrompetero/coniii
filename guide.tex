@@ -1,55 +1,106 @@
-\documentclass[11pt]{amsart}
-\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
-\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
-%\geometry{landscape}                % Activate for for rotated page geometry
-%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
-\usepackage{graphicx}
-\usepackage{amssymb}
-\usepackage{epstopdf}
-\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\documentclass[aps,prl,twocolumn]{revtex4-1}
+\usepackage{graphics,color,graphicx,amsmath}
+\usepackage{xr}
 
-\title{CONIII: Convenient Interface to Inverse Ising}
-\author{Edward D Lee, Bryan C Daniels, Colin Twomey, Colin Clement}
-%\date{}                                           % Activate to display a given date or no date
+\newcommand{\norm}[1]{\left\Vert#1\right\Vert}
+\newcommand{\abs}[1]{\left\vert#1\right\vert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\Real}{\mathbb R}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\To}{\longrightarrow}
+\newcommand{\BX}{\mathbf{B}(X)}
+\bibliographystyle{unsrt}
 
+\begin{document}
+
+% COMMANDS -------------------------------------------------------
+\newcommand{\mr}[1]{\mathrm{#1}}
+\newcommand{\mb}[1]{\mathbf{#1}}
 \newcommand{\br}[1]{\left<#1\right>}
+\newcommand{\bl}[1]{\left|#1\right|}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\tb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tr}[1]{\textcolor{red}{#1}}
+\newcommand{\tg}[1]{\textcolor{green}{#1}}
 \newcommand{\si}[0]{\sigma_{\rm i}}
 \newcommand{\sj}[0]{\sigma_{\rm j}}
 
-\begin{document}
+\title{CONIII: Convenient Interface to Inverse Ising}
+\author{Edward D Lee, Bryan C Daniels}
+\affiliation{$^1$Department of Physics, 132A Clark Hall, Cornell University, Ithaca NY 14850, $^2$ASU}
+%\date{}                                           % Activate to display a given date or no date
+
 \begin{abstract}
-CONIII is a project for providing a simple interface to various algorithms for solving the inverse maximum entropy problem. In this guide, we provide details sufficient for graduate students who are new to this area to understand how the algorithms work and plug-and-play code to run them on their data sets. We hope that this interface will provide the means for maximum entropy modeling techniques to become more widespread and provide a platform for organizing the various techniques into a convenient environment.
+CONIII is a Python project for providing a simple interface to various algorithms for solving maximum entropy models. We describe the maximum entropy problem and give an overview of various algorithms that have been proposed to solve it that are implemented as part of CONIII. We then show examples of models that have been solved on various data sets using CONIII.
 \end{abstract}
 
 \maketitle
 
 \section{Introduction}
-Many biological systems are characterized by collective behavior whether it is the correlated pattern of neuron firing, protein diversity in the immune system, conflict participation in monkeys, or consensus voting in the US Supreme Court. Statistical physics is a natural approach to probing such systems precisely because they are collective.
+Many biological systems are characterized by collective behavior whether it is the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system, conflict participation in monkeys, flocking in birds \cite{Bialek:2012cs}, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective.
 Recently, with the advent of numerical, analytic, and computation tools, it has become possible to solve for the statistical physics model that corresponds to a particular system, an approach known as the inverse problem.
 This is in contrast with the typical problem in statistical physics where one postulates the Hamiltonian and works out the physical behavior of the system. In the \textit{inverse} problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
 The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve this problem including mean-field approximation, etc., but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated.
-CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. With CONIII v0.1, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines.
+CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. With CONIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
 
-There are a variety of techniques for approaching the inverse problem|often in context of a particular model|but they are often presented as different approaches without clear relations to one another. Instead of focusing on the details of each technique separately, we relate these techniques to one another and point out when one would fail or be difficult to apply.
+%There are a variety of techniques for approaching the inverse problem|often in context of a particular model|but they are often presented as different approaches without clear relations to one another. Instead of focusing on the details of each technique separately, we relate these techniques to one another and point out when one would fail or be difficult to apply.
 
 We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, a good background in mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
 
-\section{Why maximum entropy?}
-The inverse problem is typically formulated as constrained optimization problem, where the objective is to fit to particular aspects of the data while maximizing the entropy of the statistical model. This approach is equivalent minimizing the free energy as we typically do in statistical physics. This is equivalent to a constrained optimization problem while maximizing the entropy.
-
-The idea behind maximum entropy, or maxent, is to build a model that is consistent with the data but otherwise as structureless as possible. Maximizing the entropy $S[p] = -\sum p_i \log p_i$ while fitting $K$ constraints indexed by $k$, $\sum_i p_i f_k(\sigma_i)$ can be solved by the method of Langrangian multipliers
+\section{What is entropy?}
+The conventional textbook in statistical mechanics first introduces the concept of entropy as a way of counting the phase volume available to the system at a given energy
 \begin{align}
-	-\ln Z &= -\sum_i p_i\log p_i - \sum_k \lambda_k \sum_i p_i f_k(\sigma_i)\\
+	S(E) &= k_B \log\Omega(E)
+\end{align}
+where $k_B$ is Boltzmann's constant and $\Omega$ the number of states between $E$ and $E+\delta E$. Temperature is defined as
+\begin{align}
+	\frac{1}{T} &= \frac{\partial S}{\partial E}
+\end{align}
+
+ begins with the concept of a small system coupled to a heat bath. In this limit, we can linearly expand thermodynamic quantities about the energy of the bath $E_{\rm bath} = E-E_s$
+\begin{align}
+	S_{\rm bath}(E-E_s) &\approx S_{\rm bath}(E) -E_s\left.\frac{\partial S}{\partial E_s}\right|_{E-E_s}\\
+		&= S_{\rm bath}(E) -\frac{E_s}{T}\\
+	e^{S_{\rm bath}(E-E_s)/k_B} &= e^{S_{\rm bath}(E)/k_B} e^{-E_s/k_BT}
+\intertext{Since the entropy is proportional to the density of states at a particular energy $E_s$, Eq ?? corresponds to}
+	p(E_s) &= e^{-E_s/k_BT}/Z
+\end{align}
+With partition function $Z$. In other words, the Gibbs measure takes exponential form. Eq ?? can be rewritten in terms of free energy
+\begin{align}
+	\log p(E_s) &= -E_s/k_BT -\log(Z)
+\intertext{Averaging both sides over all energy configurations and rearranging}
+	-k_B T\log Z &= \sum_s p(E_s) E_s +k_BT\sum_s p(E_s)\log p(E_s)
+\intertext{Remembering the fundamental postulate of statistical mechanics that all states are equally likely}
+	-k_BT\log Z &= \br{E_s} - TS\\
+	F &= \br{E_s} -TS
+\end{align}
+This equation tells us how the Helmholtz free energy is related to the internal energy and the entropy of the system.
+
+When we say that free energy is minimized for a system with Hamiltonian $E_s$ at equilibrium, we are equivalently saying that entropy is maximized. Entropy maximization is the crux of statistical physics models.
+%A more colloquial way of stating this is that statistical mechanics models produce a distribution that is as ``spread out'' as possible given a particular form to the energy function and a temperature.
+
+\section{What is maximum entropy?}
+Shannon introduced the concept of information entropy in his seminal paper about communication...as the unique measure of uncertainty that a followed from a three basic postulates. The resulting measure of information entropy over a distribution of states is
+\begin{align}
+	S[p] &= -\sum_s p_s \log p_s
+\end{align}
+which reduces to the thermodynamic entropy from Eq ?? when we take the axiom that all microstates be equally probable.
+
+The idea behind maximum entropy, or maxent, is to build a model that is consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua}.
+Since entropy is a measure of uncertainty, we can build a contrained maximization problem. With $K$ constraints indexed by $k$, $\sum_i p_i f_k(\sigma_i)$ can be solved by the method of Langrangian multipliers
+\begin{align}
+	\mathcal{L}[p] &= -\sum_i p_i\log p_i - \sum_k \lambda_k \sum_i p_i f_k(\sigma_i)\\
 	F &= S - \br{E}
 \end{align}
-The notation draw out the equivalence between maximizing entropy and minimizing the Helmholtz free energy of system. By specifying the constraints on the maximization, we fix the form of the Hamiltonian. This formulation makes clear the fundamental connection between the maximum entropy principle and statistical mechanics \cite{Jaynes}.
+The notation draw out the equivalence between maximizing entropy and minimizing the Helmholtz free energy of system. By specifying the constraints on the maximization, we fix the form of the Hamiltonian. This formulation makes clear the fundamental connection that we can think of statistical mechanics as an inference procedure using a maximum entropy principle \cite{Jaynes:1957fy}.
 
 The resulting model is a Boltzmann distribution over states
 \begin{align}
-	p(\sigma) &= e^{-E(\sigma)}/Z\\
+	p(\sigma) &= \left.e^{-E(\sigma)}\right/Z\\
 	Z &= \sum_\sigma e^{-E(\sigma)}
 \end{align}
+otherwise known as the exponential family of models in statistical literature.
 
 A well known example is that of the Ising model with binary spins $\sigma_{\rm i} \in {-1,1}$ with Hamiltonian 
 \begin{align}
@@ -69,26 +120,46 @@ Enforcing the constraints is equivalent to minimizing the Kullback-Leibler diver
 \end{align}
 [Of course, we also have to show that the problem is convex.]
 
+When the $K$ nonliear equations are coupled, this becomes quite hard to solve analytically. However, we have numerical methods at our disposal.
+
+\section{Exact enumeration}
+One approach is to write the equations down and feed them into any optimization algorithm. This approach does not scale well because the number of terms in the partition function grows exponentially with the system size. For small systems, however, this is feasible. As we show in our notebook...
+
 \section{Mean-field methods}
 [I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
 
 Analytic approximations simplify the equations to an extent where they are tractable.
 
 \section{Monte Carlo methods}
-Perhaps the most direct route to solving these equations is to use Monte Carlo sampling to approximate the distribution and guess how to adjust the parameters appropriately.
-
-Monte Carlo sampling is...
+Perhaps the most direct route to solving these equations is to use Monte Carlo sampling to approximate the distribution and guess how to adjust the parameters appropriately. [For those unfamiliar with MCMC sampling, we give a brief introduction in Appendix A.]
 
 This can be combined with a variety of more sophisticated stochastic gradient descent ideas to solve the problem.
 
 \subsection{Monte Carlo histogram}
-Since the sampling step is expensive, could we reuse a sample for more than one gradient descent step? This is the idea behind Monte Carlo histogram. Instead of sampling every time we change the parameters, we can predict how the distribution will change \textit{if} we modify the parameters slightly. Given that we have a sample,
+Since the sampling step is expensive, could we reuse a sample for more than one gradient descent step? This is the idea behind Monte Carlo histogram. Instead of sampling every time we change the parameters, we can predict how the distribution will change if we modify the parameters slightly. Given that we have a sample,
 \begin{align}
-	q(\sigma) &= \frac{q(\sigma)}{p(\sigma)}p(\sigma)\\
-		&= \frac{Z'}{Z}e^{\epsilon\sum_k \lambda_k \epsilon f_k} p\\
-\intertext{but we have a sampled approximation to $p$. By summing over all states}
-	\br{f_k}' &= \frac{Z'}{Z} \br{e^{\epsilon\sum_k \lambda_k f_k} f_k}_{\rm obs}
+	p'(\sigma) &= \frac{p'(\sigma)}{p(\sigma)}p(\sigma)\\
+		&= \frac{Z}{Z'}e^{\sum_k \Delta\lambda_k f_k(s)} p\\
+\intertext{To estimate the average,}
+	\sum_s p_s' f_k(s) &= \frac{Z}{Z'} \sum_s p_s e^{\sum_k \Delta\lambda_k f_k(s)} f_k(s)\\
+\intertext{But we have a sampled approximation to $p$.}
+	\br{f_k}' &= \frac{Z}{Z'} \br{e^{\sum_k \Delta\lambda_k f_k(s)} f_k(s)}_{\rm sample}
 \end{align}
+Likewise, the ratio of the partition function can be estimated
+\begin{align}
+	\frac{Z}{Z'} \approx \br{e^{\sum_k \Delta\lambda_k f_k(s)}f_k(s)}_{\rm sample}
+\end{align}
+
+The main difficulty with MCH is choosing a learning rule for how to update the Lagrangian multipliers $\{\lambda_k\}$ at each iteration while being careful to stay within the bounds of a reasonable extrapolation. One suggestion is to update the parameters with some inertia
+\begin{align}
+	\Delta\lambda_k(t+1) &= \Delta \lambda_k(t) + \eta \Delta\lambda_k(t-1)\\
+	\Delta \lambda_k(t) &= \epsilon\left(\br{f_k}'-\br{f_k}\right)
+\end{align}
+This has the correct fixed points. One suggestion is to shrink $\epsilon$ exponentially with the number of iterations. In the code, there are more parameters $\Delta\lambda_{\rm max}$ and $\Delta\lambda_{\rm norm}\sum_k \sqrt{\Delta\lambda_{\rm k}^2}$ that restrict. Another heuristic is to begin with estimates on a small data set and increase the size of the data set as we refine our estimates of the parameters.
+
+Typically, one must check in on the progress of the algorithm to tune the various parameters. If the extrapolation steps or the gradient steps are too large, the algorithm will fail to converge (or may even start diverging).
+
+MCH is implemented in the MCH class.
 
 \section{Pseudolikelihood}
 
@@ -108,6 +179,8 @@ Thus, one way to test the model is to consider how well we do in predicting the 
 \section{Criticality in biological systems}
 
 \section{Why not maximum entropy?}
+
+\appendix
 
 \section{Notes on Monte Carlo Markov Chain sampling}
 The key points behind MCMC sampling is ergodicity and detailed balance. Ergodicity just means that we can get from one state to another in a finite number of steps, and this ensures that we don't get stuck in a few states. Detailed balance is a sufficient but not necessary condition (stronger than needed) for ensuring that the equilibrium distribution matches the distribution that we seek. There are some specialized algorithms that don't satisfy detailed balance but do produce the desired distribution.

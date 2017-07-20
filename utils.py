@@ -376,12 +376,12 @@ def adj(s,n_random_neighbors=False):
         s[i] = 1-s[i]
     if n_random_neighbors:
         for i in xrange(n_random_neighbors):
-            match=True
+            match = True
             while match:
-                newneighbor=(np.random.rand(s.size)<.5)*1.
-                if np.sum(newneighbor*s)!=s.size:
+                newneighbor = (np.random.rand(s.size)<.5)*1.
+                if (newneighbor!=s).any():
                     match=False
-            neighbors[i+s.size]=newneighbor
+            neighbors[i+s.size] = newneighbor
     return neighbors
 
 @jit(nopython=True)

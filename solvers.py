@@ -600,7 +600,7 @@ class MCH(Solver):
         if not constraints is None:
             self.constraints = constraints
         elif not X is None:
-            self.constraints = self.calc_observables(X)
+            self.constraints = self.calc_observables(X).mean(0)
         
         # Set initial guess for parameters.
         if not (initial_guess is None):
@@ -615,7 +615,7 @@ class MCH(Solver):
         
         self.generate_samples(n_iters,burnin,
                               generate_kwargs=generate_kwargs)
-        thisConstraints = self.calc_observables(self.samples)
+        thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
         
@@ -633,7 +633,7 @@ class MCH(Solver):
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,
                                    generate_kwargs=generate_kwargs )
-            thisConstraints = self.calc_observables(self.samples)
+            thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
             
             # Exit criteria.
@@ -1101,10 +1101,10 @@ class ClusterExpansion(Solver):
     # "Algorithm 2"
     # was "adaptiveClusterExpansion"
     def solve(self,samples,threshold,
-        cluster=None,deltaSdict=None,deltaJdict=None,
-        verbose=True,priorLmbda=0.,numSamples=None,
-        meanFieldRef=False,independentRef=True,veryVerbose=False,
-        meanFieldPriorLmbda=None,retall=False):
+              cluster=None,deltaSdict=None,deltaJdict=None,
+              verbose=True,priorLmbda=0.,numSamples=None,
+              meanFieldRef=False,independentRef=True,veryVerbose=False,
+              meanFieldPriorLmbda=None,return_all=False):
         """
         samples         :
         threshold       :
@@ -1115,10 +1115,10 @@ class ClusterExpansion(Solver):
                                     mean field calculation (defaults
                                     to priorLmbda)
         
-        With retall=False, returns
+        With return_all=False, returns
             J           : Estimated interaction matrix
         
-        With retall=True, returns
+        With return_all=True, returns
             ent         : Estimated entropy
             J           : Estimated interaction matrix
             clusters    : List of clusters
@@ -1192,7 +1192,7 @@ class ClusterExpansion(Solver):
         J = -meanFieldIsing.zeroDiag(J)
         self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
 
-        if retall:
+        if return_all:
             return ent,self.multipliers,clusters,deltaSdict,deltaJdict
         else:
             return self.multipliers

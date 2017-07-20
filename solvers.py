@@ -16,11 +16,9 @@ class Solver(object):
     -------
     n (int)
         System size.
-    constraints (ndarray)
-    calc_e (function)
-        lambda samples,params: return energy
     calc_observables (function)
-        For exact: lambda params: return observables
+        Lambda function of form
+        lambda params: return observables
     multipliers (ndarray=None)
     n_jobs (int=None)
 
@@ -28,14 +26,13 @@ class Solver(object):
     -----------
     constraints (ndarray)
     calc_e (function)
-        with args (sample,parameters) where sample is 2d
+        Takes states and parameters to calculate the energies.
     calc_observables (function)
-        takes in samples as argument
+        takes in n_samples as argument and returns array of (n_samples,n_constraints)
     multipliers (ndarray)
         set the Langrangian multipliers
     """
     def __init__(self, n,
-                 calc_e=None,
                  calc_de=None,
                  calc_observables=None,
                  adj=None,
@@ -43,14 +40,13 @@ class Solver(object):
                  n_jobs=None):
         # Do basic checks on the inputs.
         assert type(n) is int
-        assert (not calc_e is None), "Must define calc_e()."
         
         self.n = n
         self.multipliers = multipliers
         
-        self.calc_e = calc_e
-        self.calc_de = calc_de
         self.calc_observables = calc_observables
+        self.calc_e = lambda s,multipliers:-self.calc_observables(s).dot(multipliers)
+        self.calc_de = calc_de
         self.adj = adj
         
         self.n_jobs = n_jobs or mp.cpu_count()
@@ -64,6 +60,7 @@ class Solver(object):
         of fvec wrt to a single parameter.
         For calculation, seeing Voting I pg 83
         """
+        raise NotImplementedError
         dlamda = np.zeros(self.multipliers.shape)
         jac = np.zeros((self.multipliers.size,self.multipliers.size))
         print "evaluating jac"
@@ -174,6 +171,7 @@ class Solver(object):
 # end Solver
 
 
+
 class Exact(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
@@ -201,6 +199,8 @@ class Exact(Solver):
         set the Langrangian multipliers
     """
     def __init__(self, *args, **kwargs):
+        self.calc_observables_multipliers = kwargs['calc_observables_multipliers']
+        del kwargs['calc_observables_multipliers']
         super(Exact,self).__init__(*args,**kwargs)
 
     def solve(self,
@@ -211,7 +211,7 @@ class Exact(Solver):
               tolNorm=None,
               disp=False,
               max_param_value=50,
-              fsolve_kwargs={}):
+              fsolve_kwargs={'method':'powell'}):
         """
         Params:
         ------
@@ -227,16 +227,17 @@ class Exact(Solver):
         nIters (int=30)
             number of iterations to make when sampling
         disp (bool=False)
-        fsolve_kwargs (dict={})
+        fsolve_kwargs (dict={'method':'powell'})
+            Powell method is slower but tends to converge better.
 
         Returns:
         --------
-        Output from scipy.optimize.minimize
+        Tuple of solved parameters and output from scipy.optimize.minimize
         """
         if not constraints is None:
             self.constraints = constraints
         elif not samples is None:
-            self.constraints = self.calc_observables(samples) 
+            self.constraints = self.calc_observables(samples).mean(0)
         else:
             raise Exception("Must specify either constraints or samples.")
         
@@ -247,9 +248,10 @@ class Exact(Solver):
         def f(params):
             if np.any(np.abs(params)>max_param_value):
                 return [1e30]*len(params)
-            return np.linalg.norm( self.calc_observables(params)-self.constraints )
+            return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
-        return minimize(f,initial_guess,**fsolve_kwargs)
+        soln = minimize(f,initial_guess,**fsolve_kwargs)
+        return soln['x'],soln
 # End Exact
 
 
@@ -283,7 +285,6 @@ class MPF(Solver):
         --------
         """
         super(MPF,self).__init__(*args,**kwargs)
-        self.adj = adj
         
     @staticmethod
     def worker_objective_task( s, Xcount, adjacentStates, params, calc_e ):
@@ -456,8 +457,8 @@ class MPF(Solver):
             includeGrad = False
         X = X.astype(float)
         if initial_guess is None:
-            initial_guess = pair_corr( X, concat=True )
-   
+            initial_guess = self.calc_observables(X).mean(0)#np.zeros(self.n+self.n*(self.n-1)//2)
+         
         # Get list of unique data states and how frequently they appear.
         Xuniq = X[unique_rows(X)]
         ix = unique_rows(X,return_inverse=True)
@@ -599,7 +600,7 @@ class MCH(Solver):
         if not constraints is None:
             self.constraints = constraints
         elif not X is None:
-            self.constraints = self.calc_observables(X)
+            self.constraints = self.calc_observables(X).mean(0)
         
         # Set initial guess for parameters.
         if not (initial_guess is None):
@@ -614,7 +615,7 @@ class MCH(Solver):
         
         self.generate_samples(n_iters,burnin,
                               generate_kwargs=generate_kwargs)
-        thisConstraints = self.calc_observables(self.samples)
+        thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
         
@@ -632,7 +633,7 @@ class MCH(Solver):
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,
                                    generate_kwargs=generate_kwargs )
-            thisConstraints = self.calc_observables(self.samples)
+            thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
             
             # Exit criteria.
@@ -1100,10 +1101,10 @@ class ClusterExpansion(Solver):
     # "Algorithm 2"
     # was "adaptiveClusterExpansion"
     def solve(self,samples,threshold,
-        cluster=None,deltaSdict=None,deltaJdict=None,
-        verbose=True,priorLmbda=0.,numSamples=None,
-        meanFieldRef=False,independentRef=True,veryVerbose=False,
-        meanFieldPriorLmbda=None,retall=False):
+              cluster=None,deltaSdict=None,deltaJdict=None,
+              verbose=True,priorLmbda=0.,numSamples=None,
+              meanFieldRef=False,independentRef=True,veryVerbose=False,
+              meanFieldPriorLmbda=None,return_all=False):
         """
         samples         :
         threshold       :
@@ -1114,10 +1115,10 @@ class ClusterExpansion(Solver):
                                     mean field calculation (defaults
                                     to priorLmbda)
         
-        With retall=False, returns
+        With return_all=False, returns
             J           : Estimated interaction matrix
         
-        With retall=True, returns
+        With return_all=True, returns
             ent         : Estimated entropy
             J           : Estimated interaction matrix
             clusters    : List of clusters
@@ -1191,7 +1192,7 @@ class ClusterExpansion(Solver):
         J = -meanFieldIsing.zeroDiag(J)
         self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
 
-        if retall:
+        if return_all:
             return ent,self.multipliers,clusters,deltaSdict,deltaJdict
         else:
             return self.multipliers

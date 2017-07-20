@@ -339,7 +339,20 @@ def define_ising_mch_helpers():
                 np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
                                                                                                    predsisj.max())
         return predsisj
-    return calc_e,mch_approximation
+    
+    @jit(nopython=True)
+    def calc_observables(samples):
+        n = samples.shape[1]
+        obs = np.zeros((samples.shape[0],n+n*(n-1)//2))
+        
+        k = 0
+        for i in xrange(n):
+            obs[:,i] = samples[:,i]
+            for j in xrange(i+1,n):
+                obs[:,n+k] = samples[:,i]*samples[:,j]
+                k += 1
+        return obs
+    return calc_e,calc_observables,mch_approximation
 
 @jit(nopython=True)
 def adj(s,n_random_neighbors=False):

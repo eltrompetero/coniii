@@ -1,6 +1,7 @@
 \documentclass[aps,prl,twocolumn]{revtex4-1}
 \usepackage{graphics,color,graphicx,amsmath}
-\usepackage{xr}
+\usepackage{xr,natbib}
+\bibliographystyle{vancouver}
 
 \newcommand{\norm}[1]{\left\Vert#1\right\Vert}
 \newcommand{\abs}[1]{\left\vert#1\right\vert}
@@ -25,7 +26,7 @@
 \newcommand{\si}[0]{\sigma_{\rm i}}
 \newcommand{\sj}[0]{\sigma_{\rm j}}
 
-\title{CONIII: Convenient Interface to Inverse Ising}
+\title{Convenient Interface to Inverse Ising (CONIII): A package for solving maximum entropy models}
 \author{Edward D Lee, Bryan C Daniels}
 \affiliation{$^1$Department of Physics, 132A Clark Hall, Cornell University, Ithaca NY 14850, $^2$ASU}
 %\date{}                                           % Activate to display a given date or no date
@@ -36,52 +37,63 @@ CONIII is a Python project for providing a simple interface to various algorithm
 
 \maketitle
 
+\tr{{\bf Caution:} Work in progress. Errors rampant.}
+
 \section{Introduction}
-Many biological systems are characterized by collective behavior whether it is the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system, conflict participation in monkeys, flocking in birds \cite{Bialek:2012cs}, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective.
+Many biological and social systems are characterized by collective behavior whether it is the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system, conflict participation in monkeys, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective.
 Recently, with the advent of numerical, analytic, and computation tools, it has become possible to solve for the statistical physics model that corresponds to a particular system, an approach known as the inverse problem.
 This is in contrast with the typical problem in statistical physics where one postulates the Hamiltonian and works out the physical behavior of the system. In the \textit{inverse} problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
 The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve this problem including mean-field approximation, etc., but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated.
-CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. With CONIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
-
+CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. 
+The modular structure of CONIII was inspired by the machine learning package scikit-learn, where each algorithm is implemented in a class.
+With CONIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
 %There are a variety of techniques for approaching the inverse problem|often in context of a particular model|but they are often presented as different approaches without clear relations to one another. Instead of focusing on the details of each technique separately, we relate these techniques to one another and point out when one would fail or be difficult to apply.
 
 We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, a good background in mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
 
 \section{What is maximum entropy?}
-Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel. Information entropy is the unique measure of uncertainty that a followed from a three basic postulates. According to Shannon, information entropy, hereon just ``entropy'', over the probability distribution of possible configurations $s$ of a model is
+Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that a followed from a three basic postulates. According to Shannon, information entropy, hereon just ``entropy'', over the probability distribution of possible configurations $s$ of a model is
 \begin{align}
 	S[p] &= -\sum_{s\in \mathcal{S}} p_s \log p_s
 \end{align}
+These configurations could correspond to a particular firing pattern in neurons or a particular configuration of 4 letters in a word.
 
-Given the set of configurations $\mathcal{S}$, entropy is maximized when the probability distribution is uniform $p_s = p_{s'}$. The maximum entropy distribution is maximally unstructured in that there is no structure in the distribution to exploit to guess what is more likely to be observed, i.e. each sample from the probability distribution is maximally surprising. [Is this the way we want to introduce things? Maybe we really just want to say...]
+Given the set of configurations $\mathcal{S}$, entropy is maximized when the probability distribution is uniform $p_s = p_{s'}$, and this is a unique maximum. The uniform distribution is maximally unstructured because there is no structure to exploit to make any predictions. Another way to put this is to say that we are maximally uncertain about what the next observation from this model is (and thus the unfortunate name ``information'' entropy). If there were a slight bias for any state, we could do better than randomly choosing a state $s$.
 
-The idea behind maximum entropy, or maxent, is to build a model that is consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua}.
-Since entropy is a measure of uncertainty, we can build a contrained maximization problem. With $K$ constraints indexed by $k$, $\sum_i p_i f_k(\sigma_i)$ can be solved by the method of Langrangian multipliers
+The idea behind the maximum entropy, or maxent, approach is to build a model that is consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}.
+Since entropy is a measure of uncertainty, we can build a contrained maximization problem. From the data, we choose some important constraints indexed by $k$,
 \begin{align}
-	\mathcal{L}[p] &= -\sum_i p_i\log p_i - \sum_k \lambda_k \sum_i p_i f_k(\sigma_i)\\
-	F &= S - \br{E}
+	\br{f_k(s)} &= \sum_{s\in \mathcal{S}} p_s f_k(s)
 \end{align}
-The notation draw out the equivalence between maximizing entropy and minimizing the Helmholtz free energy of system (See Appendix). By specifying the constraints on the maximization, we fix the form of the Hamiltonian. This formulation makes clear the fundamental connection that we can think of statistical mechanics as an inference procedure using a maximum entropy principle \cite{Jaynes:1957fy}.
+
+With $K$ constraints, the maximum entropy problem can be solved by the method of Langrangian multipliers
+\begin{align}
+	\mathcal{L}[p] &= -\sum_s p_s\log p_s - \sum_k^K \lambda_k \sum_s p_s f_k(s)\\
+	F &= S - \br{E}\\
+	E &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s)
+\end{align}
+The notation draws out the equivalence between maximizing entropy and minimizing the Helmholtz free energy where by specifying the constraints on the maximization we fix the form of the Hamiltonian $E$ (See Appendix). This formulation makes clear the fundamental connection that statistical mechanics is an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
 
 The resulting model is a Boltzmann distribution over states
 \begin{align}
-	p(\sigma) &= \left.e^{-E(\sigma)}\right/Z\\
-	Z &= \sum_\sigma e^{-E(\sigma)}
+	p(s) &= \left.e^{-E(s)}\right/Z\\
+\intertext{with normalization, the partition function,}
+	Z &= \sum_\sigma e^{-E(s)}
 \end{align}
-otherwise known as the exponential family of models in statistical literature. If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix). which is equivalent to the axiom that all microstates have equal probability (that is the maxent distribution).
+otherwise known as the exponential family of models outside of the physics literature. If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix). which is equivalent to the axiom that all microstates have equal probability (that is the maxent distribution).
 
 \subsection{Ising model}
 Let's take a concrete example. Imagine that you have a system with $n$ components that have been sampled many times. To be more specific, we'll take $n=9$ voters on the US Supreme Court that either vote with in the majority, the winning coalition, or in the minority. [More generally, we could think some like gene expression levels in a cell a coarse-grained representation where relatively high or low expression can be represented by a binary variable. Of course, we don't have to restrict ourselves to binary variables \cite{Lezon:2006ws}.]
 
-A well known example is that of the Ising model with binary spins $\sigma_{\rm i} \in {-1,1}$ with Hamiltonian 
+A well known example is that of the Ising model with $N$ binary spins $\sigma_{\rm i} \in {-1,1}$ with Hamiltonian 
 \begin{align}
-	E &= -\sum_{\br{\rm ij}} J_{\rm ij}\si\sj -\sum_{\rm i=1}^N h_i\si
+	E &= -\sum_{\br{\rm ij}} J_{\rm ij}\si\sj -\sum_{\rm i=1}^N h_{\rm i}\si
 \end{align}
 with couplings $J_{\rm ij}$ between neighbors and external fields specific to each spin $h_{\rm i}$. The Ising model can be obtained from insisting that the magnetizations and pairwise correlations of the model match those observed in the data
 \begin{align}
-	\br{\si}_{\rm obs} &= \br{\si}\\
-	\br{\si\sj}_{\rm obs} &= \br{\si\sj}
+	\br{\si}_{\rm data} &= \br{\si}\\
+	\br{\si\sj}_{\rm data} &= \br{\si\sj}
 \end{align}
 
 Enforcing the constraints is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
@@ -92,10 +104,14 @@ Enforcing the constraints is equivalent to minimizing the Kullback-Leibler diver
 \end{align}
 [Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the ``distance'' to the distribution of the data.
 
-When the $K$ nonliear equations are coupled, this becomes quite hard to solve analytically. However, we have numerical methods at our disposal.
+When the $K$ nonlinear equations are coupled, this becomes quite hard to solve analytically. However, we have numerical methods at our disposal.
+
+The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
 
 \section{Exact enumeration}
-One approach is to write the equations down and feed them into any optimization algorithm. This approach does not scale well because the number of terms in the partition function grows exponentially with the system size. For small systems, however, this is feasible. As we show in our notebook...
+One approach is to write the equations down and feed them into any optimization algorithm. This approach does not scale well because the number of terms in the partition function grows exponentially with the system size. For small systems, however, this is feasible.
+
+This is implemented in the {\tt Exact} class.
 
 \section{Mean-field methods}
 [I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
@@ -103,15 +119,18 @@ One approach is to write the equations down and feed them into any optimization 
 Analytic approximations simplify the equations to an extent where they are tractable.
 
 \section{Monte Carlo methods}
-Perhaps the most direct route to solving these equations is to use Monte Carlo sampling to approximate the distribution and guess how to adjust the parameters appropriately. [For those unfamiliar with MCMC sampling, we give a brief introduction in Appendix A.]
 
-This can be combined with a variety of more sophisticated stochastic gradient descent ideas to solve the problem.
+
+Perhaps the purest computational and most expensive route to solving these equations is to use Monte Carlo sampling to approximate the distribution and guess how to adjust the parameters appropriately. We will not explain MCMC methods in detail because of the plethora of useful texts \cite{MacKay:2005wc}. [For those unfamiliar with MCMC sampling, we give a brief introduction in Appendix A.]
+
+The simplest MCMC algorithm is to generate a random sample to estimate the constraints $\br{f_{\rm k}}$, and then to implement a learning rule to adjust the parameters.
+This can be combined with a variety of stochastic gradient descent methods to reduce the number of sampling steps.
 
 \subsection{Monte Carlo histogram}
-Since the sampling step is expensive, could we reuse a sample for more than one gradient descent step? This is the idea behind Monte Carlo histogram. Instead of sampling every time we change the parameters, we can predict how the distribution will change if we modify the parameters slightly. Given that we have a sample,
+Since the sampling step is expensive, could we reuse a sample for more than one gradient descent step? This is the idea behind Monte Carlo histogram \cite{Broderick:2007wq}. Instead of sampling every time we change the parameters, we can predict how the distribution will change if we modify the parameters slightly. Given that we have a sample with probability distribution $p_s$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the distribution $p_s'$ from parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$.
 \begin{align}
-	p'(\sigma) &= \frac{p'(\sigma)}{p(\sigma)}p(\sigma)\\
-		&= \frac{Z}{Z'}e^{\sum_k \Delta\lambda_k f_k(s)} p\\
+	p_s' &= \frac{p'_s}{p_s}p_s\\
+		&= \frac{Z}{Z'}e^{\sum_k \Delta\lambda_k f_k(s)} p_s\\
 \intertext{To estimate the average,}
 	\sum_s p_s' f_k(s) &= \frac{Z}{Z'} \sum_s p_s e^{\sum_k \Delta\lambda_k f_k(s)} f_k(s)\\
 \intertext{But we have a sampled approximation to $p$.}
@@ -131,26 +150,39 @@ This has the correct fixed points. One suggestion is to shrink $\epsilon$ expone
 
 Typically, one must check in on the progress of the algorithm to tune the various parameters. If the extrapolation steps or the gradient steps are too large, the algorithm will fail to converge (or may even start diverging).
 
-MCH is implemented in the MCH class.
+MCH is implemented in the {\tt MCH} class.
 
 \section{Pseudolikelihood}
 
 \section{Minimum Probability Flow}
-A local approximation to the Kullback-Leibler divergence at each time step...
-\cite{SohlDickstein:2011im}
+Minimum probability flow is an efficient method using an analytic approximation to write an easily computable objective function \cite{SohlDickstein:2011im}. Instead of estimating the probability distribution, the overarching idea is to analytically approximate how the probability distribution \textit{changes} as we modify the \textit{configurations}.
+
+As before, we start with minimizing the Kullback-Leibler divergence, but instead of taking the derivative with respect to the parameters, we would like to take the derivative with respect to the states \cite{Hyvärinen:2007ed}. If the state space is discrete, we can instead postulate a set of dynamics for how the probability evolves (more on this later), and take the derivative with respect to time. The idea is that  the change in the probability distribution relative to the data goes to zero when we have converged to the data. Thus, we can now take a derivative with respect to the parameters.
+
+As is explained \cite{SohlDickstein:2011im}, one set of dynamics (they must converge to the equilibrium distribution?) is simply Monte Carlo where the master equation gives
+\begin{align}
+	\dot{p}_{\rm i} &= \sum_{j\neq i} \Gamma_{\rm ij} p_{\rm j} -\sum_{\rm j\neq i} \Gamma_{\rm ji} p_{\rm j}
+\end{align}
+and $\Gamma_{\rm ij}$ is the transition probability from state j to state i.
+
+So we are looking for how the distance between data and model changes when we evolve the dynamics of the model
+\begin{align}
+	\partial_t D_{KL}(p^{(0)}||p^{(t)}\left(\{\lambda_k\}\right)) &= \sum_{\rm i \not\in \mathcal{D}} \dot{p}_{\rm i}(\lambda_k)\\
+	K(\{\lambda_{\rm k}\}) &= \sum_{\rm i \not\in \mathcal{D}} \dot{p}_{\rm i}(\lambda_k)
+\end{align}
+[Typically with large systems, numerical precision errors can become a problem because of the exponential form of $p(\lambda_{\rm k})$. By taking the logarithm of the objective $K$ can be crucial to an accurate implementation.]
+
+MPF is implemented in the {\tt MPF} class.
 
 \section{Cluster expansions}
+Implemented in the {\tt ClusterExpansion} class.
 
-\section{Bethe/Kikuchi free energy}
-
-\section{CONIII}
+\section{Bethe/Kikuchi free energy/cavity methods}
 
 \subsection{How to validate a maxent model}
 The hope of maxent is that by fixing some aspects of the probability distribution, we can forget about the rest. In this sense, maxent is not a typical fitting method where the optimal parameters are sought such that the model is as good as possible. Instead, we specify which aspects of the system we think are important and the resulting ``parameters'' come from the maximum entropy principle.
 
 Thus, one way to test the model is to consider how well we do in predicting the rest of the distribution. If the rest of the distribution is not well fit, certainly we must go back and reconsider which constraints to impose. On the other hand, finding that the rest of the probability distribution is fit is all good and well, but it does not necessarily mean we have found the right model [cite much discussion here].
-
-\section{Criticality in biological systems}
 
 \section{Why not maximum entropy?}
 
@@ -255,5 +287,7 @@ Under the assumption that the probability $p(n)$ is a constant,
 One way to find the $g_n$ that satisfy this condition is to come up with an iterative algorithm that converges to a fixed point. One suggestion is to estimate $g_n$ by reweighting the distributions from adjacent replicas.
 
 Now, it remains to find a set of $\beta_n$ that is optimal for simulating relaxing into equilibrium quickly. One suggestion to make the algorithm spend an equal amount of time at each temperature. Kerler and Rehberg suggest a method.
+
+\bibliography{guide}
 
 \end{document}  

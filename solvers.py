@@ -45,7 +45,7 @@ class Solver(object):
         self.multipliers = multipliers
         
         self.calc_observables = calc_observables
-        self.calc_e = lambda s,multipliers:self.calc_observables(s).dot(multipliers)
+        self.calc_e = lambda s,multipliers:-self.calc_observables(s).dot(multipliers)
         self.calc_de = calc_de
         self.adj = adj
         
@@ -211,7 +211,7 @@ class Exact(Solver):
               tolNorm=None,
               disp=False,
               max_param_value=50,
-              fsolve_kwargs={}):
+              fsolve_kwargs={'method':'powell'}):
         """
         Params:
         ------
@@ -227,11 +227,12 @@ class Exact(Solver):
         nIters (int=30)
             number of iterations to make when sampling
         disp (bool=False)
-        fsolve_kwargs (dict={})
+        fsolve_kwargs (dict={'method':'powell'})
+            Powell method is slower but tends to converge better.
 
         Returns:
         --------
-        Output from scipy.optimize.minimize
+        Tuple of solved parameters and output from scipy.optimize.minimize
         """
         if not constraints is None:
             self.constraints = constraints
@@ -249,7 +250,8 @@ class Exact(Solver):
                 return [1e30]*len(params)
             return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
-        return minimize(f,initial_guess,**fsolve_kwargs)
+        soln = minimize(f,initial_guess,**fsolve_kwargs)
+        return soln['x'],soln
 # End Exact
 
 

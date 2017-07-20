@@ -1,9 +1,9 @@
 # File for solving the Ising model.
 
-# 13/07/2017
+# 20/07/2017
 from numpy import zeros, exp
 
-def get_stats(params):
+def calc_observables(params):
 	"""
 		Give each set of parameters separately in an array.
 	"""
@@ -29,7 +29,7 @@ def get_stats(params):
 
 	return(Cout)
 
-def get_probs(params):
+def p(params):
 	"""
 		Give each set of parameters separately in an array.
 	"""

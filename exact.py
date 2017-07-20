@@ -97,7 +97,7 @@ def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
 
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
-    f.write("function Cout = get_stats(params)\n")
+    f.write("function Cout = calc_observables(params)\n")
     f.write('\tCout = zeros('+str(sum([len(i) for i in fitterms]))+',1);\n') # string of variable declarations
     eqns = '' # string of equations to compute
     ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))+1
@@ -119,7 +119,7 @@ def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
     g.write("% File for getting the probabilities of Ising model.\n% ")
     g.write(time.strftime("%Y/%m/%d")+"\n")
     # Write equations for probabilities of all states.
-    g.write("function Pout = get_probs(params)\n")
+    g.write("function Pout = p(params)\n")
     g.write(vardec)
     g.write('\tPout = zeros('+str(2**n)+',1);\n') # string of variable declarations
 
@@ -149,7 +149,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
 
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
-    fargs = "def get_stats(params):\n"
+    fargs = "def calc_observables(params):\n"
     vardec = '\tCout = zeros(('+str(sum([len(i) for i in fitterms]))+'))\n' # string of variable declarations
     eqns = '' # string of equations to compute
     ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))
@@ -170,8 +170,8 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     f.write("\n\treturn(Cout)\n\n")
 
     # Write equations for probabilities of all states.
-    #f.write("def get_probs("+string.join([i+"," for i in abc[:len(terms)]])+"):\n")
-    f.write("def get_probs(params):\n")
+    #f.write("def p("+string.join([i+"," for i in abc[:len(terms)]])+"):\n")
+    f.write("def p(params):\n")
     f.write("\t\"\"\"\n\t\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
    
     # Output variable decs and put params into explicit parameters.
@@ -321,6 +321,18 @@ def get_nidx(k,n):
         return np.array(ix)[:,::-1] # make sure last idx increases first
 
 if __name__=='__main__':
+    """
+    When run with Python, this will write the equations for the Ising model
+    into file ising_eqn_[n][_sym] where n will be replaced by the system size
+    and the suffix '_sym' is included if the equations are written in the
+    {-1,+1} basis.
+
+    To write the Ising model equations for a system of size 3 in the {0,1} basis, call
+    >> python exact.py 3
+
+    For the {-1,1} basis, call
+    >> python exact.py 3 1
+    """
     import sys
     n = int(sys.argv[1])
     if len(sys.argv)>2:
@@ -337,4 +349,4 @@ if __name__=='__main__':
     else:
         write_eqns(n,sym,[np.where(np.ones((n))==1),
                           np.where(np.triu(np.ones((n,n)),k=1)==1)],
-                   writeto="py",suffix='_sym')
+                   writeto="py")

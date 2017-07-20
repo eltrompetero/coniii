@@ -16,11 +16,9 @@ class Solver(object):
     -------
     n (int)
         System size.
-    constraints (ndarray)
-    calc_e (function)
-        lambda samples,params: return energy
     calc_observables (function)
-        For exact: lambda params: return observables
+        Lambda function of form
+        lambda params: return observables
     multipliers (ndarray=None)
     n_jobs (int=None)
 
@@ -28,14 +26,13 @@ class Solver(object):
     -----------
     constraints (ndarray)
     calc_e (function)
-        with args (sample,parameters) where sample is 2d
+        Takes states and parameters to calculate the energies.
     calc_observables (function)
-        takes in samples as argument
+        takes in n_samples as argument and returns array of (n_samples,n_constraints)
     multipliers (ndarray)
         set the Langrangian multipliers
     """
     def __init__(self, n,
-                 calc_e=None,
                  calc_de=None,
                  calc_observables=None,
                  adj=None,
@@ -43,14 +40,13 @@ class Solver(object):
                  n_jobs=None):
         # Do basic checks on the inputs.
         assert type(n) is int
-        assert (not calc_e is None), "Must define calc_e()."
         
         self.n = n
         self.multipliers = multipliers
         
-        self.calc_e = calc_e
-        self.calc_de = calc_de
         self.calc_observables = calc_observables
+        self.calc_e = lambda s,multipliers:self.calc_observables(s).dot(multipliers)
+        self.calc_de = calc_de
         self.adj = adj
         
         self.n_jobs = n_jobs or mp.cpu_count()
@@ -64,6 +60,7 @@ class Solver(object):
         of fvec wrt to a single parameter.
         For calculation, seeing Voting I pg 83
         """
+        raise NotImplementedError
         dlamda = np.zeros(self.multipliers.shape)
         jac = np.zeros((self.multipliers.size,self.multipliers.size))
         print "evaluating jac"
@@ -174,6 +171,7 @@ class Solver(object):
 # end Solver
 
 
+
 class Exact(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
@@ -201,6 +199,8 @@ class Exact(Solver):
         set the Langrangian multipliers
     """
     def __init__(self, *args, **kwargs):
+        self.calc_observables_multipliers = kwargs['calc_observables_multipliers']
+        del kwargs['calc_observables_multipliers']
         super(Exact,self).__init__(*args,**kwargs)
 
     def solve(self,
@@ -236,7 +236,7 @@ class Exact(Solver):
         if not constraints is None:
             self.constraints = constraints
         elif not samples is None:
-            self.constraints = self.calc_observables(samples) 
+            self.constraints = self.calc_observables(samples).mean(0)
         else:
             raise Exception("Must specify either constraints or samples.")
         
@@ -247,7 +247,7 @@ class Exact(Solver):
         def f(params):
             if np.any(np.abs(params)>max_param_value):
                 return [1e30]*len(params)
-            return np.linalg.norm( self.calc_observables(params)-self.constraints )
+            return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
         return minimize(f,initial_guess,**fsolve_kwargs)
 # End Exact

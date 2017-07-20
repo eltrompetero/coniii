@@ -297,13 +297,13 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
 # ========================================= #
 # Helper functions for solving Ising model. # 
 # ========================================= #
-def define_ising_mch_helpers():
+def define_ising_helpers_functions():
     """
-    Functions for plugging into GeneralMaxentSolver for solving +/-1 Ising model.
+    Functions for plugging into solvers for +/-1 Ising model.
 
-    Value:
-    ------
-    calc_e,mch_approximation
+    Returns:
+    --------
+    calc_e,calc_observables,mch_approximation
     """
     # Defime functions necessary for solving.
     @jit(nopython=True,cache=True)

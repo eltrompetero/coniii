@@ -285,7 +285,6 @@ class MPF(Solver):
         --------
         """
         super(MPF,self).__init__(*args,**kwargs)
-        self.adj = adj
         
     @staticmethod
     def worker_objective_task( s, Xcount, adjacentStates, params, calc_e ):
@@ -458,8 +457,8 @@ class MPF(Solver):
             includeGrad = False
         X = X.astype(float)
         if initial_guess is None:
-            initial_guess = pair_corr( X, concat=True )
-   
+            initial_guess = self.calc_observables(X).mean(0)#np.zeros(self.n+self.n*(self.n-1)//2)
+         
         # Get list of unique data states and how frequently they appear.
         Xuniq = X[unique_rows(X)]
         ix = unique_rows(X,return_inverse=True)

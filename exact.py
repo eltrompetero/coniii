@@ -163,7 +163,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
             k += 1
 
     f.write(fargs)
-    f.write("\t\"\"\"\n\t\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
+    f.write("\t\"\"\"\n\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
     f.write(vardec)
     f.write("\tZ = "+Z+"\n")
     f.write(eqns)
@@ -172,7 +172,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     # Write equations for probabilities of all states.
     #f.write("def p("+string.join([i+"," for i in abc[:len(terms)]])+"):\n")
     f.write("def p(params):\n")
-    f.write("\t\"\"\"\n\t\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
+    f.write("\t\"\"\"\n\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
    
     # Output variable decs and put params into explicit parameters.
     ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))

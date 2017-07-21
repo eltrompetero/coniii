@@ -1,6 +1,7 @@
 # Module for class-based solvers for different Inverse Ising methods.
 from __future__ import division
 from scipy.optimize import minimize,fmin_ncg
+import scipy.optimize 
 import multiprocess as mp
 from utils import *
 from samplers import *
@@ -137,7 +138,7 @@ class Solver(object):
 
         sample_method = sample_method or self.sampleMethod
         sample_size = sample_size or self.sampleSize
-        if initial_sample is None and (not self.samples is None) and len(self.samples)==self.sampleSize:
+        if initial_sample is None and (not self.samples is None) and len(self.samples)==sample_size:
             initial_sample = self.samples
         
         if sample_method=='wolff':
@@ -1126,7 +1127,7 @@ class ClusterExpansion(Solver):
             deltaJdict  :
         """
         # 7.18.2017 convert input to coocMat
-        coocMat = self.coocurrence_matrix((samples+1)/2)
+        coocMat = meanFieldIsing.cooccurrence_matrix((samples+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}
@@ -1457,17 +1458,233 @@ class ClusterExpansion(Solver):
       else:
         return J
 
-    # 3.17.2014 copied from generateFightData.py
-    # 4.1.2011
-    # 7.18.2017 from SparsenessTools.py
-    def coocurrence_matrix(self,samples,keepDiag=True):
+
+
+class RegularizedMeanField(Solver):
+    def __init__(self, *args, **kwargs):
         """
+        Implementation of regularized mean field method for
+        solving the inverse Ising problem, as described in
+        Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack. 
+        ``Control of Finite Critical Behaviour in a Small-Scale
+        Social System.'' Nature Communications 8 (2017): 14301.
+        doi:10.1038/ncomms14301
+        
+        Specific to pairwise Ising constraints.
+        
+        Params:
+        -------
+        calc_e (lambda state,params)
+            function for computing energies of given state and parameters.  Should take in a 2D state array
+            and vector of parameters to compute energies.
+        adj (lambda state)
+            function for getting all the neighbors of any given state
+        calc_de (lambda=None)
+            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
+            the parameter.
+        n_jobs (int=0)
+            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
+        
+        Attributes:
+        -----------
+        
+        Methods:
+        --------
         """
-        samples = np.array(samples,dtype=float)
-        mat = np.dot(samples.T,samples)
-        if keepDiag: k=-1
-        else: k=0
-        mat *= (1 - np.tri(len(mat),k=k)) # only above diagonal
-        mat /= float(len(samples)) # mat /= np.sum(mat)
-        return mat
+        super(RegularizedMeanField,self).__init__(*args,**kwargs)
+        self.setup_sampler('metropolis')
+    
+        # Do I really need this?
+        self.samples = np.zeros(self.n)
+
+    def solve(self,samples,
+        numSamples=1e5,nSkip=None,seed=0,
+        changeSeed=False,numProcs=1,
+        numDataSamples=None,minSize=0,
+        minimizeCovariance=False,minimizeIndependent=False,
+        coocCov=None,priorLmbda=0.,verbose=True,bracket=None,
+        numGridPoints=200):
+        """
+        Varies the strength of regularization on the mean field J to
+        best fit given cooccurrence data.
+        
+        numGridPoints (200) : If bracket is given, first test at numGridPoints
+                              points evenly spaced in the bracket interval, then give
+                              the lowest three points to scipy.optimize.minimize_scalar
+        
+        numSamples (1e5)            : 
+        nSkip (None)                :
+        seed (0)                    :
+        changeSeed (False)          :
+        numProcs (1)                :
+        minSize (0)                 : 3.8.2013 Use a modified model in which
+                                      samples with fewer ones than minSize are not
+                                      allowed.
+        gradDesc (False)            : 5.29.2013 Take a naive gradient descent step
+                                      after each LM minimization
+        minimizeCovariance (False)  : ** As of 7.20.2017, not currently supported **
+                                      6.3.2013 Minimize covariance from emperical
+                                      frequencies (see notes); trying to avoid
+                                      biases, as inspired by footnote 12 in 
+                                      TkaSchBer06
+        minimizeIndependent (False) : ** As of 7.20.2017, not currently supported **
+                                      2.7.2014 Use this to get old behavior where
+                                      each <xi> and <xi xj> residual is treated
+                                      as independent
+        coocCov (None)              : 2.7.2014 Provide a covariance matrix for
+                                      residuals.  Should typically be 
+                                      coocSampleCovariance(samples).  Only used
+                                      if minimizeCovariance and minimizeIndependent
+                                      are False.
+        priorLmbda (0.)             : ** As of 7.20.2017, not currently implemented **
+                                      Strength of noninteracting prior.
+        """
+        # 7.18.2017 convert input to coocMat
+        coocMatData = meanFieldIsing.cooccurrence_matrix((samples+1)/2)
+        
+        numDataSamples = len(samples)
+        
+        if coocCov is None:
+            coocCov = meanFieldIsing.coocSampleCovariance(samples)
+        
+        if nSkip is None:
+            nSkip = 10*self.n
+        
+        if changeSeed: seedIter = meanFieldIsing.seedGenerator(seed,1)
+        else: seedIter = meanFieldIsing.seedGenerator(seed,0)
+        
+        if priorLmbda != 0.:
+            # 11.24.2014 Need to fix prior implementation
+            raise Exception, "priorLmbda is not currently supported"
+            lmbda = priorLmbda / numDataSamples
+
+        # 11.21.2014 stuff defining the error model, taken
+        #            from findJmatrixBruteForce_CoocMat
+        # 3.1.2012 I'm pretty sure the "repeated" line below should have the
+        # transpose, but coocJacobianDiagonal is not sensitive to this.  If you
+        # use non-diagonal jacobians in the future and get bad behavior you
+        # may want to double-check this.
+        if minimizeIndependent:
+            raise Exception, "minimizeIndependent is not currently supported"
+            coocStdevs = coocStdevsFlat(coocMatData,numDataSamples)
+            coocStdevsRepeated = scipy.transpose(                                   \
+                coocStdevs*scipy.ones((len(coocStdevs),len(coocStdevs))) )
+        elif minimizeCovariance:
+            raise Exception, "minimizeCovariance is not currently supported"
+            empiricalFreqs = scipy.diag(coocMatData)
+            covTildeMean = covarianceTildeMatBayesianMean(coocMatData,numDataSamples)
+            covTildeStdevs = covarianceTildeStdevsFlat(coocMatData,numDataSamples,
+                empiricalFreqs)
+            covTildeStdevsRepeated = scipy.transpose(                               \
+                covTildeStdevs*scipy.ones((len(covTildeStdevs),len(covTildeStdevs))) )
+        else:
+            # 2.7.2014
+            if coocCov is None: raise Exception
+            cov = coocCov # / numDataSamples (can't do this here due to numerical issues)
+                          # instead include numDataSamples in the calculation of coocMatMeanZSq
+
+        # 11.21.2014 for use in gammaPrime <-> priorLmbda
+        freqsList = np.diag(coocMatData)
+        pmean = np.mean(freqsList)
+        
+        # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
+        def samples(J):
+           seed = seedIter.next()
+           #print seed
+           #J = unflatten(flatJ,ell,symmetrize=True)
+           if minimizeCovariance:
+               J = tildeJ2normalJ(J,empiricalFreqs)
+           # 7.20.2017 Bryan's old sampler
+           #if numProcs > 1:
+           #    isingSamples = metropolisSampleIsing_pypar(numProcs,J,
+           #                       numSamples,startConfig=None,nSkip=nSkip,
+           #                       seed=seed,minSize=minSize)
+           #else:
+           #    isingSamples = metropolisSampleIsing(J,
+           #                     numSamples,startConfig=None,nSkip=nSkip,
+           #                     seed=seed,minSize=minSize)
+           burninDefault = 100*self.n
+           J = J + J.T
+           self._multipliers = np.concatenate([J.diagonal(),squareform(meanFieldIsing.zeroDiag(-J))])
+           isingSamples = self.generate_samples(nSkip,burninDefault,int(numSamples),'metropolis')
+           isingSamples = np.array(isingSamples,dtype=float)
+           return isingSamples
+
+        # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
+        def func(meanFieldGammaPrime):
+            
+            # translate gammaPrime prior strength to lambda prior strength
+            meanFieldPriorLmbda = meanFieldGammaPrime / (pmean**2 * (1.-pmean)**2)
+            
+            # calculate regularized mean field J
+            J = meanFieldIsing.JmeanField(coocMatData,
+                                          meanFieldPriorLmbda=meanFieldPriorLmbda,
+                                          numSamples=numDataSamples)
+
+            # sample from J
+            isingSamples = samples(J)
+            
+            # calculate residuals, including prior if necessary
+            if minimizeIndependent: # Default as of 4.2.2015
+                dc = isingDeltaCooc(isingSamples,coocMatData)/coocStdevs
+            elif minimizeCovariance:
+                dc = isingDeltaCovTilde(isingSamples,covTildeMean,
+                                          empiricalFreqs)/covTildeStdevs
+            else:
+                dc = meanFieldIsing.isingDeltaCooc(isingSamples,coocMatMean)
+                if priorLmbda != 0.:
+                    # new prior 3.24.2014
+                    # 11.21.2014 oops, I think this should be square-rooted XXX
+                    # 11.21.2014 oops, should also apply in minimizeIndependent case XXX
+                    freqs = scipy.diag(coocMatData)
+                    factor = scipy.outer(freqs*(1.-freqs),freqs*(1.-freqs))
+                    factorFlat = aboveDiagFlat(factor)
+                    priorTerm = lmbda * factorFlat * flatJ[ell:]**2
+                
+                dc = np.concatenate([dc,priorTerm])
+                
+            if verbose:
+                print "RegularizedMeanField.solve: Tried "+str(meanFieldGammaPrime)
+                print "RegularizedMeanField.solve: sum(dc**2) = "+str(np.sum(dc**2))
+                
+            return np.sum(dc**2)
+
+        if bracket is not None:
+            gridPoints = np.linspace(bracket[0],bracket[1],numGridPoints)
+            gridResults = [ func(p) for p in gridPoints ]
+            gridBracket = self.bracket1d(gridPoints,gridResults)
+            solution = scipy.optimize.minimize_scalar(func,bracket=gridBracket)
+        else:
+            solution = scipy.optimize.minimize_scalar(func)
+
+        gammaPrimeMin = solution['x']
+        meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)
+        J = JmeanField(coocMatData,meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
+                   numSamples=numDataSamples)
+
+        # 7.18.2017 convert J to {-1,1}
+        h = -J.diagonal()
+        J = -meanFieldIsing.zeroDiag(J)
+        self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
+
+        return self.multipliers
+
+    # 3.18.2016
+    def bracket1d(self,xList,funcList):
+        """
+        *** Assumes xList is monotonically increasing
+        
+        Get bracketed interval (a,b,c) with a < b < c, and f(b) < f(a) and f(c).
+        (Choose b and c to make f(b) and f(c) as small as possible.)
+        
+        If minimum is at one end, raise error.
+        """
+        gridMinIndex = np.argmin(funcList)
+        gridMin = xList[gridMinIndex]
+        if (gridMinIndex == 0) or (gridMinIndex == len(xList)-1):
+            raise Exception, "Minimum at boundary"
+        gridBracket1 = xList[ np.argmin(funcList[:gridMinIndex]) ]
+        gridBracket2 = xList[ gridMinIndex + 1 + np.argmin(funcList[gridMinIndex+1:]) ]
+        gridBracket = (gridBracket1,gridMin,gridBracket2)
+        return gridBracket
 

@@ -8,6 +8,7 @@ import scipy
 import scipy.optimize
 import pylab
 import copy
+#import scipy.weave # for efficient fourth-order matrix calculation
 
 exp,cosh = scipy.exp,scipy.cosh
 dot = scipy.dot
@@ -379,6 +380,106 @@ def analyticEntropy(J):
     p = Z / scipy.sum(Z)
     return - scipy.sum( p * scipy.log(p) )
 
+# 7.20.2017 moved from inverseIsing.py
+# 2.7.2014
+def coocSampleCovariance(samples,bayesianMean=True,includePrior=True):
+    """
+    includePrior (True)             : Include diagonal component corresponding
+                                      to ell*(ell-1)/2 prior residuals for
+                                      interaction parameters
+    """
+    coocs4 = fourthOrderCoocMat(samples)
+    if bayesianMean:
+        #coocs4mean = coocMatBayesianMean(coocs4,len(samples))
+        print "coocSampleCovariance : WARNING : using ad-hoc 'Laplace' correction"
+        N = len(samples)
+        newDiag = (scipy.diag(coocs4)*N + 1.)/(N + 2.)
+        coocs4mean = replaceDiag(coocs4,newDiag)
+    else:
+        coocs4mean = coocs4
+    cov = coocs4mean*(1.-coocs4mean)
+    if includePrior:
+        ell = len(samples[0])
+        one = scipy.ones(ell*(ell-1)/2)
+        return scipy.linalg.block_diag( cov, scipy.diag(one) )
+    else:
+        return cov
+
+# 7.20.2017 moved from inverseIsing.py
+# 4.11.2011
+# 1.12.2012 changed to take coocMatDesired instead of dataSamples
+def isingDeltaCooc(isingSamples,coocMatDesired):
+    isingCooc = cooccurranceMatrixFights(isingSamples,keepDiag=True)
+    #dataCooc = cooccurranceMatrixFights(dataSamples,keepDiag=True)
+    return aboveDiagFlat(isingCooc-coocMatDesired,keepDiag=True)
+
+# 7.18.2017 from SparsenessTools.cooccurranceMatrixFights
+# 3.17.2014 copied from generateFightData.py
+# 4.1.2011
+def cooccurrence_matrix(samples,keepDiag=True):
+    """
+    """
+    samples = scipy.array(samples,dtype=float)
+    mat = scipy.dot(samples.T,samples)
+    if keepDiag: k=-1
+    else: k=0
+    mat *= (1 - scipy.tri(len(mat),k=k)) # only above diagonal
+    mat /= float(len(samples)) # mat /= np.sum(mat)
+    return mat
+
+# 7.20.2017 moved from inverseIsing.py
+# 7.20.2017 TO DO: change to slowMethod=False by incorporating weave or something else
+# 2.17.2012
+def fourthOrderCoocMat(samples,slowMethod=True):
+    ell = len(samples[0])
+    samples = scipy.array(samples)
+    jdim = (ell+1)*ell/2
+    f = scipy.zeros((jdim,jdim))
+    
+    if slowMethod:
+        for i in range(ell):
+          for j in range(i,ell):
+            for m in range(i,ell):
+              for n in range(m,ell):
+                coocIndex1 = diagFlatIndex(i,j,ell)
+                coocIndex2 = diagFlatIndex(m,n,ell)
+                cooc = scipy.sum(                                           \
+                    samples[:,i]*samples[:,j]*samples[:,m]*samples[:,n])
+                f[coocIndex1,coocIndex2] = cooc
+                f[coocIndex2,coocIndex1] = cooc
+    else:
+        code = """
+        int coocIndex1,coocIndex2;
+        float coocSum;
+        for (int i=0; i<ell; i++){
+          for (int j=i; j<ell; j++){
+            for (int m=i; m<ell; m++){
+              for (int n=m; n<ell; n++){
+                coocIndex1 = i + (j-i)*ell - (j-i)*(j-i-1)/2;
+                coocIndex2 = m + (n-m)*ell - (n-m)*(n-m-1)/2;
+                coocSum = 0.;
+                for (int k=0; k<numFights; k++){
+                  coocSum += samples(k,i)*samples(k,j)*samples(k,m)*samples(k,n);
+                }
+                f(coocIndex1,coocIndex2) = coocSum;
+                f(coocIndex2,coocIndex1) = coocSum;
+              }
+            }
+          }
+        }
+        """
+        numFights = len(samples)
+        err = scipy.weave.inline(code,                                      \
+            ['f','samples','numFights','ell'],                              \
+            type_converters = scipy.weave.converters.blitz)
+    return f/float(len(samples))
+
+# 7.20.2017 moved from inverseIsing.py
+# 1.30.2012
+def seedGenerator(seedStart,deltaSeed):
+    while True:
+        seedStart += deltaSeed
+        yield seedStart
 
 # --- exact Ising code below ---
 # 7.18.2017 For now, this uses Bryan's code.  Could be updated to use coniii's

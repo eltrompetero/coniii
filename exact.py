@@ -93,7 +93,7 @@ def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
     f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
     f.write("% File for solving the Ising model.\n% ")
     f.write(time.strftime("%Y/%m/%d")+"\n")
-    f.write("% Give each set of parameters separately in an array.\n\n")
+    f.write("% Give each set of parameters concatenated into one array.\n\n")
 
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
@@ -163,7 +163,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
             k += 1
 
     f.write(fargs)
-    f.write("\t\"\"\"\n\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
+    f.write("\t\"\"\"\n\tGive each set of parameters concatenated into one array.\n\t\"\"\"\n")
     f.write(vardec)
     f.write("\tZ = "+Z+"\n")
     f.write(eqns)
@@ -172,7 +172,8 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     # Write equations for probabilities of all states.
     #f.write("def p("+string.join([i+"," for i in abc[:len(terms)]])+"):\n")
     f.write("def p(params):\n")
-    f.write("\t\"\"\"\n\tGive each set of parameters separately in an array.\n\t\"\"\"\n")
+    f.write("\t\"\"\"\n\tGive each set of parameters concatenated into one array.\n\t\"\"\"\n")
+    f.write(vardec)
    
     # Output variable decs and put params into explicit parameters.
     ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))

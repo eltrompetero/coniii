@@ -481,6 +481,33 @@ def seedGenerator(seedStart,deltaSeed):
         seedStart += deltaSeed
         yield seedStart
 
+# 7.25.2017 moved from inverseIsing.py
+# 2.21.2013
+def coocStdevsFlat(coocMat,numFights):
+    """
+    Returns a flattened expected standard deviation matrix used
+    to divide deltaCooc to turn it into z scores.
+    """
+    coocMatMean = coocMatBayesianMean(coocMat,numFights)
+    varianceMatFlat = aboveDiagFlat(coocMatMean*(1.-coocMatMean)/numFights,keepDiag=True)
+    return scipy.sqrt(varianceMatFlat)
+
+# 7.25.2017 moved from inverseIsing.py
+# 3.5.2013
+def coocMatBayesianMean(coocMat,numFights):
+    """
+    Using "Laplace's method"
+    """
+    return (coocMat*numFights + 1.)/(numFights + 2.)
+
+# 7.25.2017 moved from inverseIsing.py
+# 4.11.2011
+# 1.12.2012 changed to take coocMatDesired instead of dataSamples
+def isingDeltaCooc(isingSamples,coocMatDesired):
+    isingCooc = cooccurrence_matrix(isingSamples)
+    return aboveDiagFlat(isingCooc-coocMatDesired,keepDiag=True)
+
+
 # --- exact Ising code below ---
 # 7.18.2017 For now, this uses Bryan's code.  Could be updated to use coniii's
 # exact inverse ising solver.

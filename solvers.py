@@ -1501,7 +1501,7 @@ class RegularizedMeanField(Solver):
         numSamples=1e5,nSkip=None,seed=0,
         changeSeed=False,numProcs=1,
         numDataSamples=None,minSize=0,
-        minimizeCovariance=False,minimizeIndependent=False,
+        minimizeCovariance=False,minimizeIndependent=True,
         coocCov=None,priorLmbda=0.,verbose=True,bracket=None,
         numGridPoints=200):
         """
@@ -1527,11 +1527,12 @@ class RegularizedMeanField(Solver):
                                       frequencies (see notes); trying to avoid
                                       biases, as inspired by footnote 12 in 
                                       TkaSchBer06
-        minimizeIndependent (False) : ** As of 7.20.2017, not currently supported **
-                                      2.7.2014 Use this to get old behavior where
-                                      each <xi> and <xi xj> residual is treated
+        minimizeIndependent (True)  : ** As of 7.20.2017, minimizeIndependent is 
+                                         the only mode currently supported **
+                                      2.7.2014 Each <xi> and <xi xj> residual is treated
                                       as independent
-        coocCov (None)              : 2.7.2014 Provide a covariance matrix for
+        coocCov (None)              : ** As of 7.20.2017, not currently supported **
+                                      2.7.2014 Provide a covariance matrix for
                                       residuals.  Should typically be 
                                       coocSampleCovariance(samples).  Only used
                                       if minimizeCovariance and minimizeIndependent
@@ -1565,8 +1566,7 @@ class RegularizedMeanField(Solver):
         # use non-diagonal jacobians in the future and get bad behavior you
         # may want to double-check this.
         if minimizeIndependent:
-            raise Exception, "minimizeIndependent is not currently supported"
-            coocStdevs = coocStdevsFlat(coocMatData,numDataSamples)
+            coocStdevs = meanFieldIsing.coocStdevsFlat(coocMatData,numDataSamples)
             coocStdevsRepeated = scipy.transpose(                                   \
                 coocStdevs*scipy.ones((len(coocStdevs),len(coocStdevs))) )
         elif minimizeCovariance:
@@ -1578,6 +1578,7 @@ class RegularizedMeanField(Solver):
             covTildeStdevsRepeated = scipy.transpose(                               \
                 covTildeStdevs*scipy.ones((len(covTildeStdevs),len(covTildeStdevs))) )
         else:
+            raise Exception, "correlated residuals calculation is not currently supported"
             # 2.7.2014
             if coocCov is None: raise Exception
             cov = coocCov # / numDataSamples (can't do this here due to numerical issues)
@@ -1606,8 +1607,8 @@ class RegularizedMeanField(Solver):
            burninDefault = 100*self.n
            J = J + J.T
            self._multipliers = np.concatenate([J.diagonal(),squareform(meanFieldIsing.zeroDiag(-J))])
-           isingSamples = self.generate_samples(nSkip,burninDefault,int(numSamples),'metropolis')
-           isingSamples = np.array(isingSamples,dtype=float)
+           self.generate_samples(nSkip,burninDefault,int(numSamples),'metropolis')
+           isingSamples = np.array(self.samples,dtype=float)
            return isingSamples
 
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
@@ -1626,7 +1627,7 @@ class RegularizedMeanField(Solver):
             
             # calculate residuals, including prior if necessary
             if minimizeIndependent: # Default as of 4.2.2015
-                dc = isingDeltaCooc(isingSamples,coocMatData)/coocStdevs
+                dc = meanFieldIsing.isingDeltaCooc(isingSamples,coocMatData)/coocStdevs
             elif minimizeCovariance:
                 dc = isingDeltaCovTilde(isingSamples,covTildeMean,
                                           empiricalFreqs)/covTildeStdevs
@@ -1659,8 +1660,10 @@ class RegularizedMeanField(Solver):
 
         gammaPrimeMin = solution['x']
         meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)
-        J = JmeanField(coocMatData,meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
-                   numSamples=numDataSamples)
+        J = meanFieldIsing.JmeanField(coocMatData,
+                                      meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
+                                      numSamples=numDataSamples)
+        J = J + J.T
 
         # 7.18.2017 convert J to {-1,1}
         h = -J.diagonal()

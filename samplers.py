@@ -1436,14 +1436,15 @@ class MCIsing(object):
                               systematic_iter=False,
                               ):
         """
-        Generate samples in parallel while a subset of the spins are held fixed.
+        Generate samples from conditional distribution (while a subset of the
+        spins are held fixed). Samples are generated in parallel.
 
         Params:
         -------
         sample_size
         fixed_subset (list of duples)
-            Each duple is the index of the spin and the value to fix it at. These should be ordered by spin
-            index.
+            Each duple is the index of the spin and the value to fix it at.
+            These should be ordered by spin index.
         n_iters (int=1000)
         cpucount (int=None)
         initial_sample (ndarray=None)

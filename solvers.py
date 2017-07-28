@@ -743,9 +743,15 @@ class Pseudo(Solver):
         """
         Pseudolikelihood approximation to solving the inverse Ising problem as described in
         Aurell and Ekeberg, PRL 108, 090201 (2012).
+
+        For this technique, must specify how to calculate the energy specific to the conditional 
+        probability of spin r given the rest of the spins. These will be passed in with "get_observables_r"
+        and "calc_observables_r".
         
         Params:
         -------
+        get_observables_r
+        calc_observables_r
         
         Attributes:
         -----------
@@ -753,10 +759,37 @@ class Pseudo(Solver):
         Methods:
         --------
         """
+        self.calc_observables_r = kwargs['calc_observables_r']
+        self.get_multipliers_r = kwargs['get_multipliers_r']
+        del kwargs['calc_observables_r'],kwargs['get_multipliers_r']
         super(Pseudo,self).__init__(*args,**kwargs)
 
-    def solve(self,X=None):
+    def solve(self,X=None,initial_guess=None):
         """
+        Solve for Langrangian parameters according to pseudolikelihood algorithm.
+
+        Params:
+        -------
+        X (ndarray)
+            Data set. (n_samples, n_dim)
+        initial_guess (ndarray)
+            Initial guess for the parameter values.
+        """
+        def f(params):
+            loglikelihood = 0
+            for r in xrange(self.n):
+                E = -self.calc_observables_r(r,X).dot(self.get_multipliers_r(r,params))
+                loglikelihood += -np.log( 1+np.exp(2*E) ).sum() 
+            return -loglikelihood
+        
+        soln = minimize(f,initial_guess)
+        self.multipliers = soln['x']
+        return soln
+
+    def _solve(self,X=None,initial_guess=None):
+        """
+        Method for solving Ising model specifically.
+
         Params:
         -------
         X (ndarray)

@@ -17,7 +17,7 @@ class Solver(object):
     n (int)
         System size.
     calc_observables (function)
-        Lambda function of form
+        Lambda function 
         lambda params: return observables
     multipliers (ndarray=None)
     n_jobs (int=None)
@@ -175,8 +175,7 @@ class Solver(object):
 class Exact(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
-    in arbitrary constraints.  I chose the symmetric model since that seems more natural for parameter
-    interpretation and it does not usually take up much more space for code.
+    in arbitrary constraints.
 
     Params:
     -------
@@ -760,7 +759,8 @@ class Pseudo(Solver):
         """
         Params:
         -------
-        X
+        X (ndarray)
+            Data set. (n_samples, n_dim)
         """
         X = (X + 1)/2  # change from {-1,1} to {0,1}
         
@@ -789,108 +789,110 @@ class Pseudo(Solver):
 
         Jfinal = -0.5*( Jfinal + Jfinal.T )
         hfinal = Jfinal[np.diag_indices(self.n)]
+
+        # Convert parameters into {-1,1} basis as is standard.
         Jfinal[np.diag_indices(self.n)] = 0
         self.multipliers = convert_params( hfinal,squareform(Jfinal)*2,'11',concat=True )
 
         return self.multipliers
 
-    def cond_log_likelihood(self,r,samples,Jr):
+    def cond_log_likelihood(self,r,X,Jr):
         """
-        Equals -L_r.
+        Equals the conditional log likelihood -L_r.
         
         Params:
         -------
         r (int)
             individual index
-        samples (ndarray)
-            binary matrix, (# samples) x (dimension of system)
+        X (ndarray)
+            binary matrix, (# X) x (dimension of system)
         Jr (ndarray)
             (dimension of system) x (1)
         """
-        samples,Jr = np.array(samples),np.array(Jr)
+        X,Jr = np.array(X),np.array(Jr)
         
-        sigmaRtilde = (2.*samples[:,r] - 1.)
-        samplesRhat = 2.*samples.copy()
-        samplesRhat[:,r] = np.ones(len(samples))
-        localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
-        energies = sigmaRtilde * localFields # (# samples)x(1)
+        sigmaRtilde = (2.*X[:,r] - 1.)
+        samplesRhat = 2.*X.copy()
+        samplesRhat[:,r] = np.ones(len(X))
+        localFields = np.dot(Jr,samplesRhat.T) # (# X)x(1)
+        energies = sigmaRtilde * localFields # (# X)x(1)
         
         invPs = 1. + np.exp( energies )
         logLs = np.log( invPs )
 
         return -logLs.sum()
 
-    def cond_jac(self,r,samples,Jr):
+    def cond_jac(self,r,X,Jr):
         """
         Returns d cond_log_likelihood / d Jr,
         with shape (dimension of system)
         """
-        samples,Jr = np.array(samples),np.array(Jr)
+        X,Jr = np.array(X),np.array(Jr)
         
-        sigmaRtilde = (2.*samples[:,r] - 1.)
-        samplesRhat = 2.*samples.copy()
-        samplesRhat[:,r] = np.ones(len(samples))
-        localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
-        energies = sigmaRtilde * localFields # (# samples)x(1)
+        sigmaRtilde = (2.*X[:,r] - 1.)
+        samplesRhat = 2.*X.copy()
+        samplesRhat[:,r] = np.ones(len(X))
+        localFields = np.dot(Jr,samplesRhat.T) # (# X)x(1)
+        energies = sigmaRtilde * localFields # (# X)x(1)
         
-        coocs = np.repeat([sigmaRtilde],self.n,axis=0).T * samplesRhat # (#samples)x(self.n)
+        coocs = np.repeat([sigmaRtilde],self.n,axis=0).T * samplesRhat # (#X)x(self.n)
 
         return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
 
-    def cond_hess(self,r,samples,Jr,pairCoocRhat=None):
+    def cond_hess(self,r,X,Jr,pairCoocRhat=None):
         """
         Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
         (dimension of system)x(dimension of system)
 
         Current implementation uses more memory for speed.
-        For large #samples, it may make sense to break up differently
+        For large sample size, it may make sense to break up differently
         if too much memory is being used.
 
         Params:
         -------
         pairCooc (None)
-            Pass pair_cooc_mat(samples) to speed calculation.
+            Pass pair_cooc_mat(X) to speed calculation.
         """
-        samples,Jr = np.array(samples),np.array(Jr)
+        X,Jr = np.array(X),np.array(Jr)
         
-        sigmaRtilde = (2.*samples[:,r] - 1.)
-        samplesRhat = 2.*samples.copy()
-        samplesRhat[:,r] = np.ones(len(samples))
-        localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
-        energies = sigmaRtilde * localFields # (# samples)x(1)
+        sigmaRtilde = (2.*X[:,r] - 1.)
+        samplesRhat = 2.*X.copy()
+        samplesRhat[:,r] = np.ones(len(X))
+        localFields = np.dot(Jr,samplesRhat.T) # (# X)x(1)
+        energies = sigmaRtilde * localFields # (# X)x(1)
         
-        # pairCooc has shape (# samples)x(n)x(n)
+        # pairCooc has shape (# X)x(n)x(n)
         if pairCoocRhat is None:
             pairCoocRhat = self.pair_cooc_mat(samplesRhat)
         
-        energyMults = np.exp(-energies)/( (1.+np.exp(-energies))**2 ) # (# samples)x(1)
-        #filteredSigmaRtildeSq = filterVec * (2.*samples[:,r] + 1.) # (# samples)x(1)
+        energyMults = np.exp(-energies)/( (1.+np.exp(-energies))**2 ) # (# X)x(1)
+        #filteredSigmaRtildeSq = filterVec * (2.*X[:,r] + 1.) # (# X)x(1)
         return np.dot( energyMults, pairCoocRhat )
 
-    def pair_cooc_mat(self,samples):
+    def pair_cooc_mat(self,X):
         """
-        Returns matrix of shape (self.n)x(# samples)x(self.n).
+        Returns matrix of shape (self.n)x(# X)x(self.n).
         
         For use with cond_hess.
         
         Slow because I haven't thought of a better way of doing it yet.
         """
-        p = [ np.outer(f,f) for f in samples ]
+        p = [ np.outer(f,f) for f in X ]
         return np.transpose(p,(1,0,2))
 
-    def pseudo_log_likelhood(self,samples,J):
+    def pseudo_log_likelhood(self,X,J):
         """
         (Could probably be made more efficient.)
 
         Params:
         -------
-        samples
-            binary matrix, (# samples) x (dimension of system)
+        X
+            binary matrix, (# of samples) x (dimension of system)
         J
             (dimension of system) x (dimension of system)
             J should be symmetric
         """
-        return np.sum([ cond_log_likelihood(r,samples,J) \
+        return np.sum([ cond_log_likelihood(r,X,J) \
                            for r in xrange(len(J)) ])
 # End Pseudo
 
@@ -1100,21 +1102,29 @@ class ClusterExpansion(Solver):
 
     # "Algorithm 2"
     # was "adaptiveClusterExpansion"
-    def solve(self,samples,threshold,
+    def solve(self,X,threshold,
               cluster=None,deltaSdict=None,deltaJdict=None,
               verbose=True,priorLmbda=0.,numSamples=None,
               meanFieldRef=False,independentRef=True,veryVerbose=False,
               meanFieldPriorLmbda=None,return_all=False):
         """
-        samples         :
-        threshold       :
-        meanFieldRef (False)    : Expand about mean-field reference
-        independentRef (True)   : Expand about independent reference
-        priorLmbda (0.) : Strength of non-interacting prior
-        meanFieldPriorLmbda (None): Strength of non-interacting prior in
-                                    mean field calculation (defaults
-                                    to priorLmbda)
+        Params:
+        -------
+        X (array-like)
+            Data set (n_samples,n_dim).
+        threshold (float)
+        meanFieldRef (False)
+            Expand about mean-field reference
+        independentRef (True)
+            Expand about independent reference
+        priorLmbda (0.)
+            Strength of non-interacting prior
+        meanFieldPriorLmbda (None)
+            Strength of non-interacting prior in mean field calculation
+            (defaults to priorLmbda)
         
+        Returns:
+        --------
         With return_all=False, returns
             J           : Estimated interaction matrix
         
@@ -1126,7 +1136,7 @@ class ClusterExpansion(Solver):
             deltaJdict  :
         """
         # 7.18.2017 convert input to coocMat
-        coocMat = self.coocurrence_matrix((samples+1)/2)
+        coocMat = self.coocurrence_matrix((X+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}

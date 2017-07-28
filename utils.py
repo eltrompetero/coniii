@@ -299,6 +299,8 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
 # ========================================= #
 def define_pseudo_ising_helpers(N):
     """
+    Define helper functions for using Pseudo method on fully connected Ising model.
+
     Params:
     -------
     N (int)
@@ -308,6 +310,11 @@ def define_pseudo_ising_helpers(N):
     def get_multipliers_r(r,multipliers):
         """
         Return the parameters relevant for calculating the conditional probability of spin r.
+
+        Params:
+        -------
+        r (int)
+        multipliers (ndarray)
         """
         ix = np.arange(N)
         ix[0] = r  # index for local field
@@ -326,6 +333,12 @@ def define_pseudo_ising_helpers(N):
     def calc_observables_r(r,X):
         """
         Return the observables relevant for calculating the conditional probability of spin r.
+
+        Params:
+        -------
+        r (int)
+        X (ndarray)
+            Data samples (n_samples, n_dim)
         """
         obs = np.zeros((X.shape[0],N))
         

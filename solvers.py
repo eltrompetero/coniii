@@ -750,14 +750,21 @@ class Pseudo(Solver):
         
         Params:
         -------
-        get_observables_r
+        get_multipliers_r (function)
+            Takes index r and multipliers.
         calc_observables_r
+            Takes index r and samples X.
         
         Attributes:
         -----------
-        
+                
         Methods:
         --------
+        solve
+        _solve
+        cond_log_likelihood
+        cond_jac
+        cond_hess
         """
         self.calc_observables_r = kwargs['calc_observables_r']
         self.get_multipliers_r = kwargs['get_multipliers_r']

@@ -250,6 +250,7 @@ class Exact(Solver):
             return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
         soln = minimize(f,initial_guess,**fsolve_kwargs)
+        self.multipliers = soln['x']
         return soln['x'],soln
 # End Exact
 

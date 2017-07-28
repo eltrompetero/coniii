@@ -784,7 +784,7 @@ class Pseudo(Solver):
         
         soln = minimize(f,initial_guess)
         self.multipliers = soln['x']
-        return soln
+        return soln['x'],soln
 
     def _solve(self,X=None,initial_guess=None):
         """

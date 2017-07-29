@@ -1459,6 +1459,7 @@ class MCIsing(object):
             self.samples = initial_sample
         
         # Redefine calc_e to account for fixed spins.
+        # NOTE: This can probably be sped up.
         def cond_calc_e(state,theta):
             for i,s in fixed_subset:
                 state = np.insert(state,i,s)
@@ -1468,7 +1469,7 @@ class MCIsing(object):
         # Parallel sample.
         if not systematic_iter:
             def f(args):
-                s,E,seed = args
+                s,E,n_iters,seed = args
                 rng = np.random.RandomState(seed)
                 for j in xrange(n_iters):
                     de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
@@ -1476,7 +1477,7 @@ class MCIsing(object):
                 return s,E
         else:
             def f(args):
-                s,E,seed=args
+                s,E,n_iters,seed=args
                 rng=np.random.RandomState(seed)
                 for j in xrange(n_iters):
                     de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
@@ -1486,6 +1487,7 @@ class MCIsing(object):
         pool=mp.Pool(cpucount)
         self.samples,self.E=zip(*pool.map(f,zip(self.samples,
                                 self.E,
+                                [n_iters]*len(self.E),
                                 np.random.randint(2**31-1,size=sample_size))))
         pool.close()
         self.samples = np.vstack(self.samples)

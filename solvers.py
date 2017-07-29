@@ -863,8 +863,9 @@ class MCHIncompleteData(MCH):
         fullFraction = (len(X)-incompleteIx.sum())/len(X)
         
         # Sample.
-        self.generate_samples(n_iters,burnin,
-                              generate_kwargs=generate_kwargs)
+        if fullFraction>0:
+            self.generate_samples(n_iters,burnin,
+                                  generate_kwargs=generate_kwargs)
         self.condSamples = []
         for s in uIncompleteStates:
             frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
@@ -890,6 +891,8 @@ class MCHIncompleteData(MCH):
             if disp=='detailed':
                 print "After MCH step, the parameters are..."
                 print self._multipliers
+
+            # Sample.
             if disp:
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,

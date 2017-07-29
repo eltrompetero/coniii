@@ -1430,7 +1430,7 @@ class MCIsing(object):
 
     def generate_cond_samples(self,sample_size,
                               fixed_subset,
-                              n_iters=1000,
+                              burn_in=1000,
                               cpucount=None,
                               initial_sample=None,
                               systematic_iter=False,
@@ -1445,7 +1445,7 @@ class MCIsing(object):
         fixed_subset (list of duples)
             Each duple is the index of the spin and the value to fix it at.
             These should be ordered by spin index.
-        n_iters (int=1000)
+        burn_in (int=1000)
         cpucount (int=None)
         initial_sample (ndarray=None)
         systematic_iter (bool=False)
@@ -1458,39 +1458,47 @@ class MCIsing(object):
         else:
             self.samples = initial_sample
         
-        # Redefine calc_e to account for fixed spins.
-        # NOTE: This can probably be sped up.
+        # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state,theta):
-            for i,s in fixed_subset:
-                state = np.insert(state,i,s)
-            return self.calc_e(state[None,:],theta)
-        self.E = np.array([ cond_calc_e( s, self.theta ) for s in self.samples ])
+            fullstate = np.zeros(self.n)
+            i0 = 0
+            stateix = 0
+            for i,s in fixed_subset: 
+                for ii in xrange(i0,i):
+                    fullstate[ii] = state[0,stateix] 
+                    stateix += 1
+                fullstate[i] = s
+                i0 = i+1
+            for ii in xrange(i0,self.n):
+                fullstate[ii] = state[0,stateix]
+                stateix += 1
+            return self.calc_e(fullstate[None,:],theta)
+        self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
         
         # Parallel sample.
         if not systematic_iter:
             def f(args):
-                s,E,n_iters,seed = args
+                s,E,seed = args
                 rng = np.random.RandomState(seed)
-                for j in xrange(n_iters):
+                for j in xrange(burn_in):
                     de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
                     E += de
                 return s,E
         else:
             def f(args):
-                s,E,n_iters,seed=args
+                s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(n_iters):
+                for j in xrange(burn_in):
                     de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
                     E += de
                 return s,E
         
         pool=mp.Pool(cpucount)
         self.samples,self.E=zip(*pool.map(f,zip(self.samples,
-                                self.E,
-                                [n_iters]*len(self.E),
-                                np.random.randint(2**31-1,size=sample_size))))
-        pool.close()
+                                                self.E,
+                                                np.random.randint(2**31-1,size=sample_size))))
         self.samples = np.vstack(self.samples)
+        pool.close()
 
         # Insert fixed spins back in.
         counter = 0

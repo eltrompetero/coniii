@@ -784,8 +784,8 @@ class MCHIncompleteData(MCH):
         self.condSamples = []
         
     def solve(self,
-              constraints=None,
               X=None,
+              constraints=None,
               initial_guess=None,
               cond_sample_size=100,
               cond_sample_iters=100,
@@ -803,11 +803,16 @@ class MCHIncompleteData(MCH):
         
         Params:
         ------
+        X (ndarray)
+        constraints (ndarray)
+            Constraints calculated from the incomplete data (accounting for missing data points).
         initial_guess (ndarray=None)
             initial starting point
         cond_sample_size (int or function)
-            If function, will be passed number of missing spins and must return an int.
+            Number of samples to make for conditional distribution.
+            If function is passed in, it will be passed number of missing spins and must return an int.
         cond_sample_iters (int or function)
+            Number of MC iterations to make between samples.
         tol (float=None)
             maximum error allowed in any observable
         tolNorm (float)
@@ -827,15 +832,17 @@ class MCHIncompleteData(MCH):
         errors (ndarray)
             Errors in matching constraints at each step of iteration.
         """
-        assert not X is None
-        self.constraints = self.calc_observables(X).mean(0)
+        # Check args.
+        import types
+        assert not X is None and not constraints is None, "Must provide data and constriants."
+        self.constraints = constraints
         if type(cond_sample_size) is int:
             f_cond_sample_size = lambda n: cond_sample_size
-        elif type(cond_sample_size) is function:
+        elif type(cond_sample_size) is types.FunctionType:
             f_cond_sample_size = cond_sample_size 
         if type(cond_sample_iters) is int:
             f_cond_sample_iters = lambda n: cond_sample_iters
-        elif type(cond_sample_iters) is function:
+        elif type(cond_sample_iters) is types.FunctionType:
             f_cond_sample_iters = cond_sample_iters 
 
         # Set initial guess for parameters.
@@ -846,18 +853,19 @@ class MCHIncompleteData(MCH):
             self._multipliers = np.zeros((len(self.constraints)))
         tol = tol or 1/np.sqrt(self.sampleSize)
         tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
+        errors = []  # history of errors to track
 
-        # Get unique incomplete points.
+        # Get unique incomplete data points.
         incompleteIx = (X==0).any(1)
         uIncompleteStates = X[incompleteIx][unique_rows(X[incompleteIx])]
         uIncompleteStatesCount = np.bincount( unique_rows(X[incompleteIx],
                                                           return_inverse=True) )
         fullFraction = (len(X)-incompleteIx.sum())/len(X)
-
-        errors = []  # history of errors to track
         
+        # Sample.
         self.generate_samples(n_iters,burnin,
                               generate_kwargs=generate_kwargs)
+        self.condSamples = []
         for s in uIncompleteStates:
             frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
             self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
@@ -866,11 +874,11 @@ class MCHIncompleteData(MCH):
             self.condSamples.append( self.sampler.samples.copy() )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
-        if disp=='detailed': print self._multipliers
         
         # MCH iterations.
         counter = 0
         keepLoop = True
+        if disp=='detailed': print self._multipliers
         while keepLoop:
             if disp:
                 print "Iterating parameters with MCH..."
@@ -926,6 +934,12 @@ class MCHIncompleteData(MCH):
         Params:
         -------
         estConstraints (ndarray)
+        fullFraction (float)
+            Fraction of data points that are complete.
+        uIncompleteStates (list-like)
+            Unique incomplete states in data.
+        uIncompleteStatesCount (list-like)
+            Frequency of each unique data point.
         maxdlamda (float=1)
         maxdlamdaNorm (float=1)
         maxLearningSteps (int)
@@ -953,11 +967,18 @@ class MCHIncompleteData(MCH):
             #dMultipliers /= dMultipliers.max()
             
             # Predict distribution with new parameters.
-            estConstraints = self.mch_approximation( self.samples, dlamda ) * fullFraction
+            # MCH approximation with complete data points.
+            if fullFraction>0:
+                estConstraints = self.mch_approximation( self.samples, dlamda ) * fullFraction
+            else:
+                estConstraints = np.zeros_like(dlamda)
+            # MCH approximation with incomplete data points. These will contribute to the likelihood
+            # by the fraction of data points they constitute. So, the total weight per data point is
+            # p(incomplete)*p(state|incomplete)
             for i,s in enumerate(self.condSamples):
                 estConstraints += ( (1-fullFraction)*
-                                (uIncompleteStatesCount[i]/uIncompleteStatesCount.sum())*
-                                self.mch_approximation(s,dlamda) )
+                                    (uIncompleteStatesCount[i]/uIncompleteStatesCount.sum())*
+                                    self.mch_approximation(s,dlamda) )
             distance = np.linalg.norm( estConstraints-self.constraints )
                         
             # Counter.

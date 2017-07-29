@@ -1488,8 +1488,9 @@ class MCIsing(object):
                                 self.E,
                                 np.random.randint(2**31-1,size=sample_size))))
         pool.close()
-        
         self.samples = np.vstack(self.samples)
+
+        # Insert fixed spins back in.
         counter = 0
         for i,s in fixed_subset:
             if i==0:

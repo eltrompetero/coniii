@@ -138,7 +138,7 @@ Since the sampling step is expensive, could we reuse a sample for more than one 
 \end{align}
 Likewise, the ratio of the partition function can be estimated
 \begin{align}
-	\frac{Z}{Z'} \approx \br{e^{\sum_k \Delta\lambda_k f_k(s)}f_k(s)}_{\rm sample}
+	\frac{Z}{Z'} \approx 1\left/\br{e^{\sum_k \Delta\lambda_k f_k(s)}}_{\rm sample}\right.
 \end{align}
 
 The main difficulty with MCH is choosing a learning rule for how to update the Lagrangian multipliers $\{\lambda_k\}$ at each iteration while being careful to stay within the bounds of a reasonable extrapolation. One suggestion is to update the parameters with some inertia

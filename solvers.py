@@ -802,16 +802,16 @@ class MCHIncompleteData(MCH):
         Solve for parameters using MCH routine.
         
         Params:
-        ------
-        X (ndarray)
-        constraints (ndarray)
+        -------
+        X                       : ndarray
+        constraints             : ndarray
             Constraints calculated from the incomplete data (accounting for missing data points).
-        initial_guess (ndarray=None)
+        initial_guess           : ndarray=None
             initial starting point
-        cond_sample_size (int or function)
+        cond_sample_size        : int or function
             Number of samples to make for conditional distribution.
             If function is passed in, it will be passed number of missing spins and must return an int.
-        cond_sample_iters (int or function)
+        cond_sample_iters       : int or function
             Number of MC iterations to make between samples.
         tol                     : float=None
             maximum error allowed in any observable
@@ -861,11 +861,12 @@ class MCHIncompleteData(MCH):
         # Get unique incomplete data points.
         incompleteIx = (X==0).any(1)
         uIncompleteStates = X[incompleteIx][unique_rows(X[incompleteIx])]
+        # Frequency of each unique state.
         uIncompleteStatesCount = np.bincount( unique_rows(X[incompleteIx],
                                                           return_inverse=True) )
         fullFraction = (len(X)-incompleteIx.sum())/len(X)
         if disp:
-            print "There are %d unique states."%incompleteIx.sum()
+            print "There are %d unique states."%len(uIncompleteStatesCount)
         
         # Sample.
         if disp:
@@ -1060,7 +1061,7 @@ class MCHIncompleteData(MCH):
                                                        **generate_kwargs)
                     self.condSamples.append( self.sampler.samples.copy() )
                     if disp:
-                        print "Done sampling %d out of %d unique states."%(i,len(uIncompleteStates))
+                        print "Done sampling %d out of %d unique states."%(i+1,len(uIncompleteStates))
         else:
            raise NotImplementedError("Unrecognized sampler.")
 # End MCHIncompleteData

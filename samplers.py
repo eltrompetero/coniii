@@ -1460,19 +1460,19 @@ class MCIsing(object):
         
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state,theta):
-            fullstate = np.zeros(self.n)
+            fullstate = np.zeros((1,self.n))
             i0 = 0
             stateix = 0
             for i,s in fixed_subset: 
                 for ii in xrange(i0,i):
-                    fullstate[ii] = state[0,stateix] 
+                    fullstate[0,ii] = state[0,stateix] 
                     stateix += 1
-                fullstate[i] = s
+                fullstate[0,i] = s
                 i0 = i+1
             for ii in xrange(i0,self.n):
-                fullstate[ii] = state[0,stateix]
+                fullstate[0,ii] = state[0,stateix]
                 stateix += 1
-            return self.calc_e(fullstate[None,:],theta)
+            return self.calc_e(fullstate,theta)
         self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
         
         # Parallel sample.
@@ -1487,7 +1487,7 @@ class MCIsing(object):
         else:
             def f(args):
                 s,E,seed=args
-                rng=np.random.RandomState(seed)
+                rng = np.random.RandomState(seed)
                 for j in xrange(burn_in):
                     de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
                     E += de

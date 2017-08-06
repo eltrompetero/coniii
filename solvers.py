@@ -813,16 +813,19 @@ class MCHIncompleteData(MCH):
             If function is passed in, it will be passed number of missing spins and must return an int.
         cond_sample_iters (int or function)
             Number of MC iterations to make between samples.
-        tol (float=None)
+        tol                     : float=None
             maximum error allowed in any observable
-        tolNorm (float)
+        tolNorm                 : float
             norm error allowed in found solution
-        n_iters (int=30)
+        n_iters                 : int=30
             Number of iterations to make between samples in MCMC sampling.
         burnin (int=30)
-        disp (bool=False)
-        learn_parameters_kwargs
-        generate_kwargs
+        disp                    : int=0
+            0, no output
+            1, some detail
+            2, most detail
+        learn_parameters_kwargs : dict
+        generate_kwargs         : dict
 
         Returns:
         --------
@@ -861,25 +864,22 @@ class MCHIncompleteData(MCH):
         uIncompleteStatesCount = np.bincount( unique_rows(X[incompleteIx],
                                                           return_inverse=True) )
         fullFraction = (len(X)-incompleteIx.sum())/len(X)
+        if disp:
+            print "There are %d unique states."%incompleteIx.sum()
         
         # Sample.
-        if fullFraction>0:
-            self.generate_samples(n_iters,burnin,
-                                  generate_kwargs=generate_kwargs)
-        self.condSamples = []
-        for s in uIncompleteStates:
-            frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
-            self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
-                                               frozenSpins,
-                                               n_iters=f_cond_sample_iters(self.n-len(frozenSpins)))
-            self.condSamples.append( self.sampler.samples.copy() )
+        if disp:
+            print "Sampling..."
+        self.generate_samples(n_iters,burnin,
+                              uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
+                              generate_kwargs=generate_kwargs,disp=disp)
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         
         # MCH iterations.
         counter = 0
         keepLoop = True
-        if disp=='detailed': print self._multipliers
+        if disp>=2: print self._multipliers
         while keepLoop:
             if disp:
                 print "Iterating parameters with MCH..."
@@ -888,22 +888,16 @@ class MCHIncompleteData(MCH):
                                       uIncompleteStates,
                                       uIncompleteStatesCount,
                                       **learn_params_kwargs)
-            if disp=='detailed':
+            if disp>=2:
                 print "After MCH step, the parameters are..."
                 print self._multipliers
 
             # Sample.
             if disp:
                 print "Sampling..."
-            self.generate_samples( n_iters,burnin,
-                                   generate_kwargs=generate_kwargs )
-            self.condSamples = []
-            for s in uIncompleteStates:
-                frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
-                self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
-                                                   frozenSpins,
-                                                   n_iters=f_cond_sample_iters(self.n-len(frozenSpins)))
-                self.condSamples.append( self.sampler.samples.copy() )
+            self.generate_samples(n_iters,burnin,
+                                  uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
+                                  generate_kwargs=generate_kwargs,disp=disp)
 
             thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
@@ -934,6 +928,12 @@ class MCHIncompleteData(MCH):
                              maxLearningSteps=50,
                              eta=1 ):
         """
+        Update parameters with MCH step. Update is proportional to the difference between the
+        observables and the predicted observables after a small change to the parameters. This is
+        calculated from likelihood maximization, and for the incomplete data points this corresponds
+        to the marginal probability distribution weighted with the number of corresponding data
+        points.
+
         Params:
         -------
         estConstraints (ndarray)
@@ -995,6 +995,74 @@ class MCHIncompleteData(MCH):
 
         self._multipliers += dlamda
         return estConstraints
+
+    def generate_samples(self,n_iters,burnin,
+                         uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
+                         sample_size=None,
+                         sample_method=None,
+                         initial_sample=None,
+                         run_regular_sampler=True,
+                         run_cond_sampler=True,
+                         disp=0,
+                         generate_kwargs={}):
+        """
+        Wrapper around generate_samples_parallel() from available samplers.
+
+        Params:
+        -------
+        n_iters (int)
+        burnin (int) 
+            I think burn in is handled automatically in REMC.
+        uIncompleteStates   : 
+        f_cond_sample_size  : lambda function
+            Given n, return the number of samples to take.
+        f_cond_sample_iters : lambda function
+            Given n, return the number of MC iterations to make.
+        sample_size (int)
+        sample_method (str)
+        initial_sample (ndarray)
+        generate_kwargs (dict)
+
+        Returns:
+        --------
+        None
+        """
+        assert not (self.sampler is None), "Must call setup_sampler() first."
+
+        sample_method = sample_method or self.sampleMethod
+        sample_size = sample_size or self.sampleSize
+        if initial_sample is None and (not self.samples is None) and len(self.samples)==self.sampleSize:
+            initial_sample = self.samples
+        
+        if sample_method=='metropolis':
+            self.sampler.theta = self._multipliers
+                
+            # Generate samples from full distribution.
+            if run_regular_sampler:
+                # Burn in.
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=burnin,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=initial_sample )
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=n_iters,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=self.sampler.samples)
+                self.samples = self.sampler.samples
+            if run_cond_sampler: 
+                # Sample from conditional distribution for incomplete data points.
+                self.condSamples = []
+                for i,s in enumerate(uIncompleteStates):
+                    frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
+                    self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
+                                                       frozenSpins,
+                                                       burn_in=f_cond_sample_iters(self.n-len(frozenSpins)),
+                                                       **generate_kwargs)
+                    self.condSamples.append( self.sampler.samples.copy() )
+                    if disp:
+                        print "Done sampling %d out of %d unique states."%(i,len(uIncompleteStates))
+        else:
+           raise NotImplementedError("Unrecognized sampler.")
 # End MCHIncompleteData
 
 

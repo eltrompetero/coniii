@@ -119,7 +119,8 @@ def pair_corr(data,weights=None,concat=False,exclude_empty=False,
         k=0
         for i in xrange(N-1):
             for j in xrange(i+1,N):
-                sisj[k] = np.nansum(data[:,i]*data[:,j]) / np.nansum(np.logical_and(data[:,i]!=0,data[:,j]!=0))
+                sisj[k] = ( np.nansum(data[:,i]*data[:,j]) / 
+                            (np.nansum(np.logical_and(data[:,i]!=0,data[:,j]!=0)) + np.nextafter(0,1)) )
                 k+=1
         si = np.array([ np.nansum(col[col!=0]) / np.nansum(col!=0) for col in data.T ])
     else:
@@ -316,7 +317,8 @@ def define_ising_helpers_functions():
                     e[n] += J[k]*s[n,i]*s[n,j]
                     k += 1
         return e
-
+    
+    @jit(nopython=True)
     def calc_e(s,params):
         """
         Params:
@@ -336,8 +338,8 @@ def define_ising_helpers_functions():
         ZFraction = 1. / np.mean(np.exp(-dE))
         predsisj = pair_corr( samples, weights=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
         assert not (np.any(predsisj<-1.00000001) or
-                np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
-                                                                                                   predsisj.max())
+            np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
+                                                                                               predsisj.max())
         return predsisj
     
     @jit(nopython=True)

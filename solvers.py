@@ -1178,7 +1178,7 @@ class ClusterExpansion(Solver):
             deltaJdict  :
         """
         # 7.18.2017 convert input to coocMat
-        coocMat = self.coocurrence_matrix((X+1)/2)
+        coocMat = meanFieldIsing.cooccurrence_matrix((X+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}

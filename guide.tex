@@ -124,17 +124,18 @@ Finding the parameters that match the constraints is equivalent to minimizing th
 \end{align}
 [Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data and so there is search for the best parameters in the conventional sense.
 
-When the nonlinear equations are coupled, this cannot be solved analytically in general. Below we discuss some analytical approximations and numerical techniques for approaching the inverse problem.
+When the nonlinear equations are coupled, this cannot be solved analytically in general. Below we discuss some analytical approximations with numerical techniques for approaching the inverse problem.
 
 %Imagine that you have a system with $n$ components that have been sampled many times. To be more specific, we'll take $n=9$ voters on the US Supreme Court that either vote with in the majority, the winning coalition, or in the minority. [More generally, we could think some like gene expression levels in a cell a coarse-grained representation where relatively high or low expression can be represented by a binary variable. Of course, we don't have to restrict ourselves to binary variables \cite{Lezon:2006ws}.]
-
-The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
+%The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
 
 \section{Examples}
 Supreme Court. Neurons. Monkeys. Genes.
 
 \section{Exact enumeration}
-One approach is to write the equations down and feed them into a standard optimization algorithm. This approach does not scale well because the number of terms in the partition function grows exponentially with system size. For relatively small systems $n\leq15$ on a typical desktop computer, however, this approach is feasible.
+One approach is to write the equations down and feed them into a standard optimization algorithm. This approach does not scale well because the number of terms in the partition function grows exponentially with system size. For relatively small systems $n\leq15$ on a typical desktop computer, however, this approach is feasible. [Simple example with logical gates?]
+
+For the Ising model, the first step in the algorithm for writing down the equations is $\mathcal{O}(L^2 2^{N})$ where $L$ is the number of constraints and $N$ the number of spins. In the second step, each evaluation of the objective in the minimization algorithm will be of the same order.
 
 This is implemented in the {\tt Exact} class.
 
@@ -174,10 +175,12 @@ This has the correct fixed points. One suggestion is to shrink $\epsilon$ expone
 
 Typically, one must check in on the progress of the algorithm to tune the various parameters. If the extrapolation steps or the gradient steps are too large, the algorithm will fail to converge (or may even start diverging).
 
+The runtime for the sampling step is proportional to the number of samples $n_{\rm sample}$ and the number of MCMC iterations $n_{MC}$, $\mathcal{O}(n_{MC} n_{sample} L^2)$, whereas the MCH estimate is relatively quick $\mathcal{O}(n_{\rm sample}n_{\rm MCH}L^2)$ because the number of MCH approximation steps is typically of order 10.
+
 MCH is implemented in the {\tt MCH} class.
 
 \section{Pseudolikelihood}
-An analytic approximation that reduces the computational complexity of the problem.
+The pseuedolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem.
 
 \section{Minimum Probability Flow}
 Minimum probability flow is an efficient method using an analytic approximation to write an easily computable objective function \cite{SohlDickstein:2011im}. Instead of estimating the probability distribution, the overarching idea is to analytically approximate how the probability distribution \textit{changes} as we modify the \textit{configurations}.

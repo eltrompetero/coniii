@@ -297,6 +297,64 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
 # ========================================= #
 # Helper functions for solving Ising model. # 
 # ========================================= #
+def define_pseudo_ising_helpers(N):
+    """
+    Define helper functions for using Pseudo method on fully connected Ising model.
+
+    Params:
+    -------
+    N (int)
+        System size.
+    """
+    @jit(nopython=True)
+    def get_multipliers_r(r,multipliers):
+        """
+        Return the parameters relevant for calculating the conditional probability of spin r.
+
+        Params:
+        -------
+        r (int)
+        multipliers (ndarray)
+        """
+        ix = np.arange(N)
+        ix[0] = r  # index for local field
+        couplingcounter = N
+        ixcounter = 1
+        for i in xrange(N-1):
+            for j in xrange(i+1,N):
+                if i==r or j==r:
+                    ix[ixcounter] = couplingcounter  # indices for couplings
+                    ixcounter += 1
+                couplingcounter += 1
+        
+        return multipliers[ix]
+
+    @jit(nopython=True)
+    def calc_observables_r(r,X):
+        """
+        Return the observables relevant for calculating the conditional probability of spin r.
+
+        Params:
+        -------
+        r (int)
+        X (ndarray)
+            Data samples (n_samples, n_dim)
+        """
+        obs = np.zeros((X.shape[0],N))
+        
+        for rowix in xrange(X.shape[0]):
+            ixcounter = 1
+            obs[rowix,0] = X[rowix,r]
+            
+            for i in xrange(N-1):
+                for j in xrange(i+1,N):
+                    if i==r or j==r:
+                        obs[rowix,ixcounter] = X[rowix,i]*X[rowix,j]  # indices for couplings
+                        ixcounter += 1
+        return obs
+
+    return get_multipliers_r,calc_observables_r 
+
 def define_ising_helpers_functions():
     """
     Functions for plugging into solvers for +/-1 Ising model.

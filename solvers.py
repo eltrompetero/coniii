@@ -1028,6 +1028,7 @@ class MCHIncompleteData(MCH):
         --------
         None
         """
+        from datetime import datetime
         assert not (self.sampler is None), "Must call setup_sampler() first."
 
         sample_method = sample_method or self.sampleMethod
@@ -1052,20 +1053,26 @@ class MCHIncompleteData(MCH):
                 self.samples = self.sampler.samples
             if run_cond_sampler: 
                 # Sample from conditional distribution for incomplete data points.
-                self.condSamples = []
-                for i,s in enumerate(uIncompleteStates):
+                def f(args):
+                    i,s = args
                     frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
                     
-                    print ( f_cond_sample_size(self.n-len(frozenSpins)),
-                            f_cond_sample_iters(self.n-len(frozenSpins)) )
-                    
-                    self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
-                                                       frozenSpins,
-                                                       burn_in=f_cond_sample_iters(self.n-len(frozenSpins)),
-                                                       **generate_kwargs)
-                    self.condSamples.append( self.sampler.samples.copy() )
                     if disp:
-                        print "Done sampling %d out of %d unique states."%(i+1,len(uIncompleteStates))
+                        start = datetime.now() 
+                    sample,E = self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
+                                                          frozenSpins,
+                                                          burn_in=f_cond_sample_iters(self.n-len(frozenSpins)),
+                                                          parallel=False,
+                                                          **generate_kwargs)
+                    if disp:
+                        print "Done sampling %d out of %d unique states in %1.1f s."%(i+1,
+                                                                      len(uIncompleteStates),
+                                                                      (datetime.now()-start).total_seconds())
+                    return sample
+                
+                pool = mp.Pool(self.n_jobs)
+                self.condSamples = pool.map( f,zip(range(len(uIncompleteStates)),uIncompleteStates) )
+                pool.close()
         else:
            raise NotImplementedError("Unrecognized sampler.")
 # End MCHIncompleteData

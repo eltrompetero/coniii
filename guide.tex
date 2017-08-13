@@ -30,8 +30,8 @@
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 
 \title{Convenient Interface to Inverse Ising (CONIII): A package for solving maximum entropy models}
-\author{Edward D Lee, Bryan C Daniels}
-\affiliation{$^1$Department of Physics, 132A Clark Hall, Cornell University, Ithaca NY 14850, $^2$ASU}
+\author{$^1$Edward D Lee, $^2$Bryan C Daniels}
+\affiliation{$^1$Department of Physics, 132A Clark Hall, Cornell University, Ithaca NY 14850, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 %\date{}                                           % Activate to display a given date or no date
 
 \begin{abstract}
@@ -150,14 +150,14 @@ The {\tt Exact} class supplies methods for writing Eqs \ref{eq:fk-fk} into a fil
 
 Analytic approximations simplify the equations to an extent where they are tractable.
 
-{\tt RegularizedMeanField}
+This is implemented in {\tt RegularizedMeanField}.
 
 \section{Monte Carlo methods}
 Perhaps the most straightforward and most expensive computational approach is to use Monte Carlo Markov Chain sampling to approximate the distribution and adjust the parameters appropriately after each step. [For details about MCMC methods see Appendix A and \cite{MacKay:2005wc}.] The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we no longer need to calculate the partition function, but can instead compute the difference in energy between two states.
 
 The simplest MCMC algorithm is to generate a sample to estimate the constraints $\br{f_{\rm k}}$ from the current set of parameters and then to implement a learning rule to adjust the parameters. This can be combined with a variety of stochastic gradient descent methods to reduce the number of sampling steps. The particular technique implemented in CONIII is the Monte Carlo Histogram method \cite{Broderick:2007wq}.
 
-Since the sampling step is expensive, could we reuse a sample for more than one gradient descent step? This is the idea behind Monte Carlo histogram \cite{Broderick:2007wq}. Instead of sampling every time we change the parameters, we can predict how the distribution will change if we modify the parameters slightly. Given that we have a sample with probability distribution $p_s$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the distribution $p_s'$ from parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$.
+Since the sampling step is expensive, the idea behind Monte Carlo histogram is to reuse a sample for more than one gradient descent step because we can predict how the distribution will change if we modify the parameters slightly \cite{Broderick:2007wq}. Given that we have a sample with probability distribution $p_s$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the distribution $p_s'$ from parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$.
 \begin{align}
 	p_s' &= \frac{p'_s}{p_s}p_s\\
 		&= \frac{Z}{Z'}e^{\sum_k \Delta\lambda_k f_k(s)} p_s\\
@@ -247,11 +247,14 @@ The cavity method involves use of the marginalized distribution.
 In CONIII, we have implemented two versions of the Metropolis algorithm. One is specific to the Ising model {\tt MCIsing} and the other {\tt MC} can sample a system as long as the function for calculating the energy is suppiled by the user.
 
 \subsection{How to validate a maxent model}
-The hope of maxent is that by fixing some aspects of the probability distribution, we can forget about the rest. In this sense, maxent is not a typical fitting method where the optimal parameters are sought such that the model is as good as possible. Instead, we specify which aspects of the system we think are important and the resulting ``parameters'' come from the maximum entropy principle.
+The logic behind maxent is that by fixing some aspects of the probability distribution, the rest of the distribution has been well characterized.
+Another way to put this is to say that the distributions are well-peaked about the constraints. If this condition does not hold, the constraints are not useful.
 
-Thus, one way to test the model is to consider how well we do in predicting the rest of the distribution. If the rest of the distribution is not well fit, certainly we must go back and reconsider which constraints to impose. On the other hand, finding that the rest of the probability distribution is fit is all good and well, but it does not necessarily mean we have found the right model [cite much discussion here].
+Maxent is not a typical fitting method where the optimal parameters are sought such that the model is as good as possible. Instead, we specify which aspects of the system we think are important and the resulting ``parameters'' come from the maximum entropy principle.
 
-\section{Why not maximum entropy?}
+Thus, one way to test the model is to consider how well we do in predicting the rest of the distribution. If the rest of the distribution is not well fit, certainly we must go back and reconsider which constraints to impose. On the other hand, finding that the rest of the probability distribution is fit well does not necessarily mean we have found the right model.
+
+%\section{Why not maximum entropy?}
 
 
 

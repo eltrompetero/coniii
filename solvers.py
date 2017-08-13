@@ -1048,13 +1048,17 @@ class MCHIncompleteData(MCH):
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=n_iters,
                                                         cpucount=self.n_jobs,
-                                                        initial_sample=self.sampler.samples)
+                                                        initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
             if run_cond_sampler: 
                 # Sample from conditional distribution for incomplete data points.
                 self.condSamples = []
                 for i,s in enumerate(uIncompleteStates):
                     frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
+                    
+                    print ( f_cond_sample_size(self.n-len(frozenSpins)),
+                            f_cond_sample_iters(self.n-len(frozenSpins)) )
+                    
                     self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
                                                        frozenSpins,
                                                        burn_in=f_cond_sample_iters(self.n-len(frozenSpins)),

@@ -1453,6 +1453,8 @@ class MCIsing(object):
         """
         cpucount = cpucount or self.nJobs
         nSubset = self.n-len(fixed_subset)
+
+        # Initialize sampler.
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sample_size,nSubset))
         else:

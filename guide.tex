@@ -145,12 +145,6 @@ For the Ising model, the first step in the algorithm for writing down the equati
 
 The {\tt Exact} class supplies methods for writing Eqs \ref{eq:fk-fk} into a file and solving them with the {\tt scipy.optimize} library.
 
-\section{Mean-field methods}
-[I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
-
-Analytic approximations simplify the equations to an extent where they are tractable.
-
-This is implemented in {\tt RegularizedMeanField}.
 
 \section{Monte Carlo methods}
 Perhaps the most straightforward and most expensive computational approach is to use Monte Carlo Markov Chain sampling to approximate the distribution and adjust the parameters appropriately after each step. [For details about MCMC methods see Appendix A and \cite{MacKay:2005wc}.] The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we no longer need to calculate the partition function, but can instead compute the difference in energy between two states.
@@ -210,7 +204,7 @@ Each iteration goes like $O(RN^2)$.
 We have implemented pseudolikelihood for the Ising model as detailed in \cite{Aurell:2012hi} in {\tt Pseudo}.
 
 \section{Minimum Probability Flow}
-Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching where instead we have continuous state spaces and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvärinen:2007ed}. 
+Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching where instead we have continuous state spaces and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
 
 As before, we start with minimizing the Kullback-Leibler divergence, but instead of taking the derivative with respect to the parameters, we first ask how the probability flows between the model and data if the dynamics are run for an infinitesimal amount of time $\epsilon$, the idea being that the relative difference between the probability distributions are minimized with optimal parameters.
 \begin{align}
@@ -235,8 +229,112 @@ MPF satisfies a number of useful properties:
 
 MPF is implemented in the {\tt MPF} class.
 
+
+\section{Regularization to avoid overfitting}
+
+Besides the computational complexity of locating best-fit parameters,
+a fundamental problem in any model inference method is that uncertainty coming
+from the finiteness of data translates into uncertainties in parameters.
+The straightforward answer to this problem is to take more data---in a pairwise
+maximum entropy problem, we might insist that we have enough samples to well-constrain
+the correlation between every pair of individuals.  But it is not always possible
+to take enough data.  For instance, in a social system in which we are trying to
+measure stable social structure that lasts on the order of months, there are only
+a finite number of social interactions that occur over those months, which may
+not be enough to tightly constrain parameters.
+
+The danger in naively searching for a best-fit solution in a data-poor situation
+is overfitting, or erroneously finding patterns in the finite-sample noise.
+One way to avoid overfitting is regularization:
+restricting the search space in some principled way so that more complicated
+solutions are disallowed.  We then check that the regularized solutions fit the
+data within expected statistical fluctuations.  If not, a more lax regularization
+can be used to allow more complicated solutions that are able to fit the
+remaining signal in the data.
+
+We will motivate the next two approaches to maximum entropy fitting in terms
+of regularization.
+
+[This section might be tightened a bit more.  For one, I am somewhat confused as
+to whether the entire maximum entropy approach might be motivated in this
+way---starting with few constraints and adding the possibility of higher order
+constraints until the model fits well enough.]
+
+
+\section{Mean-field methods}
+[I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
+
+[Analytic approximations simplify the equations to an extent where they are tractable.]
+
+One attractively simple and efficient version of the regularized approach starts
+with mean-field theory.  In the inverse Ising problem, mean-field theory is equivalent
+to treating each binary individual as instead having a continuously varying state
+(corresponding to its mean value).  The inverse problem then turns into simply inverting
+the correlation matrix $C$: \cite{CocMon12}
+\begin{equation}
+\label{meanFieldSolution}
+J^{\mathrm{mean-field}}_{k\ell} =
+    - \frac{ (C^{-1})_{k\ell} }{ \sqrt{p_k(1-p_k)p_\ell(1-p_\ell)} },
+\end{equation}
+where
+\begin{equation}
+C_{k\ell} = \frac{ p_{k\ell} - p_k p_\ell }{ \sqrt{p_k(1-p_k)p_\ell(1-p_\ell)} },
+\end{equation}
+and where $p_k$ corresponds to the frequency of individual $k$ being
+in the active ($+1$) state and $p_{k\ell}$ is the frequency of the pair
+$k$ and $\ell$ being simultanously in the active state.
+
+A simple regularization scheme in this case is to discourage large values in the interaction
+matrix $J$.  This corresponds to putting more weight on solutions that are closer to
+the case with no interactions (independent individuals).  A particularly convenient form
+adds the following term, quadratic in $J$, to the negative log-likelihood:
+\begin{equation}
+\gamma \sum_i \sum_{j > i} J_{ij}^2 p_i (1-p_i) p_j (1-p_j).
+\end{equation}
+In this case, the regularized version of the mean-field solution in \eqref{meanFieldSolution}
+can be solved analytically, with the slowest computational step coming from the inversion
+of the correlation matrix.  For details, see Refs.~\cite{DanKraFla17,BarCoc13}.
+
+The idea is then to vary the regularization strength $\gamma$ to move between the
+non-interacting case ($\gamma \rightarrow \infty$) and the naively calculated
+mean-field solution \eqref{meanFieldSolution} ($\gamma \rightarrow 0$).
+While there is no guarantee that varying this one parameter will produce solutions that are
+good enough to ``fit within error bars,'' this approach has been successful in at least
+one case of fitting social interactions \cite{DanKraFla17}.
+
+This is implemented in {\tt RegularizedMeanField}.
+
+
+
 \section{Cluster expansions}
-Implemented in the {\tt ClusterExpansion} class.
+
+Adaptive cluster expansion \cite{CocMon11,CocMon12,BarCoc13}
+iteratively calculates terms in the
+cluster expansion of the entropy $S$:
+\begin{equation}
+S = \sum_\Gamma \Delta S_\Gamma,
+\end{equation}
+where the sum is over clusters $\Gamma$ and in the exact case
+includes all $2^N - 1$ possible nonempty subsets of individuals in the system.
+\footnote{In the simplest version of the expansion,
+one expands around $S=0$.  In some cases it can be more advantageous to write the
+expansion around $S-S_0$, where $S_0$ is a reference entropy corresponding to
+an easily calculated case such as
+the independent individual solution or one of the mean-field solutions
+described in the previous section \cite{BarCoc13}.}
+The inverse Ising problem is solved independently
+on each of the clusters, which can be done exactly when the
+clusters are small.  These results are used to construct a full
+interaction matrix $J$.
+The expansion starts with small clusters and expands to use larger
+clusters, neglecting any clusters whose
+contribution $\Delta S_\Gamma$ to the entropy falls below a threshold.
+To find the best solution that does not overfit,
+the threshold is initially set at a large value and then lowered,
+gradually including more clusters in the expansion, until samples from
+the resulting $J$ fit the desired statistics of the data sufficiently well.
+
+In Coniii, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
 \section{Bethe/Kikuchi free energy/cavity methods}
 Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.

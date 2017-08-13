@@ -1384,16 +1384,20 @@ class MCIsing(object):
                                   systematic_iter=False,
                                   ):
         """
-        Generate samples in parallel and save them into self.samples.
+        Generate samples in parallel and save them into self.samples and their energies into self.E.
 
-        Params:
-        -------
-        sample_size
-        n_iters (int=1000)
-        cpucount (int=None)
-        initial_sample (ndarray=None)
-        systematic_iter (bool=False)
+        Parameters
+        ----------
+        sample_size : int
+        n_iters : int,1000
+        cpucount : int,None
+        initial_sample : ndarray,None
+        systematic_iter : bool,False
             Iterate through spins systematically instead of choosing them randomly.
+
+        Returns
+        -------
+        None
         """
         cpucount = cpucount or self.nJobs
         if initial_sample is None:
@@ -1420,14 +1424,14 @@ class MCIsing(object):
                     E += de
                 return s,E
         
-        pool=mp.Pool(cpucount)
-        self.samples,self.E=zip(*pool.map(f,zip(self.samples,
-                                                self.E,
-                                                np.random.randint(2**31-1,size=sample_size))))
+        pool = mp.Pool(cpucount)
+        self.samples,self.E = zip(*pool.map(f,zip(self.samples,
+                                                  self.E,
+                                                  np.random.randint(2**31-1,size=sample_size))))
         pool.close()
 
-        self.samples=np.vstack(self.samples)
-        self.E=np.concatenate(self.E)
+        self.samples = np.vstack(self.samples)
+        self.E = np.concatenate(self.E)
 
     def generate_cond_samples(self,sample_size,
                               fixed_subset,

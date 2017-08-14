@@ -801,8 +801,8 @@ class MCHIncompleteData(MCH):
         """
         Solve for parameters using MCH routine.
         
-        Params:
-        -------
+        Parameters
+        ----------
         X                       : ndarray
         constraints             : ndarray
             Constraints calculated from the incomplete data (accounting for missing data points).
@@ -827,8 +827,8 @@ class MCHIncompleteData(MCH):
         learn_parameters_kwargs : dict
         generate_kwargs         : dict
 
-        Returns:
-        --------
+        Returns
+        -------
         parameters (ndarray)
             Found solution.
         errflag (int)
@@ -998,7 +998,9 @@ class MCHIncompleteData(MCH):
         return estConstraints
 
     def generate_samples(self,n_iters,burnin,
-                         uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
+                         uIncompleteStates=None,
+                         f_cond_sample_size=None,
+                         f_cond_sample_iters=None,
                          sample_size=None,
                          sample_method=None,
                          initial_sample=None,
@@ -1009,23 +1011,23 @@ class MCHIncompleteData(MCH):
         """
         Wrapper around generate_samples_parallel() from available samplers.
 
-        Params:
-        -------
-        n_iters (int)
-        burnin (int) 
+        Parameters
+        ----------
+        n_iters : int
+        burnin : int 
             I think burn in is handled automatically in REMC.
-        uIncompleteStates   : 
-        f_cond_sample_size  : lambda function
+        uIncompleteStates : list
+        f_cond_sample_size : lambda function
             Given n, return the number of samples to take.
         f_cond_sample_iters : lambda function
             Given n, return the number of MC iterations to make.
-        sample_size (int)
-        sample_method (str)
-        initial_sample (ndarray)
-        generate_kwargs (dict)
+        sample_size : int
+        sample_method : str
+        initial_sample : ndarray
+        generate_kwargs : dict
 
-        Returns:
-        --------
+        Returns
+        -------
         None
         """
         from datetime import datetime

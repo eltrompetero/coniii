@@ -564,9 +564,10 @@ class MCH(Solver):
               n_iters=30,
               burnin=30,
               maxiter=10,
+              custom_convergence_f=None,
               disp=False,
               full_output=False,
-              learn_params_kwargs={},
+              learn_params_kwargs={'maxdlamda':1,'eta':1},
               generate_kwargs={}):
         """
         Solve for parameters using MCH routine.
@@ -585,6 +586,12 @@ class MCH(Solver):
         n_iters (int=30)
             Number of iterations to make between samples in MCMC sampling.
         burnin (int=30)
+        max_iter : int,10
+            Max number of iterations.
+        custom_convergence_f : function,None
+            Function for determining convergence criterion. At each iteration, this function should
+            return the next set of learn_params_kwargs:
+            lambda i: {'maxdlambda':??, 'eta':??}
         disp (bool=False)
         learn_parameters_kwargs
         generate_kwargs
@@ -611,7 +618,12 @@ class MCH(Solver):
             self._multipliers = np.zeros((len(self.constraints)))
         tol = tol or 1/np.sqrt(self.sampleSize)
         tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
-
+        
+        # Set function for automatically adjusting learn_params_kwargs.
+        if custom_convergence_f is None:
+            custom_convergence_f = lambda i: learn_params_kwargs
+        assert 'maxdlamda' and 'eta' in custom_convergence_f(0).keys()
+        
         errors = []  # history of errors to track
         
         self.generate_samples(n_iters,burnin,
@@ -648,6 +660,8 @@ class MCH(Solver):
                 print "Over maxiter"
                 errflag=1
                 keepLoop=False
+            else:
+                learn_params_kwargs = custom_convergence_f(counter)
         
         if full_output:
             return self._multipliers,errflag,np.vstack((errors))

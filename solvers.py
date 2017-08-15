@@ -824,6 +824,8 @@ class MCHIncompleteData(MCH):
             0, no output
             1, some detail
             2, most detail
+        full_output : bool,False
+            Return errflag and errors at each iteration if True.
         learn_parameters_kwargs : dict
         generate_kwargs         : dict
 

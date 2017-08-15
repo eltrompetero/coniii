@@ -604,6 +604,9 @@ class MCH(Solver):
         errors (ndarray)
             Errors in matching constraints at each step of iteration.
         """
+        errors = []  # history of errors to track
+
+
         # Read in constraints.
         if not constraints is None:
             self.constraints = constraints
@@ -621,11 +624,14 @@ class MCH(Solver):
         
         # Set function for automatically adjusting learn_params_kwargs.
         if custom_convergence_f is None:
-            custom_convergence_f = lambda i: learn_params_kwargs
-        assert 'maxdlamda' and 'eta' in custom_convergence_f(0).keys()
+            custom_convergence_f = lambda i:learn_params_kwargs,self.sampleSize
+        if type(custom_convergence_f(0)) is dict:
+            custom_convergence_f_ = custom_convergence_f
+            custom_convergence_f = lambda i:(custom_convergence_f_(i),self.sampleSize)
+        assert 'maxdlamda' and 'eta' in custom_convergence_f(0)[0].keys()
         
-        errors = []  # history of errors to track
         
+        # Generate initial set of samples.
         self.generate_samples(n_iters,burnin,
                               generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.samples).mean(0)
@@ -661,7 +667,7 @@ class MCH(Solver):
                 errflag=1
                 keepLoop=False
             else:
-                learn_params_kwargs = custom_convergence_f(counter)
+                learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
         
         if full_output:
             return self._multipliers,errflag,np.vstack((errors))

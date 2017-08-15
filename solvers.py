@@ -7,7 +7,7 @@ from utils import *
 from samplers import *
 import copy
 import meanFieldIsing
-
+from warnings import warn
 
 class Solver(object):
     """
@@ -736,7 +736,352 @@ class MCH(Solver):
 
         self._multipliers += dlamda
         return estConstraints
-# End GeneralMaxentSolver
+# End MCH
+
+
+
+class MCHIncompleteData(MCH):
+    """
+    Class for solving maxent problems using the Monte Carlo Histogram method on
+    data where the entire system is not visible.
+
+    Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster
+    solutions of the inverse pairwise Ising problem. arXiv 1-8 (2007).
+
+    NOTE: This only works for Ising model.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Params:
+        -------
+        calc_e (lambda state,params)
+            function for computing energies of given state and parameters.  Should take in a 2D state array
+            and vector of parameters to compute energies.
+        adj (lambda state)
+            function for getting all the neighbors of any given state
+        calc_de (lambda=None)
+            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
+            the parameter.
+        n_jobs (int=0)
+            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
+        
+        Attributes:
+        -----------
+        constraints (ndarray)
+        calc_e (function)
+            with args (sample,parameters) where sample is 2d
+        calc_observables (function)
+            takes in samples as argument
+        mch_approximation (function)
+        sampleSize (int)
+        multipliers (ndarray)
+            set the Langrangian multipliers
+
+        Methods:
+        --------
+        """
+        kwargs['sample_method'] = 'metropolis'
+        warn("Only Ising model is implemented for MCHIncompleteData.")
+        super(MCHIncompleteData,self).__init__(*args,**kwargs)
+        self.condSamples = []
+        
+    def solve(self,
+              X=None,
+              constraints=None,
+              initial_guess=None,
+              cond_sample_size=100,
+              cond_sample_iters=100,
+              tol=None,
+              tolNorm=None,
+              n_iters=30,
+              burnin=30,
+              maxiter=10,
+              disp=False,
+              full_output=False,
+              learn_params_kwargs={},
+              generate_kwargs={}):
+        """
+        Solve for parameters using MCH routine.
+        
+        Parameters
+        ----------
+        X                       : ndarray
+        constraints             : ndarray
+            Constraints calculated from the incomplete data (accounting for missing data points).
+        initial_guess           : ndarray=None
+            initial starting point
+        cond_sample_size        : int or function
+            Number of samples to make for conditional distribution.
+            If function is passed in, it will be passed number of missing spins and must return an int.
+        cond_sample_iters       : int or function
+            Number of MC iterations to make between samples.
+        tol                     : float=None
+            maximum error allowed in any observable
+        tolNorm                 : float
+            norm error allowed in found solution
+        n_iters                 : int=30
+            Number of iterations to make between samples in MCMC sampling.
+        burnin (int=30)
+        disp                    : int=0
+            0, no output
+            1, some detail
+            2, most detail
+        full_output : bool,False
+            Return errflag and errors at each iteration if True.
+        learn_parameters_kwargs : dict
+        generate_kwargs         : dict
+
+        Returns
+        -------
+        parameters (ndarray)
+            Found solution.
+        errflag (int)
+        errors (ndarray)
+            Errors in matching constraints at each step of iteration.
+        """
+        # Check args.
+        import types
+        assert not X is None and not constraints is None, "Must provide data and constriants."
+        self.constraints = constraints
+        if type(cond_sample_size) is int:
+            f_cond_sample_size = lambda n: cond_sample_size
+        elif type(cond_sample_size) is types.FunctionType:
+            f_cond_sample_size = cond_sample_size 
+        if type(cond_sample_iters) is int:
+            f_cond_sample_iters = lambda n: cond_sample_iters
+        elif type(cond_sample_iters) is types.FunctionType:
+            f_cond_sample_iters = cond_sample_iters 
+
+        # Set initial guess for parameters.
+        if not (initial_guess is None):
+            assert len(initial_guess)==len(self.constraints)
+            self._multipliers = initial_guess.copy()
+        else:
+            self._multipliers = np.zeros((len(self.constraints)))
+        tol = tol or 1/np.sqrt(self.sampleSize)
+        tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
+        errors = []  # history of errors to track
+
+        # Get unique incomplete data points.
+        incompleteIx = (X==0).any(1)
+        uIncompleteStates = X[incompleteIx][unique_rows(X[incompleteIx])]
+        # Frequency of each unique state.
+        uIncompleteStatesCount = np.bincount( unique_rows(X[incompleteIx],
+                                                          return_inverse=True) )
+        fullFraction = (len(X)-incompleteIx.sum())/len(X)
+        if disp:
+            print "There are %d unique states."%len(uIncompleteStatesCount)
+        
+        # Sample.
+        if disp:
+            print "Sampling..."
+        self.generate_samples(n_iters,burnin,
+                              uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
+                              generate_kwargs=generate_kwargs,disp=disp)
+        thisConstraints = self.calc_observables(self.samples).mean(0)
+        errors.append( thisConstraints-self.constraints )
+        
+        # MCH iterations.
+        counter = 0
+        keepLoop = True
+        if disp>=2: print self._multipliers
+        while keepLoop:
+            if disp:
+                print "Iterating parameters with MCH..."
+            self.learn_parameters_mch(thisConstraints,
+                                      fullFraction,
+                                      uIncompleteStates,
+                                      uIncompleteStatesCount,
+                                      **learn_params_kwargs)
+            if disp>=2:
+                print "After MCH step, the parameters are..."
+                print self._multipliers
+
+            # Sample.
+            if disp:
+                print "Sampling..."
+            self.generate_samples(n_iters,burnin,
+                                  uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
+                                  generate_kwargs=generate_kwargs,disp=disp)
+
+            thisConstraints = self.calc_observables(self.samples).mean(0)
+            counter += 1
+            
+            # Exit criteria.
+            errors.append( thisConstraints-self.constraints )
+            if ( np.linalg.norm(errors[-1])<tolNorm
+                 and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
+                print "Solved."
+                errflag=0
+                keepLoop=False
+            elif counter>maxiter:
+                print "Over maxiter"
+                errflag=1
+                keepLoop=False
+        
+        if full_output:
+            return self._multipliers,errflag,np.vstack((errors))
+        return self._multipliers
+
+    def learn_parameters_mch(self,
+                             estConstraints,
+                             fullFraction,
+                             uIncompleteStates,
+                             uIncompleteStatesCount,
+                             maxdlamda=1,
+                             maxdlamdaNorm=1, 
+                             maxLearningSteps=50,
+                             eta=1 ):
+        """
+        Update parameters with MCH step. Update is proportional to the difference between the
+        observables and the predicted observables after a small change to the parameters. This is
+        calculated from likelihood maximization, and for the incomplete data points this corresponds
+        to the marginal probability distribution weighted with the number of corresponding data
+        points.
+
+        Params:
+        -------
+        estConstraints (ndarray)
+        fullFraction (float)
+            Fraction of data points that are complete.
+        uIncompleteStates (list-like)
+            Unique incomplete states in data.
+        uIncompleteStatesCount (list-like)
+            Frequency of each unique data point.
+        maxdlamda (float=1)
+        maxdlamdaNorm (float=1)
+        maxLearningSteps (int)
+            max learning steps before ending MCH
+        eta (float=1)
+            factor for changing dlamda
+
+        Returns:
+        --------
+        estimatedConstraints (ndarray)
+        """
+        keepLearning = True
+        dlamda = np.zeros((self.constraints.size))
+        learningSteps = 0
+        distance = 1
+        
+        # for each data point, estimate the value of the observables with MCH
+        # take the average of the predictions
+        # minimize the diff btwn that avg and the goal
+        while keepLearning:
+            # Get change in parameters.
+            # If observable is too large, then corresponding energy term has to go down 
+            # (think of double negative).
+            dlamda += -(estConstraints-self.constraints) * np.min([distance,1.]) * eta
+            #dMultipliers /= dMultipliers.max()
+            
+            # Predict distribution with new parameters.
+            # MCH approximation with complete data points.
+            if fullFraction>0:
+                estConstraints = self.mch_approximation( self.samples, dlamda ) * fullFraction
+            else:
+                estConstraints = np.zeros_like(dlamda)
+            # MCH approximation with incomplete data points. These will contribute to the likelihood
+            # by the fraction of data points they constitute. So, the total weight per data point is
+            # p(incomplete)*p(state|incomplete)
+            for i,s in enumerate(self.condSamples):
+                estConstraints += ( (1-fullFraction)*
+                                    (uIncompleteStatesCount[i]/uIncompleteStatesCount.sum())*
+                                    self.mch_approximation(s,dlamda) )
+            distance = np.linalg.norm( estConstraints-self.constraints )
+                        
+            # Counter.
+            learningSteps += 1
+
+            # Evaluate exit criteria.
+            if np.linalg.norm(dlamda)>maxdlamdaNorm or np.any(np.abs(dlamda)>maxdlamda):
+                keepLearning = False
+            elif learningSteps>maxLearningSteps:
+                keepLearning = False
+
+        self._multipliers += dlamda
+        return estConstraints
+
+    def generate_samples(self,n_iters,burnin,
+                         uIncompleteStates=None,
+                         f_cond_sample_size=None,
+                         f_cond_sample_iters=None,
+                         sample_size=None,
+                         sample_method=None,
+                         initial_sample=None,
+                         run_regular_sampler=True,
+                         run_cond_sampler=True,
+                         disp=0,
+                         generate_kwargs={}):
+        """
+        Wrapper around generate_samples_parallel() from available samplers.
+
+        Parameters
+        ----------
+        n_iters : int
+        burnin : int 
+            I think burn in is handled automatically in REMC.
+        uIncompleteStates : list
+        f_cond_sample_size : lambda function
+            Given n, return the number of samples to take.
+        f_cond_sample_iters : lambda function
+            Given n, return the number of MC iterations to make.
+        sample_size : int
+        sample_method : str
+        initial_sample : ndarray
+        generate_kwargs : dict
+
+        Returns
+        -------
+        None
+        """
+        from datetime import datetime
+        assert not (self.sampler is None), "Must call setup_sampler() first."
+
+        sample_method = sample_method or self.sampleMethod
+        sample_size = sample_size or self.sampleSize
+        if initial_sample is None and (not self.samples is None) and len(self.samples)==self.sampleSize:
+            initial_sample = self.samples
+        
+        if sample_method=='metropolis':
+            self.sampler.theta = self._multipliers
+                
+            # Generate samples from full distribution.
+            if run_regular_sampler:
+                # Burn in.
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=burnin,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=initial_sample )
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=n_iters,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=self.sampler.samples )
+                self.samples = self.sampler.samples
+            if run_cond_sampler: 
+                # Sample from conditional distribution for incomplete data points.
+                def f(args):
+                    i,s = args
+                    frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
+                    
+                    if disp:
+                        start = datetime.now() 
+                    sample,E = self.sampler.generate_cond_samples(f_cond_sample_size(self.n-len(frozenSpins)),
+                                                          frozenSpins,
+                                                          burn_in=f_cond_sample_iters(self.n-len(frozenSpins)),
+                                                          parallel=False,
+                                                          **generate_kwargs)
+                    if disp:
+                        print "Done sampling %d out of %d unique states in %1.1f s."%(i+1,
+                                                                      len(uIncompleteStates),
+                                                                      (datetime.now()-start).total_seconds())
+                    return sample
+                
+                pool = mp.Pool(self.n_jobs)
+                self.condSamples = pool.map( f,zip(range(len(uIncompleteStates)),uIncompleteStates) )
+                pool.close()
+        else:
+           raise NotImplementedError("Unrecognized sampler.")
+# End MCHIncompleteData
 
 
 

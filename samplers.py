@@ -11,6 +11,7 @@ from numpy import sin,cos,exp
 from scipy.spatial.distance import squareform
 import multiprocess as mp
 from utils import *
+from datetime import datetime
 
 # ---------------------------------------------------------------------------- #
 # Define calc_e() and grad_e() functions here if you wish to use jit speedup!  #
@@ -1383,16 +1384,20 @@ class MCIsing(object):
                                   systematic_iter=False,
                                   ):
         """
-        Generate samples in parallel and save them into self.samples.
+        Generate samples in parallel and save them into self.samples and their energies into self.E.
 
-        Params:
-        -------
-        sample_size
-        n_iters (int=1000)
-        cpucount (int=None)
-        initial_sample (ndarray=None)
-        systematic_iter (bool=False)
+        Parameters
+        ----------
+        sample_size : int
+        n_iters : int,1000
+        cpucount : int,None
+        initial_sample : ndarray,None
+        systematic_iter : bool,False
             Iterate through spins systematically instead of choosing them randomly.
+
+        Returns
+        -------
+        None
         """
         cpucount = cpucount or self.nJobs
         if initial_sample is None:
@@ -1419,32 +1424,37 @@ class MCIsing(object):
                     E += de
                 return s,E
         
-        pool=mp.Pool(cpucount)
-        self.samples,self.E=zip(*pool.map(f,zip(self.samples,
-                                                self.E,
-                                                np.random.randint(2**31-1,size=sample_size))))
+        pool = mp.Pool(cpucount)
+        self.samples,self.E = zip(*pool.map(f,zip(self.samples,
+                                                  self.E,
+                                                  np.random.randint(2**31-1,size=sample_size))))
         pool.close()
 
-        self.samples=np.vstack(self.samples)
-        self.E=np.concatenate(self.E)
+        self.samples = np.vstack(self.samples)
+        self.E = np.concatenate(self.E)
 
     def generate_cond_samples(self,sample_size,
                               fixed_subset,
-                              n_iters=1000,
+                              burn_in=1000,
                               cpucount=None,
                               initial_sample=None,
                               systematic_iter=False,
+                              parallel=True,
                               ):
         """
-        Generate samples in parallel while a subset of the spins are held fixed.
+        Generate samples from conditional distribution (while a subset of the
+        spins are held fixed). Samples are generated in parallel.
+        
+        NOTE: There is a bug with multiprocess where many calls to the parallel
+        sampling routine in a row leads to increasingly slow evaluation of the code.
 
         Params:
         -------
         sample_size
         fixed_subset (list of duples)
-            Each duple is the index of the spin and the value to fix it at. These should be ordered by spin
-            index.
-        n_iters (int=1000)
+            Each duple is the index of the spin and the value to fix it at.
+            These should be ordered by spin index.
+        burn_in (int=1000)
         cpucount (int=None)
         initial_sample (ndarray=None)
         systematic_iter (bool=False)
@@ -1452,43 +1462,87 @@ class MCIsing(object):
         """
         cpucount = cpucount or self.nJobs
         nSubset = self.n-len(fixed_subset)
+
+        # Initialize sampler.
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sample_size,nSubset))
         else:
             self.samples = initial_sample
         
-        # Redefine calc_e to account for fixed spins.
+        # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state,theta):
-            for i,s in fixed_subset:
-                state = np.insert(state,i,s)
-            return self.calc_e(state[None,:],theta)
-        self.E = np.array([ cond_calc_e( s, self.theta ) for s in self.samples ])
+            fullstate = np.zeros((1,self.n))
+            i0 = 0
+            stateix = 0
+            for i,s in fixed_subset: 
+                for ii in xrange(i0,i):
+                    fullstate[0,ii] = state[0,stateix] 
+                    stateix += 1
+                fullstate[0,i] = s
+                i0 = i+1
+            for ii in xrange(i0,self.n):
+                fullstate[0,ii] = state[0,stateix]
+                stateix += 1
+            return self.calc_e(fullstate,theta)
+        self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
         
         # Parallel sample.
-        if not systematic_iter:
-            def f(args):
-                s,E,seed = args
-                rng = np.random.RandomState(seed)
-                for j in xrange(n_iters):
-                    de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
-                    E += de
-                return s,E
+        if parallel:
+            if not systematic_iter:
+                def f(args):
+                    s,E,seed = args
+                    rng = np.random.RandomState(seed)
+                    for j in xrange(burn_in):
+                        de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
+                        E += de
+                    return s,E
+            else:
+                def f(args):
+                    s,E,seed=args
+                    rng = np.random.RandomState(seed)
+                    for j in xrange(burn_in):
+                        de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                        E += de
+                    return s,E
+            
+            #start = datetime.now()
+            pool=mp.Pool(cpucount)
+            #poolt = datetime.now()
+            self.samples,self.E=zip(*pool.map(f,zip(self.samples,
+                                                    self.E,
+                                                    np.random.randint(2**31-1,size=sample_size))))
+            self.samples = np.vstack(self.samples)
+            #samplet = datetime.now()
+            pool.close()
+            #poolcloset = datetime.now()
+
+            #print "%1.1fs, %1.1fs, %1.1fs"%((poolt-start).total_seconds(),
+            #                                (samplet-poolt).total_seconds(),
+            #                                (poolcloset-samplet).total_seconds())
         else:
-            def f(args):
-                s,E,seed=args
-                rng=np.random.RandomState(seed)
-                for j in xrange(n_iters):
-                    de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
-                    E += de
-                return s,E
-        
-        pool=mp.Pool(cpucount)
-        self.samples,self.E=zip(*pool.map(f,zip(self.samples,
-                                self.E,
-                                np.random.randint(2**31-1,size=sample_size))))
-        pool.close()
-        
-        self.samples = np.vstack(self.samples)
+            rng = np.random.RandomState()
+            
+            if not systematic_iter:
+                def f(args):
+                    s,E = args
+                    for j in xrange(burn_in):
+                        de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
+                        E += de
+                    return s,E
+            else:
+                def f(args):
+                    s,E=args
+                    for j in xrange(burn_in):
+                        de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                        E += de
+                    return s,E
+           
+            for i in xrange(len(self.samples)):
+                s,E = f((self.samples[i],self.E[i]))
+                self.samples[i] = s
+                self.E[i] = E
+
+        # Insert fixed spins back in.
         counter = 0
         for i,s in fixed_subset:
             if i==0:
@@ -1498,6 +1552,7 @@ class MCIsing(object):
             counter += 1
         self.samples = np.reshape(self.samples,(sample_size,self.n))
         self.E = np.concatenate(self.E)
+        return self.samples,self.E
 
     def sample_metropolis(self,sample0,E0,rng=None,flip_site=None,calc_e=None):
         """

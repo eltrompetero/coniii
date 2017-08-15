@@ -1853,6 +1853,7 @@ class ClusterExpansion(Solver):
         return J,threshold,clusters,d
       else:
         return J
+# end ClusterExpansion
 
 
 
@@ -2086,4 +2087,4 @@ class RegularizedMeanField(Solver):
         gridBracket2 = xList[ gridMinIndex + 1 + np.argmin(funcList[gridMinIndex+1:]) ]
         gridBracket = (gridBracket1,gridMin,gridBracket2)
         return gridBracket
-
+# end RegularizedMeanField

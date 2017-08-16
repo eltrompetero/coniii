@@ -137,6 +137,8 @@ Thus, the resulting model is exactly the Ising model mentioned earlier.
 
 
 \section{Implemented methods}
+We briefly summarize the methods that are implemented as part of the initial release of CONIII.
+
 \subsection{Enumeration}
 The na\"{i}ve approach is to write the equations from Eq \ref{eq:dkl deriv} directly:
 \begin{align}
@@ -332,34 +334,46 @@ In CONIII, the selective cluster expansion method is implemented in the {\tt Clu
 \label{tb:runtime}
 \end{table}%
 
+\section{A practical guide to choosing algorithms}
 
 \section{Model selection}
-\begin{enumerate}
-	\item parameter choice (i.e. regularization like discrete regularization or soft) and accounting for noise
-	\item model comparison
-	\item model interpretation
-\end{enumerate}
+%\begin{enumerate}
+%	\item parameter choice (i.e. regularization like discrete regularization or soft) and accounting for noise
+%	\item model comparison
+%	\item model interpretation
+%\end{enumerate}
 
-Model selection involves a tradeoff between a detailed, specific model that can explain the data well with the ability to generalize across an ensemble of data sets resulting from differing noise or sampling conditions. In models of biological or social phenomena, it may be important to also consider the computational costs or physical limitations that restrict the class of models. These tradeoffs are concisely contained in the Bayesian posterior probability
+Now that we know how to solve the maxent problem, how do we choose amongst the many possible maxent models? In principle, we could construct our models with whichever and all constraints we consider to be important, but how do we choose when to stop adding more constraints? 
+On one hand, we would like a model that is simpler than the system we are trying to describe. If we have to specify the entire probability distribution, then it is not much simpler than simulating everything. This is an issue of compression.
+On the other, a complex and highly detailed model is likely to fit to noise that is particular to this instance of data and will not generalize to more observations of the system, an issue called of overfitting.
+These two issues are deeply related.
+
+Model selection involves a tradeoff between a detailed, specific model that can explain the data well with the ability to generalize across an ensemble of data sets resulting from differing noise or sampling conditions \cite{MacKay:2005wc}. In models of biological or social phenomena, it may be important to also consider the computational costs or physical limitations that restrict the class of models \cite{Daniels:1cq}. These tradeoffs are concisely expressed in the Bayesian posterior probability
 \begin{align}
 	p({\rm model}|{\rm data}) &= \frac{p({\rm data}|{\rm model})p({\rm model})}{p({\rm data})}\\
 	{\rm posterior} &= \frac{{\rm likelihood}\times{\rm prior}}{{\rm evidence}}
 \end{align}
-In other words, the most likely model is the one that is supported by the data relative to the prior (and we can ignore the denominator as a normalizing factor unless we are considering multiple data sets). The prior can reflect either the cost of describing a particular model (it's really detailed and takes costs a lot of information or energy and thus unlikely) or it can reflect the initial set of assumptions on the part of the scientist about what models are important to consider.
+In other words, the most likely model is the one that is supported by the data and is not entirely suprising considering our prior beliefs|here we can ignore the denominator as a normalizing factor because we are not considering multiple data sets. The prior can reflect either subjective assumptions on the part of the scientist about what models are important to consider (``we only care about this class of models"), objective constraints from reality (``the laws of physics only permit''), or from the perspective of implementing an algorithm, the cost of describing a particular model (``it's really detailed or requires a lot of information or energy and is thus unlikely''). 
 
-Maximum entropy provides a natural framework for model selection because we can construct a hierarchy of more complicated models by adding more constraints. Since including additional constraints must always reduce or maintain the entropy of the model, we can order a sequence of models as a monotonically decreasing the entropy til the probability distribution has been matched exactly. This entropic difference is
+From this Bayesian formulation, it becomes clear that the issues of compression and overfitting are both contained in this prior. Compression is reflected in a higher prior. As for overfitting, since we would like to choose models that are more likely to generalize,
+\begin{align}
+	p({\rm model}) &= \int p({\rm model}|{\rm data})p({\rm data})\,d{\rm Data}
+\end{align}
+In other words, the prior distribution over models should reflect the variation in the models that can come from alternative data sets. By asserting that the parameters do not just reflect likelihood maximiation with respect to the data set at hand, we can enforce generalization...how is compression related to generalization? This doesn't seem so obvious to me...
+
+Maximum entropy provides a natural framework for model selection because we can construct a hierarchy of increasingly complicated models by adding more constraints. Since adding constraints must always reduce or maintain the entropy of the model, we can order models into a sequence such that entropy monotonically decreases until the probability distribution has been matched exactly. This entropic difference is
 \begin{align}
 	\Delta S_{\rm model} &= S[p_{\rm model}] - S[p_{\rm data}] \geq 0
 \end{align}
 
-With the Ising model, such a sequence can be constructed by constraining kth order moments in order $\br{\sigma_{\rm i_1}\sigma_{\rm i_2}\cdots\sigma_{\rm i_k}}$ where the entropy decays monotonically between the 1st order model to the $k=N$th order model. Normalizing this distance to one, we construct the multi-information:
+With the Ising model, one such sequence can be constructed by constraining up to all kth order moments at a time $\left\{ \{\br{\sigma_{\rm i_1}}\},\{\br{\sigma_{\rm i_1}\sigma_{\rm i_2}}\},...,\{\br{\sigma_{\rm i_1}\sigma_{\rm i_2}\cdots\sigma_{\rm i_k}}\}\right\}$ where the entropy decays monotonically from the 1st order model to the $(k=N)$th order model. Since the 1st order model has the largest entropic distance $\Delta S_1$, a normalized measure of the amount of correlation captured by $k$th order model is the multi-information
 \begin{align}
-	0\leq \Delta S_{\rm n}/\Delta S_{\rm 1} \leq 1
+	0\leq \frac{\Delta S_{\rm k}}{\Delta S_{\rm 1}} \leq 1
 \end{align}
 In this case, fixing all $k$th order moments for all spins is equivalent to fixing the $k$th order marginal probabilities $p(\sigma_{\rm i_1},...,\sigma_{\rm i_k})$. At the Nth order model, $2^N-1$ paramters have been specified, and the probability distribution is fit exactly.
 
-In principle, we could construct our models with whatever set of constraints we consider to be important [isn't there a schneidman paper about this?], but how do we choose when to stop? Clearly, an exact match to the data distribution with as many parameters as is sufficient to describe it exactly is not very useful. In other words, there must be some tradeoff between descriptive power of the model and the cost of describing it. There are a number of ways to consider how models compare with one another like the Akaike Information Criterion (AIC).
-
+The prior term in Eq ?? $p({\rm model})$ embodies this cost.
+There are a number of ways to consider how models compare with one another like the Akaike Information Criterion (AIC) \cite{Lee:2015ev}.
 These information measures account for the description length of the model. In the case of maximum entropy models, the information cost is tightly linked to the data because they correspond exactly to the set of observables that have been specified.
 
 
@@ -383,41 +397,17 @@ data within expected statistical fluctuations.  If not, a more lax regularizatio
 can be used to allow more complicated solutions that are able to fit the
 remaining signal in the data.
 
-We will motivate the next two approaches to maximum entropy fitting in terms
-of regularization.
-
-[This section might be tightened a bit more.  For one, I am somewhat confused as
-to whether the entire maximum entropy approach might be motivated in this
-way---starting with few constraints and adding the possibility of higher order
-constraints until the model fits well enough.]
-
-
-
-
-The first part of maxent is to choose the relevant constraints for the system. The beauty of this is that if the wrong constraints are chosen, then the data will not be fit properly. In this sense, the maxent approach is a way of approaching the scientific method where we have a hypothesis of how the system is constrained, and then we test that.
-
+\subsection{Maxent degeneracy}
 OF course, the logical sequitir is how degenerate maxent models are so that one set of parameters can closely describe behavior that is not actually produced by a model of that type. Although this is in general not an answerable question, some have looked how data generated by a higher order model can be well fit by a simple pairwise maximum entropy model, so there is definitely an element of redundancy. However, the question being posed is a bit misleading here because with a maxent model the question is really whether or not you can explain the observed data well, and not necessarily whether or not you can find the real model generating the data. That can be done if there is enough data, but that is in general not true [this is of course a fundamental difficulty in the scientific enterprise] so we don't think it invalidates the maxent approach, although one should be careful to judge how much to infer from the working model.
-
-The real way to address this problem is to compare different models and see which one is the best at epxlaining the data, we propose in the Bayesian sense. The maxent approach naturally fits into this approach because we specify a priori how many parameters we need to constrain the distribution properly. By considering the amount of information gained by adding more parameters vs the cost of specifying new parameters, we can make a quantitative comparison of the cost of different models.
-
-This is explained in more detail in the Supplement of \cite{Lee:2015ev}.
-
-The logic behind maxent is that by fixing some aspects of the probability distribution, the rest of the distribution has been well characterized.
-By choosing the constraints, the scientist has determined which aspects of the data are important to consider, but this choice may not be correct. This can manifest if by choosing certain constraints, the probability distribution of the data is not well fit.
-
-Another way to put this is to say that the distributions are well-peaked about the constraints. If this condition does not hold, the constraints are not useful.
-
-Maxent is not a typical fitting method where the optimal parameters are sought such that the model is as good as possible. Instead, we specify which aspects of the system we think are important and the resulting ``parameters'' come from the maximum entropy principle.
-
-Thus, one way to test the model is to consider how well we do in predicting the rest of the distribution. If the rest of the distribution is not well fit, certainly we must go back and reconsider which constraints to impose. On the other hand, finding that the rest of the probability distribution is fit well does not necessarily mean we have found the right model.
 
 %\section{Why not maximum entropy?}
 
-
+\section{Discussion}
+We introduce the maximum entropy method and a number of numerical algorithms that have been proposed for it that are implemented in the Python package CONIII released with this manuscript. We discuss how the maxent method fits in with a scientific and quantitative approach to model building.
 
 \appendix
-
-\section{The microcanonical ensemble and maximum entropy}
+\section{Appendix}
+\subsection{The microcanonical ensemble and maximum entropy}
 The conventional textbook in statistical mechanics first introduces the concept of entropy as a way of counting the phase volume available to the system at a given energy
 \begin{align}
 	S(E) &= k_B \log\Omega(E)

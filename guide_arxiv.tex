@@ -31,11 +31,11 @@
 
 \title{Convenient Interface to Inverse Ising (CONIII): A package for solving maximum entropy models}
 \author{$^1$Edward D Lee, $^2$Bryan C Daniels}
-\affiliation{$^1$Department of Physics, 132A Clark Hall, Cornell University, Ithaca NY 14850, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
+\affiliation{$^1$Department of Physics, 142 Sciences Dr, Cornell University, Ithaca NY 14850, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 %\date{}                                           % Activate to display a given date or no date
 
 \begin{abstract}
-CONIII is a Python project for providing a simple interface to various algorithms for solving maximum entropy models with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, and minimum probability flow. 
+Maximum entropy modeling has become popular for social and biological phenomena especially in the physics community because of its strong connection to statistical physics. To make computational maximum entropy techniques more widely accessible, CONIII is a Python project for providing a simple interface to various algorithms for solving maximum entropy models with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, minimum probability flow, and entropy cluster expansion. We discuss how to take a scientific approach to maximum entropy from the perspective of model building and model selection.
 %We then show examples of models that have been solved on various data sets using CONIII.
 \end{abstract}
 
@@ -43,30 +43,31 @@ CONIII is a Python project for providing a simple interface to various algorithm
 
 \tr{{\bf Caution:} Work in progress.}
 
-\section{Introduction}
 Many biological and social systems are characterized by collective behavior whether it is the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system, conflict participation in monkeys, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective \cite{Castellano:2009ce}.
 Recently, with the advent of numerical, analytic, and computation tools, it has become possible to solve for the statistical physics model that corresponds to a particular system, an approach known as the inverse problem.
 This is in contrast with the typical problem in statistical physics where one postulates the Hamiltonian and works out the physical behavior of the system. In the \textit{inverse} problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
-The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve this problem including mean-field approximation, etc., but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated.
+
+The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve this problem, but different approaches are disparately available on separate code bases in different coding languages (if at all), which makes comparison difficult and pedagogy more complicated.
 CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. 
-The modular structure of CONIII was inspired by the machine learning package scikit-learn, where each algorithm is implemented in a class.
+The modular structure of CONIII was inspired by the machine learning Python package {\tt scikit-learn}, where each algorithm is implemented in a class.
 With CONIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
 %There are a variety of techniques for approaching the inverse problem|often in context of a particular model|but they are often presented as different approaches without clear relations to one another. Instead of focusing on the details of each technique separately, we relate these techniques to one another and point out when one would fail or be difficult to apply.
 
-We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level in physics and beyond (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, background in the relevant mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
+Along with the code, we hope to provide a (soft) comprehensive introduction to a scientific approach to maximum entropy modeling. We introduce not only the mathematics of the method and the techniques used to solve it, but also how to think about maximum entropy as a way of building simple models grounded in empirical observations.
+Our goal to is make this approach accessible to students especially at the graduate level beyond physics (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, background in the relevant mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
 
 \section{What is maximum entropy?}
-Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, information entropy, hereon just ``entropy'', over the probability distribution of possible configurations $s$ of a model is
+Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, information entropy, hereon just ``entropy'', over the probability distribution $p_s$ of possible discrete configurations $s$ of a system is
 \begin{align}
 	S[p] &= -\sum_{s\in \mathcal{S}} p_s \log p_s
 \end{align}
-These configurations could correspond to a particular firing pattern in neurons or a particular configuration of 4 letters in a word.
+In the Ising model, these states correspond to the orientation of the spins, but they could be a particular firing pattern in a group of neurons \cite{Schneidman:2006he} or a particular configuration of 4 letters in a word \cite{Stephens:2010hi}.
 
-Given the set of configurations $\mathcal{S}$, entropy is maximized when the probability distribution is uniform $p_s = p_{s'}$, and this is a unique maximum. The uniform distribution is maximally unstructured because there is no structure to exploit to make any predictions. Another way to put this is to say that we are maximally uncertain about what the next observation from this model is (and thus the unfortunate name ``information'' entropy). If there were a slight bias for any state, we could do better than randomly choosing a state $s$.
+Given the set of configurations $\mathcal{S}$, entropy is maximized when the probability distribution is uniform $p_s = p_{s'}$, and this is a unique maximum \cite{Cover:2006tl}. The uniform distribution is maximally unstructured because there is no structure to exploit to make any predictions|guessing that the system is in any particular configuration is as good as any other guess. If there were a slight bias for any state, we could do better than randomly choosing a state $s$.
 
 The idea behind the maximum entropy, or maxent, approach is to build a model that is consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}.
-Since entropy is a measure of uncertainty, we can build a contrained maximization problem. From the data, we choose some important constraints indexed by $k$,
+We maximize entropy but choose some important constraints indexed by $k$,
 \begin{align}
 	\br{f_k(s)} &= \sum_{s\in \mathcal{S}} p_s f_k(s)
 \end{align}
@@ -82,10 +83,10 @@ The notation draws out the equivalence between maximizing entropy and minimizing
 The resulting model is a Boltzmann distribution over states
 \begin{align}
 	p(s) &= \left.e^{-E(s)}\right/Z\\
-\intertext{with normalization, the partition function,}
+\intertext{where $E$ is called the energy in physics with normalization, known as the partition function,}
 	Z &= \sum_\sigma e^{-E(s)}
 \end{align}
-otherwise known as the exponential family of models outside of the physics literature. If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix). which is equivalent to the axiom that all microstates have equal probability (that is the maxent distribution).
+In other fields, this may be called the exponential family of models. If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix), which is equivalent to the axiom that all microstates have equal probability.
 
 Finding the parameters that match the constraints is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
 \begin{align}
@@ -97,12 +98,14 @@ Finding the parameters that match the constraints is equivalent to minimizing th
 
 When the nonlinear equations are coupled, this cannot be solved analytically in general. Below we discuss some analytical approximations with numerical techniques for approaching the inverse problem.
 
+For more references on the maximum entropy problem, see Refs \cite{Jaynes:1957fy,Bialek:2012ueb,Lee:2015ev}.
+
 \subsection{Ising model}
 The Ising model is a statistical physics model of magnetism. In its simplest form, it consists of a set of sites $\sigma_{\rm i}$, or spins, with 2 possible orientations (up and down), coupled to an external magnetic field $h$ and coupled to each other with couplings $J$ \cite{Reif:2009uf}. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J$ determine whether the spins tend to point together ($J>0$) or against each other ($J<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying lattice structure as in Figure \ref{gr:ising}.
 
-\begin{figure}[htbp]\centering
+\begin{figure}[tb]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 70 70 60}]{images/ising_example}
-\caption{Example of a fully connected Ising model with random couplings.}
+\caption{Example of a fully connected Ising model with random positive and negative couplings.}
 \label{gr:ising}
 \end{figure}
 
@@ -133,7 +136,8 @@ Thus, the resulting model is exactly the Ising model mentioned earlier.
 %The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
 
 
-\section{Exact enumeration}
+\section{Implemented methods}
+\subsection{Enumeration}
 The na\"{i}ve approach is to write the equations from Eq \ref{eq:dkl deriv} directly:
 \begin{align}
 	\br{f_{\rm k}} &= -\frac{\partial \ln Z}{\partial \lambda_{\rm k}}
@@ -146,7 +150,7 @@ For the Ising model, the first step in the algorithm for writing down the equati
 The {\tt Exact} class supplies methods for writing Eqs \ref{eq:fk-fk} into a file and solving them with the {\tt scipy.optimize} library.
 
 
-\section{Monte Carlo methods}
+\subsection{Monte Carlo histogram}
 Perhaps the most straightforward and most expensive computational approach is to use Monte Carlo Markov Chain sampling to approximate the distribution and adjust the parameters appropriately after each step. [For details about MCMC methods see Appendix A and \cite{MacKay:2005wc}.] The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we no longer need to calculate the partition function, but can instead compute the difference in energy between two states.
 
 The simplest MCMC algorithm is to generate a sample to estimate the constraints $\br{f_{\rm k}}$ from the current set of parameters and then to implement a learning rule to adjust the parameters. This can be combined with a variety of stochastic gradient descent methods to reduce the number of sampling steps. The particular technique implemented in CONIII is the Monte Carlo Histogram method \cite{Broderick:2007wq}.
@@ -180,8 +184,8 @@ For the Ising model, $K\sim N^2$, the system size squared.
 
 MCH is implemented in the {\tt MCH} class.
 
-\section{Pseudolikelihood}
-The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact in the thermodynamic limit \cite{Aurell:2012hi}. We maximize the conditional probability 
+\subsection{Pseudolikelihood}
+The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact in the thermodynamic limit \cite{Aurell:2012hi}. We maximize the conditional probability of a single spin given the rest of the system,
 \begin{align}
 	p\left(\sigma_{\rm i}|\boldsymbol{\sigma}_{\backslash \rm i};h,J\right) &= \left( 1+e^{-2\sigma_{\rm i} \left(h_{\rm i}+\sum_{j\neq i}J_{\rm ij}\sj\right)} \right)^{-1}
 \end{align}
@@ -203,7 +207,7 @@ Each iteration goes like $O(RN^2)$.
 
 We have implemented pseudolikelihood for the Ising model as detailed in \cite{Aurell:2012hi} in {\tt Pseudo}.
 
-\section{Minimum Probability Flow}
+\subsection{Minimum Probability Flow}
 Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching where instead we have continuous state spaces and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
 
 As before, we start with minimizing the Kullback-Leibler divergence, but instead of taking the derivative with respect to the parameters, we first ask how the probability flows between the model and data if the dynamics are run for an infinitesimal amount of time $\epsilon$, the idea being that the relative difference between the probability distributions are minimized with optimal parameters.
@@ -230,38 +234,7 @@ MPF satisfies a number of useful properties:
 MPF is implemented in the {\tt MPF} class.
 
 
-\section{Regularization to avoid overfitting}
-
-Besides the computational complexity of locating best-fit parameters,
-a fundamental problem in any model inference method is that uncertainty coming
-from the finiteness of data translates into uncertainties in parameters.
-The straightforward answer to this problem is to take more data---in a pairwise
-maximum entropy problem, we might insist that we have enough samples to well-constrain
-the correlation between every pair of individuals.  But it is not always possible
-to take enough data.  For instance, in a social system in which we are trying to
-measure stable social structure that lasts on the order of months, there are only
-a finite number of social interactions that occur over those months, which may
-not be enough to tightly constrain parameters.
-
-The danger in naively searching for a best-fit solution in a data-poor situation
-is overfitting, or erroneously finding patterns in the finite-sample noise.
-One way to avoid overfitting is regularization:
-restricting the search space in some principled way so that more complicated
-solutions are disallowed.  We then check that the regularized solutions fit the
-data within expected statistical fluctuations.  If not, a more lax regularization
-can be used to allow more complicated solutions that are able to fit the
-remaining signal in the data.
-
-We will motivate the next two approaches to maximum entropy fitting in terms
-of regularization.
-
-[This section might be tightened a bit more.  For one, I am somewhat confused as
-to whether the entire maximum entropy approach might be motivated in this
-way---starting with few constraints and adding the possibility of higher order
-constraints until the model fits well enough.]
-
-
-\section{Mean-field methods}
+\subsection{Regularized mean-field approximation}
 [I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
 
 [Analytic approximations simplify the equations to an extent where they are tractable.]
@@ -306,8 +279,7 @@ This is implemented in {\tt RegularizedMeanField}.
 
 
 
-\section{Cluster expansions}
-
+\subsection{Cluster expansion}
 Adaptive cluster expansion \cite{CocMon11,CocMon12,BarCoc13}
 iteratively calculates terms in the
 cluster expansion of the entropy $S$:
@@ -336,16 +308,67 @@ the resulting $J$ fit the desired statistics of the data sufficiently well.
 
 In Coniii, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
-\section{Bethe/Kikuchi free energy/cavity methods}
-Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
+%\subsection{Bethe/Kikuchi free energy/cavity methods}
+%[Something to add?]
+%Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
+%
+%The cavity method involves use of the marginalized distribution.
 
-The cavity method involves use of the marginalized distribution.
+\section{Model selection}
+\begin{enumerate}
+	\item parameter choice (i.e. regularization like discrete regularization or soft) and accounting for noise
+	\item model comparison
+	\item model interpretation
+\end{enumerate}
 
-\section{Samplers}
-In CONIII, we have implemented two versions of the Metropolis algorithm. One is specific to the Ising model {\tt MCIsing} and the other {\tt MC} can sample a system as long as the function for calculating the energy is suppiled by the user.
+Intro...model selection...Maximum entropy provides a natural framework for the question of how to choose a model for the observed data. The probability distribution of an Ising model can be specified by $2^N-1$ constraints. By constraining lower order marginals, we are specifying particular aspects of the probability distribution. For the Ising model, this is equivalent to specifying the marginal probabilities of the system, and a way to build up is to see how many lower order marginals we need...
 
-\subsection{How to validate a maxent model}
+How do we decide on the set of constraints? 
+
+\section{Regularization to avoid overfitting}
+
+Besides the computational complexity of locating best-fit parameters,
+a fundamental problem in any model inference method is that uncertainty coming
+from the finiteness of data translates into uncertainties in parameters.
+The straightforward answer to this problem is to take more data---in a pairwise
+maximum entropy problem, we might insist that we have enough samples to well-constrain
+the correlation between every pair of individuals.  But it is not always possible
+to take enough data.  For instance, in a social system in which we are trying to
+measure stable social structure that lasts on the order of months, there are only
+a finite number of social interactions that occur over those months, which may
+not be enough to tightly constrain parameters.
+
+The danger in naively searching for a best-fit solution in a data-poor situation
+is overfitting, or erroneously finding patterns in the finite-sample noise.
+One way to avoid overfitting is regularization:
+restricting the search space in some principled way so that more complicated
+solutions are disallowed.  We then check that the regularized solutions fit the
+data within expected statistical fluctuations.  If not, a more lax regularization
+can be used to allow more complicated solutions that are able to fit the
+remaining signal in the data.
+
+We will motivate the next two approaches to maximum entropy fitting in terms
+of regularization.
+
+[This section might be tightened a bit more.  For one, I am somewhat confused as
+to whether the entire maximum entropy approach might be motivated in this
+way---starting with few constraints and adding the possibility of higher order
+constraints until the model fits well enough.]
+
+
+
+
+The first part of maxent is to choose the relevant constraints for the system. The beauty of this is that if the wrong constraints are chosen, then the data will not be fit properly. In this sense, the maxent approach is a way of approaching the scientific method where we have a hypothesis of how the system is constrained, and then we test that.
+
+OF course, the logical sequitir is how degenerate maxent models are so that one set of parameters can closely describe behavior that is not actually produced by a model of that type. Although this is in general not an answerable question, some have looked how data generated by a higher order model can be well fit by a simple pairwise maximum entropy model, so there is definitely an element of redundancy. However, the question being posed is a bit misleading here because with a maxent model the question is really whether or not you can explain the observed data well, and not necessarily whether or not you can find the real model generating the data. That can be done if there is enough data, but that is in general not true [this is of course a fundamental difficulty in the scientific enterprise] so we don't think it invalidates the maxent approach, although one should be careful to judge how much to infer from the working model.
+
+The real way to address this problem is to compare different models and see which one is the best at epxlaining the data, we propose in the Bayesian sense. The maxent approach naturally fits into this approach because we specify a priori how many parameters we need to constrain the distribution properly. By considering the amount of information gained by adding more parameters vs the cost of specifying new parameters, we can make a quantitative comparison of the cost of different models.
+
+This is explained in more detail in the Supplement of \cite{Lee:2015ev}.
+
 The logic behind maxent is that by fixing some aspects of the probability distribution, the rest of the distribution has been well characterized.
+By choosing the constraints, the scientist has determined which aspects of the data are important to consider, but this choice may not be correct. This can manifest if by choosing certain constraints, the probability distribution of the data is not well fit.
+
 Another way to put this is to say that the distributions are well-peaked about the constraints. If this condition does not hold, the constraints are not useful.
 
 Maxent is not a typical fitting method where the optimal parameters are sought such that the model is as good as possible. Instead, we specify which aspects of the system we think are important and the resulting ``parameters'' come from the maximum entropy principle.

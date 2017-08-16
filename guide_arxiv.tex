@@ -306,13 +306,32 @@ the threshold is initially set at a large value and then lowered,
 gradually including more clusters in the expansion, until samples from
 the resulting $J$ fit the desired statistics of the data sufficiently well.
 
-In Coniii, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
+In CONIII, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
 %\subsection{Bethe/Kikuchi free energy/cavity methods}
 %[Something to add?]
 %Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
 %
 %The cavity method involves use of the marginalized distribution.
+
+\begin{table}[bt]
+\caption{Runtime per iteration for algorithms.}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+	Method 	& Runtime per iteration & Exact? \\
+\hline
+	MCH 	& $\mathcal{O}()$ & Yes\\
+	MPF		& & Sometimes\\
+	Pseudolikelihood & & No\\
+	Regularized MF & & No\\
+	Cluster expansion & & Yes\\
+\hline
+\end{tabular}
+\end{center}
+\label{tb:runtime}
+\end{table}%
+
 
 \section{Model selection}
 \begin{enumerate}
@@ -321,13 +340,30 @@ In Coniii, the selective cluster expansion method is implemented in the {\tt Clu
 	\item model interpretation
 \end{enumerate}
 
-Intro...model selection...Maximum entropy provides a natural framework for the question of how to choose a model for the observed data. The probability distribution of an Ising model can be specified by $2^N-1$ constraints. By constraining lower order marginals, we are specifying particular aspects of the probability distribution. For the Ising model, this is equivalent to specifying the marginal probabilities of the system, and a way to build up is to see how many lower order marginals we need...
+Model selection involves a tradeoff between a detailed, specific model that can explain the data well with the ability to generalize across an ensemble of data sets resulting from differing noise or sampling conditions. In models of biological or social phenomena, it may be important to also consider the computational costs or physical limitations that restrict the class of models. These tradeoffs are concisely contained in the Bayesian posterior probability
+\begin{align}
+	p({\rm model}|{\rm data}) &= \frac{p({\rm data}|{\rm model})p({\rm model})}{p({\rm data})}\\
+	{\rm posterior} &= \frac{{\rm likelihood}\times{\rm prior}}{{\rm evidence}}
+\end{align}
+In other words, the most likely model is the one that is supported by the data relative to the prior (and we can ignore the denominator as a normalizing factor unless we are considering multiple data sets). The prior can reflect either the cost of describing a particular model (it's really detailed and takes costs a lot of information or energy and thus unlikely) or it can reflect the initial set of assumptions on the part of the scientist about what models are important to consider.
 
-How do we decide on the set of constraints? 
+Maximum entropy provides a natural framework for model selection because we can construct a hierarchy of more complicated models by adding more constraints. Since including additional constraints must always reduce or maintain the entropy of the model, we can order a sequence of models as a monotonically decreasing the entropy til the probability distribution has been matched exactly. This entropic difference is
+\begin{align}
+	\Delta S_{\rm model} &= S[p_{\rm model}] - S[p_{\rm data}] \geq 0
+\end{align}
 
-\section{Regularization to avoid overfitting}
+With the Ising model, such a sequence can be constructed by constraining kth order moments in order $\br{\sigma_{\rm i_1}\sigma_{\rm i_2}\cdots\sigma_{\rm i_k}}$ where the entropy decays monotonically between the 1st order model to the $k=N$th order model. Normalizing this distance to one, we construct the multi-information:
+\begin{align}
+	0\leq \Delta S_{\rm n}/\Delta S_{\rm 1} \leq 1
+\end{align}
+In this case, fixing all $k$th order moments for all spins is equivalent to fixing the $k$th order marginal probabilities $p(\sigma_{\rm i_1},...,\sigma_{\rm i_k})$. At the Nth order model, $2^N-1$ paramters have been specified, and the probability distribution is fit exactly.
 
-Besides the computational complexity of locating best-fit parameters,
+In principle, we could construct our models with whatever set of constraints we consider to be important [isn't there a schneidman paper about this?], but how do we choose when to stop? Clearly, an exact match to the data distribution with as many parameters as is sufficient to describe it exactly is not very useful. In other words, there must be some tradeoff between descriptive power of the model and the cost of describing it. There are a number of ways to consider how models compare with one another like the Akaike Information Criterion (AIC).
+
+These information measures account for the description length of the model. In the case of maximum entropy models, the information cost is tightly linked to the data because they correspond exactly to the set of observables that have been specified.
+
+
+Besides the cost of specifiying parameters,
 a fundamental problem in any model inference method is that uncertainty coming
 from the finiteness of data translates into uncertainties in parameters.
 The straightforward answer to this problem is to take more data---in a pairwise

@@ -355,10 +355,8 @@ Model selection involves a tradeoff between a detailed, specific model that can 
 \end{align}
 In other words, the most likely model is the one that is supported by the data and is not entirely suprising considering our prior beliefs|here we can ignore the denominator as a normalizing factor because we are not considering multiple data sets. The prior can reflect either subjective assumptions on the part of the scientist about what models are important to consider (``we only care about this class of models"), objective constraints from reality (``the laws of physics only permit''), or from the perspective of implementing an algorithm, the cost of describing a particular model (``it's really detailed or requires a lot of information or energy and is thus unlikely''). 
 
-From this Bayesian formulation, it becomes clear that the issues of compression and overfitting are both contained in this prior. Compression is reflected in a higher prior. As for overfitting, since we would like to choose models that are more likely to generalize,
-\begin{align}
-	p({\rm model}) &= \int p({\rm model}|{\rm data})p({\rm data})\,d{\rm Data}
-\end{align}
+From this Bayesian formulation, it becomes clear that the issues of compression and overfitting are both contained in this prior. The prior can inform us how believable the data points are (is the data really telling us that we are wrong?).
+
 In other words, the prior distribution over models should reflect the variation in the models that can come from alternative data sets. By asserting that the parameters do not just reflect likelihood maximiation with respect to the data set at hand, we can enforce generalization...how is compression related to generalization? This doesn't seem so obvious to me...
 
 Maximum entropy provides a natural framework for model selection because we can construct a hierarchy of increasingly complicated models by adding more constraints. Since adding constraints must always reduce or maintain the entropy of the model, we can order models into a sequence such that entropy monotonically decreases until the probability distribution has been matched exactly. This entropic difference is
@@ -373,7 +371,7 @@ With the Ising model, one such sequence can be constructed by constraining up to
 In this case, fixing all $k$th order moments for all spins is equivalent to fixing the $k$th order marginal probabilities $p(\sigma_{\rm i_1},...,\sigma_{\rm i_k})$. At the Nth order model, $2^N-1$ paramters have been specified, and the probability distribution is fit exactly.
 
 The prior term in Eq ?? $p({\rm model})$ embodies this cost.
-There are a number of ways to consider how models compare with one another like the Akaike Information Criterion (AIC) \cite{Lee:2015ev}.
+There are a number of ways to consider how models compare with one another like the Bayesian Information Criterion (BIC) and Akaike Information Criterion (AIC) \cite{Lee:2015ev}.
 These information measures account for the description length of the model. In the case of maximum entropy models, the information cost is tightly linked to the data because they correspond exactly to the set of observables that have been specified.
 
 

@@ -35,7 +35,7 @@
 %\date{}                                           % Activate to display a given date or no date
 
 \begin{abstract}
-Maximum entropy modeling has become popular for social and biological phenomena especially in the physics community because of its strong connection to statistical physics. To make computational maximum entropy techniques more widely accessible, CONIII is a Python project for providing a simple interface to various algorithms for solving maximum entropy models with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, minimum probability flow, and entropy cluster expansion. We discuss how to take a scientific approach to maximum entropy from the perspective of model building and model selection.
+Maximum entropy modeling has become popular for social and biological phenomena especially in the physics community because of its fundamental connection to statistical physics. To make computational maximum entropy techniques more widely accessible, CONIII is a Python project for providing a simple interface to various algorithms for solving maximum entropy models with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, minimum probability flow, and entropy cluster expansion. We discuss how to take a scientific approach to maximum entropy from the perspective of model building and model selection.
 %We then show examples of models that have been solved on various data sets using CONIII.
 \end{abstract}
 
@@ -335,6 +335,16 @@ In CONIII, the selective cluster expansion method is implemented in the {\tt Clu
 \end{table}%
 
 \section{A practical guide to choosing algorithms}
+The first question the you should ask yourself is about the scale of the problem. Is the problem on a large state space, a large system size, need to be solved many times on different data sets, or have a lot of data; and how much time or computational power is available? In general, problems with a large discrete state space and large system size will be difficult to solve with whichever method, and it will be crucial to use algorithms that scale slowly with system size for a solution in a reasonable amount of time. The inverse maxent problem is expensive, and this may determine which maxent models can be solved with available resources or a maxent model may not be the right choice once you account for the computational cost of finding the parameters.
+
+First, one must consider the data available. Some algorithms like first-order MPF work poorly when the state space is well-sampled because the probability flow between data and non-data states cannot be well-measured. [In principle, MPF also works in the highly sampled regime if we consider the expansion of the KL-divergence to higher orders but that is not implemented here. Runtime for MPF and pseudolikelihood scale with the number of data points available (as shown in Table ??), so this is important to consider.]
+If the system is poorly sampled such that subsets of the system are perfectly (or close to perfectly) correlated or anti-correlated (e.g. $\br{\si\sj}=\pm1$), then this corresponds to an infinitely large parameter, and may lead to numerical precision issues in the calculation of energies and fits dominated by the subset. Here, it will be important to regularize the problem by enforcing a sparseness constraint directly on the parameters or by using a prior for the data distribution (like with pseudocounting or the Laplace prior). 
+
+When solving for the parameters, an efficient approach is to get a good initial guess using a fast approximation and then using that to seed a slower but more precise algorithm. Of course, particular characteristics of the data or of the problem may make certain algorithms more feasible than others.
+
+If the state space is continuous (e.g. real-valued spins like in the Heisenberg model), MPF will return the exact parameter values for models in the exponential family \cite{SohlDickstein:2011im}.
+
+If we have a discrete state space, we must consider other techniques. Pseudolikelihood or regularized mean field are very fast techniques for a first pass. These initial guesses can seed MCH that is guaranteed to converge to the right answer but expensive and does best when the parameter step sizes are small because of the sampling approximation. This stepwise approach to the solution is neatly included in the cluster expansion which approximates the solution down to a given threshold for the entropy expansion [although one worry may be that the expansion does not converge at first and requires a large number of terms]. 
 
 \section{Model selection}
 %\begin{enumerate}

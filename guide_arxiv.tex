@@ -338,7 +338,7 @@ In CONIII, the selective cluster expansion method is implemented in the {\tt Clu
 The first question the you should ask yourself is about the scale of the problem. Is the problem on a large state space, a large system size, need to be solved many times on different data sets, or have a lot of data; and how much time or computational power is available? In general, problems with a large discrete state space and large system size will be difficult to solve with whichever method, and it will be crucial to use algorithms that scale slowly with system size for a solution in a reasonable amount of time. The inverse maxent problem is expensive, and this may determine which maxent models can be solved with available resources or a maxent model may not be the right choice once you account for the computational cost of finding the parameters.
 
 First, one must consider the data available. Some algorithms like first-order MPF work poorly when the state space is well-sampled because the probability flow between data and non-data states cannot be well-measured. [In principle, MPF also works in the highly sampled regime if we consider the expansion of the KL-divergence to higher orders but that is not implemented here. Runtime for MPF and pseudolikelihood scale with the number of data points available (as shown in Table ??), so this is important to consider.]
-If the system is poorly sampled such that subsets of the system are perfectly (or close to perfectly) correlated or anti-correlated (e.g. $\br{\si\sj}=\pm1$), then this corresponds to an infinitely large parameter, and may lead to numerical precision issues in the calculation of energies and fits dominated by the subset. Here, it will be important to regularize the problem by enforcing a sparseness constraint directly on the parameters or by using a prior for the data distribution (like with pseudocounting or the Laplace prior). 
+If the system is poorly sampled such that subsets of the system are perfectly (or close to perfectly) correlated or anti-correlated (e.g. $\br{\si\sj}=\pm1$), then this corresponds to an infinitely large parameter, and may lead to numerical precision issues in the calculation of energies and fits dominated by the subset. Here, it will be important to regularize the problem by enforcing a sparseness constraint directly on the parameters, by using a prior for the data distribution (like with pseudocounting or the Laplace prior), or even grouping perfectly correlated units together.
 
 When solving for the parameters, an efficient approach is to get a good initial guess using a fast approximation and then using that to seed a slower but more precise algorithm. Of course, particular characteristics of the data or of the problem may make certain algorithms more feasible than others.
 
@@ -353,10 +353,8 @@ If we have a discrete state space, we must consider other techniques. Pseudolike
 %	\item model interpretation
 %\end{enumerate}
 
-Now that we know how to solve the maxent problem, how do we choose amongst the many possible maxent models? In principle, we could construct our models with whichever and all constraints we consider to be important, but how do we choose when to stop adding more constraints? 
-On one hand, we would like a model that is simpler than the system we are trying to describe. If we have to specify the entire probability distribution, then it is not much simpler than simulating everything. This is an issue of compression.
-On the other, a complex and highly detailed model is likely to fit to noise that is particular to this instance of data and will not generalize to more observations of the system, an issue called of overfitting.
-These two issues are deeply related.
+How do we choose amongst the many possible maxent models? In principle, we could construct our models with whichever and all constraints we consider to be important, but how do we choose when to stop adding more constraints?
+We would like a model that is simpler than the system we are trying to describe. If we have to specify the entire probability distribution, then it is not simpler than simulating everything: we are looking for a compressed representation. Along the same lines, a complex and highly detailed model is likely to fit to noise that is particular to this instance of data and will not generalize to more observations of the system, or overfit the data.
 
 Model selection involves a tradeoff between a detailed, specific model that can explain the data well with the ability to generalize across an ensemble of data sets resulting from differing noise or sampling conditions \cite{MacKay:2005wc}. In models of biological or social phenomena, it may be important to also consider the computational costs or physical limitations that restrict the class of models \cite{Daniels:1cq}. These tradeoffs are concisely expressed in the Bayesian posterior probability
 \begin{align}
@@ -365,27 +363,13 @@ Model selection involves a tradeoff between a detailed, specific model that can 
 \end{align}
 In other words, the most likely model is the one that is supported by the data and is not entirely suprising considering our prior beliefs|here we can ignore the denominator as a normalizing factor because we are not considering multiple data sets. The prior can reflect either subjective assumptions on the part of the scientist about what models are important to consider (``we only care about this class of models"), objective constraints from reality (``the laws of physics only permit''), or from the perspective of implementing an algorithm, the cost of describing a particular model (``it's really detailed or requires a lot of information or energy and is thus unlikely''). 
 
-From this Bayesian formulation, it becomes clear that the issues of compression and overfitting are both contained in this prior. The prior can inform us how believable the data points are (is the data really telling us that we are wrong?).
+With enough parameters, it will be possible to fit any data, but there are typically decreasing returns in descriptive power (given that we choose parameters and models and wisely). 
+To quantify how the cost of specifying more parameters is offset by the decreasing returns, we might use the Bayesian Information Criterion (BIC) or Akaike Information Criterion (AIC) \cite{Lee:2015ev}.
+%[In particular to maxent models, the information cost is tightly linked to the data because they correspond exactly to the set of observables that have been specified.]
 
-In other words, the prior distribution over models should reflect the variation in the models that can come from alternative data sets. By asserting that the parameters do not just reflect likelihood maximiation with respect to the data set at hand, we can enforce generalization...how is compression related to generalization? This doesn't seem so obvious to me...
+In this Bayesian formulation, the issues of compression and overfitting are both addressed by this prior. By favoring simple models with fewer parameters, we prevent overfitting to any particular sample of data. With increasing amounts of data, however, the prior becomes less important and the model is informed by the data because detailed features are more likely to be accurately measurable instead of variance from stochasticity.
 
-Maximum entropy provides a natural framework for model selection because we can construct a hierarchy of increasingly complicated models by adding more constraints. Since adding constraints must always reduce or maintain the entropy of the model, we can order models into a sequence such that entropy monotonically decreases until the probability distribution has been matched exactly. This entropic difference is
-\begin{align}
-	\Delta S_{\rm model} &= S[p_{\rm model}] - S[p_{\rm data}] \geq 0
-\end{align}
-
-With the Ising model, one such sequence can be constructed by constraining up to all kth order moments at a time $\left\{ \{\br{\sigma_{\rm i_1}}\},\{\br{\sigma_{\rm i_1}\sigma_{\rm i_2}}\},...,\{\br{\sigma_{\rm i_1}\sigma_{\rm i_2}\cdots\sigma_{\rm i_k}}\}\right\}$ where the entropy decays monotonically from the 1st order model to the $(k=N)$th order model. Since the 1st order model has the largest entropic distance $\Delta S_1$, a normalized measure of the amount of correlation captured by $k$th order model is the multi-information
-\begin{align}
-	0\leq \frac{\Delta S_{\rm k}}{\Delta S_{\rm 1}} \leq 1
-\end{align}
-In this case, fixing all $k$th order moments for all spins is equivalent to fixing the $k$th order marginal probabilities $p(\sigma_{\rm i_1},...,\sigma_{\rm i_k})$. At the Nth order model, $2^N-1$ paramters have been specified, and the probability distribution is fit exactly.
-
-The prior term in Eq ?? $p({\rm model})$ embodies this cost.
-There are a number of ways to consider how models compare with one another like the Bayesian Information Criterion (BIC) and Akaike Information Criterion (AIC) \cite{Lee:2015ev}.
-These information measures account for the description length of the model. In the case of maximum entropy models, the information cost is tightly linked to the data because they correspond exactly to the set of observables that have been specified.
-
-
-Besides the cost of specifiying parameters,
+Besides the cost of specifying parameters,
 a fundamental problem in any model inference method is that uncertainty coming
 from the finiteness of data translates into uncertainties in parameters.
 The straightforward answer to this problem is to take more data---in a pairwise
@@ -405,13 +389,48 @@ data within expected statistical fluctuations.  If not, a more lax regularizatio
 can be used to allow more complicated solutions that are able to fit the
 remaining signal in the data.
 
-\subsection{Maxent degeneracy}
-OF course, the logical sequitir is how degenerate maxent models are so that one set of parameters can closely describe behavior that is not actually produced by a model of that type. Although this is in general not an answerable question, some have looked how data generated by a higher order model can be well fit by a simple pairwise maximum entropy model, so there is definitely an element of redundancy. However, the question being posed is a bit misleading here because with a maxent model the question is really whether or not you can explain the observed data well, and not necessarily whether or not you can find the real model generating the data. That can be done if there is enough data, but that is in general not true [this is of course a fundamental difficulty in the scientific enterprise] so we don't think it invalidates the maxent approach, although one should be careful to judge how much to infer from the working model.
+Maximum entropy provides a natural framework for model selection because we can construct a hierarchy of increasingly complicated models with more constraints. Since adding constraints must always reduce or maintain the entropy of the model, we can order models into a sequence such that entropy monotonically decreases to the entropy of the data and the probability distribution has been matched exactly. [include reference to Amari and info geometry]
+
+With the Ising model, one such sequence can be constructed by constraining up to all kth order moments at a time $\left\{ \{\br{\sigma_{\rm i_1}}\},\{\br{\sigma_{\rm i_1}\sigma_{\rm i_2}}\},...,\{\br{\sigma_{\rm i_1}\sigma_{\rm i_2}\cdots\sigma_{\rm i_k}}\}\right\}$ where the entropy decays monotonically from the 1st order model to the $(k=N)$th order model. 
+
+Since the independent, 1st order model has the largest entropic distance $\Delta S_1$ to the $N$th order model $S_N$, a normalized measure of the amount of correlation captured by $k$th order model is the fractional multi-information
+\begin{align}
+	0\leq \frac{S_1 - S_{\rm k}}{S_{\rm 1}-S_{\rm n}} = \frac{\Delta S_{\rm k}}{\Delta S_{\rm 1}} \leq 1
+\end{align}
+In this case, fixing all $k$th order moments for all spins is equivalent to fixing the $k$th order marginal probabilities $p(\sigma_{\rm i_1},...,\sigma_{\rm i_k})$. At the Nth order model, $2^N-1$ paramters have been specified, and the probability distribution is fit exactly meaning $S_N = S_{\rm data}$. [estimating this quantity properly is also an important question]
+
+Using the separability of the probability distribution of the independent model, we can show that the $\Delta S_{\rm k}$ is the mutual information between the kth order model and the independent model
+\begin{align}
+	\Delta S_{\rm k} &= -\sum p_k(s)\log p_k(s) + \sum_s p_1(s) \log p_1(s) \\
+		&= -\sum p_{\rm k}(s)\log p_{\rm k}(s) + \sum_s p_1(s) \log \prod_{\rm i} p_1(s_{\rm i})\\
+		&= -\sum p_{\rm k}(s)\log \frac{p_{\rm k}(s)}{\prod_{\rm i} p_1(s_{\rm i})}
+\end{align}
+
+After choosing the model, we must consider how to pick the values of the parameters. For maximum entropy models, there is no parameter fitting because the parameters are given uniquely by the observables calculated on the data. However, it is important to consider how fluctuations in the data might affect the resulting model. Regularization as in the mean-field model in CONIII is one approach and another approach is early stopping (before the algorithm has found the true parameter values) like with adaptive cluster expansion.
+
+%\subsection{Maxent degeneracy}
+%When choosing between different maxent models, it is important to consider how easy it is to mimic the behavior of one model with another. Some have looked how data generated by a higher order model can be well fit by a simple pairwise maximum entropy model, so there is definitely an element of redundancy. 
+%
+%Renormalization group theory arguments suggest that it may be reasonable to only use lower order correlation operators for modeling the behavior of a large system because they decay slower with coarse-graining.
+%
+%Few arguments here:
+%\begin{enumerate}
+%	\item in certain limits, an expansion shows that higher order correlations are not so important (Tkacik)
+%	\item pairwise interactions are sufficient for higher order models in a many regimes (Nemenman)
+%	\item 
+%\end{enumerate}
+
+%However, the question being posed is a bit misleading here because with a maxent model the question is really whether or not you can explain the observed data well, and not necessarily whether or not you can find the real model generating the data. That can be done if there is enough data, but that is in general not true [this is of course a fundamental difficulty in the scientific enterprise] so we don't think it invalidates the maxent approach, although one should be careful to judge how much to infer from the working model.
 
 %\section{Why not maximum entropy?}
 
 \section{Discussion}
-We introduce the maximum entropy method and a number of numerical algorithms that have been proposed for it that are implemented in the Python package CONIII released with this manuscript. We discuss how the maxent method fits in with a scientific and quantitative approach to model building.
+The maximum entropy approach to modeling complex biological or social systems has been shown to be a powerful tool for understanding how these systems behave. 
+In some contexts like the neural code, maximum entropy models provide a direct connection to the information that is communicated by spiking neurons. In genes networks, it may reveal hidden physical connections that are not easily identified by experiment. It may also elucidate whether systems may be poised at an interesting regime of parameter space like at a critical point.
+More generally, it provides a direct relation to statistical physics and a quantitive bridge for asking about interesting collective and emergent phenomena like phases and phase transitions. 
+
+On the pedagogical side, it is a systematic approach to model building and provides a coherent framework for model selection and comparison. 
+By providing a number of techniques for solving the maximum entropy model in an accessible interface, we hope to encourage students and researchers to learn about this technique and apply it their own research.
 
 \appendix
 \section{Appendix}

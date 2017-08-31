@@ -1383,9 +1383,6 @@ class ClusterExpansion(Solver):
 
         return ent,Jfull 
 
-
-
-
     # 3.24.2014
     def Sindependent(self,cluster,coocMat):
         """

@@ -181,7 +181,7 @@ This has the correct fixed points. One suggestion is to shrink $\epsilon$ expone
 Typically, one must check in on the progress of the algorithm to tune the various parameters. If the extrapolation steps or the gradient steps are too large, the algorithm will fail to converge (or may even start diverging).
 
 The runtime for the sampling step is proportional to the number of samples $n_{\rm sample}$, number of MCMC iterations $n_{MC}$, the number of constraints $K$:
-$\mathcal{O}(n_{\rm MC} n_{\rm sample} K)$, whereas the MCH estimate is relatively quick $\mathcal{O}(n_{\rm sample}n_{\rm MCH}K)$ because the number of MCH approximation steps is much smaller than the number of MCMC sampling iterations $n_{\rm MCH}<<n_{\rm MC}$. What is the runtime for the learning rules Eqs \ref{eq:mch learn1} and \ref{eq:mch learn2}?
+$\mathcal{O}(n_{\rm MC} n_{\rm sample} K)$, whereas the MCH estimate is relatively quick $\mathcal{O}(n_{\rm sample}n_{\rm MCH}K)$ because the number of MCH approximation steps is much smaller than the number of MCMC sampling iterations $n_{\rm MCH}<<n_{\rm MC}$. [What is the runtime for the learning rules Eqs \ref{eq:mch learn1} and \ref{eq:mch learn2}?]
 For the Ising model, $K\sim N^2$, the system size squared.
 
 MCH is implemented in the {\tt MCH} class.
@@ -237,15 +237,12 @@ MPF is implemented in the {\tt MPF} class.
 
 
 \subsection{Regularized mean-field approximation}
-[I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
-
-[Analytic approximations simplify the equations to an extent where they are tractable.]
-
+%[I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
 One attractively simple and efficient version of the regularized approach starts
 with mean-field theory.  In the inverse Ising problem, mean-field theory is equivalent
 to treating each binary individual as instead having a continuously varying state
 (corresponding to its mean value).  The inverse problem then turns into simply inverting
-the correlation matrix $C$: \cite{CocMon12}
+the correlation matrix $C$ \cite{CocMon12}: 
 \begin{equation}
 \label{meanFieldSolution}
 J^{\mathrm{mean-field}}_{k\ell} =
@@ -277,6 +274,7 @@ While there is no guarantee that varying this one parameter will produce solutio
 good enough to ``fit within error bars,'' this approach has been successful in at least
 one case of fitting social interactions \cite{DanKraFla17}.
 
+Because there is both a matrix inversion and a sampling step (for comparing the distribution from different $\gamma$), the runtime is dominated by either $\mathcal{O}(N^3 + n_{\rm sample}n_{\rm MC}N^2)$.
 This is implemented in {\tt RegularizedMeanField}.
 
 
@@ -317,22 +315,30 @@ In CONIII, the selective cluster expansion method is implemented in the {\tt Clu
 %The cavity method involves use of the marginalized distribution.
 
 \begin{table}[bt]
-\caption{Runtime per iteration for algorithms.}
+\caption{Runtime per iteration for algorithms for the Ising model. See Fig \ref{gr:runtime}.}
 \begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
 	Method 	& Runtime per iteration & Exact? \\
 \hline
-	MCH 	& $\mathcal{O}()$ & Yes\\
-	MPF		& & Sometimes\\
-	Pseudolikelihood & & No\\
-	Regularized MF & & No\\
-	Cluster expansion & & Yes\\
+	Exact 	& $\mathcal{O}(2^N N^2)$ & Yes\\
+	MPF		& $\mathcal{O}(n_{\rm data}N^2)$ & Sometimes\\
+	MCH 	& $\mathcal{O}(n_{\rm sample}n_{\rm MC}N^2)$ & Yes\\
+	Pseudolikelihood & $\mathcal{O}(n_{\rm data}N^2)$ & $N\rightarrow\infty$\\
+	Cluster expansion & & ?\\
+	Regularized MF & $\mathcal{O}(N^3 + n_{\rm sample}n_{\rm MC}N^2)$ & No\\
 \hline
 \end{tabular}
 \end{center}
 \label{tb:runtime}
 \end{table}%
+
+\begin{figure}[htbp]\centering
+	\includegraphics[width=.85\linewidth]{}
+\caption{Runtime for algorithms on the inverse Ising problem. Shown runtimes are averages over 10 random systems run for each method. For the methods that require samples, we sampled 20 random states from the distribution.}
+\label{gr:runtime}
+\end{figure}
+
 
 \section{A practical guide to choosing algorithms}
 The first question the you should ask yourself is about the scale of the problem. Is the problem on a large state space, a large system size, need to be solved many times on different data sets, or have a lot of data; and how much time or computational power is available? In general, problems with a large discrete state space and large system size will be difficult to solve with whichever method, and it will be crucial to use algorithms that scale slowly with system size for a solution in a reasonable amount of time. The inverse maxent problem is expensive, and this may determine which maxent models can be solved with available resources or a maxent model may not be the right choice once you account for the computational cost of finding the parameters.

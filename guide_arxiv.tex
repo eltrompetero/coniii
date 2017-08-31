@@ -101,11 +101,14 @@ When the nonlinear equations are coupled, this cannot be solved analytically in 
 For more references on the maximum entropy problem, see Refs \cite{Jaynes:1957fy,Bialek:2012ueb,Lee:2015ev}.
 
 \subsection{Ising model}
-The Ising model is a statistical physics model of magnetism. In its simplest form, it consists of a set of sites $\sigma_{\rm i}$, or spins, with 2 possible orientations (up and down), coupled to an external magnetic field $h$ and coupled to each other with couplings $J$ \cite{Reif:2009uf}. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J$ determine whether the spins tend to point together ($J>0$) or against each other ($J<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying lattice structure as in Figure \ref{gr:ising}.
+The Ising model is a statistical physics model of magnetism. In its simplest form, it consists of a set of sites $\sigma_{\rm i}$, or spins, with 2 possible orientations represented by $+1$ and $-1$, coupled to an external magnetic field $h$ and coupled to each other with couplings $J$ \cite{Reif:2009uf}. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J$ determine whether the spins tend to point together ($J>0$) or against each other ($J<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying lattice structure, or connectivity, as in Figure \ref{gr:ising}.
 
 \begin{figure}[tb]\centering
-	\includegraphics[width=.85\linewidth,clip,trim={100 70 70 60}]{images/ising_example}
-\caption{Example of a fully connected Ising model with random positive and negative couplings.}
+	\includegraphics[width=.45\linewidth,clip,trim={100 70 70 60}]{images/ising_example}
+	\includegraphics[width=.45\linewidth,clip,trim={60 50 50 45}]{images/ising_example_lattice}
+\caption{Example of a (left) fully connected Ising model and (right) model on a lattice with random positive and negative couplings, or interactions. Each site or spin $\sigma_{\rm i}$ can take two possible states represented by either a $+1$ or $-1$, which could be a useful coarse-grained representation of the state of a site in a biological or social system. The coupling between two spins i and j is given by $J_{\rm ij}$ and determines how strongly two sites tend to agree or disagree.
+The bias for spin i to point in a direction is given by the local magnetic field $h_{\rm i}$.
+These are related to the probability of observing a particular configuration of $\si$ and $\sj$ by a factor of $e^{J_{\rm ij}\si\sj + h_{\rm i}\si + h_{\rm j}\sj}$. For example, the relative ratio of the probabilities $p(\si=1,\sj=-1)/p(\si=1,\sj=1) = e^{-2h_{\rm j}\sj}$ given that all other spins remain fixed.}
 \label{gr:ising}
 \end{figure}
 
@@ -211,7 +214,7 @@ We have implemented pseudolikelihood for the Ising model as detailed in \cite{Au
 
 \begin{figure}[htbp]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 50 30 30}]{images/pseudo}
-\caption{Schematic of pseudolikelihood. Instead of fitting to the distribution of the entire model (circles), we maximize the likelihood of the marginal distribution of each spin independently.}
+\caption{Schematic of pseudolikelihood. Instead of fitting to the distribution of the entire model (circles), we maximize the likelihood of the single site marginal distributions independently (squares).}
 \label{default}
 \end{figure}
 
@@ -323,7 +326,6 @@ In CONIII, the selective cluster expansion method is implemented in the {\tt Clu
 %The cavity method involves use of the marginalized distribution.
 
 \begin{table}[bt]
-\caption{Runtime per iteration for algorithms for the Ising model. See Fig \ref{gr:runtime}.}
 \begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
@@ -333,17 +335,20 @@ In CONIII, the selective cluster expansion method is implemented in the {\tt Clu
 	MPF		& $\mathcal{O}(n_{\rm data}n_{\rm neighbors}N^2)$ & Sometimes\\
 	MCH 	& $\mathcal{O}(n_{\rm sample}n_{\rm MC}N^2)$ & Yes\\
 	Pseudolikelihood & $\mathcal{O}(n_{\rm data}N^2)$ & $N\rightarrow\infty$\\
-	Cluster expansion & & ?\\
+	Cluster expansion & Depends & Depends\\
 	Regularized MF & $\mathcal{O}(N^3 + n_{\rm sample}n_{\rm MC}N^2)$ & No\\
 \hline
 \end{tabular}
+\caption{Runtime per iteration for algorithms for the Ising model. See Fig \ref{gr:runtime} for example runtimes. 
+The number of iterations necessary typically goes as polynomial of the dimensionality of the problem. For the Ising model, this will mean that order $N^{2d}$ steps will be necessary. For Newton's method $d=3$.
+For the cluster expansion method, runtime depends strongly on the particular system of interest. When there are only a few interaction paths that are important, clusters will remain small and the runtime per iteration will scale like $\mathcal{O}(2^{N_{\rm clust}}N_{\rm clust}^2\binom{N}{N_{\rm clust}})$ from the computation of the partition function for each subset, but a low threshold and large clusters can lead to exponential scaling as all possible clusters and their partition functions need to be evaluated. This would be considered an ``ill-conditioned'' problem.}
 \end{center}
 \label{tb:runtime}
 \end{table}%
 
-\begin{figure}[htbp]\centering
-	\includegraphics[width=.85\linewidth]{}
-\caption{Runtime for algorithms on the inverse Ising problem. Shown runtimes are averages over 10 random systems run for each method. For the methods that require samples, we sampled 20 random states from the distribution.}
+\begin{figure}[tb]\centering
+	\includegraphics[width=\linewidth]{images/runtime}
+\caption{Runtime for algorithms on the inverse Ising problem on a Dell running an Intel i7 3.1\,GHz 8-core processor. Shown runtimes are averages over 10 random systems run for each method. For the methods that require samples, we sampled 20 random states from the distribution. System sizes are 8, 10, 12, 14, and 16.}
 \label{gr:runtime}
 \end{figure}
 

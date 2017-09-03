@@ -66,27 +66,37 @@ In the Ising model, these states correspond to the orientation of the spins, but
 
 Given the set of configurations $\mathcal{S}$, entropy is maximized when the probability distribution is uniform $p_s = p_{s'}$, and this is a unique maximum \cite{Cover:2006tl}. The uniform distribution is maximally unstructured because there is no structure to exploit to make any predictions|guessing that the system is in any particular configuration is as good as any other guess. If there were a slight bias for any state, we could do better than randomly choosing a state $s$.
 
-The idea behind the maximum entropy, or maxent, approach is to build a model that is consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}.
-We maximize entropy but choose some important constraints indexed by $k$,
+The idea behind the maximum entropy, or maxent, approach is to build a model that is consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}. Since entropy is corresponds to the absence of structure, we maximize entropy given some constraints that we believe must be fit by the model. We write these constraints as functions of a state $f_{\rm k}(s)$, indexed by $k$. These could be as simple as a function that returns the state of a single spin $f_{\rm k}(s) = \sigma_{\rm k}$ or they could return some more complicated combination of states. 
+The value of the constraint averaged over all states is
 \begin{align}
 	\br{f_k(s)} &= \sum_{s\in \mathcal{S}} p_s f_k(s)
 \end{align}
 
-With $K$ constraints, the maximum entropy problem can be solved by the method of Langrangian multipliers
+This gives us a constrained optimization problem where we are trying to maximize the entropy while matching the average values of the constraints
 \begin{align}
-	\mathcal{L}[p] &= -\sum_s p_s\log p_s - \sum_k^K \lambda_k \sum_s p_s f_k(s)\label{eq:L}\\
+	\max_{p_s} \left\{-\sum_s p_s \ln p_s\right\}; \quad \br{f_k}=\br{f_k}_{\rm data}\forall k
+\end{align}
+
+The constrained optimization problem can be turned into an unconstrained optimization problem by the method of Langrangian multipliers
+\begin{align}
+	\mathcal{L}[p] &= -\sum_s p_s\log p_s - \sum_k^K \lambda_k \br{f_k}\label{eq:L}
+\end{align}
+where there is a single $\lambda_{\rm k}$ Langrangian multipliers for each constraint. For conciseness, we have excluded an extra constraint for the normalization of the probability distribution $\sum_{s\in\mathcal{S}} p(s) = 1$, a problem we will address at the end.
+
+For physicists, it may be clear that by rewriting Eq \ref{eq:L} in terms of free energy, entropy, and internal energy that this is just the equation for free energy in disguise:
+\begin{align}
 	F &= S - \br{E}\\
 	E &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s)
 \end{align}
-The notation draws out the equivalence between maximizing entropy and minimizing the Helmholtz free energy where by specifying the constraints on the maximization we fix the form of the Hamiltonian $E$ (See Appendix). This formulation makes clear the fundamental connection that statistical mechanics is an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
+By specifying the constraints on the maximization we are really fixing the form of the Hamiltonian $E$ (See Appendix). By maximizing entropy $S$, we are really minimizing the free energy $F$ and this formulation makes clear the fundamental connection between statistical mechanics and inference using the maximum entropy principle \cite{Jaynes:1957fy}.
 
-The resulting model is a Boltzmann distribution over states
+The resulting model is a Boltzmann distribution, or an exponential model, over states
 \begin{align}
 	p(s) &= \left.e^{-E(s)}\right/Z\\
-\intertext{where $E$ is called the energy in physics with normalization, known as the partition function,}
-	Z &= \sum_\sigma e^{-E(s)}
+\intertext{where $E$ is called the energy in physics. Since we did not normalize the probability distribution before, we must sum over all possible configuration to generate the partition function}
+	Z &= \sum_{s} e^{-E(s)}
 \end{align}
-In other fields, this may be called the exponential family of models. If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix), which is equivalent to the axiom that all microstates have equal probability.
+If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix), which is equivalent to the axiom that all microstates have equal probability.
 
 Finding the parameters that match the constraints is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
 \begin{align}
@@ -94,14 +104,17 @@ Finding the parameters that match the constraints is equivalent to minimizing th
 	\frac{\partial D}{\partial \lambda_k} &= \sum_s p_{\rm data}(s) \frac{\partial (-E-\log Z)}{\partial \lambda_k}\label{eq:dkl deriv}\\
 	0 &= \br{f_k}_{\rm data} -\br{f_k}_{\rm ME}\label{eq:fk-fk}
 \end{align}
-[Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data and so there is search for the best parameters in the conventional sense.
+[Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data and so there is no search for the best parameters in the conventional sense of model fitting.
 
-When the nonlinear equations are coupled, this cannot be solved analytically in general. Below we discuss some analytical approximations with numerical techniques for approaching the inverse problem.
+When the nonlinear equations are coupled, this cannot be solved analytically and this is a hard problem in general. Below we discuss some analytical approximations with numerical techniques for approaching the inverse problem.
 
 For more references on the maximum entropy problem, see Refs \cite{Jaynes:1957fy,Bialek:2012ueb,Lee:2015ev}.
 
 \subsection{Ising model}
-The Ising model is a statistical physics model of magnetism. In its simplest form, it consists of a set of sites $\sigma_{\rm i}$, or spins, with 2 possible orientations represented by $+1$ and $-1$, coupled to an external magnetic field $h$ and coupled to each other with couplings $J$ \cite{Reif:2009uf}. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J$ determine whether the spins tend to point together ($J>0$) or against each other ($J<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying lattice structure, or connectivity, as in Figure \ref{gr:ising}.
+The Ising model is a statistical physics model of magnetism. 
+The focus on the Ising model is not because it is a detailed representation of systems beyond magnetism but because it is often a useful coarse-grained representation for a more complicated system.
+In its simplest form, it consists of a set of sites $\sigma_{\rm i}$, or spins, with 2 possible orientations represented by $+1$ and $-1$, coupled to an external magnetic field $h$ and coupled to each other with couplings $J$ \cite{Reif:2009uf}. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J$ determine whether the spins tend to point together ($J>0$) or against each other ($J<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying lattice structure, or connectivity, as in Figure \ref{gr:ising}.
+
 
 \begin{figure}[tb]\centering
 	\includegraphics[width=.45\linewidth,clip,trim={100 70 70 60}]{images/ising_example}
@@ -112,11 +125,11 @@ These are related to the probability of observing a particular configuration of 
 \label{gr:ising}
 \end{figure}
 
-More generally, we could imagine that each of the spins has a particular bias given by an indexed local field $h_{\rm i}$ as well as particular interactions with neighbors $J_{\rm ij}$. The corresponding Hamiltonian is
+More generally, we could imagine that each of the spins has a particular bias given by an indexed local field $h_{\rm i}$ as well as different interactions between neighbors i and j given by $J_{\rm ij}$. The corresponding Hamiltonian, or energy, is
 \begin{align}
 	E &= -\sum_{\rm \br{ij}} J_{\rm ij}\si\sj -\sum_{\rm i=1}^Nh_{\rm i}\si
 \end{align}
-and as mentioned before states with lower energy are more likely so spin tend to orient along the direction of the local field $h_{\rm i}^{\rm local} = \sum_{\rm j}J_{\rm ij}\sj +h_{\rm i}$. 
+States with lower energy are more likely so spin tend to orient along the direction of the local field $h_{\rm i}^{\rm local} = \sum_{\rm j}J_{\rm ij}\sj +h_{\rm i}$. 
 
 The Ising model corresponds to a pairwise maximum entropy model.
 Fixing the the magnetizations and pairwise correlations to those observed in the data
@@ -128,12 +141,13 @@ The Langrangian from Eq \ref{eq:L} is
 \begin{align}
 	\mathcal{L}[p] &= -\sum_s p(s)\log p(s) +\sum_{\rm \br{ij}} J_{\rm ij}\br{\si\sj} +\sum_{\rm i=1}^Nh_{\rm i}\br{\si}\\
 	\frac{\partial\mathcal{L}[p]}{\partial p(s)} &= -\log p(s)-1 +\sum_{\rm \br{ij}} J_{\rm ij}\si\sj +\sum_{\rm i=1}^Nh_{\rm i}\si\\
+\intertext{Setting the derivative to 0,}
 	\log p(s) &= -1 +\sum_{\rm \br{ij}} J_{\rm ij}\si\sj +\sum_{\rm i=1}^Nh_{\rm i}\si\\
-	p(s) &= \left.e^{-E(s)}\right/Z\\
-\intertext{where to enforce normalization of the probability distribution $\sum_s p(s) = 1$,}
-	Z &= \sum_s e^{-E(s)}
+	p(s) &= \left.e^{-E(s)}\right/Z
 \end{align}
-Thus, the resulting model is exactly the Ising model mentioned earlier.
+Thus, the model that results from fixing the average of each spin, or the magnetization, and the pairwise correlations is exactly the Ising model.
+
+Most of the techniques that are described in the later sections are specifically designed for the Ising model but most can be generalized for other maxent problems. In the initial release of CONIII, most of the algorithms are written specifically for the Ising model.
 
 %Imagine that you have a system with $n$ components that have been sampled many times. To be more specific, we'll take $n=9$ voters on the US Supreme Court that either vote with in the majority, the winning coalition, or in the minority. [More generally, we could think some like gene expression levels in a cell a coarse-grained representation where relatively high or low expression can be represented by a binary variable. Of course, we don't have to restrict ourselves to binary variables \cite{Lezon:2006ws}.]
 %The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
@@ -147,7 +161,7 @@ The na\"{i}ve approach is to write the equations from Eq \ref{eq:dkl deriv} dire
 \begin{align}
 	\br{f_{\rm k}} &= -\frac{\partial \ln Z}{\partial \lambda_{\rm k}}
 \end{align}
-Matching these with the data $\br{f_k}_{\rm data}$ is the purview of any standard optimization algorithm. Clearly, this approach does not scale well because the number of terms in the partition function grows exponentially with system size. For relatively small systems $n\leq15$, however, this approach is feasible on a typical desktop computer.
+Matching these with the data $\br{f_k}_{\rm data}$ is within the purview of any standard optimization algorithm. Clearly, this approach does not scale well because the number of terms in the partition function grows exponentially with system size. For relatively small systems $n\leq15$, however, this approach is feasible on a typical desktop computer.
 %[Simple example with logical gates?]
 
 For the Ising model, the first step in the algorithm for writing down the equations is $\mathcal{O}(K 2^{N})$ where $K$ is the number of constraints and $N$ the number of spins. In the second step, each evaluation of the objective in the minimization algorithm will be of the same order.
@@ -156,16 +170,16 @@ The {\tt Exact} class supplies methods for writing Eqs \ref{eq:fk-fk} into a fil
 
 
 \subsection{Monte Carlo histogram}
-Perhaps the most straightforward and most expensive computational approach is to use Monte Carlo Markov Chain sampling to approximate the distribution and adjust the parameters appropriately after each step. [For details about MCMC methods see Appendix A and \cite{MacKay:2005wc}.] The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we no longer need to calculate the partition function, but can instead compute the difference in energy between two states.
+Perhaps the most straightforward and most expensive computational approach is to use Monte Carlo Markov Chain (MCMC) sampling to approximate the distribution and adjust the parameters appropriately after each step. [For details about MCMC methods see Appendix A and \cite{MacKay:2005wc}.] The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we no longer need to calculate the partition function, but can instead compute the difference in energy between two states.
 
 The simplest MCMC algorithm is to generate a sample to estimate the constraints $\br{f_{\rm k}}$ from the current set of parameters and then to implement a learning rule to adjust the parameters. This can be combined with a variety of stochastic gradient descent methods to reduce the number of sampling steps. The particular technique implemented in CONIII is the Monte Carlo Histogram method \cite{Broderick:2007wq}.
 
-Since the sampling step is expensive, the idea behind Monte Carlo histogram is to reuse a sample for more than one gradient descent step because we can predict how the distribution will change if we modify the parameters slightly \cite{Broderick:2007wq}. Given that we have a sample with probability distribution $p_s$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the distribution $p_s'$ from parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$.
+Since the sampling step is expensive, the idea behind Monte Carlo histogram is to reuse a sample for more than one gradient descent step because we can predict how the distribution will change if we modify the parameters slightly \cite{Broderick:2007wq}. Given that we have a sample with probability distribution $p(s)$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the distribution $p'(s)$ from parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$.
 \begin{align}
-	p_s' &= \frac{p'_s}{p_s}p_s\\
-		&= \frac{Z}{Z'}e^{\sum_k \Delta\lambda_k f_k(s)} p_s\\
+	p'(s) &= \frac{p'(s)}{p(s)}p(s)\\
+		&= \frac{Z}{Z'}e^{\sum_k \Delta\lambda_k f_k(s)} p(s)\\
 \intertext{To estimate the average,}
-	\sum_s p_s' f_k(s) &= \frac{Z}{Z'} \sum_s p_s e^{\sum_k \Delta\lambda_k f_k(s)} f_k(s)\\
+	\sum_s p'(s) f_k(s) &= \frac{Z}{Z'} \sum_s p(s) e^{\sum_k \Delta\lambda_k f_k(s)} f_k(s)\\
 \intertext{But we have a sampled approximation to $p$.}
 	\br{f_k}' &= \frac{Z}{Z'} \br{e^{\sum_k \Delta\lambda_k f_k(s)} f_k(s)}_{\rm sample}
 \end{align}
@@ -179,18 +193,27 @@ The main difficulty with MCH is choosing a learning rule for how to update the L
 	\Delta\lambda_k(t+1) &= \Delta \lambda_k(t) + \eta \Delta\lambda_k(t-1)\label{eq:mch learn1}\\
 	\Delta \lambda_k(t) &= \epsilon\left(\br{f_k}'-\br{f_k}\right)\label{eq:mch learn2}
 \end{align}
-This has the correct fixed points. One suggestion is to shrink $\epsilon$ exponentially with the number of iterations. In the code, there are more parameters $\Delta\lambda_{\rm max}$ and $\Delta\lambda_{\rm norm}\sum_k \sqrt{\Delta\lambda_{\rm k}^2}$ that restrict. Another heuristic is to begin with estimates on a small data set and increase the size of the data set as we refine our estimates of the parameters.
+This has the correct fixed points. 
+
+One suggestion for learning is to shrink $\epsilon$ exponentially with the number of iterations. In the code, there are more parameters $\Delta\lambda_{\rm max}$ and $\Delta\lambda_{\rm norm}\sum_k \sqrt{\Delta\lambda_{\rm k}^2}$ that restrict. Another heuristic is to begin with estimates on a small data set and increase the size of the data set as we refine our estimates of the parameters.
 
 Typically, one must check in on the progress of the algorithm to tune the various parameters. If the extrapolation steps or the gradient steps are too large, the algorithm will fail to converge (or may even start diverging).
 
-The runtime for the sampling step is proportional to the number of samples $n_{\rm sample}$, number of MCMC iterations $n_{MC}$, the number of constraints $K$:
+The runtime for the sampling step is proportional to the number of samples $n_{\rm sample}$, number of MCMC iterations $n_{\rm MC}$, the number of constraints $K$:
 $\mathcal{O}(n_{\rm MC} n_{\rm sample} K)$, whereas the MCH estimate is relatively quick $\mathcal{O}(n_{\rm sample}n_{\rm MCH}K)$ because the number of MCH approximation steps is much smaller than the number of MCMC sampling iterations $n_{\rm MCH}<<n_{\rm MC}$. [What is the runtime for the learning rules Eqs \ref{eq:mch learn1} and \ref{eq:mch learn2}?]
 For the Ising model, $K\sim N^2$, the system size squared.
 
 MCH is implemented in the {\tt MCH} class.
 
+\begin{figure}[tb]\centering
+	\includegraphics[width=.85\linewidth]{images/mch}
+\caption{Monte Carlo histogram involves making an approximation to a distribution by reusing samples from a nearby distribution. Here, the nearby distribution $p'(s)$ is approximated by using samples with distribution $p_{\rm sample}(s)$ from the nearby distribution $p(s)$. Stochastic fluctuations in the sample $p_{\rm sample}(s)$ like undersampling in the peak in the probability density are reflected in the same bias for the approximated distribution $p_{\rm sample}'(s)$. The true distribution $p'(s)$ is shown in red points.}
+\label{gr:mch}
+\end{figure}
+
+
 \subsection{Pseudolikelihood}
-The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact in the thermodynamic limit \cite{Aurell:2012hi}. We maximize the conditional probability of a single spin given the rest of the system,
+The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact in the thermodynamic limit as pictured in Fig \ref{gr:pseudo} \cite{Aurell:2012hi}. We maximize the conditional probability of a single spin given the rest of the system,
 \begin{align}
 	p\left(\sigma_{\rm i}|\boldsymbol{\sigma}_{\backslash \rm i};h,J\right) &= \left( 1+e^{-2\sigma_{\rm i} \left(h_{\rm i}+\sum_{j\neq i}J_{\rm ij}\sj\right)} \right)^{-1}
 \end{align}
@@ -215,7 +238,7 @@ We have implemented pseudolikelihood for the Ising model as detailed in \cite{Au
 \begin{figure}[htbp]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 50 30 30}]{images/pseudo}
 \caption{Schematic of pseudolikelihood. Instead of fitting to the distribution of the entire model (circles), we maximize the likelihood of the single site marginal distributions independently (squares).}
-\label{default}
+\label{gr:pseudo}
 \end{figure}
 
 
@@ -356,7 +379,7 @@ For the cluster expansion method, runtime depends strongly on the particular sys
 \section{A practical guide to choosing algorithms}
 The first question the you should ask yourself is about the scale of the problem. Is the problem on a large state space, a large system size, need to be solved many times on different data sets, or have a lot of data; and how much time or computational power is available? In general, problems with a large discrete state space and large system size will be difficult to solve with whichever method, and it will be crucial to use algorithms that scale slowly with system size for a solution in a reasonable amount of time. The inverse maxent problem is expensive, and this may determine which maxent models can be solved with available resources or a maxent model may not be the right choice once you account for the computational cost of finding the parameters.
 
-First, one must consider the data available. Some algorithms like first-order MPF work poorly when the state space is well-sampled because the probability flow between data and non-data states cannot be well-measured. [In principle, MPF also works in the highly sampled regime if we consider the expansion of the KL-divergence to higher orders but that is not implemented here. Runtime for MPF and pseudolikelihood scale with the number of data points available (as shown in Table ??), so this is important to consider.]
+If maxent is the option of choice, then what data is available? Some algorithms like first-order MPF work poorly when the state space is well-sampled because the probability flow between data and non-data states cannot be well-measured. [In principle, MPF also works in the highly sampled regime if we consider the expansion of the KL-divergence to higher orders but that is not implemented here. Runtime for MPF and pseudolikelihood scale with the number of data points available (as shown in Table ??), so this is important to consider.]
 If the system is poorly sampled such that subsets of the system are perfectly (or close to perfectly) correlated or anti-correlated (e.g. $\br{\si\sj}=\pm1$), then this corresponds to an infinitely large parameter, and may lead to numerical precision issues in the calculation of energies and fits dominated by the subset. Here, it will be important to regularize the problem by enforcing a sparseness constraint directly on the parameters, by using a prior for the data distribution (like with pseudocounting or the Laplace prior), or even grouping perfectly correlated units together.
 
 When solving for the parameters, an efficient approach is to get a good initial guess using a fast approximation and then using that to seed a slower but more precise algorithm. Of course, particular characteristics of the data or of the problem may make certain algorithms more feasible than others.

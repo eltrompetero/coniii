@@ -119,7 +119,7 @@ In its simplest form, it consists of a set of sites $\sigma_{\rm i}$, or spins, 
 \begin{figure}[tb]\centering
 	\includegraphics[width=.45\linewidth,clip,trim={100 70 70 60}]{images/ising_example}
 	\includegraphics[width=.45\linewidth,clip,trim={60 50 50 45}]{images/ising_example_lattice}
-\caption{Example of a (left) fully connected Ising model and (right) model on a lattice with random positive and negative couplings, or interactions. Each site or spin $\sigma_{\rm i}$ can take two possible states represented by either a $+1$ or $-1$, which could be a useful coarse-grained representation of the state of a site in a biological or social system. The coupling between two spins i and j is given by $J_{\rm ij}$ and determines how strongly two sites tend to agree or disagree.
+\caption{Example of a (left) fully connected Ising model and (right) model on a lattice with random positive and negative couplings, or interactions. Each site or spin $\sigma_{\rm i}$ can take two possible states represented by either a $+1$ or $-1$, which could be a coarse-grained representation of the state of a site in a biological or social system. The coupling between two spins i and j is given by $J_{\rm ij}$ and determines how strongly two sites tend to agree or disagree.
 The bias for spin i to point in a direction is given by the local magnetic field $h_{\rm i}$.
 These are related to the probability of observing a particular configuration of $\si$ and $\sj$ by a factor of $e^{J_{\rm ij}\si\sj + h_{\rm i}\si + h_{\rm j}\sj}$. For example, the relative ratio of the probabilities $p(\si=1,\sj=-1)/p(\si=1,\sj=1) = e^{-2h_{\rm j}\sj}$ given that all other spins remain fixed.}
 \label{gr:ising}
@@ -207,7 +207,7 @@ MCH is implemented in the {\tt MCH} class.
 
 \begin{figure}[tb]\centering
 	\includegraphics[width=.85\linewidth]{images/mch}
-\caption{Monte Carlo histogram involves making an approximation to a distribution by reusing samples from a nearby distribution. Here, the nearby distribution $p'(s)$ is approximated by using samples with distribution $p_{\rm sample}(s)$ from the nearby distribution $p(s)$. Stochastic fluctuations in the sample $p_{\rm sample}(s)$ like undersampling in the peak in the probability density are reflected in the same bias for the approximated distribution $p_{\rm sample}'(s)$. The true distribution $p'(s)$ is shown in red points.}
+\caption{Monte Carlo histogram involves making an approximation to a distribution for a small change in parameters by reusing samples from a nearby distribution. Here, the nearby distribution $p'(s)$ is approximated by using samples with distribution $p_{\rm sample}(s)$ (blue bars) from the nearby distribution $p(s)$ (blue points). Stochastic fluctuations in the sample $p_{\rm sample}(s)$ like undersampling in the peak in the probability across states are reflected in the same bias for the approximated distribution $p_{\rm sample}'(s)$ (red bars) when compared to the true distribution $p'(s)$ (red points).}
 \label{gr:mch}
 \end{figure}
 
@@ -235,7 +235,7 @@ Each iteration goes like $O(RN^2)$.
 
 We have implemented pseudolikelihood for the Ising model as detailed in \cite{Aurell:2012hi} in {\tt Pseudo}.
 
-\begin{figure}[htbp]\centering
+\begin{figure}[tb]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 50 30 30}]{images/pseudo}
 \caption{Schematic of pseudolikelihood. Instead of fitting to the distribution of the entire model (circles), we maximize the likelihood of the single site marginal distributions independently (squares).}
 \label{gr:pseudo}
@@ -268,6 +268,13 @@ MPF satisfies a number of useful properties:
 
 At each iteration, MPF must calculate the probability flow between all data states and all chosen neighboring states which takes $\mathcal{O}(n_{\rm data}n_{\rm neighbors}K)$ calculations.
 MPF is implemented in the {\tt MPF} class.
+
+\begin{figure}[htbp]\centering
+	\includegraphics[width=\linewidth]{images/mpf}
+\caption{Minimum probability flow involves minimizing the flow of probability between the data distribution $p^{(0)}(s)$ to a nearby distribution $p^{(\epsilon)}(s)$ obtained from running deterministic dynamics for  small time $\epsilon$ as represented by the black line. When the dynamics are run for a long time, we obtain the stationary distribution $p^{\infty}(s)$.}
+\label{default}
+\end{figure}
+
 
 
 \subsection{Regularized mean-field approximation}

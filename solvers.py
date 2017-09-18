@@ -763,7 +763,7 @@ class MCH(Solver):
 class MCHIncompleteData(MCH):
     """
     Class for solving maxent problems using the Monte Carlo Histogram method on
-    data where the entire system is not visible.
+    incomplete data where some spins may not be visible.
 
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster
     solutions of the inverse pairwise Ising problem. arXiv 1-8 (2007).
@@ -1308,23 +1308,21 @@ class Pseudo(Solver):
 class ClusterExpansion(Solver):
     def __init__(self, *args, **kwargs):
         """
-        Implementation of Adaptive Cluster Expansion for
-        solving the inverse Ising problem, as described in
-        John Barton and Simona Cocco, J. of Stat. Mech.
-        P03002 (2013).
+        Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
+        described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
         
         Specific to pairwise Ising constraints
         
         Params:
         -------
         calc_e (lambda state,params)
-            function for computing energies of given state and parameters.  Should take in a 2D state array
-            and vector of parameters to compute energies.
+            function for computing energies of given state and parameters.  Should take in a 2D
+            state array and vector of parameters to compute energies.
         adj (lambda state)
             function for getting all the neighbors of any given state
         calc_de (lambda=None)
-            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
-            the parameter.
+            Function for calculating derivative of energy wrt parameters. Takes in 2d state array
+            and index of the parameter.
         n_jobs (int=0)
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
@@ -1344,10 +1342,8 @@ class ClusterExpansion(Solver):
         Calculate pairwise entropy of cluster.
         (First fits pairwise Ising model.)
         
-        useAnalyticResults (False)  : probably want False until 
-                                      analytic formulas are
-                                      changed to include
-                                      prior on J
+        useAnalyticResults : bool,False
+            Probably want False until analytic formulas are changed to include prior on J
         """
         if len(cluster) == 0:
             raise Exception
@@ -1374,7 +1370,7 @@ class ClusterExpansion(Solver):
                                             Jinit=Jinit,
                                             priorLmbda=priorLmbda,
                                             numSamples=numSamples)
-
+        
         # make 'full' version of J (of size NxN)
         N = len(coocMat)
         Jfull = meanFieldIsing.JfullFromCluster(J,cluster,N)
@@ -1407,8 +1403,6 @@ class ClusterExpansion(Solver):
         Jfull = meanFieldIsing.JfullFromCluster(Jind,cluster,Nfull)
 
         return Sind,Jfull
-
-
 
     # "Algorithm 1"
     def deltaS(self,cluster,coocMat,deltaSdict=None,deltaJdict=None,

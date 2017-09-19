@@ -1442,22 +1442,22 @@ class MCIsing(object):
                               parallel=True,
                               ):
         """
-        Generate samples from conditional distribution (while a subset of the
-        spins are held fixed). Samples are generated in parallel.
+        Generate samples from conditional distribution (while a subset of the spins are held fixed).
+        Samples are generated in parallel.
         
-        NOTE: There is a bug with multiprocess where many calls to the parallel
-        sampling routine in a row leads to increasingly slow evaluation of the code.
+        NOTE: There is a bug with multiprocess where many calls to the parallel sampling routine in
+        a row leads to increasingly slow evaluation of the code.
 
-        Params:
-        -------
-        sample_size
-        fixed_subset (list of duples)
-            Each duple is the index of the spin and the value to fix it at.
-            These should be ordered by spin index.
-        burn_in (int=1000)
-        cpucount (int=None)
-        initial_sample (ndarray=None)
-        systematic_iter (bool=False)
+        Parameters
+        -----------
+        sample_size : int
+        fixed_subset : list of duples
+            Each duple is the index of the spin and the value to fix it at.  These should be ordered
+            by spin index.
+        burn_in : int,1000
+        cpucount : int,None
+        initial_sample : ndarray,None
+        systematic_iter : bool,False
             Iterate through spins systematically instead of choosing them randomly.
         """
         cpucount = cpucount or self.nJobs

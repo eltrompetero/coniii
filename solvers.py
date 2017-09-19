@@ -1040,11 +1040,11 @@ class MCHIncompleteData(MCH):
         n_iters : int
         burnin : int 
             I think burn in is handled automatically in REMC.
-        uIncompleteStates : list
+        uIncompleteStates : list of unique states
         f_cond_sample_size : lambda function
-            Given n, return the number of samples to take.
+            Given the number of hidden spins, return the number of samples to take.
         f_cond_sample_iters : lambda function
-            Given n, return the number of MC iterations to make.
+            Given the number of hidden spins, return the number of MC iterations to make.
         sample_size : int
         sample_method : str
         initial_sample : ndarray
@@ -1054,7 +1054,7 @@ class MCHIncompleteData(MCH):
         -------
         None
         """
-        from datetime import datetime
+        from datetime import datetime  # for debugging
         assert not (self.sampler is None), "Must call setup_sampler() first."
 
         sample_method = sample_method or self.sampleMethod
@@ -1078,8 +1078,10 @@ class MCHIncompleteData(MCH):
                                                         initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
             if run_cond_sampler: 
-                # Sample from conditional distribution for incomplete data points.
+                # Sample from conditional distribution p(s_unobserved|s_observed) where s_observed
+                # are the spins with data for the incomplete data points.
                 def f(args):
+                    """Function for parallelizing sampling of conditional distributions."""
                     i,s = args
                     frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
                     
@@ -1095,7 +1097,8 @@ class MCHIncompleteData(MCH):
                                                                       len(uIncompleteStates),
                                                                       (datetime.now()-start).total_seconds())
                     return sample
-                
+
+                # Parallel sampling of conditional distributions. 
                 pool = mp.Pool(self.n_jobs)
                 self.condSamples = pool.map( f,zip(range(len(uIncompleteStates)),uIncompleteStates) )
                 pool.close()

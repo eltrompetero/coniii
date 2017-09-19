@@ -959,25 +959,25 @@ class MCHIncompleteData(MCH):
         to the marginal probability distribution weighted with the number of corresponding data
         points.
 
-        Params:
-        -------
-        estConstraints (ndarray)
-        fullFraction (float)
+        Parameters
+        ----------
+        estConstraints : ndarray
+        fullFraction : float
             Fraction of data points that are complete.
-        uIncompleteStates (list-like)
+        uIncompleteStates : list-like
             Unique incomplete states in data.
-        uIncompleteStatesCount (list-like)
+        uIncompleteStatesCount : list-like
             Frequency of each unique data point.
-        maxdlamda (float=1)
-        maxdlamdaNorm (float=1)
-        maxLearningSteps (int)
+        maxdlamda : float,1
+        maxdlamdaNorm : float,1
+        maxLearningSteps : int
             max learning steps before ending MCH
-        eta (float=1)
+        eta : float,1
             factor for changing dlamda
 
-        Returns:
-        --------
-        estimatedConstraints (ndarray)
+        Returns
+        -------
+        estimatedConstraints : ndarray
         """
         keepLearning = True
         dlamda = np.zeros((self.constraints.size))

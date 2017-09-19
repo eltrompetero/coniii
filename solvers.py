@@ -853,15 +853,15 @@ class MCHIncompleteData(MCH):
 
         Returns
         -------
-        parameters (ndarray)
+        parameters : ndarray
             Found solution.
-        errflag (int)
-        errors (ndarray)
+        errflag : int
+        errors : ndarray
             Errors in matching constraints at each step of iteration.
         """
         # Check args.
         import types
-        assert not X is None and not constraints is None, "Must provide data and constriants."
+        assert (not X is None) and (not constraints is None), "Must provide data and constriants."
         self.constraints = constraints
         if type(cond_sample_size) is int:
             f_cond_sample_size = lambda n: cond_sample_size

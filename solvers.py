@@ -507,26 +507,26 @@ class MCH(Solver):
     """
     def __init__(self, *args, **kwargs):
         """
-        Params:
-        -------
-        calc_e (lambda state,params)
+        Parameters
+        ----------
+        calc_observables : function
+            takes in samples as argument
+        calc_e : lambda state,params
             function for computing energies of given state and parameters.  Should take in a 2D state array
             and vector of parameters to compute energies.
-        adj (lambda state)
-            function for getting all the neighbors of any given state
-        calc_de (lambda=None)
+        calc_de  : lambda,None
             Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
             the parameter.
-        n_jobs (int=0)
+        n_jobs : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
-        Attributes:
-        -----------
+        Attributes
+        ----------
         constraints (ndarray)
-        calc_e (function)
-            with args (sample,parameters) where sample is 2d
         calc_observables (function)
             takes in samples as argument
+        calc_e (function)
+            with args (sample,parameters) where sample is 2d
         mch_approximation (function)
         sampleSize (int)
         multipliers (ndarray)
@@ -591,7 +591,7 @@ class MCH(Solver):
         custom_convergence_f : function,None
             Function for determining convergence criterion. At each iteration, this function should
             return the next set of learn_params_kwargs:
-            lambda i: {'maxdlambda':??, 'eta':??}
+            lambda i: {'maxdlamda':??, 'eta':??}
         disp (bool=False)
         learn_parameters_kwargs
         generate_kwargs

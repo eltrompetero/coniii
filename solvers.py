@@ -572,9 +572,6 @@ class MCH(Solver):
         """
         Solve for parameters using MCH routine.
         
-        NOTE: Commented part relies on stochastic gradient descent but doesn't seem to
-        be very good at converging to the right answer with some tests on small systems.
-        
         Parameters
         ----------
         initial_guess : ndarray,None
@@ -593,8 +590,8 @@ class MCH(Solver):
             return the next set of learn_params_kwargs:
             lambda i: {'maxdlamda':??, 'eta':??}
         disp : bool,False
-        learn_parameters_kwargs
-        generate_kwargs
+        learn_parameters_kwargs : dict,{'maxdlamda':1,'eta':1}
+        generate_kwargs : dict,{}
 
         Returns
         -------
@@ -629,6 +626,7 @@ class MCH(Solver):
             custom_convergence_f_ = custom_convergence_f
             custom_convergence_f = lambda i:(custom_convergence_f_(i),self.sampleSize)
         assert 'maxdlamda' and 'eta' in custom_convergence_f(0)[0].keys()
+        assert type(custom_convergence_f(0)[1]) is int
         
         
         # Generate initial set of samples.
@@ -644,12 +642,15 @@ class MCH(Solver):
         keepLooping = True  # loop control
         learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
         while keepLooping:
+            # MCH step
             if disp:
                 print "Iterating parameters with MCH..."
             self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
             if disp=='detailed':
                 print "After MCH step, the parameters are..."
                 print self._multipliers
+            
+            # Sampling step
             if disp:
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,

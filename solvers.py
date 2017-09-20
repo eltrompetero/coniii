@@ -575,33 +575,33 @@ class MCH(Solver):
         NOTE: Commented part relies on stochastic gradient descent but doesn't seem to
         be very good at converging to the right answer with some tests on small systems.
         
-        Params:
-        ------
-        initial_guess (ndarray=None)
+        Parameters
+        ----------
+        initial_guess : ndarray,None
             initial starting point
-        tol (float=None)
+        tol : float,None
             maximum error allowed in any observable
-        tolNorm (float)
+        tolNorm : float
             norm error allowed in found solution
-        n_iters (int=30)
+        n_iters : int,30
             Number of iterations to make between samples in MCMC sampling.
-        burnin (int=30)
+        burnin : int,30
         max_iter : int,10
             Max number of iterations.
         custom_convergence_f : function,None
             Function for determining convergence criterion. At each iteration, this function should
             return the next set of learn_params_kwargs:
             lambda i: {'maxdlamda':??, 'eta':??}
-        disp (bool=False)
+        disp : bool,False
         learn_parameters_kwargs
         generate_kwargs
 
-        Returns:
-        --------
-        parameters (ndarray)
+        Returns
+        -------
+        parameters : ndarray
             Found solution.
-        errflag (int)
-        errors (ndarray)
+        errflag : int
+        errors : ndarray
             Errors in matching constraints at each step of iteration.
         """
         errors = []  # history of errors to track

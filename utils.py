@@ -82,29 +82,32 @@ def calc_overlap(sample,ignore_zeros=False):
         return overlap / (sample.shape[1]-countZeros.max(2))
     return overlap / sample.shape[1]
 
-def pair_corr(data,weights=None,concat=False,exclude_empty=False,
+def pair_corr(data,
+              weights=None,
+              concat=False,
+              exclude_empty=False,
               subtract_mean=False):
     """
     Calculate averages and pairwise correlations of spins.
 
-    Params:
-    -------
-    data (ndarray)
-        (n_samples,n_dim).
-    weights (np.ndarray,None) : 
+    Parameters
+    ----------
+    data : ndarray
+        Dimensions (n_samples,n_dim).
+    weights : np.ndarray,None : 
         Calculate single and pairwise means given fractional weights for each state in
         the data such that a state only appears with some weight, typically less than
         one
-    concat (bool,False)
+    concat : bool,False
         return concatenated means if true
-    exclude_empty (bool,False)
+    exclude_empty : bool,False
         when using with {-1,1}, can leave entries with 0 and those will not be counted for any pair
         weights option doesn't do anything here
-    subtract_mean (bool=False)
+    subtract_mean : bool,False
         If True, return pairwise correlations with product of individual means subtracted.
 
-    Returns:
-    --------
+    Returns
+    -------
     (si,sisj) or np.concatenate((si,sisj))
     """
     S,N = data.shape
@@ -138,8 +141,6 @@ def pair_corr(data,weights=None,concat=False,exclude_empty=False,
         return np.concatenate((si,sisj))
     else:
         return si, sisj
-
-
 
 def bin_states(n,sym=False):
     """
@@ -358,15 +359,17 @@ def define_pseudo_ising_helpers(N):
 
 def define_ising_helpers_functions():
     """
-    Functions for plugging into solvers for +/-1 Ising model.
+    Functions for plugging into solvers for +/-1 Ising model with fields h_i and couplings J_ij.
 
-    Returns:
-    --------
-    calc_e,calc_observables,mch_approximation
+    Returns
+    -------
+    calc_e
+    calc_observables
+    mch_approximation
     """
-    # Defime functions necessary for solving.
     @jit(nopython=True,cache=True)
     def fast_sum(J,s):
+        """Helper function for calculating energy in calc_e(). Iterates couplings J."""
         e = np.zeros((s.shape[0]))
         for n in xrange(s.shape[0]):
             k = 0
@@ -379,11 +382,11 @@ def define_ising_helpers_functions():
     @jit(nopython=True)
     def calc_e(s,params):
         """
-        Params:
-        -------
-        s (2D ndarray)
+        Parameters
+        ----------
+        s : 2D ndarray
             state either {0,1} or {+/-1}
-        params (ndarray)
+        params : ndarray
             (h,J) vector
         """
         e = -fast_sum(params[s.shape[1]:],s)
@@ -391,6 +394,7 @@ def define_ising_helpers_functions():
         return e
 
     def mch_approximation( samples, dlamda ):
+        """Function for making MCH approximation step for Ising model."""
         dE = calc_e(samples,dlamda)
         dE -= dE.min()
         ZFraction = 1. / np.mean(np.exp(-dE))
@@ -402,6 +406,7 @@ def define_ising_helpers_functions():
     
     @jit(nopython=True)
     def calc_observables(samples):
+        """Observables for Ising model."""
         n = samples.shape[1]
         obs = np.zeros((samples.shape[0],n+n*(n-1)//2))
         
@@ -413,6 +418,66 @@ def define_ising_helpers_functions():
                 k += 1
         return obs
     return calc_e,calc_observables,mch_approximation
+
+def define_sising_helpers_functions():
+    """
+    Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no fields.
+
+    Returns
+    -------
+    calc_e
+    calc_observables
+    mch_approximation
+    """
+    @jit(nopython=True,cache=True)
+    def fast_sum(J,s):
+        """Helper function for calculating energy in calc_e(). Iterates couplings J."""
+        e = np.zeros((s.shape[0]))
+        for n in xrange(s.shape[0]):
+            k = 0
+            for i in xrange(s.shape[1]-1):
+                for j in xrange(i+1,s.shape[1]):
+                    e[n] += J[k]*s[n,i]*s[n,j]
+                    k += 1
+        return e
+    
+    @jit(nopython=True)
+    def calc_e(s,params):
+        """
+        Parameters
+        ----------
+        s : 2D ndarray
+            state either {0,1} or {+/-1}
+        params : ndarray
+            (h,J) vector
+        """
+        return -fast_sum(params,s)
+
+    def mch_approximation( samples, dlamda ):
+        """Function for making MCH approximation step for symmetrized Ising model."""
+        dE = calc_e(samples,dlamda)
+        dE -= dE.min()
+        ZFraction = 1. / np.mean(np.exp(-dE))
+        predsisj = pair_corr( samples, weights=np.exp(-dE)/len(dE) )[1] * ZFraction  
+        assert not (np.any(predsisj<-1.00000001) or
+            np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
+                                                                                               predsisj.max())
+        return predsisj
+    
+    @jit(nopython=True)
+    def calc_observables(samples):
+        """Observables for symmetrized Ising model."""
+        n = samples.shape[1]
+        obs = np.zeros((samples.shape[0],n*(n-1)//2))
+        
+        k = 0
+        for i in xrange(n):
+            for j in xrange(i+1,n):
+                obs[:,k] = samples[:,i]*samples[:,j]
+                k += 1
+        return obs
+    return calc_e,calc_observables,mch_approximation
+
 
 @jit(nopython=True)
 def adj(s,n_random_neighbors=False):

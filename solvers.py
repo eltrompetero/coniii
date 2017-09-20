@@ -637,11 +637,13 @@ class MCH(Solver):
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
-        
+       
+
         # MCH iterations.
-        counter = 0
-        keepLoop = True
-        while keepLoop:
+        counter = 0  # number of MCMC and MCH steps
+        keepLooping = True  # loop control
+        learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
+        while keepLooping:
             if disp:
                 print "Iterating parameters with MCH..."
             self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
@@ -661,32 +663,17 @@ class MCH(Solver):
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
                 print "Solved."
                 errflag=0
-                keepLoop=False
+                keepLooping=False
             elif counter>maxiter:
                 print "Over maxiter"
                 errflag=1
-                keepLoop=False
+                keepLooping=False
             else:
                 learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
         
         if full_output:
             return self._multipliers,errflag,np.vstack((errors))
         return self._multipliers
-
-        #def f(lamda):
-        #    if np.any(np.abs(lamda)>10):
-        #        return [1e30]*len(lamda)
-        #    self.generate_samples(nIters=20)
-        #    print "generating samples for"
-        #    print lamda
-        #    thisConstraints = self.calc_observables(self.samples)
-        #    return thisConstraints-self.constraints
-
-        #if initial_guess is None:
-        #    initial_guess = self.multipliers
-        #soln = opt.leastsq(f, initial_guess, Dfun=lambda x: self.estimate_jac(), full_output=True,**kwargs)
-        #self.multipliers = soln[0]
-        #return soln
 
     def estimate_jac(self,eps=1e-3):
         """

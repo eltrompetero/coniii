@@ -320,6 +320,12 @@ one case of fitting social interactions \cite{DanKraFla17}.
 Because there is both a matrix inversion and a sampling step (for comparing the distribution from different $\gamma$), the runtime $\mathcal{O}(N^3 + n_{\rm sample}n_{\rm MC}N^2)$ is dominated by one of two terms depending on the size of the system.
 This is implemented in {\tt RegularizedMeanField}.
 
+\begin{figure}[tb]\centering
+	\includegraphics[width=.85\linewidth]{images/regmf}
+\caption{In the regularized mean-field approach, an continuum approximation is made for the spins and the couplings are regularized. These two changes might make the resulting objective very different from the true answer, but works surprisingly well for one system that has been studied.}
+\label{gr:regmf}
+\end{figure}
+
 
 
 \subsection{Cluster expansion}
@@ -406,12 +412,14 @@ If we have a discrete state space, we must consider other techniques. Pseudolike
 How do we choose amongst the many possible maxent models? In principle, we could construct our models with whichever and all constraints we consider to be important, but how do we choose when to stop adding more constraints?
 We would like a model that is simpler than the system we are trying to describe. If we have to specify the entire probability distribution, then it is not simpler than simulating everything: we are looking for a compressed representation. Along the same lines, a complex and highly detailed model is likely to fit to noise that is particular to this instance of data and will not generalize to more observations of the system, or overfit the data.
 
-Model selection involves a tradeoff between a detailed, specific model that can explain the data well with the ability to generalize across an ensemble of data sets resulting from differing noise or sampling conditions \cite{MacKay:2005wc}. In models of biological or social phenomena, it may be important to also consider the computational costs or physical limitations that restrict the class of models \cite{Daniels:1cq}. These tradeoffs are concisely expressed in the Bayesian posterior probability
+Model selection involves a tradeoff between a detailed, specific model that can explain the data well with the ability to generalize across an ensemble of data sets resulting from differing noise or sampling conditions \cite{MacKay:2005wc}. In models of biological or social phenomena, it may be important to also consider the computational costs or physical limitations that restrict the class of models \cite{Daniels:1cq}. 
+
+These tradeoffs are concisely expressed in the Bayesian posterior probability
 \begin{align}
 	p({\rm model}|{\rm data}) &= \frac{p({\rm data}|{\rm model})p({\rm model})}{p({\rm data})}\\
 	{\rm posterior} &= \frac{{\rm likelihood}\times{\rm prior}}{{\rm evidence}}
 \end{align}
-In other words, the most likely model is the one that is supported by the data and is not entirely suprising considering our prior beliefs|here we can ignore the denominator as a normalizing factor because we are not considering multiple data sets. The prior can reflect either subjective assumptions on the part of the scientist about what models are important to consider (``we only care about this class of models"), objective constraints from reality (``the laws of physics only permit''), or from the perspective of implementing an algorithm, the cost of describing a particular model (``it's really detailed or requires a lot of information or energy and is thus unlikely''). 
+In other words, the most likely model is the one that is supported by the data and is not entirely suprising considering our prior beliefs|here we can ignore the ``evidence'' as a normalizing factor because we are not considering multiple data sets. The prior can reflect either subjective assumptions on the part of the scientist about what models are important to consider (``we only care about this class of models"), objective constraints from reality (``the laws of physics only permit''), or from the perspective of implementing an algorithm, the cost of describing a particular model (``it's really detailed or requires a lot of information or energy and is thus unlikely''). 
 
 With enough parameters, it will be possible to fit any data, but there are typically decreasing returns in descriptive power (given that we choose parameters and models and wisely). 
 To quantify how the cost of specifying more parameters is offset by the decreasing returns, we might use the Bayesian Information Criterion (BIC) or Akaike Information Criterion (AIC) \cite{Lee:2015ev}.

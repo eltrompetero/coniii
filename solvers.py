@@ -662,11 +662,11 @@ class MCH(Solver):
             errors.append( thisConstraints-self.constraints )
             if ( np.linalg.norm(errors[-1])<tolNorm
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
-                print "Solved."
+                if disp: print "Solved."
                 errflag=0
                 keepLooping=False
             elif counter>maxiter:
-                print "Over maxiter"
+                if disp: print "Over maxiter"
                 errflag=1
                 keepLooping=False
             else:

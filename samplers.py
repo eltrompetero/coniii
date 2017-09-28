@@ -1510,7 +1510,7 @@ class MCIsing(object):
             #poolt = datetime.now()
             self.samples,self.E=zip(*pool.map(f,zip(self.samples,
                                                     self.E,
-                                                    np.random.randint(2**31-1,size=sample_size))))
+                                                    np.random.randint(0,2**31-1,size=sample_size))))
             self.samples = np.vstack(self.samples)
             #samplet = datetime.now()
             pool.close()

@@ -587,7 +587,7 @@ class MCH(Solver):
             Max number of iterations.
         custom_convergence_f : function,None
             Function for determining convergence criterion. At each iteration, this function should
-            return the next set of learn_params_kwargs:
+            return the next set of learn_params_kwargs and optionally the sample size:
             lambda i: {'maxdlamda':??, 'eta':??}
         disp : bool,False
         learn_parameters_kwargs : dict,{'maxdlamda':1,'eta':1}
@@ -619,7 +619,8 @@ class MCH(Solver):
         tol = tol or 1/np.sqrt(self.sampleSize)
         tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
         
-        # Set function for automatically adjusting learn_params_kwargs.
+        # Redefine function for automatically adjusting learn_params_kwargs so that it returns the
+        # MCH iterator settings and the sample size if it doesn't already.
         if custom_convergence_f is None:
             custom_convergence_f = lambda i:learn_params_kwargs,self.sampleSize
         if type(custom_convergence_f(0)) is dict:

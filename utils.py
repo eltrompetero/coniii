@@ -396,8 +396,7 @@ def define_ising_helpers_functions():
     def mch_approximation( samples, dlamda ):
         """Function for making MCH approximation step for Ising model."""
         dE = calc_e(samples,dlamda)
-        dE -= dE.min()
-        ZFraction = 1. / np.mean(np.exp(-dE))
+        ZFraction = len(dE) / np.exp(logsumexp(-dE))
         predsisj = pair_corr( samples, weights=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
         assert not (np.any(predsisj<-1.00000001) or
             np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),

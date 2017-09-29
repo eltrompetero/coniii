@@ -1471,15 +1471,25 @@ class MCIsing(object):
         
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state,theta):
+            """
+            Parameters
+            ----------
+            state : ndarray
+                Free spins (not fixed).
+            theta : ndarray
+                Parameters.
+            """
             fullstate = np.zeros((1,self.n))
             i0 = 0
             stateix = 0
+            # Fill all spins in between fixed ones.
             for i,s in fixed_subset: 
                 for ii in xrange(i0,i):
                     fullstate[0,ii] = state[0,stateix] 
                     stateix += 1
                 fullstate[0,i] = s
                 i0 = i+1
+            # Any reamining spots to fill.
             for ii in xrange(i0,self.n):
                 fullstate[0,ii] = state[0,stateix]
                 stateix += 1

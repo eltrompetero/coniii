@@ -213,9 +213,9 @@ class Exact(Solver):
               max_param_value=50,
               fsolve_kwargs={'method':'powell'}):
         """
-        Params:
-        ------
-        constraints (array-like)
+        Parameters
+        ----------
+        constraints : array-like
         samples (array-like)
             (n_samples,n_dim)
         initial_guess (ndarray=None)
@@ -230,8 +230,8 @@ class Exact(Solver):
         fsolve_kwargs (dict={'method':'powell'})
             Powell method is slower but tends to converge better.
 
-        Returns:
-        --------
+        Returns
+        -------
         Tuple of solved parameters and output from scipy.optimize.minimize
         """
         if not constraints is None:
@@ -247,7 +247,7 @@ class Exact(Solver):
         
         def f(params):
             if np.any(np.abs(params)>max_param_value):
-                return [1e30]*len(params)
+                return 1e30
             return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
         soln = minimize(f,initial_guess,**fsolve_kwargs)

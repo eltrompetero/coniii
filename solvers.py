@@ -178,24 +178,24 @@ class Exact(Solver):
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.
 
-    Params:
-    -------
-    n (int)
+    Parameters
+    ----------
+    n : int
         System size.
-    constraints (ndarray)
-    calc_e (function)
-        lambda samples,params: return energy
+    calc_e_observables_multipliers : function
+        Function for calculating the observables given a set of multipliers. Function call is 
+        lambda params: return observables
     calc_observables (function)
         For exact: lambda params: return observables
 
-    Attributes:
-    -----------
-    constraints (ndarray)
-    calc_e (function)
+    Attributes
+    ----------
+    constraints : ndarray
+    calc_e : function
         with args (sample,parameters) where sample is 2d
-    calc_observables (function)
+    calc_observables : function
         takes in samples as argument
-    multipliers (ndarray)
+    multipliers : ndarray
         set the Langrangian multipliers
     """
     def __init__(self, *args, **kwargs):
@@ -216,18 +216,18 @@ class Exact(Solver):
         Parameters
         ----------
         constraints : array-like
-        samples (array-like)
+        samples : array-like
             (n_samples,n_dim)
-        initial_guess (ndarray=None)
+        initial_guess : ndarray,None
             initial starting point
-        tol (float=None)
+        tol : float,None
             maximum error allowed in any observable
-        tolNorm (float)
+        tolNorm : float
             norm error allowed in found solution
-        nIters (int=30)
+        nIters : int,30
             number of iterations to make when sampling
-        disp (bool=False)
-        fsolve_kwargs (dict={'method':'powell'})
+        disp : bool,False
+        fsolve_kwargs : dict,{'method':'powell'}
             Powell method is slower but tends to converge better.
 
         Returns

@@ -118,7 +118,11 @@ def pair_corr(data,
 
     if exclude_empty:
         assert np.array_equal( np.unique(data),np.array([-1,0,1]) ) or \
-            np.array_equal( np.unique(data),np.array([-1,1]) ), "Only handles -1,1 data sets."
+               np.array_equal( np.unique(data),np.array([-1,0]) ) or \
+               np.array_equal( np.unique(data),np.array([0,1]) ) or \
+               np.array_equal( np.unique(data),np.array([-1,1]) ) or \
+               np.array_equal( np.unique(data),np.array([1]) ) or \
+               np.array_equal( np.unique(data),np.array([-1]) ), "Only handles -1,1 data sets."
         k=0
         for i in xrange(N-1):
             for j in xrange(i+1,N):

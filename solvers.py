@@ -185,8 +185,8 @@ class Exact(Solver):
     calc_e_observables_multipliers : function
         Function for calculating the observables given a set of multipliers. Function call is 
         lambda params: return observables
-    calc_observables (function)
-        For exact: lambda params: return observables
+    calc_observables : function
+        lambda params: return observables
 
     Attributes
     ----------
@@ -212,8 +212,8 @@ class Exact(Solver):
         """
         Parameters
         ----------
-        constraints : array-like
-        samples : array-like
+        constraints : ndarray
+        samples : ndarray
             (n_samples,n_dim)
         initial_guess : ndarray,None
             initial starting point

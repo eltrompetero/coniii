@@ -207,9 +207,6 @@ class Exact(Solver):
               constraints=None,
               samples=None,
               initial_guess=None,
-              tol=None,
-              tolNorm=None,
-              disp=False,
               max_param_value=50,
               fsolve_kwargs={'method':'powell'}):
         """
@@ -220,13 +217,6 @@ class Exact(Solver):
             (n_samples,n_dim)
         initial_guess : ndarray,None
             initial starting point
-        tol : float,None
-            maximum error allowed in any observable
-        tolNorm : float
-            norm error allowed in found solution
-        nIters : int,30
-            number of iterations to make when sampling
-        disp : bool,False
         fsolve_kwargs : dict,{'method':'powell'}
             Powell method is slower but tends to converge better.
 

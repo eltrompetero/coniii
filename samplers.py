@@ -1442,22 +1442,22 @@ class MCIsing(object):
                               parallel=True,
                               ):
         """
-        Generate samples from conditional distribution (while a subset of the
-        spins are held fixed). Samples are generated in parallel.
+        Generate samples from conditional distribution (while a subset of the spins are held fixed).
+        Samples are generated in parallel.
         
-        NOTE: There is a bug with multiprocess where many calls to the parallel
-        sampling routine in a row leads to increasingly slow evaluation of the code.
+        NOTE: There is a bug with multiprocess where many calls to the parallel sampling routine in
+        a row leads to increasingly slow evaluation of the code.
 
-        Params:
-        -------
-        sample_size
-        fixed_subset (list of duples)
-            Each duple is the index of the spin and the value to fix it at.
-            These should be ordered by spin index.
-        burn_in (int=1000)
-        cpucount (int=None)
-        initial_sample (ndarray=None)
-        systematic_iter (bool=False)
+        Parameters
+        -----------
+        sample_size : int
+        fixed_subset : list of duples
+            Each duple is the index of the spin and the value to fix it at.  These should be ordered
+            by spin index.
+        burn_in : int,1000
+        cpucount : int,None
+        initial_sample : ndarray,None
+        systematic_iter : bool,False
             Iterate through spins systematically instead of choosing them randomly.
         """
         cpucount = cpucount or self.nJobs
@@ -1471,15 +1471,25 @@ class MCIsing(object):
         
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state,theta):
+            """
+            Parameters
+            ----------
+            state : ndarray
+                Free spins (not fixed).
+            theta : ndarray
+                Parameters.
+            """
             fullstate = np.zeros((1,self.n))
             i0 = 0
             stateix = 0
+            # Fill all spins in between fixed ones.
             for i,s in fixed_subset: 
                 for ii in xrange(i0,i):
                     fullstate[0,ii] = state[0,stateix] 
                     stateix += 1
                 fullstate[0,i] = s
                 i0 = i+1
+            # Any reamining spots to fill.
             for ii in xrange(i0,self.n):
                 fullstate[0,ii] = state[0,stateix]
                 stateix += 1
@@ -1510,7 +1520,7 @@ class MCIsing(object):
             #poolt = datetime.now()
             self.samples,self.E=zip(*pool.map(f,zip(self.samples,
                                                     self.E,
-                                                    np.random.randint(2**31-1,size=sample_size))))
+                                                    np.random.randint(0,2**31-1,size=sample_size))))
             self.samples = np.vstack(self.samples)
             #samplet = datetime.now()
             pool.close()

@@ -91,7 +91,7 @@ def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
 
     # Write function to solve to file.
     f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
-    f.write("% File for solving the Ising model.\n% ")
+    f.write("% Equations of %d-spin Ising model.\n\n"%n)
     f.write(time.strftime("%Y/%m/%d")+"\n")
     f.write("% Give each set of parameters concatenated into one array.\n\n")
 
@@ -142,7 +142,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
 
     # Write function to solve to file.
     f = open('ising_eqn_%d%s.py'%(n,suffix),'w')
-    f.write("# File for solving the Ising model.\n\n")
+    f.write("# Equations of %d-spin Ising model.\n\n"%n)
     f.write("# ")
     f.write(time.strftime("%d/%m/%Y")+"\n")
     f.write("from numpy import zeros, exp\n\n")

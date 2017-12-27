@@ -178,24 +178,24 @@ class Exact(Solver):
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.
 
-    Params:
-    -------
-    n (int)
+    Parameters
+    ----------
+    n : int
         System size.
-    constraints (ndarray)
-    calc_e (function)
-        lambda samples,params: return energy
-    calc_observables (function)
-        For exact: lambda params: return observables
+    calc_e_observables_multipliers : function
+        Function for calculating the observables given a set of multipliers. Function call is 
+        lambda params: return observables
+    calc_observables : function
+        lambda params: return observables
 
-    Attributes:
-    -----------
-    constraints (ndarray)
-    calc_e (function)
+    Attributes
+    ----------
+    constraints : ndarray
+    calc_e : function
         with args (sample,parameters) where sample is 2d
-    calc_observables (function)
+    calc_observables : function
         takes in samples as argument
-    multipliers (ndarray)
+    multipliers : ndarray
         set the Langrangian multipliers
     """
     def __init__(self, *args, **kwargs):
@@ -207,31 +207,21 @@ class Exact(Solver):
               constraints=None,
               samples=None,
               initial_guess=None,
-              tol=None,
-              tolNorm=None,
-              disp=False,
               max_param_value=50,
               fsolve_kwargs={'method':'powell'}):
         """
-        Params:
-        ------
-        constraints (array-like)
-        samples (array-like)
+        Parameters
+        ----------
+        constraints : ndarray
+        samples : ndarray
             (n_samples,n_dim)
-        initial_guess (ndarray=None)
+        initial_guess : ndarray,None
             initial starting point
-        tol (float=None)
-            maximum error allowed in any observable
-        tolNorm (float)
-            norm error allowed in found solution
-        nIters (int=30)
-            number of iterations to make when sampling
-        disp (bool=False)
-        fsolve_kwargs (dict={'method':'powell'})
+        fsolve_kwargs : dict,{'method':'powell'}
             Powell method is slower but tends to converge better.
 
-        Returns:
-        --------
+        Returns
+        -------
         Tuple of solved parameters and output from scipy.optimize.minimize
         """
         if not constraints is None:
@@ -247,7 +237,7 @@ class Exact(Solver):
         
         def f(params):
             if np.any(np.abs(params)>max_param_value):
-                return [1e30]*len(params)
+                return 1e30
             return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
         soln = minimize(f,initial_guess,**fsolve_kwargs)
@@ -507,33 +497,33 @@ class MCH(Solver):
     """
     def __init__(self, *args, **kwargs):
         """
-        Params:
-        -------
-        calc_e (lambda state,params)
+        Parameters
+        ----------
+        calc_observables : function
+            takes in samples as argument
+        calc_e : lambda state,params
             function for computing energies of given state and parameters.  Should take in a 2D state array
             and vector of parameters to compute energies.
-        adj (lambda state)
-            function for getting all the neighbors of any given state
-        calc_de (lambda=None)
+        calc_de  : lambda,None
             Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
             the parameter.
-        n_jobs (int=0)
+        n_jobs : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
-        Attributes:
-        -----------
+        Members
+        -------
         constraints (ndarray)
-        calc_e (function)
-            with args (sample,parameters) where sample is 2d
         calc_observables (function)
             takes in samples as argument
+        calc_e (function)
+            with args (sample,parameters) where sample is 2d
         mch_approximation (function)
         sampleSize (int)
         multipliers (ndarray)
             set the Langrangian multipliers
 
-        Methods:
-        --------
+        Methods
+        -------
         """
         sample_size,sample_method,mch_approximation = (kwargs.get('sample_size',None),
                                                        kwargs.get('sample_method',None),
@@ -564,39 +554,46 @@ class MCH(Solver):
               n_iters=30,
               burnin=30,
               maxiter=10,
+              custom_convergence_f=None,
               disp=False,
               full_output=False,
-              learn_params_kwargs={},
+              learn_params_kwargs={'maxdlamda':1,'eta':1},
               generate_kwargs={}):
         """
         Solve for parameters using MCH routine.
         
-        NOTE: Commented part relies on stochastic gradient descent but doesn't seem to
-        be very good at converging to the right answer with some tests on small systems.
-        
-        Params:
-        ------
-        initial_guess (ndarray=None)
+        Parameters
+        ----------
+        initial_guess : ndarray,None
             initial starting point
-        tol (float=None)
+        tol : float,None
             maximum error allowed in any observable
-        tolNorm (float)
+        tolNorm : float
             norm error allowed in found solution
-        n_iters (int=30)
+        n_iters : int,30
             Number of iterations to make between samples in MCMC sampling.
-        burnin (int=30)
-        disp (bool=False)
-        learn_parameters_kwargs
-        generate_kwargs
+        burnin : int,30
+        max_iter : int,10
+            Max number of iterations.
+        custom_convergence_f : function,None
+            Function for determining convergence criterion. At each iteration, this function should
+            return the next set of learn_params_kwargs and optionally the sample size:
+            lambda i: {'maxdlamda':??, 'eta':??}
+        disp : bool,False
+        learn_parameters_kwargs : dict,{'maxdlamda':1,'eta':1}
+        generate_kwargs : dict,{}
 
-        Returns:
-        --------
-        parameters (ndarray)
+        Returns
+        -------
+        parameters : ndarray
             Found solution.
-        errflag (int)
-        errors (ndarray)
+        errflag : int
+        errors : ndarray
             Errors in matching constraints at each step of iteration.
         """
+        errors = []  # history of errors to track
+
+
         # Read in constraints.
         if not constraints is None:
             self.constraints = constraints
@@ -611,62 +608,68 @@ class MCH(Solver):
             self._multipliers = np.zeros((len(self.constraints)))
         tol = tol or 1/np.sqrt(self.sampleSize)
         tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
-
-        errors = []  # history of errors to track
         
+        # Redefine function for automatically adjusting learn_params_kwargs so that it returns the
+        # MCH iterator settings and the sample size if it doesn't already.
+        if custom_convergence_f is None:
+            custom_convergence_f = lambda i:learn_params_kwargs,self.sampleSize
+        if type(custom_convergence_f(0)) is dict:
+            custom_convergence_f_ = custom_convergence_f
+            custom_convergence_f = lambda i:(custom_convergence_f_(i),self.sampleSize)
+        assert 'maxdlamda' and 'eta' in custom_convergence_f(0)[0].keys()
+        assert type(custom_convergence_f(0)[1]) is int
+        
+        
+        # Generate initial set of samples.
         self.generate_samples(n_iters,burnin,
-                              generate_kwargs=generate_kwargs)
+                              generate_kwargs=generate_kwargs,
+                              initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
-        
+
+
         # MCH iterations.
-        counter = 0
-        keepLoop = True
-        while keepLoop:
+        counter = 0  # number of MCMC and MCH steps
+        keepLooping = True  # loop control
+        learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
+        while keepLooping:
+            # MCH step
             if disp:
                 print "Iterating parameters with MCH..."
             self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
             if disp=='detailed':
                 print "After MCH step, the parameters are..."
                 print self._multipliers
+            
+            # MC sampling step
             if disp:
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,
-                                   generate_kwargs=generate_kwargs )
+                                   generate_kwargs=generate_kwargs,
+                                   initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
             thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
             
-            # Exit criteria.
             errors.append( thisConstraints-self.constraints )
+            if disp=='detailed':
+                print "Error is %1.4f"%np.linalg.norm(errors[-1])
+            # Exit criteria.
             if ( np.linalg.norm(errors[-1])<tolNorm
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
-                print "Solved."
+                if disp: print "Solved."
                 errflag=0
-                keepLoop=False
+                keepLooping=False
             elif counter>maxiter:
-                print "Over maxiter"
+                if disp: print "Over maxiter"
                 errflag=1
-                keepLoop=False
+                keepLooping=False
+            else:
+                learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
         
         if full_output:
             return self._multipliers,errflag,np.vstack((errors))
         return self._multipliers
-
-        #def f(lamda):
-        #    if np.any(np.abs(lamda)>10):
-        #        return [1e30]*len(lamda)
-        #    self.generate_samples(nIters=20)
-        #    print "generating samples for"
-        #    print lamda
-        #    thisConstraints = self.calc_observables(self.samples)
-        #    return thisConstraints-self.constraints
-
-        #if initial_guess is None:
-        #    initial_guess = self.multipliers
-        #soln = opt.leastsq(f, initial_guess, Dfun=lambda x: self.estimate_jac(), full_output=True,**kwargs)
-        #self.multipliers = soln[0]
-        #return soln
 
     def estimate_jac(self,eps=1e-3):
         """
@@ -743,7 +746,7 @@ class MCH(Solver):
 class MCHIncompleteData(MCH):
     """
     Class for solving maxent problems using the Monte Carlo Histogram method on
-    data where the entire system is not visible.
+    incomplete data where some spins may not be visible.
 
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster
     solutions of the inverse pairwise Ising problem. arXiv 1-8 (2007).
@@ -833,15 +836,15 @@ class MCHIncompleteData(MCH):
 
         Returns
         -------
-        parameters (ndarray)
+        parameters : ndarray
             Found solution.
-        errflag (int)
-        errors (ndarray)
+        errflag : int
+        errors : ndarray
             Errors in matching constraints at each step of iteration.
         """
         # Check args.
         import types
-        assert not X is None and not constraints is None, "Must provide data and constriants."
+        assert (not X is None) and (not constraints is None), "Must provide data and constriants."
         self.constraints = constraints
         if type(cond_sample_size) is int:
             f_cond_sample_size = lambda n: cond_sample_size
@@ -939,25 +942,25 @@ class MCHIncompleteData(MCH):
         to the marginal probability distribution weighted with the number of corresponding data
         points.
 
-        Params:
-        -------
-        estConstraints (ndarray)
-        fullFraction (float)
+        Parameters
+        ----------
+        estConstraints : ndarray
+        fullFraction : float
             Fraction of data points that are complete.
-        uIncompleteStates (list-like)
+        uIncompleteStates : list-like
             Unique incomplete states in data.
-        uIncompleteStatesCount (list-like)
+        uIncompleteStatesCount : list-like
             Frequency of each unique data point.
-        maxdlamda (float=1)
-        maxdlamdaNorm (float=1)
-        maxLearningSteps (int)
+        maxdlamda : float,1
+        maxdlamdaNorm : float,1
+        maxLearningSteps : int
             max learning steps before ending MCH
-        eta (float=1)
+        eta : float,1
             factor for changing dlamda
 
-        Returns:
-        --------
-        estimatedConstraints (ndarray)
+        Returns
+        -------
+        estimatedConstraints : ndarray
         """
         keepLearning = True
         dlamda = np.zeros((self.constraints.size))
@@ -1020,11 +1023,11 @@ class MCHIncompleteData(MCH):
         n_iters : int
         burnin : int 
             I think burn in is handled automatically in REMC.
-        uIncompleteStates : list
+        uIncompleteStates : list of unique states
         f_cond_sample_size : lambda function
-            Given n, return the number of samples to take.
+            Given the number of hidden spins, return the number of samples to take.
         f_cond_sample_iters : lambda function
-            Given n, return the number of MC iterations to make.
+            Given the number of hidden spins, return the number of MC iterations to make.
         sample_size : int
         sample_method : str
         initial_sample : ndarray
@@ -1034,7 +1037,7 @@ class MCHIncompleteData(MCH):
         -------
         None
         """
-        from datetime import datetime
+        from datetime import datetime  # for debugging
         assert not (self.sampler is None), "Must call setup_sampler() first."
 
         sample_method = sample_method or self.sampleMethod
@@ -1058,8 +1061,10 @@ class MCHIncompleteData(MCH):
                                                         initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
             if run_cond_sampler: 
-                # Sample from conditional distribution for incomplete data points.
+                # Sample from conditional distribution p(s_unobserved|s_observed) where s_observed
+                # are the spins with data for the incomplete data points.
                 def f(args):
+                    """Function for parallelizing sampling of conditional distributions."""
                     i,s = args
                     frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
                     
@@ -1075,7 +1080,8 @@ class MCHIncompleteData(MCH):
                                                                       len(uIncompleteStates),
                                                                       (datetime.now()-start).total_seconds())
                     return sample
-                
+
+                # Parallel sampling of conditional distributions. 
                 pool = mp.Pool(self.n_jobs)
                 self.condSamples = pool.map( f,zip(range(len(uIncompleteStates)),uIncompleteStates) )
                 pool.close()
@@ -1288,23 +1294,21 @@ class Pseudo(Solver):
 class ClusterExpansion(Solver):
     def __init__(self, *args, **kwargs):
         """
-        Implementation of Adaptive Cluster Expansion for
-        solving the inverse Ising problem, as described in
-        John Barton and Simona Cocco, J. of Stat. Mech.
-        P03002 (2013).
+        Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
+        described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
         
         Specific to pairwise Ising constraints
         
         Params:
         -------
         calc_e (lambda state,params)
-            function for computing energies of given state and parameters.  Should take in a 2D state array
-            and vector of parameters to compute energies.
+            function for computing energies of given state and parameters.  Should take in a 2D
+            state array and vector of parameters to compute energies.
         adj (lambda state)
             function for getting all the neighbors of any given state
         calc_de (lambda=None)
-            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
-            the parameter.
+            Function for calculating derivative of energy wrt parameters. Takes in 2d state array
+            and index of the parameter.
         n_jobs (int=0)
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
@@ -1324,10 +1328,8 @@ class ClusterExpansion(Solver):
         Calculate pairwise entropy of cluster.
         (First fits pairwise Ising model.)
         
-        useAnalyticResults (False)  : probably want False until 
-                                      analytic formulas are
-                                      changed to include
-                                      prior on J
+        useAnalyticResults : bool,False
+            Probably want False until analytic formulas are changed to include prior on J
         """
         if len(cluster) == 0:
             raise Exception
@@ -1354,7 +1356,7 @@ class ClusterExpansion(Solver):
                                             Jinit=Jinit,
                                             priorLmbda=priorLmbda,
                                             numSamples=numSamples)
-
+        
         # make 'full' version of J (of size NxN)
         N = len(coocMat)
         Jfull = meanFieldIsing.JfullFromCluster(J,cluster,N)
@@ -1362,9 +1364,6 @@ class ClusterExpansion(Solver):
         ent = meanFieldIsing.analyticEntropy(J)
 
         return ent,Jfull 
-
-
-
 
     # 3.24.2014
     def Sindependent(self,cluster,coocMat):
@@ -1390,8 +1389,6 @@ class ClusterExpansion(Solver):
         Jfull = meanFieldIsing.JfullFromCluster(Jind,cluster,Nfull)
 
         return Sind,Jfull
-
-
 
     # "Algorithm 1"
     def deltaS(self,cluster,coocMat,deltaSdict=None,deltaJdict=None,

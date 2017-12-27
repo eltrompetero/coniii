@@ -30,5 +30,7 @@ setup(name='coniii',
       packages=find_packages(),
       install_requires=['multiprocess','scipy','numpy','numba','dill'],
       package_data={'coniii':['custom_maxent.pyx','fast.pyx','setup_fast.py','__init__.py']},
-      py_modules=['exact','generalModelRMC','ising','mc_hist','meanFieldIsing','pseudoInverseIsing','samplers','solvers','utils']
+      py_modules=['exact','general_model_rmc','ising','mc_hist','mean_field_ising',
+		  'pseudo_inverse_ising','samplers','solvers','utils']
 )
+

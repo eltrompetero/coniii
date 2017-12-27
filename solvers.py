@@ -6,7 +6,7 @@ import multiprocess as mp
 from utils import *
 from samplers import *
 import copy
-import meanFieldIsing
+import mean_field_ising
 from warnings import warn
 
 class Solver(object):
@@ -1350,18 +1350,18 @@ class ClusterExpansion(Solver):
                 - log( 1.-pi-pj+pij )
             J = np.array( [ [ Jii, 0.5*Jij ], [ 0.5*Jij, Jjj ] ] )
         else:
-            coocMatCluster = meanFieldIsing.coocCluster(coocMat,cluster)
+            coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
             Jinit = None # <--- potential for speed-up here
-            J = meanFieldIsing.findJmatrixAnalytic_CoocMat(coocMatCluster,
+            J = mean_field_ising.findJmatrixAnalytic_CoocMat(coocMatCluster,
                                             Jinit=Jinit,
                                             priorLmbda=priorLmbda,
                                             numSamples=numSamples)
         
         # make 'full' version of J (of size NxN)
         N = len(coocMat)
-        Jfull = meanFieldIsing.JfullFromCluster(J,cluster,N)
+        Jfull = mean_field_ising.JfullFromCluster(J,cluster,N)
         
-        ent = meanFieldIsing.analyticEntropy(J)
+        ent = mean_field_ising.analyticEntropy(J)
 
         return ent,Jfull 
 
@@ -1369,9 +1369,9 @@ class ClusterExpansion(Solver):
     def Sindependent(self,cluster,coocMat):
         """
         """
-        coocMatCluster = meanFieldIsing.coocCluster(coocMat,cluster)
+        coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
         # in case we're given an upper-triangular coocMat:
-        coocMatCluster = meanFieldIsing.symmetrizeUsingUpper(coocMatCluster)
+        coocMatCluster = mean_field_ising.symmetrizeUsingUpper(coocMatCluster)
         
         N = len(cluster)
         
@@ -1386,7 +1386,7 @@ class ClusterExpansion(Solver):
 
         # make 'full' version of J (of size NfullxNfull)
         Nfull = len(coocMat)
-        Jfull = meanFieldIsing.JfullFromCluster(Jind,cluster,Nfull)
+        Jfull = mean_field_ising.JfullFromCluster(Jind,cluster,Nfull)
 
         return Sind,Jfull
 
@@ -1520,7 +1520,7 @@ class ClusterExpansion(Solver):
             deltaJdict  :
         """
         # 7.18.2017 convert input to coocMat
-        coocMat = meanFieldIsing.cooccurrence_matrix((X+1)/2)
+        coocMat = mean_field_ising.cooccurrence_matrix((X+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}
@@ -1583,7 +1583,7 @@ class ClusterExpansion(Solver):
 
         # 7.18.2017 convert J to {-1,1}
         h = -J.diagonal()
-        J = -meanFieldIsing.zeroDiag(J)
+        J = -mean_field_ising.zeroDiag(J)
         self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
 
         if return_all:
@@ -1935,18 +1935,18 @@ class RegularizedMeanField(Solver):
                                       Strength of noninteracting prior.
         """
         # 7.18.2017 convert input to coocMat
-        coocMatData = meanFieldIsing.cooccurrence_matrix((samples+1)/2)
+        coocMatData = mean_field_ising.cooccurrence_matrix((samples+1)/2)
         
         numDataSamples = len(samples)
         
         if coocCov is None:
-            coocCov = meanFieldIsing.coocSampleCovariance(samples)
+            coocCov = mean_field_ising.coocSampleCovariance(samples)
         
         if nSkip is None:
             nSkip = 10*self.n
         
-        if changeSeed: seedIter = meanFieldIsing.seedGenerator(seed,1)
-        else: seedIter = meanFieldIsing.seedGenerator(seed,0)
+        if changeSeed: seedIter = mean_field_ising.seedGenerator(seed,1)
+        else: seedIter = mean_field_ising.seedGenerator(seed,0)
         
         if priorLmbda != 0.:
             # 11.24.2014 Need to fix prior implementation
@@ -1960,7 +1960,7 @@ class RegularizedMeanField(Solver):
         # use non-diagonal jacobians in the future and get bad behavior you
         # may want to double-check this.
         if minimizeIndependent:
-            coocStdevs = meanFieldIsing.coocStdevsFlat(coocMatData,numDataSamples)
+            coocStdevs = mean_field_ising.coocStdevsFlat(coocMatData,numDataSamples)
             coocStdevsRepeated = scipy.transpose(                                   \
                 coocStdevs*scipy.ones((len(coocStdevs),len(coocStdevs))) )
         elif minimizeCovariance:
@@ -2000,7 +2000,7 @@ class RegularizedMeanField(Solver):
            #                     seed=seed,minSize=minSize)
            burninDefault = 100*self.n
            J = J + J.T
-           self._multipliers = np.concatenate([J.diagonal(),squareform(meanFieldIsing.zeroDiag(-J))])
+           self._multipliers = np.concatenate([J.diagonal(),squareform(mean_field_ising.zeroDiag(-J))])
            self.generate_samples(nSkip,burninDefault,int(numSamples),'metropolis')
            isingSamples = np.array(self.samples,dtype=float)
            return isingSamples
@@ -2012,7 +2012,7 @@ class RegularizedMeanField(Solver):
             meanFieldPriorLmbda = meanFieldGammaPrime / (pmean**2 * (1.-pmean)**2)
             
             # calculate regularized mean field J
-            J = meanFieldIsing.JmeanField(coocMatData,
+            J = mean_field_ising.JmeanField(coocMatData,
                                           meanFieldPriorLmbda=meanFieldPriorLmbda,
                                           numSamples=numDataSamples)
 
@@ -2021,12 +2021,12 @@ class RegularizedMeanField(Solver):
             
             # calculate residuals, including prior if necessary
             if minimizeIndependent: # Default as of 4.2.2015
-                dc = meanFieldIsing.isingDeltaCooc(isingSamples,coocMatData)/coocStdevs
+                dc = mean_field_ising.isingDeltaCooc(isingSamples,coocMatData)/coocStdevs
             elif minimizeCovariance:
                 dc = isingDeltaCovTilde(isingSamples,covTildeMean,
                                           empiricalFreqs)/covTildeStdevs
             else:
-                dc = meanFieldIsing.isingDeltaCooc(isingSamples,coocMatMean)
+                dc = mean_field_ising.isingDeltaCooc(isingSamples,coocMatMean)
                 if priorLmbda != 0.:
                     # new prior 3.24.2014
                     # 11.21.2014 oops, I think this should be square-rooted XXX
@@ -2054,14 +2054,14 @@ class RegularizedMeanField(Solver):
 
         gammaPrimeMin = solution['x']
         meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)
-        J = meanFieldIsing.JmeanField(coocMatData,
+        J = mean_field_ising.JmeanField(coocMatData,
                                       meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
                                       numSamples=numDataSamples)
         J = J + J.T
 
         # 7.18.2017 convert J to {-1,1}
         h = -J.diagonal()
-        J = -meanFieldIsing.zeroDiag(J)
+        J = -mean_field_ising.zeroDiag(J)
         self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
 
         return self.multipliers

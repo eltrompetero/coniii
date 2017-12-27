@@ -510,8 +510,8 @@ class MCH(Solver):
         n_jobs : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
-        Attributes
-        ----------
+        Members
+        -------
         constraints (ndarray)
         calc_observables (function)
             takes in samples as argument
@@ -522,8 +522,8 @@ class MCH(Solver):
         multipliers (ndarray)
             set the Langrangian multipliers
 
-        Methods:
-        --------
+        Methods
+        -------
         """
         sample_size,sample_method,mch_approximation = (kwargs.get('sample_size',None),
                                                        kwargs.get('sample_method',None),
@@ -622,11 +622,12 @@ class MCH(Solver):
         
         # Generate initial set of samples.
         self.generate_samples(n_iters,burnin,
-                              generate_kwargs=generate_kwargs)
+                              generate_kwargs=generate_kwargs,
+                              initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
-       
+
 
         # MCH iterations.
         counter = 0  # number of MCMC and MCH steps
@@ -641,16 +642,19 @@ class MCH(Solver):
                 print "After MCH step, the parameters are..."
                 print self._multipliers
             
-            # Sampling step
+            # MC sampling step
             if disp:
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,
-                                   generate_kwargs=generate_kwargs )
+                                   generate_kwargs=generate_kwargs,
+                                   initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
             thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
             
-            # Exit criteria.
             errors.append( thisConstraints-self.constraints )
+            if disp=='detailed':
+                print "Error is %1.4f"%np.linalg.norm(errors[-1])
+            # Exit criteria.
             if ( np.linalg.norm(errors[-1])<tolNorm
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
                 if disp: print "Solved."

@@ -449,7 +449,7 @@ class MPF(Solver):
             includeGrad = True
         else:
             includeGrad = False
-        X = X.astype: float
+        X = X.astype(float)
         if initial_guess is None:
             initial_guess = self.calc_observables(X).mean(0)#np.zeros(self.n+self.n*(self.n-1)//2)
          

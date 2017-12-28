@@ -35,7 +35,7 @@
 %\date{}                                           % Activate to display a given date or no date
 
 \begin{abstract}
-CONIII is a Python project for providing a simple interface to various algorithms for solving maximum entropy models with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, and minimum probability flow. We explain how one should approach and validate maxent models from the persepctive of model selection.
+CONIII is an open-source Python project for providing a simple interface to solving maximum entropy models with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII (\url{https://github.com/bcdaniels/coniii}) including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, and minimum probability flow. We explain how one should approach and validate maxent models from the perspective of model selection.
 %We then show examples of models that have been solved on various data sets using CONIII.
 \end{abstract}
 
@@ -126,13 +126,13 @@ we go through the procedure of constructing the Langrangian from Eq~\ref{eq:Lagr
 \end{align}
 Thus, the resulting model is exactly the Ising model mentioned earlier.
 
-Despite the simplicity of the Ising model, finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have made a few of them part of our Python package CONIII to provide a convenient interface for using algorithms already part of the package or adding new algorithms. Here, we briefly describe the algorithms that are part of the first official version of the package.
+Despite the simplicity of the Ising model, the structure imposed by the discrete nature of the spins means that finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have made a few of them part of our Python package CONIII to provide a convenient interface for using algorithms already part of the package or adding new algorithms. Here, we briefly describe the algorithms that are part of the first official version of the package. The goal is to give the user a sense (or reminder) of how they work without bogging him or her down in heavy detail. For more detail, we suggest perusing the papers referenced in each section or the review \cite{Nguyen:2017ww}. For a complete beginner, it may be useful to first get familiar with a slower introduction like in the Appendix of Ref \cite{Lee:2015ev}, \cite{Bialek:2012ueb}, or \cite{Jaynes:Logic}.
 
 %Imagine that you have a system with $n$ components that have been sampled many times. To be more specific, we'll take $n=9$ voters on the US Supreme Court that either vote with in the majority, the winning coalition, or in the minority. [More generally, we could think some like gene expression levels in a cell a coarse-grained representation where relatively high or low expression can be represented by a binary variable. Of course, we don't have to restrict ourselves to binary variables \cite{Lezon:2006ws}.]
 %The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
 
 
-\section{Exact enumeration}
+\section{Enumeration}
 The na\"{i}ve approach that only works for small systems is to write out the equations from Eq~\ref{eq:fk-fk} and solve them numerically. After writing out all $K$ equations,
 \begin{align}
 	\br{f_{\rm k}}_{\rm data} &= \br{f_{\rm k}}\\
@@ -263,11 +263,7 @@ way---starting with few constraints and adding the possibility of higher order
 constraints until the model fits well enough.]
 
 
-\section{Mean-field methods}
-[I'm imagining that we neatly tie together the different techniques. As far as I know, they're all different approaches and no one's done a real good job relating one technique to another. It's easy enough to go read a bunch of different papers about each method, but it's not so clear why one is preferable over another.]
-
-[Analytic approximations simplify the equations to an extent where they are tractable.]
-
+\section{Mean-field method}
 One attractively simple and efficient version of the regularized approach starts
 with mean-field theory.  In the inverse Ising problem, mean-field theory is equivalent
 to treating each binary individual as instead having a continuously varying state
@@ -338,26 +334,43 @@ the resulting $J$ fit the desired statistics of the data sufficiently well.
 
 In Coniii, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
-\section{Bethe/Kikuchi free energy/cavity methods}
-Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
+%\section{Bethe/Kikuchi free energy/cavity methods}
+%Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
+%The cavity method involves use of the marginalized distribution.
 
-The cavity method involves use of the marginalized distribution.
+\section{Incomplete data}
 
 \section{Samplers}
-In CONIII, we have implemented two versions of the Metropolis algorithm. One is specific to the Ising model {\tt MCIsing} and the other {\tt MC} can sample a system as long as the function for calculating the energy is suppiled by the user.
+In CONIII, we have implemented two versions of the Metropolis algorithm. One is specific to the Ising model {\tt MCIsing} and the other {\tt MC} can sample a system as long as the function for calculating the energy is supplied by the user.
 
-\subsection{How to validate a maxent model}
-The logic behind maxent is that by fixing some aspects of the probability distribution, the rest of the distribution has been well characterized.
-Another way to put this is to say that the distributions are well-peaked about the constraints. If this condition does not hold, the constraints are not useful.
+In some parameter regimes, where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient.
 
-Maxent is not a typical fitting method where the optimal parameters are sought such that the model is as good as possible. Instead, we specify which aspects of the system we think are important and the resulting ``parameters'' come from the maximum entropy principle.
+%\section{Algorithm for solving}
+%We suggest solving the inverse problem using a fast technique. 
+\section{Discussion}
+\subsection{Validation}
+The first step in validating a maxent model is to confirm that it matches the given constraints.  In the cases where we use an approximate technique or regularize the problem, we must make sure that it matches the data within reasonable error bars given by the data. Assuming that the data is independently and identically distributed, the errors are given by the standard error of the mean of a binomial distribution \mbox{$p_{\rm ij...k} = p(s_{\rm i}=s_{\rm j}=...=s_{\rm k}=1)$} with $K$ data points.
+\begin{align}
+	\delta_{\rm ij...k} &= \sqrt{(1-p_{\rm ij...k})p_{\rm ij...k}/K}
+\end{align}
 
-Thus, one way to test the model is to consider how well we do in predicting the rest of the distribution. If the rest of the distribution is not well fit, certainly we must go back and reconsider which constraints to impose. On the other hand, finding that the rest of the probability distribution is fit well does not necessarily mean we have found the right model.
+Since the model is only fit to the given constraints, it is not given that it will be able to fit other features of the data that have not been specified. For the Ising model, a good fit to any higher order feature of the probability distribution is in this sense nontrivial. 
 
-%\section{Why not maximum entropy?}
+Basic checks would be to compare against higher order correlations in the data. In Figure~??, we show an example of a pairwise maxent model tested against higher order correlations. Since these are quantities averaged over the joint probability distribution of many spins, a stricter check would be to compare the entire probability distribution of the pairwise maxent model with that of the data \cite{Lee:2015ev}, but this is only feasible when the data set is reasonably large. For each problem, there are specific features that are more relevant to the question at hand, which would be important to check. For conflict in monkeys, a coarse-grained feature is the distribution of conflict sizes which seems to have a characteristically long tail, and that is checked specifically \cite{Daniels:1cq}. 
+
+\subsection{Model complexity}
+How do we know if we need to add more parameters? To answer this question, we need a way of quantifying the tradeoff between the complexity and fit of the model. The idea is that a more complicated model gives us more information about the data set that we are fitting, but specifying the parameters also requires information. This is tradeoff between the information gain and the information cost. Roughly speaking, we can imagine that specifying the $K$ parameters is localizing a region in a high-dimensional space. The volume of the ``ball'' grows like $l^K$, so that the information cost goes like $K\log(l)$. This is the picture formalized by quantities like the Akaike information criterion (AIC) or the Bayesian information criterion (BIC) \cite{}. An accessible description of model selection with maximum entropy is described in Ref \cite{Lee:2015ev}.
+
+Choosing which parameters to impose is an important question. Typically, the approach has been to constrain the lowest order interactions that are sufficient to produce collective behavior. The intuition from physics is from the observation that many physical systems are extremely well (if not exactly) described by pairwise interactions. In statistical physics, the observation that highly correlated behavior across space and time can emerge from pairwise interactions has even stronger justification from renormalization group theory \cite{}. In fact, the ability to model a system well with only pairwise interactions may be surprising \cite{Ranganathan:2007wz}. From the model fitting perspective, however, we might choose to constrain other parts of the probability distribution. In Ref \cite{Schneidman}, they  explore choosing correlations to constrain depending on whether or not they are signicantly large. In Ref \cite{Nemena}, how a pairwise model becomes an increasingly effective description of a system with higher order interactions as the system gets larger.
+
+\subsection{Conclusion}
+Science is a process of model selection. In the ideal picture, we start with the simplest models and the fewest constraints possible, and then we increase the complexity of the model til it is sufficiently so to make good predictions. In principle, we could add as many contraints as would allow us to fit the data well, but the idea is that complex models are not only ``expensive'' but they do not generalize well.
+Maxent is a principled framework for this picture of model building. The number of parameters and the order of the constraints we impose can be adjusted to test our hypotheses about what matters for the system.
+In this sense, the maxent approach is a useful ``model'' framework for thinking about statistical inference problems far beyond statistical physics. We build an open-source Python package that we hope will be accessible and useful for those unfamiliar with maxent approaches to experiment and perhaps apply this technique to their questions.
 
 
 
+\clearpage
 \appendix
 
 \section{The microcanonical ensemble and maximum entropy}

@@ -1,10 +1,9 @@
-# coniii
-Convenient Interface to Inverse Ising
+CONvenient Interface to Inverse Ising
 
 ED Lee, BC Daniels
 
-See Examples.ipynb for usage documentation.
+Python package for solving maximum entropy problems with a focus on the pairwise maximum entropy model, also known as the inverse Ising problem.
 
-The package will run with the latest version of Conda with Python 2.7 and latest versions of multiprocess (not multiprocessing), dill, iPython.
+See Examples.ipynb for usage documentation.
 
 This project is currently being developed and will be published with an accompanying guide on arXiv. Any feedback would be greatly appreciated!

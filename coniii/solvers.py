@@ -1,13 +1,12 @@
-# Module for class-based solvers for different Inverse Ising methods.
+# Module for algorithms for solving the inverse Ising problem.
 from __future__ import division
-from scipy.optimize import minimize,fmin_ncg
-import scipy.optimize 
+from scipy.optimize import minimize,fmin_ncg,minimize_scalar
 import multiprocess as mp
-from utils import *
-from samplers import *
 import copy
 import mean_field_ising
 from warnings import warn
+from utils import *
+from samplers import *
 
 
 
@@ -18,11 +17,22 @@ class Solver(object):
     Parameters
     ----------
     n : int
-        System size.
-    calc_observables : lambda function
-        lambda params: observables
+        System size, number of spins.
+    calc_de : lambda function,None
+        Function for calculating derivative of energy with respect to the parameters. Takes in 2d
+        state array and index of the parameter.
+        Defn: lambda state_2d,ix : delta_energy
+    calc_observables : lambda function,None
+        Defn: lambda params : observables
+    calc_observables_multipliers : lambda function,None
+        Calculate predicted observables using the parameters.
+        Defn: lambda parameters : pred_observables
+    adj : lambda function,None
+        Return adjacency matrix.
     multipliers : ndarray,None
+        Langrangian multipliers, or parameters.
     n_jobs : int,None
+        Number of cores to use for parallelized code.
 
     Members 
     -------
@@ -35,49 +45,48 @@ class Solver(object):
         where X and Y are of dimensions (n_samples,n_constraints)
     multipliers : ndarray
         Langrangian multipliers
+
+    Methods
+    -------
+    estimate_jac
+    generate_samples
+    setup_sampler
+    solve
     """
     def __init__(self, n,
                  calc_de=None,
                  calc_observables=None,
+                 calc_observables_multipliers=None,
                  adj=None,
                  multipliers=None,
-                 n_jobs=None):
+                 sample_size=None,
+                 sample_method=None,
+                 mch_approximation=None,
+                 n_jobs=None,
+                 verbose=False):
         # Do basic checks on the inputs.
         assert type(n) is int
         
         self.n = n
         self.multipliers = multipliers
+        self.sample_size=sample_size
+        self.sample_method=sample_method
+        self.mch_approximation=mch_approximation
         
         self.calc_observables = calc_observables
+        self.calc_observables_multipliers = calc_observables_multipliers
         self.calc_e = lambda s,multipliers:-self.calc_observables(s).dot(multipliers)
         self.calc_de = calc_de
         self.adj = adj
         
         self.n_jobs = n_jobs or mp.cpu_count()
+        self.verbose = verbose
 
     def solve(self):
         return
               
     def estimate_jac(self,eps=1e-3):
-        """
-        Jacobian is an n x n matrix where each row corresponds to the behavior
-        of fvec wrt to a single parameter.
-        For calculation, seeing Voting I pg 83
-        """
-        raise NotImplementedError
-        dlamda = np.zeros(self.multipliers.shape)
-        jac = np.zeros((self.multipliers.size,self.multipliers.size))
-        print "evaluating jac"
-        for i in xrange(len(self.multipliers)):
-            dlamda[i] += eps
-            dConstraintsPlus = self.mch_approximation(self.samples,dlamda)     
-
-            dlamda[i] -= 2*eps
-            dConstraintsMinus = self.mch_approximation(self.samples,dlamda)     
-
-            jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
-            dlamda[i] += eps
-        return jac
+        return 
 
     def setup_sampler(self,
                       sample_method=None,
@@ -121,7 +130,9 @@ class Solver(object):
                          initial_sample=None,
                          generate_kwargs={}):
         """
-        Wrapper around generate_samples_parallel() from available samplers.
+        Wrapper around generate_samples_parallel() methods in samplers.
+
+        Samples are saved to self.samples.
 
         Parameters
         ----------
@@ -185,25 +196,13 @@ class Exact(Solver):
     ----------
     n : int
         System size.
-    calc_e_observables_multipliers : function
+    calc_observables_multipliers : function
         Function for calculating the observables given a set of multipliers. Function call is 
         lambda params: return observables
     calc_observables : function
         lambda params: return observables
-
-    Members
-    -------
-    constraints : ndarray
-    calc_e : function
-        with args (sample,parameters) where sample is 2d
-    calc_observables : lambda function
-        takes in samples as argument
-    multipliers : ndarray
-        set the Langrangian multipliers
     """
     def __init__(self, *args, **kwargs):
-        self.calc_observables_multipliers = kwargs['calc_observables_multipliers']
-        del kwargs['calc_observables_multipliers']
         super(Exact,self).__init__(*args,**kwargs)
 
     def solve(self,
@@ -260,7 +259,7 @@ class MPF(Solver):
         Slowest step is the computation of the energy of a given state. Make this as fast as possible.
 
         Parameters
-        -------
+        ----------
         calc_e (lambda state,params)
             function for computing energies of given state and parameters.  Should take in a 2D state array
             and vector of parameters to compute energies.
@@ -272,11 +271,11 @@ class MPF(Solver):
         n_jobs (int=0)
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
-        Members:
-        -----------
+        Members
+        -------
         
-        Methods:
-        --------
+        Methods
+        -------
         """
         super(MPF,self).__init__(*args,**kwargs)
         
@@ -495,8 +494,8 @@ class MCH(Solver):
     """
     Class for solving maxent problems using the Monte Carlo Histogram method.
 
-    Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the inverse
-    pairwise Ising problem. arXiv 1-8 (2007).
+    Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the
+    inverse pairwise Ising problem. arXiv 1-8 (2007).
     """
     def __init__(self, *args, **kwargs):
         """
@@ -504,12 +503,6 @@ class MCH(Solver):
         ----------
         calc_observables : function
             takes in samples as argument
-        calc_e : lambda state,params
-            function for computing energies of given state and parameters.  Should take in a 2D state array
-            and vector of parameters to compute energies.
-        calc_de  : lambda,None
-            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
-            the parameter.
         n_jobs : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
@@ -528,14 +521,10 @@ class MCH(Solver):
         Methods
         -------
         """
-        sample_size,sample_method,mch_approximation = (kwargs.get('sample_size',None),
-                                                       kwargs.get('sample_method',None),
-                                                       kwargs.get('mch_approximation',None))
+        super(MCH,self).__init__(*args,**kwargs)
         assert not sample_size is None, "Must specify sample_size."
         assert not sample_method is None, "Must specify sample_method."
         assert not mch_approximation is None, "Must specify mch_approximation."
-        del kwargs['sample_size'],kwargs['sample_method'],kwargs['mch_approximation']
-        super(MCH,self).__init__(*args,**kwargs)
         assert not self.calc_observables is None, "Must specify calc_observables."
         
         self.mch_approximation = mch_approximation
@@ -676,10 +665,18 @@ class MCH(Solver):
 
     def estimate_jac(self,eps=1e-3):
         """
-        Jacobian is an n x n matrix where each row corresponds to the behavior
-        of fvec wrt to a single parameter.
-        For calculation, seeing Voting I pg 83
-        2015-08-14
+        Approximation Jacobian using the MCH approximation. 
+
+        Parameters
+        ----------
+        eps : float,1e-3
+
+        Returns
+        -------
+        jac : ndarray
+            Jacobian is an n x n matrix where each row corresponds to the behavior of fvec wrt to a
+            single parameter.
+
         """
         dlamda = np.zeros(self._multipliers.shape)
         jac = np.zeros((self._multipliers.size,self._multipliers.size))
@@ -1071,19 +1068,21 @@ class MCHIncompleteData(MCH):
 class Pseudo(Solver):
     def __init__(self, *args, **kwargs):
         """
-        Pseudolikelihood approximation to solving the inverse Ising problem as described in
-        Aurell and Ekeberg, PRL 108, 090201 (2012).
+        Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell
+        and Ekeberg, PRL 108, 090201 (2012).
 
-        For this technique, must specify how to calculate the energy specific to the conditional 
-        probability of spin r given the rest of the spins. These will be passed in with "get_observables_r"
-        and "calc_observables_r".
+        For this technique, must specify how to calculate the energy specific to the conditional
+        probability of spin r given the rest of the spins. These will be passed in with
+        "get_observables_r" and "calc_observables_r".
         
         Parameters
         ----------
         get_multipliers_r : lambda function
             Takes index r and multipliers.
+            Defn: lambda r,multipliers : r_multipliers
         calc_observables_r : lambda function
             Takes index r and samples X.
+            Defn: lambda r,X : r_observable
         
         Members
         -------
@@ -1096,21 +1095,49 @@ class Pseudo(Solver):
         cond_jac
         cond_hess
         """
-        self.calc_observables_r = kwargs['calc_observables_r']
-        self.get_multipliers_r = kwargs['get_multipliers_r']
+        self.calc_observables_r = kwargs.get('calc_observables_r',None)
+        self.get_multipliers_r = kwargs.get('get_multipliers_r',None)
+        assert not ( (self.calc_observables_r is None) or (self.get_multipliers_r is None) )
         del kwargs['calc_observables_r'],kwargs['get_multipliers_r']
         super(Pseudo,self).__init__(*args,**kwargs)
 
-    def solve(self,X=None,initial_guess=None):
+    def solve(self,*args,**kwargs):
+        """
+        Two different methods are implemented and can be called from self.solve. One is specific to
+        the Ising model and the other uses a general all-purpose optimization (scipy.optimize) to
+        solve the problem.
+
+        Parameters
+        ----------
+        general_case : bool,True
+            If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the
+            resulting pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
+            implemented (self._solve_ising).
+        """
+        if kwargs.get('general_case',True):
+            return self._solve_general(*args,**kwargs)
+        return self._solve_ising(*args,**kwargs)
+
+    def _solve_general(self,X=None,initial_guess=None,return_all=False,solver_kwargs={}):
         """
         Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
         Parameters
         ----------
         X : ndarray
-            Data set. (n_samples, n_dim)
+            Data set if dimensions (n_samples, n_dim).
         initial_guess : ndarray
             Initial guess for the parameter values.
+        return_all : bool,False
+            If True, return output from scipy.minimize() routine.
+        solver_kwargs : dict,{}
+            kwargs for scipy.minimize().
+
+        Returns
+        -------
+        multipliers : ndarray
+        minimize_output : dict
+            Output from scipy.minimize.
         """
         def f(params):
             loglikelihood = 0
@@ -1119,18 +1146,23 @@ class Pseudo(Solver):
                 loglikelihood += -np.log( 1+np.exp(2*E) ).sum() 
             return -loglikelihood
         
-        soln = minimize(f,initial_guess)
+        soln = minimize(f,initial_guess,**solver_kwargs)
         self.multipliers = soln['x']
-        return soln['x'],soln
+        if return_all:
+            return soln['x'],soln
+        return soln['x']
 
-    def _solve(self,X=None,initial_guess=None):
+    def _solve_ising(self,X=None,initial_guess=None):
         """
         Method for solving Ising model specifically.
 
         Parameters
-        -------
+        ----------
         X : ndarray
-            Data set. (n_samples, n_dim)
+            Data set if dimensions (n_samples, n_dim).
+        initial_guess : ndarray
+            Initial guess for the parameter values.
+
         """
         X = (X + 1)/2  # change from {-1,1} to {0,1}
         
@@ -1563,7 +1595,7 @@ class ClusterExpansion(Solver):
         gammaPrime=0.1,
         logThresholdRange=(-6,-2),
         numThresholds=1000,
-        verbose=True,veryVerbose=False,numSamplesData=None,
+        numSamplesData=None,
         numSamplesError=1e4,
         saveSamplesAtEveryStep=False,
         numProcs=1,
@@ -1590,7 +1622,6 @@ class ClusterExpansion(Solver):
                                   for a brute force estimation
                                   (not used recently?)
       """
-
       thresholds = np.logspace(logThresholdRange[0],
                                   logThresholdRange[1],
                                   numThresholds)[::-1]
@@ -1624,7 +1655,7 @@ class ClusterExpansion(Solver):
         thresholdIndex += 1
         threshold = thresholds[thresholdIndex]
         
-        if veryVerbose:
+        if self.verbose=='detailed':
             print 'threshold =',threshold
             
         clustersOldLength = np.sum([ len(clusterlist) for clusterlist in clusters.values() ])
@@ -1645,7 +1676,7 @@ class ClusterExpansion(Solver):
         
         if clustersNewLength > clustersOldLength:
             
-            if verbose:
+            if self.verbose:
                 print
                 print 'threshold =',threshold
                 print 'old number of clusters =',clustersOldLength
@@ -1679,7 +1710,7 @@ class ClusterExpansion(Solver):
                 ell = len(coocMat)
                 epsilonp = np.sqrt(np.mean(zvals[:ell]**2))
                 epsilonc = np.sqrt(np.mean(zvals[ell:]**2))
-                if verbose:
+                if self.verbose:
                     print "epsilonp =",epsilonp
                     print "epsilonc =",epsilonc
                 epsVals = [epsilonp,epsilonc]
@@ -1698,7 +1729,7 @@ class ClusterExpansion(Solver):
                 ell = len(coocMat)
                 epsilonp = np.sqrt(np.mean(zvals[:ell]**2))
                 epsilonc = np.sqrt(np.mean(zvals[ell:]**2))
-                if verbose:
+                if self.verbose:
                     print "epsilonp =",epsilonp
                     print "epsilonc =",epsilonc
                 epsVals = [epsilonp,epsilonc]
@@ -1708,14 +1739,14 @@ class ClusterExpansion(Solver):
                 # cov = residual covariance
                 zvals = np.dot( deltaCooc,U ) / np.sqrt(s)
                 coocMatMeanZSq = np.mean( numSamplesData * zvals**2 )
-                if verbose:
+                if self.verbose:
                     print "coocMatMeanZSq =",coocMatMeanZSq
                 epsVals = [coocMatMeanZSq]
 
             # keep track of mean event size
             meanFightSize = np.mean(np.sum(samplesCorrected,axis=1))
             meanFightSizeList.append(meanFightSize)
-            if verbose:
+            if self.verbose:
                 print "mean event size =",meanFightSize
 
             # keep track of epsValsList
@@ -1728,7 +1759,7 @@ class ClusterExpansion(Solver):
             numClustersList.append(clustersNewLength)
             maxClusterSize = max(clusters.keys())
             maxClusterSizeList.append(maxClusterSize)
-            if verbose:
+            if self.verbose:
                 print "max cluster size =",maxClusterSize
 
             # 5.21.2014
@@ -1750,7 +1781,7 @@ class ClusterExpansion(Solver):
 
             if np.all( np.array(epsVals) < epsThreshold ):
                 stop = True
-                if verbose:
+                if self.verbose:
                     print
                     print "Using result from threshold =",threshold
                     print
@@ -1758,13 +1789,13 @@ class ClusterExpansion(Solver):
                 stop = True
                 
                 # go back to best found so far
-                if verbose:
+                if self.verbose:
                     print "Minimum threshold passed ("+str(minThreshold)+")"
                 J = Jbest
                 clusters = clustersBest
                 threshold = thresholdBest
 
-                if verbose:
+                if self.verbose:
                     print
                     print "Using result from threshold =",threshold
                     print
@@ -1773,13 +1804,13 @@ class ClusterExpansion(Solver):
                 stop = True
                 
                 # go back to best found so far
-                if verbose:
+                if self.verbose:
                     print "Maximum largest cluster size passed ("+str(maxMaxClusterSize)+")"
                 J = Jbest
                 clusters = clustersBest
                 threshold = thresholdBest
                 
-                if verbose:
+                if self.verbose:
                     print
                     print "Using result from threshold =",threshold
                     print
@@ -1805,7 +1836,7 @@ class ClusterExpansion(Solver):
                     coocCov = coocSampleCovariance(data)
                 else:
                     coocCov = None
-                if verbose:
+                if self.verbose:
                     print "Optimizing using findJmatrixBruteForce_CoocMat..."
                 J = findJmatrixBruteForce_CoocMat(coocMatObserved,
                                                   coocCov=coocCov,**BFkwargs)
@@ -1821,29 +1852,15 @@ class ClusterExpansion(Solver):
 class RegularizedMeanField(Solver):
     def __init__(self, *args, **kwargs):
         """
-        Implementation of regularized mean field method for
-        solving the inverse Ising problem, as described in
-        Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack. 
-        ``Control of Finite Critical Behaviour in a Small-Scale
-        Social System.'' Nature Communications 8 (2017): 14301.
-        doi:10.1038/ncomms14301
+        Implementation of regularized mean field method for solving the inverse Ising problem, as
+        described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.  ``Control of
+        Finite Critical Behaviour in a Small-Scale Social System.'' Nature Communications 8 (2017):
+        14301.  doi:10.1038/ncomms14301
         
         Specific to pairwise Ising constraints.
         
         Parameters
         ----------
-        calc_e : lambda function
-            lambda X,params: E
-            function for computing energies of given state and parameters.  Should take in a 2D state array
-            and vector of parameters to compute energies.
-        adj : lambda function
-            lambda X: adjMatrix 
-            function for getting all the neighbors of any given state
-        calc_de : lambda function,None
-            Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
-            the parameter.
-        n_jobs : int,0
-            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
 
         Members
         -------
@@ -1857,15 +1874,15 @@ class RegularizedMeanField(Solver):
         self.samples = np.zeros(self.n)
 
     def solve(self,samples,
-        numSamples=1e5,nSkip=None,seed=0,
-        changeSeed=False,numProcs=1,
-        numDataSamples=None,minSize=0,
-        minimizeCovariance=False,minimizeIndependent=True,
-        coocCov=None,priorLmbda=0.,verbose=True,bracket=None,
-        numGridPoints=200):
+              numSamples=1e5,nSkip=None,seed=0,
+              changeSeed=False,numProcs=1,
+              numDataSamples=None,minSize=0,
+              minimizeCovariance=False,minimizeIndependent=True,
+              coocCov=None,priorLmbda=0.,bracket=None,
+              numGridPoints=200):
         """
-        Varies the strength of regularization on the mean field J to
-        best fit given cooccurrence data.
+        Varies the strength of regularization on the mean field J to best fit given cooccurrence
+        data.
         
         numGridPoints (200) : If bracket is given, first test at numGridPoints
                               points evenly spaced in the bracket interval, then give
@@ -1899,6 +1916,8 @@ class RegularizedMeanField(Solver):
         priorLmbda (0.)             : ** As of 7.20.2017, not currently implemented **
                                       Strength of noninteracting prior.
         """
+        from scipy import transpose
+
         # 7.18.2017 convert input to coocMat
         coocMatData = mean_field_ising.cooccurrence_matrix((samples+1)/2)
         
@@ -1918,24 +1937,21 @@ class RegularizedMeanField(Solver):
             raise Exception, "priorLmbda is not currently supported"
             lmbda = priorLmbda / numDataSamples
 
-        # 11.21.2014 stuff defining the error model, taken
-        #            from findJmatrixBruteForce_CoocMat
-        # 3.1.2012 I'm pretty sure the "repeated" line below should have the
-        # transpose, but coocJacobianDiagonal is not sensitive to this.  If you
-        # use non-diagonal jacobians in the future and get bad behavior you
-        # may want to double-check this.
+        # 11.21.2014 stuff defining the error model, taken from findJmatrixBruteForce_CoocMat
+        # 3.1.2012 I'm pretty sure the "repeated" line below should have the transpose, but
+        # coocJacobianDiagonal is not sensitive to this.  If you use non-diagonal jacobians in the
+        # future and get bad behavior you may want to double-check this.
         if minimizeIndependent:
             coocStdevs = mean_field_ising.coocStdevsFlat(coocMatData,numDataSamples)
-            coocStdevsRepeated = scipy.transpose(                                   \
-                coocStdevs*scipy.ones((len(coocStdevs),len(coocStdevs))) )
+            coocStdevsRepeated = ( coocStdevs*np.ones((len(coocStdevs),len(coocStdevs))) ).T
         elif minimizeCovariance:
             raise Exception, "minimizeCovariance is not currently supported"
-            empiricalFreqs = scipy.diag(coocMatData)
+            empiricalFreqs = np.diag(coocMatData)
             covTildeMean = covarianceTildeMatBayesianMean(coocMatData,numDataSamples)
             covTildeStdevs = covarianceTildeStdevsFlat(coocMatData,numDataSamples,
                 empiricalFreqs)
-            covTildeStdevsRepeated = scipy.transpose(                               \
-                covTildeStdevs*scipy.ones((len(covTildeStdevs),len(covTildeStdevs))) )
+            covTildeStdevsRepeated = (
+                    covTildeStdevs*np.ones((len(covTildeStdevs),len(covTildeStdevs))) ).T
         else:
             raise Exception, "correlated residuals calculation is not currently supported"
             # 2.7.2014
@@ -1996,14 +2012,14 @@ class RegularizedMeanField(Solver):
                     # new prior 3.24.2014
                     # 11.21.2014 oops, I think this should be square-rooted XXX
                     # 11.21.2014 oops, should also apply in minimizeIndependent case XXX
-                    freqs = scipy.diag(coocMatData)
-                    factor = scipy.outer(freqs*(1.-freqs),freqs*(1.-freqs))
+                    freqs = np.diag(coocMatData)
+                    factor = np.outer(freqs*(1.-freqs),freqs*(1.-freqs))
                     factorFlat = aboveDiagFlat(factor)
                     priorTerm = lmbda * factorFlat * flatJ[ell:]**2
                 
                 dc = np.concatenate([dc,priorTerm])
                 
-            if verbose:
+            if self.verbose:
                 print "RegularizedMeanField.solve: Tried "+str(meanFieldGammaPrime)
                 print "RegularizedMeanField.solve: sum(dc**2) = "+str(np.sum(dc**2))
                 
@@ -2013,9 +2029,9 @@ class RegularizedMeanField(Solver):
             gridPoints = np.linspace(bracket[0],bracket[1],numGridPoints)
             gridResults = [ func(p) for p in gridPoints ]
             gridBracket = self.bracket1d(gridPoints,gridResults)
-            solution = scipy.optimize.minimize_scalar(func,bracket=gridBracket)
+            solution = minimize_scalar(func,bracket=gridBracket)
         else:
-            solution = scipy.optimize.minimize_scalar(func)
+            solution = minimize_scalar(func)
 
         gammaPrimeMin = solution['x']
         meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)

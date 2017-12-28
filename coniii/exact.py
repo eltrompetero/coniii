@@ -1,26 +1,24 @@
 # Module for solving small n Ising models exactly.
-# Code written by Eddie Lee
-# edl56@cornell.edu
-
 import numpy as np
 import scipy.special as ss
 import string
 
 def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
     """
-    Params:
-    -------
-    n (int)
+    Parameters
+    ----------
+    n : int
         number of spins
-    sym (int)
+    sym : int
         value of 1 will use {-1,1} formulation, 0 means {0,1}
-    terms
+    terms : list
         list of numpy index arrays as would be returned by np.where that 
         specify which terms to include, each consecutive array should 
         specify indices in an array with an extra dimension of N, 
         [Nx1,NxN,NxNxN,...]
         note that the last dimension is the first to be iterated
-    writeto (str,'matlab') : filetype to choose, 'matlab' or 'python'
+    writeto : str,'matlab'
+        Filetype to write to, 'matlab' or 'python'.
     """
     import re
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
@@ -329,10 +327,10 @@ if __name__=='__main__':
     {-1,+1} basis.
 
     To write the Ising model equations for a system of size 3 in the {0,1} basis, call
-    >> python exact.py 3
+    >>> python exact.py 3
 
     For the {-1,1} basis, call
-    >> python exact.py 3 1
+    >>> python exact.py 3 1
     """
     import sys
     n = int(sys.argv[1])

@@ -307,20 +307,28 @@ def define_pseudo_ising_helpers(N):
     """
     Define helper functions for using Pseudo method on fully connected Ising model.
 
-    Params:
-    -------
-    N (int)
+    Parameters
+    ----------
+    N : int
         System size.
+
+    Returns
+    -------
+    get_multipliers_r, calc_observables_r 
     """
     @jit(nopython=True)
     def get_multipliers_r(r,multipliers):
         """
         Return the parameters relevant for calculating the conditional probability of spin r.
 
-        Params:
+        Parameters
+        ----------
+        r : int
+        multipliers : ndarray
+
+        Returns
         -------
-        r (int)
-        multipliers (ndarray)
+        multipliers
         """
         ix = np.arange(N)
         ix[0] = r  # index for local field
@@ -340,11 +348,15 @@ def define_pseudo_ising_helpers(N):
         """
         Return the observables relevant for calculating the conditional probability of spin r.
 
-        Params:
+        Parameters
+        ----------
+        r : int
+        X : ndarray
+            Data samples of dimensions (n_samples, n_dim).
+
+        Returns
         -------
-        r (int)
-        X (ndarray)
-            Data samples (n_samples, n_dim)
+        observables
         """
         obs = np.zeros((X.shape[0],N))
         
@@ -483,19 +495,26 @@ def define_sising_helpers_functions():
 
 
 @jit(nopython=True)
-def adj(s,n_random_neighbors=False):
+def adj(s,n_random_neighbors=0):
     """
-    Return one-flip neighbors and a set of random neighbors.
+    Return one-flip neighbors and a set of random neighbors. This is written to be used with
+    the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.
     
-    NOTE: No check to make sure neighbors don't repeat but this shouldn't be a
-    problem as long as state space is large enough.
+    NOTE: For random neighbors, there is no check to make sure neighbors don't repeat but this
+    shouldn't be a problem as long as state space is large enough.
 
-    Params:
+    Parameters
+    ----------
+    s : ndarray
+        State whose neighbors are found. One-dimensional vector of spins.
+    n_random_neighbors : int,0
+        If >0, return this many random neighbors. Neighbors are just random states, but they are
+        called "neighbors" because of the terminology in MPF.
+
+    Returns
     -------
-    s (ndarray)
-        Set of states for which to find neighbors.
-    n_random_neighbors (int=False)
-        If >0, return this many random one-flip neighbors.
+    neighbors : ndarray
+        Each row is a neighbor. s.size + n_random_neighbors are returned.
     """
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
     for i in xrange(s.size):
@@ -507,6 +526,7 @@ def adj(s,n_random_neighbors=False):
             match = True
             while match:
                 newneighbor = (np.random.rand(s.size)<.5)*1.
+                # Make sure neighbor is not the same as the given state.
                 if (newneighbor!=s).any():
                     match=False
             neighbors[i+s.size] = newneighbor
@@ -515,7 +535,7 @@ def adj(s,n_random_neighbors=False):
 @jit(nopython=True)
 def adj_sym(s,n_random_neighbors=False):
     """
-    Symmetric version of adj().
+    Symmetric version of adj() where spins are in {-1,1}.
     """
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
     for i in xrange(s.size):

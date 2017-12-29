@@ -203,7 +203,7 @@ class Enumerate(Solver):
         lambda params: return observables
     """
     def __init__(self, *args, **kwargs):
-        super(Exact,self).__init__(*args,**kwargs)
+        super(Enumerate,self).__init__(*args,**kwargs)
 
     def solve(self,
               constraints=None,
@@ -245,7 +245,7 @@ class Enumerate(Solver):
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
         return soln['x'],soln
-# End Exact
+# End Enumerate
 
 
 

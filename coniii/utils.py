@@ -194,7 +194,7 @@ def bin_states(n,sym=False):
     if sym is False:
         return v
     else:
-        return -v*2.+1
+        return v*-2.+1
 
 def xbin_states(n,sym=False):
     """Generator for producing binary states.

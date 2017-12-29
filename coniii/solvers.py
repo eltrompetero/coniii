@@ -187,7 +187,7 @@ class Solver(object):
 
 
 
-class Exact(Solver):
+class Enumerate(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.

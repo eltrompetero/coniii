@@ -6,19 +6,19 @@ from itertools import combinations
 from scipy.spatial.distance import squareform
 
 
+
 @jit(nopython=True,nogil=True,cache=True)
 def sub_to_ind(n,i,j):
-    """
-    Convert pair of coordinates of a symmetric square array into consecutive
-    index of flattened upper triangle. This is slimmed down so it won't throw
-    errors like if i>n or j>n or if they're negative. Only checking for if the
-    returned index is negative which could be problematic with wrapped indices.
+    """Convert pair of coordinates of a symmetric square array into consecutive index of flattened
+    upper triangle. This is slimmed down so it won't throw errors like if i>n or j>n or if they're
+    negative. Only checking for if the returned index is negative which could be problematic with
+    wrapped indices.
     
-    Params:
-    -------
-    n (int)
+    Parameters
+    ----------
+    n : int
         Dimension of square array
-    i,j (int)
+    i,j : int
         coordinates
     """
     if i<j:
@@ -36,6 +36,29 @@ def sub_to_ind(n,i,j):
     else:
         raise Exception("Indices cannot be the same.")
 
+@jit(nopython=True,cache=True)
+def ind_to_sub(n,ix):
+    """Convert index from flattened upper triangular matrix to pair subindex.
+
+    Parameters
+    ----------
+    n : int
+        Dimension size of square array.
+    ix : int
+        Index to convert.
+
+    Returns
+    -------
+    subix : tuple
+        (i,j)
+    """
+    k = 0
+    for i in xrange(n-1):
+        for j in xrange(i+1,n):
+            if k==ix:
+                return (i,j)
+            k += 1
+ 
 def unique_rows(mat,return_inverse=False):
     """
     Return unique rows indices of a numeric numpy array.
@@ -45,8 +68,8 @@ def unique_rows(mat,return_inverse=False):
     mat (ndarray)
     **kwargs
     return_inverse (bool)
-        If True, return inverse that returns back indices of unique array that
-        would return the original array 
+        If True, return inverse that returns back indices of unique array that would return the
+        original array 
 
     Returns:
     --------
@@ -148,18 +171,18 @@ def pair_corr(data,
 
 def bin_states(n,sym=False):
     """
-    Get all possible binary spin states. 
+    Generate all possible binary spin states. 
     
-    Params:
-    -------
-    n (int)
+    Parameters
+    ----------
+    n : int
         number of spins
-    sym (bool)
+    sym : bool
         if true, return {-1,1} basis
 
-    Returns:
-    --------
-    v (ndarray)
+    Returns
+    -------
+    v : ndarray
     """
     if n<0:
         raise Exception("n cannot be <0")
@@ -171,7 +194,28 @@ def bin_states(n,sym=False):
     if sym is False:
         return v
     else:
-        return v*2.-1
+        return -v*2.+1
+
+def xbin_states(n,sym=False):
+    """Generator for producing binary states.
+
+    Parameters
+    ----------
+    n : int
+        number of spins
+    sym : bool
+        if true, return {-1,1} basis
+    """
+    assert n>0, "n cannot be <0"
+    
+    def v():
+        for i in xrange(2**n):
+            if sym is False:
+                yield np.array(list(np.binary_repr(i,width=n))).astype('int')
+            else:
+                yield np.array(list(np.binary_repr(i,width=n))).astype('int')*2.-1
+
+    return v()
 
 def convert_params(h,J,convertTo='01',concat=False):
     """
@@ -552,15 +596,6 @@ def adj_sym(s,n_random_neighbors=False):
             neighbors[i+s.size]=newneighbor
     return neighbors
 
-@jit(nopython=True,cache=True)
-def sub_to_pair_idx(ix,n):
-    k = 0
-    for i in xrange(n-1):
-        for j in xrange(i+1,n):
-            if k==ix:
-                return (i,j)
-            k += 1
-                
 def calc_de(s,i):
     """
     Calculate the derivative of the energy wrt parameters given the state and

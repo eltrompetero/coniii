@@ -319,6 +319,19 @@ def get_nidx(k,n):
                 j += 1
         return np.array(ix)[:,::-1] # make sure last idx increases first
 
+def main(n,sym=0):
+    assert sym==0 or sym==1
+
+    print "Writing equations for Ising model with %d spins."%n
+    if sym:
+        write_eqns(n,sym,[np.where(np.ones((n))==1),
+                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
+                   writeto="py",suffix='_sym')
+    else:
+        write_eqns(n,sym,[np.where(np.ones((n))==1),
+                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
+                   writeto="py")
+
 if __name__=='__main__':
     """
     When run with Python, this will write the equations for the Ising model
@@ -340,12 +353,4 @@ if __name__=='__main__':
     else:
         sym = 0
 
-    print "Writing equations for Ising model with %d spins."%n
-    if sym:
-        write_eqns(n,sym,[np.where(np.ones((n))==1),
-                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
-                   writeto="py",suffix='_sym')
-    else:
-        write_eqns(n,sym,[np.where(np.ones((n))==1),
-                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
-                   writeto="py")
+    main(n,sym) 

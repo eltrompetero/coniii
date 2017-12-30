@@ -439,7 +439,6 @@ def define_ising_helpers_functions():
                     k += 1
         return e
     
-    @jit(nopython=True)
     def calc_e(s,params):
         """
         Parameters

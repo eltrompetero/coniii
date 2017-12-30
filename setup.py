@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='coniii',
-      version='0.1.3',
+      version='0.1.4',
       description='CONvenient Interface to Inverse Ising',
       long_description=long_description,
       url='https://github.com/bcdaniels/coniii',

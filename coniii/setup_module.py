@@ -23,6 +23,7 @@ if __name__=='__main__':
     from exact import main
     if not os.path.exists('ising_eqn'):
         os.makedirs('ising_eqn')
+        open('ising_eqn/__init__.py','w').write('')
     for n in xrange(2,10):
         main(n)
         main(n,True)

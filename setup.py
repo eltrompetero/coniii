@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='coniii',
-      version='0.1.2',
+      version='0.1.3',
       description='CONvenient Interface to Inverse Ising',
       long_description=long_description,
       url='https://github.com/bcdaniels/coniii',
@@ -29,7 +29,7 @@ setup(name='coniii',
       keywords='inverse ising maxent',
       packages=find_packages(),
       install_requires=['multiprocess','scipy','numpy','numba','dill'],
-      package_data={'coniii':['setup_module.py','__init__.py']},
+      package_data={'coniii':['setup_module.py','__init__.py','fast.pyx','ising_eqn/__init__.py']},
       exclude_package_data={'coniii':['ising_eqn/ising_eqn*.py']},
       py_modules=['coniii.exact','coniii.general_model_rmc','coniii.ising','coniii.mc_hist',
                   'coniii.mean_field_ising','coniii.pseudo_inverse_ising','coniii.samplers',

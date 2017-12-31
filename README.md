@@ -22,8 +22,8 @@ directory, and running
 
 If you do not know where the installation directory is, you can find it by opening up an iPython
 notebook and running
-> import coniii
-> coniii.__path__
+> import coniii  
+> coniii.\_\_path\_\_
 
 The `Enumerate` solver needs the full system of nonlinear equations to be written out and solves
 those numerically. These equations must be written to file first. This can be done by going to the

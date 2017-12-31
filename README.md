@@ -18,11 +18,17 @@ files need to be written for use of the `Enumerate` solver.
 
 The Cython library can compiled by going to the installation directory, opening the coniii
 directory, and running  
->`python setup_fast.py build_ext --inplace`
+>`python setup_module.py build_ext --inplace`
 
-The `Enumerate` solver needs the full system of nonlinear equations to be written out and solves those
-numerically. These equations must be written to file first. This can be done by going to the
-installation directory (usually found in the home directory under "anaconda/lib/python2.7/site-packages/coniii/"), opening the coniii directory and running  
+If you do not know where the installation directory is, you can find it by opening up an iPython
+notebook and running
+> import coniii
+> coniii.__path__
+
+The `Enumerate` solver needs the full system of nonlinear equations to be written out and solves
+those numerically. These equations must be written to file first. This can be done by going to the
+installation directory (usually found in the home directory under
+"anaconda/lib/python2.7/site-packages/coniii/"), opening the coniii directory and running  
 >`mkdir ising_eqn
 >`python exact.py [N]` 
 

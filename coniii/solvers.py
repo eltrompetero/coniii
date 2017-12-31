@@ -69,8 +69,8 @@ class Solver(object):
         
         self.n = n
         self.multipliers = multipliers
-        self.sample_size=sample_size
-        self.sample_method=sample_method
+        self.sampleSize=sample_size
+        self.sampleMethod=sample_method
         self.mch_approximation=mch_approximation
         
         self.calc_observables = calc_observables
@@ -187,7 +187,7 @@ class Solver(object):
 
 
 
-class Exact(Solver):
+class Enumerate(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.
@@ -203,7 +203,7 @@ class Exact(Solver):
         lambda params: return observables
     """
     def __init__(self, *args, **kwargs):
-        super(Exact,self).__init__(*args,**kwargs)
+        super(Enumerate,self).__init__(*args,**kwargs)
 
     def solve(self,
               constraints=None,
@@ -245,7 +245,7 @@ class Exact(Solver):
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
         return soln['x'],soln
-# End Exact
+# End Enumerate
 
 
 
@@ -522,16 +522,12 @@ class MCH(Solver):
         -------
         """
         super(MCH,self).__init__(*args,**kwargs)
-        assert not sample_size is None, "Must specify sample_size."
-        assert not sample_method is None, "Must specify sample_method."
-        assert not mch_approximation is None, "Must specify mch_approximation."
+        assert not self.sampleSize is None, "Must specify sample_size."
+        assert not self.sampleMethod is None, "Must specify sample_method."
+        assert not self.mch_approximation is None, "Must specify mch_approximation."
         assert not self.calc_observables is None, "Must specify calc_observables."
         
-        self.mch_approximation = mch_approximation
-        
         # Sampling parameters.
-        self.sampleSize = sample_size
-        self.sampleMethod = sample_method
         self.sampler = None
         self.samples = None
         

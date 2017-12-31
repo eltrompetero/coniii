@@ -27,9 +27,7 @@ notebook and running
 
 The `Enumerate` solver needs the full system of nonlinear equations to be written out and solves
 those numerically. These equations must be written to file first. This can be done by going to the
-installation directory (usually found in the home directory under
-"anaconda/lib/python2.7/site-packages/coniii/"), opening the coniii directory and running  
->`mkdir ising_eqn
+installation directory, opening the coniii directory and running  
 >`python exact.py [N]` 
 
 where `[N]` should be replaced by the size of the system.

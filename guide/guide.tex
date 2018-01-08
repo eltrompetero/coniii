@@ -89,6 +89,7 @@ We assert that the model should fit the $K$ features while maximizing entropy. T
 Then, we solve for the fixed point by taking the derivative with respect to $\lambda_{\rm k}$.
 The resulting model is a Boltzmann distribution over states:
 \begin{align}
+    \label{eq:energy}
 	p_{\rm ME}(s) &= \left.e^{-E(s)}\right/Z,\\
 \intertext{with relative negative log-likelihood (also known as the energy or Hamiltonian)}
 E(s) &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s),
@@ -103,27 +104,27 @@ Finding the parameters $\lambda_k$ that match the constraints $\br{f_k}_{\rm dat
 	\frac{\partial D_{KL}}{\partial \lambda_k} &= \sum_s p_{\rm data}(s) \frac{\partial (-E(s)-\log Z)}{\partial \lambda_k} = 0 \nonumber \\
 	\implies  \br{f_k}_{\rm data} &= \br{f_k}_{\rm ME}\label{eq:fk-fk}.
 \end{align}
-[Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data and so there is no search for the best parameters in the conventional sense.
+[Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data: once the constraints have been chosen, there is a single maximum entropy solution, with no free parameters.
 
 \subsection{Ising model}
-The Ising model is a statistical physics model of magnetism \cite{Ising:1924vf}. It consists of a set of spins $\sigma_{\rm i}$ with 2 possible orientations (up and down), each coupled to an external magnetic field $h_{\rm i}$ and coupled to each other with couplings $J_{\rm ij}$. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J_{\rm ij}$ determine whether the spins tend to point together ($J_{\rm ij}>0$) or against each other ($J_{\rm ij}<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying lattice structure as in Figure \ref{gr:ising}.
+The Ising model is a statistical physics model of magnetism \cite{Ising:1924vf}. It consists of a set of spins $\sigma_{\rm i}$ with 2 possible orientations (up and down), each coupled to an external magnetic field $h_{\rm i}$ and coupled to each other with couplings $J_{\rm ij}$. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J_{\rm ij}$ determine whether the spins tend to point together ($J_{\rm ij}>0$) or against each other ($J_{\rm ij}<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying network structure: Figure \ref{gr:ising} shows a fully-connected example.
 
 \begin{figure}[tbp]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 70 70 60}]{../images/ising_example}
-\caption{Example of a fully connected Ising model with random couplings. Each spin (circle) can take one of two states $\si\in\{-1,1\}$ and is connected to every other spin in the system with a positive or negative coupling.}
+\caption{Example of a fully connected Ising model with random couplings. Each spin $\si$ (circle) can take one of two states (black or white, corresponding to $-1$ and $+1$) and is connected to every other spin in the system with a positive or negative coupling.  This schematic represents one possible state of the spins.  The inverse Ising problem starts with statistics about the states observed in the system and infers the coupling strengths $J_{ij}$ and individual biases $h_i$ that produce such statistics. }
 \label{gr:ising}
 \end{figure}
 
-The energy, or Hamiltonian, of each configuration determines its probability.
+The energy of each configuration determines its probability via \eqref{eq:energy}:
 \begin{align}
-	E &= -\sum_{\rm \br{ij}} J_{\rm ij}\si\sj -\sum_{\rm i=1}^Nh_{\rm i}\si
+	E &= -\sum_{\rm \br{ij}} J_{\rm ij}\si\sj -\sum_{\rm i=1}^Nh_{\rm i}\si.
 \end{align}
 %States with lower energy are more likely so spin tend to orient along the direction of the local field $h_{\rm i}^{\rm local} = \sum_{\rm j}J_{\rm ij}\sj +h_{\rm i}$. 
 
-We can derive the Ising model from the perspective maximum entropy. Fixing the the means and pairwise correlations to those observed in the data
+We can derive the Ising model from the perspective of maximum entropy. Fixing the the means and pairwise correlations to those observed in the data
 \begin{align}
-	\br{\si}_{\rm data} &= \br{\si}\\
-	\br{\si\sj}_{\rm data} &= \br{\si\sj}
+	\br{\si} &= \br{\si}_{\rm data} \\
+	\br{\si\sj} &= \br{\si\sj}_{\rm data}
 \end{align}
 we go through the procedure of constructing the Langrangian from Eq~\ref{eq:Lagrang}
 \begin{align}
@@ -132,11 +133,11 @@ we go through the procedure of constructing the Langrangian from Eq~\ref{eq:Lagr
 	\log p(s) &= -1 +\sum_{\rm \br{ij}} J_{\rm ij}\si\sj +\sum_{\rm i=1}^Nh_{\rm i}\si\\
 	p(s) &= \left.e^{-E(s)}\right/Z\\
 \intertext{where to enforce normalization of the probability distribution $\sum_s p(s) = 1$,}
-	Z &= \sum_s e^{-E(s)}
+	Z &= \sum_s e^{-E(s)}.
 \end{align}
 Thus, the resulting model is exactly the Ising model mentioned earlier.
 
-Despite the simplicity of the Ising model, the structure imposed by the discrete nature of the spins means that finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have made a few of them part of our Python package CONIII to provide a convenient interface for using algorithms already part of the package or adding new algorithms. Here, we briefly describe the algorithms that are part of the first official version of the package. The goal is to give the user a sense (or reminder) of how they work without bogging him or her down in heavy detail. For more detail, we suggest perusing the papers referenced in each section or the review \cite{Nguyen:2017ww}. For a complete beginner, it may be useful to first get familiar with a slower introduction like in the Appendix of Ref \cite{Lee:2015ev}, Ref \cite{Bialek:2012ueb}, or Ref \cite{Bretthorst:2003ua}.
+Despite the simplicity of the Ising model, the structure imposed by the discrete nature of the spins means that finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have implemented some of them in CONIII and designed a package structure to make it easily extensible to include more methods.  Here, we briefly describe the algorithms that are part of the first official version of the package. The goal is to give the user a sense (or reminder) of how they work without getting bogged down in heavy detail. For more detail, we suggest perusing the papers referenced in each section or the review \cite{Nguyen:2017ww}. For a complete beginner, it may be useful to first get familiar with a slower introduction like in the Appendix of Ref \cite{Lee:2015ev}, Ref \cite{Bialek:2012ueb}, or Ref \cite{Bretthorst:2003ua}.
 
 %Imagine that you have a system with $n$ components that have been sampled many times. To be more specific, we'll take $n=9$ voters on the US Supreme Court that either vote with in the majority, the winning coalition, or in the minority. [More generally, we could think some like gene expression levels in a cell a coarse-grained representation where relatively high or low expression can be represented by a binary variable. Of course, we don't have to restrict ourselves to binary variables \cite{Lezon:2006ws}.]
 %The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).

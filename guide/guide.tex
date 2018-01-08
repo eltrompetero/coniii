@@ -143,7 +143,15 @@ Despite the simplicity of the Ising model, the structure imposed by the discrete
 %The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
 
 
-\section{Enumeration}
+
+
+
+
+
+\section{Inverse Ising methods implemented in CONIII}
+
+
+\subsection{Enumeration}
 The na\"{i}ve approach that only works for small systems is to write out the equations from Eq~\ref{eq:fk-fk} and solve them numerically. After writing out all $K$ equations,
 \begin{align}
 	\br{f_{\rm k}}_{\rm data} &= \br{f_{\rm k}}\\
@@ -158,7 +166,7 @@ For the Ising model, the first step in the algorithm for writing down the equati
 This approach is part of the {\tt Exact} class that contains code for writing Eqs~\ref{eq:fk-fk} into a file and solving them with the {\tt scipy.optimize} library.
 
 
-\section{Monte Carlo method}
+\subsection{Monte Carlo method}
 Perhaps the most straightforward and most expensive computational approach is to use Monte Carlo Markov Chain (MCMC) sampling to approximate the distribution and adjust the parameters appropriately after each step. The parameters are adjusted using a learning rule, and both sampling and learning are repeated til the stopping criterion is met.
 %The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we do not need to calculate the partition function, but can instead compute the difference in energy between two states. 
 This can be combined with a variety of approximate gradient descent methods to reduce the number of sampling steps. The particular technique implemented in CONIII is the Monte Carlo Histogram (MCH) method \cite{Broderick:2007wq}.
@@ -195,7 +203,7 @@ For the Ising model, $K\sim N^2$, the system size squared.
 
 MCH is implemented in the {\tt MCH} class.
 
-\section{Pseudolikelihood}
+\subsection{Pseudolikelihood}
 The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact in the thermodynamic limit \cite{Aurell:2012hi}. We maximize the conditional probability of each spin $s_{\rm i}$ given the rest of the system
 \begin{align}
 	p\left(s_{\rm i}|{\bf s}_{\backslash \rm i}\right) &= \left( 1+e^{-2s_{\rm i} \left(h_{\rm i}+\sum_{j\neq i}J_{\rm ij}s_{\rm j}\right)} \right)^{-1}
@@ -215,7 +223,7 @@ Pseudolikelihood is extremely fast. Each iteration only is $O(RN^2)$ and often s
 
 We have implemented pseudolikelihood for the Ising model in {\tt Pseudo}.
 
-\section{Minimum Probability Flow}
+\subsection{Minimum Probability Flow}
 Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{Sohl-Dickstein:2009tt,SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching where instead we have a continuous state space and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
 
 As before, we start with minimizing the Kullback-Leibler divergence, but instead of taking the derivative with respect to the parameters, we first ask how the probability flows between the model and the states in the data $\mathcal{D}$ if the dynamics are run for an infinitesimal amount of time $\epsilon$, the idea being that the relative difference between the probability distributions are minimized with optimal parameters.
@@ -242,7 +250,7 @@ At each step of the algorithm for the Ising model, the runtime is $O(RN^2)$.
 
 MPF is implemented in the {\tt MPF} class.
 
-\section{Mean-field method}
+\subsection{Mean-field method}
 One attractively simple and efficient version of the regularized approach starts
 with mean-field theory.  In the inverse Ising problem, mean-field theory is equivalent
 to treating each binary individual as instead having a continuously varying state
@@ -283,7 +291,7 @@ This is implemented in {\tt RegularizedMeanField}.
 
 
 
-\section{Cluster expansions}
+\subsection{Cluster expansions}
 
 Adaptive cluster expansion \cite{Monasson:2011fo,CocMon12,BarCoc13}
 iteratively calculates terms in the
@@ -312,7 +320,7 @@ the resulting $J$ fit the desired statistics of the data sufficiently well.
 
 In CONIII, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
-%\section{Bethe/Kikuchi free energy/cavity methods}
+%\subsection{Bethe/Kikuchi free energy/cavity methods}
 %Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
 %The cavity method involves use of the marginalized distribution.
 

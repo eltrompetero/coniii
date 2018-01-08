@@ -153,15 +153,14 @@ Despite the simplicity of the Ising model, the structure imposed by the discrete
 
 \subsection{Enumeration}
 The na\"{i}ve approach that only works for small systems is to write out the equations from Eq~\ref{eq:fk-fk} and solve them numerically. After writing out all $K$ equations,
-\begin{align}
-	\br{f_{\rm k}}_{\rm data} &= \br{f_{\rm k}}\\
-	\br{f_{\rm k}}_{\rm data} &= -\frac{\partial \ln Z}{\partial \lambda_{\rm k}},
-\end{align}
-we can use any standard optimization algorithm to find the parameters $\lambda_{\rm k}$. 
-This approach, however, involves enumerating all terms in the partition function $Z$ whose number grows exponentially with system size. 
+\begin{equation}
+	\br{f_{\rm k}} = -\frac{\partial \ln Z}{\partial \lambda_{\rm k}} = \br{f_{\rm k}}_{\rm data} \\,
+\end{equation}
+we can use any standard root-finding algorithm to find the parameters $\lambda_{\rm k}$.
+This approach, however, involves enumerating all terms in the partition function $Z$, whose number grows exponentially with system size.
 %[Simple example with logical gates?]
 
-For the Ising model, the first step in the algorithm for writing down the equations is $\mathcal{O}(K^2 2^{N})$ where $K$ is the number of constraints and $N$ the number of spins. In the second step, each evaluation of the objective in the minimization algorithm will be of the same order. For relatively small systems $n\leq15$, however, this approach is feasible on a typical desktop computer and is a good way to test the results of a more complicated algorithm.
+For the Ising model, writing down the equations has a number of steps $\mathcal{O}(K^2 2^{N})$, where $K$ is the number of constraints and $N$ the number of spins.  Each evaluation of the objective in the root-finding algorithm will be of the same order. For relatively small systems, around $N\leq15$, this approach is feasible on a typical desktop computer and is a good way to test the results of a more complicated algorithm.
 
 This approach is part of the {\tt Exact} class that contains code for writing Eqs~\ref{eq:fk-fk} into a file and solving them with the {\tt scipy.optimize} library.
 

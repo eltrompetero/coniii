@@ -204,24 +204,24 @@ For the fully-connected Ising model, $K\sim N^2$, the system size squared.
 MCH is implemented in the {\tt MCH} class.
 
 \subsection{Pseudolikelihood}
-The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact in the thermodynamic limit \cite{Aurell:2012hi}. We maximize the conditional probability of each spin $s_{\rm i}$ given the rest of the system
+The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact as $N \rightarrow \infty$ \cite{Aurell:2012hi}. We calculate the conditional probability of each spin $s_{\rm i}$ given the rest of the system
 \begin{align}
 	p\left(s_{\rm i}|{\bf s}_{\backslash \rm i}\right) &= \left( 1+e^{-2s_{\rm i} \left(h_{\rm i}+\sum_{j\neq i}J_{\rm ij}s_{\rm j}\right)} \right)^{-1}
 \end{align}
-Taking the logarithm and summing over all spins, we define the approximate likelihood to be summed over all data points indexed by $r$.
+Taking the logarithm, we define the approximate log-likelihood by summing over data points indexed by $r$:
 \begin{align}
-	f(h_{\rm i},\bs{J}_{\rm i}) &= \sum_{\rm r=1}^R \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)
+	f(h_{\rm i},\bs{J}_{\rm i}) &= \sum_{\rm r=1}^R \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right).
 \end{align}
-In the limit where the ensemble is well sampled, the average over the data can be replaced by an average over the ensemble
+In the limit where the ensemble is well sampled, the average over the data can be replaced by an average over the ensemble:
 \begin{align}
-	f(h_{\rm i},\bs{J}_{\rm i}) &= \sum_{\bs{s}} \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)p(\bs{s};h,J)\\
+	f(h_{\rm i},\bs{J}_{\rm i}) &= \sum_{\bs{s}} \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)p(\bs{s};h,J).\\
 \intertext{At maximum likelihood,}
 	\frac{\partial f}{\partial J_{\rm ij}} &= \sum_{\bs{s}} \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)p(\bs{s};h,J)=0
 \end{align}
 
-Pseudolikelihood is extremely fast. Each iteration only is $O(RN^2)$ and often surprisingly accurate.
+Pseudolikelihood is extremely fast. Each iteration has runtime $\O(RN^2)$ and is often surprisingly accurate.
 
-We have implemented pseudolikelihood for the Ising model in {\tt Pseudo}.
+Pseudolikelihood for the Ising model is implemented in {\tt Pseudo}.
 
 \subsection{Minimum Probability Flow}
 Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{Sohl-Dickstein:2009tt,SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching where instead we have a continuous state space and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
@@ -246,7 +246,7 @@ Finally, we must find the minimum of the objective function
 
 %MPF satisfies a number of useful properties:
 
-At each step of the algorithm for the Ising model, the runtime is $O(RN^2)$.
+At each step of the algorithm for the Ising model, the runtime is $\O(RN^2)$.
 
 MPF is implemented in the {\tt MPF} class.
 

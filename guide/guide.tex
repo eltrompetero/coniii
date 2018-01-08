@@ -55,15 +55,15 @@ CONIII (Convenient Interface to Inverse Ising) is a Python project intended to p
 %We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level in physics and beyond (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, a good background in mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
 
 \section{What is maximum entropy?}
-Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, information entropy, hereon just ``entropy,'' over the probability distribution of possible discrete configurations $s$ of a system is
+Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, the entropy over the probability distribution $p(s)$ of possible discrete configurations $s$ of a system is\footnote{Technically speaking, this is the ``information entropy''.}
 \begin{align}
-	S[p] &= -\sum_{{\rm s}\in \mathcal{S}} p({\rm s}) \log p({\rm s})
+	S[p] &= -\sum_{{\rm s}\in \mathcal{S}} p({\rm s}) \log p({\rm s}).
 \end{align}
-These configurations could be firing on-off patterns in neurons, a the arrangement of 4 letters in a word, or the orientation of spins in a material.
+These configurations could be on-off patterns of firing in neurons, the arrangement of 4 letters in a word, or the orientation of spins in a material.
 
-When there is no structure in the distribution, meaning that the probability is uniform $p_s = p_{s'}$, entropy is at a maximum. In the context of communication theory as Shannon first discussed, this means that there is no structure to exploit to make a prediction about the next part of an incoming message; thus, maximum entropy means that each new part of the message is maximally ``surprising.'' At the other extreme, when the message consists of the same bit over and over again, we can always guess at the following part of the message and the signal has zero entropy. In the context of modeling, we use entropy not to refer to the difficulty of the message, but to our state of knowledge about it. When we are uncertain as to the content of the message, we should make guesses that incorporate our uncertainty about the presence of structure in the message. Entropy is the precise quantity for measuring our uncertainty.
+When there is no structure in the distribution, meaning that the probability is uniform ($p(s) = p(s')$ for all $s$ and $s'$), entropy is at a maximum. In the context of communication theory as Shannon first discussed, this means that there is no structure to exploit to make a prediction about the next part of an incoming message; thus, maximum entropy means that each new part of the message is maximally ``surprising.'' At the other extreme, when the message consists of the same bit over and over again, we can always guess at the following part of the message and the signal has zero entropy. In the context of modeling, we use entropy not to refer to the difficulty of the message, but to our state of knowledge about it. Entropy precisely measures our uncertainty about which configuration $s$ we will see next.
 
-Maximum entropy, or maxent, is the formal framework for building models that are consistent with the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}.
+Maximum entropy, or maxent, is the formal framework for building models that are consistent with statistics from the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}.
 This is a constrained maximization problem. From the data set, we compute some useful feature $f_{\rm k}(\rm s)$ over all the observations in the data set ${\rm s}\in\mathcal{D}$. In a stochastic setting, this value will not always be the same, so we compute the average of the feature,
 \begin{align}
 	\br{f_k}_{\rm data} &= \frac{1}{R}\sum_{s\in \mathcal{D}} f_k({\rm s})
@@ -77,26 +77,31 @@ We assert that the model should fit the $K$ features while maximizing entropy. T
 \begin{align}
 	\mathcal{L}[p] &= -\sum_{\rm s} p(\rs)\log p(\rs) - \sum_k^K \lambda_k \left(\br{f_{\rm k}}-\br{f_{\rm k}}_{\rm data}\right)\label{eq:Lagrang}
 \end{align}
-In the notation of statistical physics, the Langrangian is the Helmholtz free energy describing the competition between entropy and the structure described in the Hamiltonian $E$ in equilibrium (See Appendix) \footnote{If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix). which is equivalent to the axiom that all microstates have equal probability (that is the maxent distribution).}.
-\begin{align}
-	F &= S - \br{E}\\
-	E &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s)
-\end{align}
-This formulation makes clear the fundamental connection that statistical mechanics is an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
+
+
+%In the notation of statistical physics, the Langrangian is the Helmholtz free energy describing the competition between entropy and the structure described in the Hamiltonian $E$ in equilibrium (See Appendix) \footnote{If we fix the average energy of the system, we get the microcanonical ensemble (See Appendix). which is equivalent to the axiom that all microstates have equal probability (that is the maxent distribution).}.
+%\begin{align}
+%	F &= S - \br{E}\\
+%	E &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s)
+%\end{align}
+%This formulation makes clear the fundamental connection that statistical mechanics is an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
 
 Then, we solve for the fixed point by taking the derivative with respect to $\lambda_{\rm k}$.
-The resulting model is a Boltzmann distribution over states
+The resulting model is a Boltzmann distribution over states:
 \begin{align}
-	p(s) &= \left.e^{-E(s)}\right/Z\\
-\intertext{with normalization, the partition function,}
-	Z &= \sum_{\rm s} e^{-E(s)}
+	p_{\rm ME}(s) &= \left.e^{-E(s)}\right/Z,\\
+\intertext{with relative negative log-likelihood (also known as the energy or Hamiltonian)}
+E(s) &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s),
+\intertext{and normalization factor (also known as the partition function)}
+	Z &= \sum_{\rm s} e^{-E(s)}.
 \end{align}
+Readers familiar with statistical physics will recognize this as a derivation of the microcanonical ensemble, demonstrating that statistical mechanics can be viewed as an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
 
-Finding the parameters that match the constraints is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
+Finding the parameters $\lambda_k$ that match the constraints $\br{f_k}_{\rm data}$ is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
 \begin{align}
-	D_{KL}(p_{\rm data}||p_{\rm ME}) &= \sum_s p_{\rm data} \log\left(\frac{p_{\rm data}(s)}{p_{\rm ME}(s)}\right)\\
-	\frac{\partial D}{\partial \lambda_k} &= \sum_s p_{\rm data}(s) \frac{\partial (-E-\log Z)}{\partial \lambda_k}\label{eq:dkl deriv}\\
-	0 &= \br{f_k}_{\rm data} -\br{f_k}_{\rm ME}\label{eq:fk-fk}
+	D_{KL}(p_{\rm data}||p_{\rm ME}) &= \sum_s p_{\rm data} \log\left(\frac{p_{\rm data}(s)}{p_{\rm ME}(s)}\right);\\
+	\frac{\partial D_{KL}}{\partial \lambda_k} &= \sum_s p_{\rm data}(s) \frac{\partial (-E(s)-\log Z)}{\partial \lambda_k} = 0 \nonumber \\
+	\implies  \br{f_k}_{\rm data} &= \br{f_k}_{\rm ME}\label{eq:fk-fk}.
 \end{align}
 [Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data and so there is no search for the best parameters in the conventional sense.
 
@@ -404,6 +409,6 @@ In this sense, the maxent approach is a useful ``model'' framework for thinking 
 %
 %When we say that free energy is minimized for a system with Hamiltonian $E_s$ at equilibrium, we are equivalently saying that entropy is maximized. Entropy maximization is the crux of statistical physics models.
 
-\bibliography{guide}
+\bibliography{refs}
 
 \end{document}  

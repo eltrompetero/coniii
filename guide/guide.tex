@@ -219,34 +219,30 @@ In the limit where the ensemble is well sampled, the average over the data can b
 	\frac{\partial f}{\partial J_{\rm ij}} &= \sum_{\bs{s}} \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)p(\bs{s};h,J)=0
 \end{align}
 
-Pseudolikelihood is extremely fast. Each iteration has runtime $\O(RN^2)$ and is often surprisingly accurate.
+Pseudolikelihood is extremely fast. Each iteration has runtime $\mathcal{O}(RN^2)$ and is often surprisingly accurate.
 
 Pseudolikelihood for the Ising model is implemented in {\tt Pseudo}.
 
 \subsection{Minimum Probability Flow}
-Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{Sohl-Dickstein:2009tt,SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching where instead we have a continuous state space and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
+Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{Sohl-Dickstein:2009tt,SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching, where we instead have a continuous state space and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
 
-As before, we start with minimizing the Kullback-Leibler divergence, but instead of taking the derivative with respect to the parameters, we first ask how the probability flows between the model and the states in the data $\mathcal{D}$ if the dynamics are run for an infinitesimal amount of time $\epsilon$, the idea being that the relative difference between the probability distributions are minimized with optimal parameters.
-\begin{align}
-	\partial_t D_{KL}(p^{(0)}||p^{(t)}\left(\{\lambda_k\}\right)) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_k)\\
-	K(\{\lambda_{\rm k}\}) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_k)
-\end{align}
-
-Monte Carlo dynamics (satisfying ergodicity and detailed balance) would lead to equilibration of the two distributions. A simple transition matrix suggested in Ref \cite{SohlDickstein:2011im} is
+First note that Monte Carlo dynamics (satisfying ergodicity and detailed balance) would lead to equilibration of the two distributions. A simple transition matrix suggested in Ref \cite{SohlDickstein:2011im} is
 \begin{align}
 	\dot{p}_{\rm s} &= \sum_{s'\neq s} \Gamma_{\rm ss'} p_{\rm s'} -\sum_{\rm s'\neq s} \Gamma_{\rm s's} p_{\rm s}\\
 	\Gamma_{\rm ss'} &= g_{\rm ss'}\exp\left[ \frac{1}{2}\left( E_{\rm s'}-E_{\rm s} \right) \right]
 \end{align}
-with transition probabilities $\Gamma_{\rm ss'}$ from state ${\rm s'}$ to state s. The connectivity matrix $g_{\rm ss'}$ specifies whether there is edge between states s and ${\rm s'}$ such that probability can flow between them. By choosing a sparse $g_{\rm ss'}$ while not breaking ergodicity, we drastically reduce the computational cost of calculating the objective function.
+with transition probabilities $\Gamma_{\rm ss'}$ from state ${\rm s'}$ to state s. The connectivity matrix $g_{\rm ss'}$ specifies whether there is edge between states s and ${\rm s'}$ such that probability can flow between them. By choosing a sparse $g_{\rm ss'}$ while not breaking ergodicity, we drastically reduce the computational cost.
 
-Finally, we must find the minimum of the objective function
+We now minimize a derivative of the Kullback-Leibler divergence, measuring how the difference between the model and the states in the data $\mathcal{D}$ changes when the dynamics are run for an infinitesimal amount of time $\epsilon$.
 \begin{align}
+	\partial_t D_{KL}(p^{(0)}||p^{(t)}\left(\{\lambda_k\}\right)) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_k)\\
 	K(\{\lambda_{\rm k}\}) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_k)
 \end{align}
+The idea is that this derivative is also minimized with optimal parameters: the MPF algorithm looks for a minimum of the objective function $K$.
 
 %MPF satisfies a number of useful properties:
 
-At each step of the algorithm for the Ising model, the runtime is $\O(RN^2)$.
+For the Ising model, each evaluation of the objective function has runtime $\mathcal{O}(RN^2)$.
 
 MPF is implemented in the {\tt MPF} class.
 

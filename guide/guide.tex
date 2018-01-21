@@ -246,9 +246,9 @@ For the Ising model, each evaluation of the objective function has runtime $\mat
 
 MPF is implemented in the {\tt MPF} class.
 
-\subsection{Mean-field method}
-One attractively simple and efficient version of the regularized approach starts
-with mean-field theory.  In the inverse Ising problem, mean-field theory is equivalent
+\subsection{Regularized mean-field method}
+One attractively simple and efficient approach uses a regularized version of
+mean-field theory.  In the inverse Ising problem, mean-field theory is equivalent
 to treating each binary individual as instead having a continuously varying state
 (corresponding to its mean value).  The inverse problem then turns into simply inverting
 the correlation matrix $C$ \cite{CocMon12}:
@@ -287,7 +287,7 @@ This is implemented in {\tt RegularizedMeanField}.
 
 
 
-\subsection{Cluster expansions}
+\subsection{Cluster expansion}
 
 Adaptive cluster expansion \cite{Monasson:2011fo,CocMon12,BarCoc13}
 iteratively calculates terms in the
@@ -314,7 +314,7 @@ the threshold is initially set at a large value and then lowered,
 gradually including more clusters in the expansion, until samples from
 the resulting $J$ fit the desired statistics of the data sufficiently well.
 
-In CONIII, the selective cluster expansion method is implemented in the {\tt ClusterExpansion} class.
+The adaptive cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
 %\subsection{Bethe/Kikuchi free energy/cavity methods}
 %Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.

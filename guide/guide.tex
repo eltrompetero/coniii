@@ -330,38 +330,35 @@ For estimating statistics of a given probability distribution $p(s)$, we have im
 
 In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient.
 
-%\section{Algorithm for solving}
-%We suggest solving the inverse problem using a fast technique. 
-
-\section{Model fitting}
+\section{The finite sample problem}
 A fundamental problem in model inference is that uncertainty coming
 from the finiteness of data translates into uncertainties in parameters.
-In the exposition of the maxent formulation derived from Eq~\ref{eq:Lagrang}, there is no fitting of the model parameters because they are given by the data once the constraints are specified. In reality, constraints are typically estimated from a finite sample, and they are noisy.
+In the exposition of the maxent formulation derived from Eq~\ref{eq:Lagrang}, there is no ambiguity in the model parameters because they are fully specified by the constraints calculated from data. In reality, these constraints are typically estimated from a finite sample, and they are noisy.
 The straightforward answer to this problem is to take more data---in a pairwise
 maximum entropy problem, we might insist that we have enough samples to well-constrain
 the correlation between every pair of individuals.  But it is not always possible
 to take enough data.  For instance, in a social system in which we are trying to
 measure stable social structure that lasts on the order of months, there are only
 a finite number of social interactions that occur over those months, which may
-not be enough to tightly constrain parameters. When we fit to the exactly measured constraints, we run the danger of overfitting and poor generalization in the limit of small data.
+not be enough to tightly constrain parameters. When we fit exactly to constraints measured from a small amount of data, we run the danger of overfitting and poor generalization.
 
 When we find the parameters that minimize the Kullback-Leilber divergence between the model and the data distributions, we are maximizing the likelihood of the data. 
-Around the peak in likelihood, sample size fluctuations will determine some curvature of the likelihood curve around the maximum.
-This uncertainty is reflected in the sample size fluctuations we can easily calculate from the data. Assuming that the data is independently and identically distributed, the errors are given by the standard error of the mean of a binomial distribution \mbox{$p_{\rm ij...k} = p(s_{\rm i}=s_{\rm j}=...=s_{\rm k}=1)$} with $K$ data points.
+Sample size influences curvature of the likelihood function around the maximum-likelihood peak.  Specifically, small sample size leads to a smaller curvature, implying a broad peak and larger uncertainty in parameters.
+We can estimate this uncertainty from the data: Assuming that the data is independently and identically distributed, the errors are given by the standard error of the mean of a binomial distribution \mbox{$p_{\rm ij...k} = p(s_{\rm i}=s_{\rm j}=...=s_{\rm k}=1)$} with $R$ data points.
 \begin{align}
-	\delta_{\rm ij...k} &= \sqrt{(1-p_{\rm ij...k})p_{\rm ij...k}/K}
+	\delta_{\rm ij...k} &= \sqrt{(1-p_{\rm ij...k})p_{\rm ij...k}/R}.
 \end{align}
-In other words, we are not obliged to keep pushing the parameters to get closer to the data once we have gotten close enough, where close enough is given by the noise the data distribution.\footnote{This is like early stopping \cite{}.}
+In algorithms that iteratively bring the model closer to the data, we can stop once we have gotten close enough, where close enough is given by the expected fluctuations in the data distribution.\footnote{This is like early stopping \cite{}.}
 
-An alternative approach is to regularize the problem like with the regularized mean field or cluster expansion algorithms. Here, we restrict the search space in some principled way so that more complicated
+An alternative approach is to regularize the problem as in the regularized mean field or cluster expansion algorithms. Here, we restrict the search space in some principled way so that more complicated
 solutions are disallowed.  We then check that the regularized solutions fit the
 data within expected statistical fluctuations.  If not, a more lax regularization
 can be used to allow more complicated solutions that are able to fit the
 remaining signal in the data. 
-In the Bayesian formulation, this approach is equivalent to including a prior distribution over the parameters
-\begin{align}
-	\log p({\rm model}|{\rm data}) &\propto \log p({\rm data}|{\rm model}) + \log p({\rm model})\label{eq:prior}
-\end{align}
+In a Bayesian formulation, this approach is equivalent to including a prior distribution over  parameters that more heavily weights simpler models.
+%\begin{align}
+%    \log p({\rm model}|{\rm data}) &\propto \log p({\rm data}|{\rm model}) + \log p({\rm model})\label{eq:prior}
+%\end{align}
 
 \section{Model Validation}
 Besides just fitting the model while accounting for the noisiness of the data, how do we know if we need a more complicated model? To answer this question, we need a way of quantifying the tradeoff between the complexity and fit of the model. 

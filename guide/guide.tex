@@ -322,10 +322,13 @@ The adaptive cluster expansion method is implemented in the {\tt ClusterExpansio
 
 %\section{Incomplete data}
 
-\section{Samplers}
-In CONIII, we have implemented two versions of the Metropolis algorithm. One is specific to the Ising model {\tt MCIsing} and the other {\tt MC} can sample a system as long as the function for calculating the energy is supplied by the user.
 
-In some parameter regimes, where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient.
+
+
+\section{Samplers}
+For estimating statistics of a given probability distribution $p(s)$, we have implemented in CONIII two versions of the well-known Metropolis algorithm. One is specific to the Ising model ({\tt MCIsing}) and the other ({\tt MC}) can sample a system given an arbitrary function that calculates the energy of each state.
+
+In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient.
 
 %\section{Algorithm for solving}
 %We suggest solving the inverse problem using a fast technique. 

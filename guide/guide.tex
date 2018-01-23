@@ -25,15 +25,15 @@
 \newcommand{\tb}[1]{\textcolor{blue}{#1}}
 \newcommand{\tr}[1]{\textcolor{red}{#1}}
 \newcommand{\tg}[1]{\textcolor{green}{#1}}
-\newcommand{\si}[0]{\sigma_{\rm i}}
-\newcommand{\sj}[0]{\sigma_{\rm j}}
+\newcommand{\si}[0]{{\rm s}_{\rm i}}
+\newcommand{\sj}[0]{{\rm s}_{\rm j}}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 \newcommand{\rs}[0]{{\rm s}}
 \newcommand{\rk}[0]{{\rm k}}
 
 \title{CONvenient Interface to Inverse Ising (CONIII): A Python package for solving maximum entropy models}
 \author{$^1$Edward D Lee, $^2$Bryan C Daniels}
-\affiliation{$^1$Department of Physics, 132A Clark Hall, Cornell University, Ithaca NY 14850, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
+\affiliation{$^1$Department of Physics, 142 Sciences Dr, Cornell University, Ithaca NY 14853, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 
 \begin{abstract}
 CONIII is an open-source Python project providing a simple interface to solving maximum entropy models, with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII (\url{https://github.com/bcdaniels/coniii}) including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, and minimum probability flow. We briefly explain how one should approach and validate maxent models from the perspective of model selection. Our goal is to make a variety of maximum entropy techniques accessible to those unfamiliar with the techniques and accelerate workflow for users.
@@ -44,8 +44,8 @@ CONIII is an open-source Python project providing a simple interface to solving 
 
 \section{Introduction}
 Many biological and social systems are characterized by collective behavior: the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system \cite{XXX}, conflict participation in monkeys \cite{XXX}, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words \cite{XXX}, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective \cite{Castellano:2009ce}.
-Recently, the development of numerical, analytic, and computational tools have made it feasible in these large collective systems to solve for the statistical model that reproduces system behavior, corresponding to solving an ``inverse problem''.
-This approach contrasts with the typical problem in statistical physics where one postulates the microscopic model (the Hamiltonian) and works out the physical behavior of the system. In the \textit{inverse} problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
+Recently, the development of numerical, analytic, and computational tools have made it feasible in these large collective systems to solve for the statistical model that reproduces system behavior, corresponding to solving an ``inverse problem.''
+This approach contrasts with the typical problem in statistical physics where one postulates the microscopic model (the Hamiltonian) and works out the physical behavior of the system. In the inverse problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
 The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve the inverse Ising problem, but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated.
 CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. With CONIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
@@ -55,18 +55,18 @@ CONIII (Convenient Interface to Inverse Ising) is a Python project intended to p
 %We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level in physics and beyond (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, a good background in mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
 
 \section{What is maximum entropy?}
-Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, the entropy over the probability distribution $p(s)$ of possible discrete configurations $s$ of a system is\footnote{Technically speaking, this is the ``information entropy''.}
+Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, the entropy over the probability distribution $p(\rs)$ of possible discrete configurations $\mathcal S$ of a system is
 \begin{align}
 	S[p] &= -\sum_{{\rm s}\in \mathcal{S}} p({\rm s}) \log p({\rm s}).
 \end{align}
-These configurations could be on-off patterns of firing in neurons, the arrangement of 4 letters in a word, or the orientation of spins in a material.
+These configurations could be on-off patterns of firing in neurons, the arrangement of letters in a word, or the orientation of spins in a material.
 
-When there is no structure in the distribution, meaning that the probability is uniform ($p(s) = p(s')$ for all $s$ and $s'$), entropy is at a maximum. In the context of communication theory as Shannon first discussed, this means that there is no structure to exploit to make a prediction about the next part of an incoming message; thus, maximum entropy means that each new part of the message is maximally ``surprising.'' At the other extreme, when the message consists of the same bit over and over again, we can always guess at the following part of the message and the signal has zero entropy. In the context of modeling, we use entropy not to refer to the difficulty of the message, but to our state of knowledge about it. Entropy precisely measures our uncertainty about which configuration $s$ we will see next.
+When there is no structure in the distribution, meaning that the probability is uniform, entropy is at a maximum. In the context of communication theory as Shannon first discussed, this means that there is no structure to exploit to make a prediction about the next part of an incoming message; thus, maximum entropy means that each new part of the message is maximally ``surprising.'' At the other extreme, when the message consists of the same bit over and over again, we can always guess at the following part of the message and the signal has zero entropy. In the context of modeling, we use entropy not to refer to the difficulty of the message, but to our state of knowledge about it. Entropy precisely measures our uncertainty about which configuration we will find the system to be in.
 
 Maximum entropy, or maxent, is the formal framework for building models that are consistent with statistics from the data but otherwise as structureless as possible \cite{Bretthorst:2003ua,Jaynes:1957fy}.
-This is a constrained maximization problem. From the data set, we compute some useful feature $f_{\rm k}(\rm s)$ over all the observations in the data set ${\rm s}\in\mathcal{D}$. In a stochastic setting, this value will not always be the same, so we compute the average of the feature,
+We begin by choosing that there is a set of useful or important features from the data $f_{\rm k}(\rs)$ that should be true for the model that we are trying to build. These could be the averaging firing probabilities of a set of neurons or the average pairwise coocurrence for primates in a sequence of conflicts. The average of this feature across set of states in the data set $\mathcal{D}$ is 
 \begin{align}
-	\br{f_k}_{\rm data} &= \frac{1}{R}\sum_{s\in \mathcal{D}} f_k({\rm s})
+	\br{f_{\rm k}}_{\rm data} &= \frac{1}{R}\sum_{{\rm s}\in \mathcal{D}} f_{\rm k}({\rm s})
 \end{align}
 According to the model in which each observation s occurs with some probability $p(\rm s)$, the same average is calculated over all possible states
 \begin{align}
@@ -75,7 +75,7 @@ According to the model in which each observation s occurs with some probability 
 
 We assert that the model should fit the $K$ features while maximizing entropy. The standard procedure is to solve this by the method of Langrangian multipliers. We construct the Langrangian functional $\mathcal{L}$ by introducing the multipliers $\lambda_{\rm k}$.
 \begin{align}
-	\mathcal{L}[p] &= -\sum_{\rm s} p(\rs)\log p(\rs) - \sum_k^K \lambda_k \left(\br{f_{\rm k}}-\br{f_{\rm k}}_{\rm data}\right)\label{eq:Lagrang}
+	\mathcal{L}[p] &= -\sum_{\rm s\in\mathcal{S}} p(\rs)\log p(\rs) - \sum_{\rm k=1}^{\rm K} \lambda_{\rm k} \left(\br{f_{\rm k}}-\br{f_{\rm k}}_{\rm data}\right)\label{eq:Lagrang}
 \end{align}
 
 
@@ -86,38 +86,39 @@ We assert that the model should fit the $K$ features while maximizing entropy. T
 %\end{align}
 %This formulation makes clear the fundamental connection that statistical mechanics is an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
 
-Then, we solve for the fixed point by taking the derivative with respect to $\lambda_{\rm k}$.
+Then, we solve for the fixed point by taking the derivative with respect to $\lambda_{\rm k}$. 
 The resulting model is a Boltzmann distribution over states:
 \begin{align}
     \label{eq:energy}
-	p_{\rm ME}(s) &= \left.e^{-E(s)}\right/Z,\\
+	p_{\rm ME}(\rs) &= \left.e^{-E(\rs)}\right/Z,\\
 \intertext{with relative negative log-likelihood (also known as the energy or Hamiltonian)}
-E(s) &= -\sum_{\rm k}^K\lambda_{\rm k}f_{\rm k}(s),
+E(\rs) &= -\sum_{\rm k=1}^K\lambda_{\rm k}f_{\rm k}(\rs),
 \intertext{and normalization factor (also known as the partition function)}
-	Z &= \sum_{\rm s} e^{-E(s)}.
+	Z &= \sum_{\rm s\in\mathcal{S}} e^{-E(\rs)}.
 \end{align}
-Readers familiar with statistical physics will recognize this as a derivation of the microcanonical ensemble, demonstrating that statistical mechanics can be viewed as an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}.
+Entropy is a convex function of $p$ and the constraints are linear with respect to $p$, so the problem is convex and the maxent distribution unique.
+Readers familiar with statistical physics will recognize this as an alternative derivation of the microcanonical ensemble, demonstrating that statistical mechanics can be viewed as an inference procedure using the maximum entropy principle \cite{Jaynes:1957fy}. 
 
-Finding the parameters $\lambda_k$ that match the constraints $\br{f_k}_{\rm data}$ is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
+Finding the parameters $\lambda_{\rm k}$ that match the constraints $\br{f_{\rm k}}_{\rm data}$ is equivalent to minimizing the Kullback-Leibler divergence between the model and the data \cite{Cover:2006tl}
 \begin{align}
-	D_{KL}(p_{\rm data}||p_{\rm ME}) &= \sum_s p_{\rm data} \log\left(\frac{p_{\rm data}(s)}{p_{\rm ME}(s)}\right);\\
-	\frac{\partial D_{KL}}{\partial \lambda_k} &= \sum_s p_{\rm data}(s) \frac{\partial (-E(s)-\log Z)}{\partial \lambda_k} = 0 \nonumber \\
-	\implies  \br{f_k}_{\rm data} &= \br{f_k}_{\rm ME}\label{eq:fk-fk}.
+	D_{\rm KL}(p_{\rm data}||p_{\rm ME}) &= \sum_\rs p_{\rm data} \log\left(\frac{p_{\rm data}(\rs)}{p_{\rm ME}(\rs)}\right)\\
+	\frac{\partial D_{\rm KL}}{\partial \lambda_{\rm k}} &= \sum_{\rs} p_{\rm data}(\rs) \frac{\partial (-E(\rs)-\log Z)}{\partial \lambda_{\rm k}} = 0 \nonumber \\
+	\implies  \br{f_{\rm k}}_{\rm data} &= \br{f_{\rm k}}_{\rm ME}\label{eq:fk-fk}.
 \end{align}
-[Of course, we also have to show that the problem is convex.] In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data: once the constraints have been chosen, there is a single maximum entropy solution, with no free parameters.
+ In other words, the parameters of the maximum entropy model are the ones that minimize the information theoretic ``distance'' to the distribution of the data. Note that these parameters are given by the data: once the constraints have been chosen, there is a single maximum entropy solution, with no free parameters.
 
-\subsection{Ising model}
-The Ising model is a statistical physics model of magnetism \cite{Ising:1924vf}. It consists of a set of spins $\sigma_{\rm i}$ with 2 possible orientations (up and down), each coupled to an external magnetic field $h_{\rm i}$ and coupled to each other with couplings $J_{\rm ij}$. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J_{\rm ij}$ determine whether the spins tend to point together ($J_{\rm ij}>0$) or against each other ($J_{\rm ij}<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying network structure: Figure \ref{gr:ising} shows a fully-connected example.
+\subsection{The Ising model}
+The Ising model is a statistical physics model of magnetism \cite{Ising:1924vf}. It consists of a set of spins $\rs_{\rm i}$ with 2 possible orientations (up and down), each coupled to an external magnetic field $h_{\rm i}$ and coupled to each other with couplings $J_{\rm ij}$. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings $J_{\rm ij}$ determine whether the spins tend to point together ($J_{\rm ij}>0$) or against each other ($J_{\rm ij}<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying network structure: Figure \ref{gr:ising} shows a fully-connected example.
 
 \begin{figure}[tbp]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 70 70 60}]{../images/ising_example}
-\caption{Example of a fully connected Ising model with random couplings. Each spin $\si$ (circle) can take one of two states (black or white, corresponding to $-1$ and $+1$) and is connected to every other spin in the system with a positive or negative coupling.  This schematic represents one possible state of the spins.  The inverse Ising problem starts with statistics about the states observed in the system and infers the coupling strengths $J_{ij}$ and individual biases $h_i$ that produce such statistics. }
+\caption{Example of a fully connected Ising model with random couplings. Each spin $\rs_{\rm i}$ (circle) can take one of two states (black or white, corresponding to $-1$ and $+1$) and is connected to every other spin in the system with a positive or negative coupling.  This schematic represents one possible state of the spins.  The inverse Ising problem starts with statistics about the states observed in the system and infers the coupling strengths $J_{\rm ij}$ and individual biases $h_{\rm i}$ that produce such statistics. }
 \label{gr:ising}
 \end{figure}
 
 The energy of each configuration determines its probability via \eqref{eq:energy}:
 \begin{align}
-	E &= -\sum_{\rm \br{ij}} J_{\rm ij}\si\sj -\sum_{\rm i=1}^Nh_{\rm i}\si.
+	E &= -\sum_{\rm i<j}^N J_{\rm ij}\si\sj -\sum_{\rm i=1}^Nh_{\rm i}\si.
 \end{align}
 %States with lower energy are more likely so spin tend to orient along the direction of the local field $h_{\rm i}^{\rm local} = \sum_{\rm j}J_{\rm ij}\sj +h_{\rm i}$. 
 
@@ -128,23 +129,16 @@ We can derive the Ising model from the perspective of maximum entropy. Fixing th
 \end{align}
 we go through the procedure of constructing the Langrangian from Eq~\ref{eq:Lagrang}
 \begin{align}
-	\mathcal{L}[p] &= -\sum_s p(s)\log p(s) +\sum_{\rm \br{ij}} J_{\rm ij}\br{\si\sj} +\sum_{\rm i=1}^Nh_{\rm i}\br{\si}\\
-	\frac{\partial\mathcal{L}[p]}{\partial p(s)} &= -\log p(s)-1 +\sum_{\rm \br{ij}} J_{\rm ij}\si\sj +\sum_{\rm i=1}^Nh_{\rm i}\si\\
-	\log p(s) &= -1 +\sum_{\rm \br{ij}} J_{\rm ij}\si\sj +\sum_{\rm i=1}^Nh_{\rm i}\si\\
-	p(s) &= \left.e^{-E(s)}\right/Z\\
-\intertext{where to enforce normalization of the probability distribution $\sum_s p(s) = 1$,}
-	Z &= \sum_s e^{-E(s)}.
+	\mathcal{L}[p] &= -\sum_\rs p(\rs)\log p(\rs) +\sum_{\rm i<j}^N J_{\rm ij}\br{\si\sj} +\sum_{\rm i}^Nh_{\rm i}\br{\si}\\
+	\frac{\partial\mathcal{L}[p]}{\partial p(\rs)} &= -\log p(\rs)-1 +\sum_{\rm i<j}^N J_{\rm ij}\si\sj +\sum_{\rm i}^Nh_{\rm i}\si\\
+	\log p(\rs) &= -1 +\sum_{\rm i<j}^N J_{\rm ij}\si\sj +\sum_{\rm i}^Nh_{\rm i}\si\\
+	p(\rs) &= \left.e^{-E(\rs)}\right/Z\\
+\intertext{where to enforce normalization of the probability distribution $\sum_\rs p(\rs) = 1$,}
+	Z &= \sum_{\rs} e^{-E(\rs)}.
 \end{align}
 Thus, the resulting model is exactly the Ising model mentioned earlier.
 
 Despite the simplicity of the Ising model, the structure imposed by the discrete nature of the spins means that finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have implemented some of them in CONIII and designed a package structure to make it easily extensible to include more methods.  Here, we briefly describe the algorithms that are part of the first official version of the package. The goal is to give the user a sense (or reminder) of how they work without getting bogged down in heavy detail. For more detail, we suggest perusing the papers referenced in each section or the review \cite{Nguyen:2017ww}. For a complete beginner, it may be useful to first get familiar with a slower introduction like in the Appendix of Ref \cite{Lee:2015ev}, Ref \cite{Bialek:2012ueb}, or Ref \cite{Bretthorst:2003ua}.
-
-%Imagine that you have a system with $n$ components that have been sampled many times. To be more specific, we'll take $n=9$ voters on the US Supreme Court that either vote with in the majority, the winning coalition, or in the minority. [More generally, we could think some like gene expression levels in a cell a coarse-grained representation where relatively high or low expression can be represented by a binary variable. Of course, we don't have to restrict ourselves to binary variables \cite{Lezon:2006ws}.]
-%The primary difficulty for solving probabilistic models is calculating the normalization because of the size of the state space. Most of the methods below involve avoiding that problem in the first place (Monte Carlo sampling, MCH) or approximations to drastically reduce the state space (pseudolikelihood, adaptive cluster expansion).
-
-
-
-
 
 
 
@@ -166,18 +160,18 @@ This approach is part of the {\tt Exact} class that contains code for writing Eq
 
 
 \subsection{Monte Carlo method}
-Perhaps the most straightforward and most expensive computational approach is Monte Carlo Markov Chain (MCMC) sampling.  A series of states sampled from a proposed $p(s)$ is produced by MCMC to approximate $\br{f_{\rm k}}$ and determine how close we are to matching $\br{f_{\rm k}}_{\rm data}$.  The parameters are then adjusted using a learning rule, and both sampling and learning are repeated until a stopping criterion is met.
+Perhaps the most straightforward and most expensive computational approach is Monte Carlo Markov Chain (MCMC) sampling.  A series of states sampled from a proposed $p(\rs)$ is produced by MCMC to approximate $\br{f_{\rm k}}$ and determine how close we are to matching $\br{f_{\rm k}}_{\rm data}$.  The parameters are then adjusted using a learning rule, and both sampling and learning are repeated until a stopping criterion is met.
 %The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we do not need to calculate the partition function, but can instead compute the difference in energy between two states. 
 This can be combined with a variety of approximate gradient descent methods to reduce the number of sampling steps by predicting how the distribution will change if we modify the parameters slightly.
 The particular technique implemented in CONIII is the Monte Carlo Histogram (MCH) method \cite{Broderick:2007wq}.
 
-Since the sampling step is expensive, the idea behind MCH is to reuse a sample for more than one gradient descent step \cite{Broderick:2007wq}. Given that we have a sample with probability distribution $p(\rs)$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the new distribution $p'(\rs)$ from adjusting our parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$. We can leverage our current sample to make this extrapolation.
+Since the sampling step is expensive, the idea behind MCH is to reuse a sample for more than one gradient descent step \cite{Broderick:2007wq}. Given that we have a sample with probability distribution $p(\rs)$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the proposed distribution $p'(\rs)$ from adjusting our parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$. We can leverage our current sample to make this extrapolation.
 \begin{align}
 	p' &= \frac{p'}{p}p\\
 	p'(\rs)	&= \frac{Z}{Z'}e^{\sum_\rk \Delta\lambda_k f_\rk(\rs)} p(\rs)\\
 \intertext{To estimate the average,}
-	\sum_s p'(\rs) f_{\rm k}(\rs) &= \frac{Z}{Z'} \sum_s p(\rs) e^{\sum_{\rm k} \Delta\lambda_{\rm k} f_{\rm k}(\rs)} f_{\rm k}(\rs)\\
-\intertext{To be explicit about the fact that we only have a sampled approximation to $p$, we replace $p$ with the data distribution.}
+	\sum_\rs p'(\rs) f_{\rm k}(\rs) &= \frac{Z}{Z'} \sum_\rs p(\rs) e^{\sum_{\rm k} \Delta\lambda_{\rm k} f_{\rm k}(\rs)} f_{\rm k}(\rs)\\
+\intertext{To be explicit about the fact that we only have a sampled approximation to $p$, we replace $p$ with the sample distribution.}
 	\br{f_{\rm k}}' &= \frac{Z}{Z'} \br{e^{\sum_{\rm k} \Delta\lambda_{\rm k} f_{\rm k}(\rs)} f_{\rm k}(\rs)}_{\rm sample}
 \end{align}
 Likewise, the ratio of the partition function can be estimated
@@ -185,7 +179,7 @@ Likewise, the ratio of the partition function can be estimated
 	\frac{Z}{Z'} \approx 1\left/\br{e^{\sum_{\rm k} \Delta\lambda_{\rm k} f_{\rm k}(\rs)}}_{\rm sample}\right.
 \end{align}
 
-At each step, we update the Lagrangian multipliers $\{\lambda_\rk\}$ while being careful to stay within the bounds of a reasonable extrapolation. One suggestion is to update the parameters with some inertia
+At each step, we update the Lagrangian multipliers $\{\lambda_\rk\}$ while being careful to stay within the bounds of a reasonable extrapolation. One suggestion is to update the parameters with some inertia \cite{Tkacik:2006vq}
 \begin{align}
 	\Delta\lambda_\rk(t+1) &= \Delta \lambda_\rk(t) + \epsilon \Delta\lambda_\rk(t-1)\label{eq:mch learn1}\\
 	\Delta \lambda_\rk(t) &= \eta\left(\br{f_\rk}'-\br{f_\rk}\right)\label{eq:mch learn2}
@@ -196,53 +190,57 @@ This has a fixed point at the correct parameters.
 In practice, MCH can be difficult to tune properly and one must check in on the progress of the algorithm often. One issue is choosing how to set the learning rule parameters $\eta$ and $\epsilon$. One suggestion for $\eta$ is to shrink it as the inverse of the number of iterations \cite{Tkacik:2006vq}. Another issue is that parameters cannot be changed by too much when using the MCH approximation step or the extrapolation to $\lambda_{\rm k}'$ will be inaccurate and the algorithm will fail to converge. In CONIII, this can be controlled by setting a bound on the maximum possible change in each parameter  $\Delta\lambda_{\rm max}$ and restricting the norm of the vector of change in parameters $\sum_k \sqrt{\Delta\lambda_{\rm k}^2}$. Another issue is setting the parameters of the MCMC sampling routine. Both the burn time (the number of iterations before starting to sample) and sampling iterations (number of iterations between samples) must be large enough that we are sampling from the equilibrium distribution.  Typically, these are found by measuring how long the energy or individual parameter values remain correlated as MCMC progresses. The parameters may need to be updated during the course of MCH because the sampling parameters may need to change with the estimated parameters of the model. For some regimes of parameter space, samples are correlated over long times and alternative sampling methods like Wolff or Swendsen-Wang should be used.
 We do not discuss these sampling details here, but see Refs \cite{MacKay:2005wc,Newman:1999wu} for examples.
 
-The main computation cost for MCH lies in the sampling step. The runtime is proportional to the number of samples $n_{\rm sample}$, number of MCMC iterations $n_{MC}$, the number of constraints $K$:
-$\mathcal{O}(n_{\rm MC} n_{\rm sample} K)$, whereas the MCH estimate is relatively quick $\mathcal{O}(n_{\rm MCH} n_{\rm sample}K)$ because the number of MCH approximation steps needed to converge is much smaller than the number of MCMC sampling iterations $n_{\rm MCH}<<n_{\rm MC}$, since each sampling step can be used to take many parameter steps.
-%What is the runtime for the learning rules Eqs \ref{eq:mch learn1} and \ref{eq:mch learn2}?
-For the fully-connected Ising model, $K\sim N^2$, the system size squared.
+The main computation cost for MCH lies in the sampling step. For each iteration of MCH, the runtime is proportional to the number of samples $n_{\rm sample}$, number of MCMC iterations $T_{\rm MC}$, the number of constraints for the Ising model $N^2$:
+$\mathcal{O}(T_{\rm MC} n_{\rm sample} N^2)$, whereas the MCH estimate is relatively quick $\mathcal{O}(n_{\rm MCH} n_{\rm sample} N^2)$ because the number of MCH approximation steps needed to converge is much smaller than the number of MCMC sampling iterations $n_{\rm MCH}<<T_{\rm MC}$.
+%What is the runtime for the learning rules Eqs \ref{eq:mch learn1} and \ref{eq:mch learn2}? This a much harder question that gets into optimization theory.
 
 MCH is implemented in the {\tt MCH} class.
 
 \subsection{Pseudolikelihood}
-The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact as $N \rightarrow \infty$ \cite{Aurell:2012hi}. We calculate the conditional probability of each spin $s_{\rm i}$ given the rest of the system
+The pseudolikelihood approach is an analytic approximation to the likelihood that drastically reduces the computational complexity of the problem and is exact as $N \rightarrow \infty$ \cite{Aurell:2012hi}. We calculate the conditional probability of each spin $\rs_{\rm i}$ given the rest of the system $\{\rs_{\rm j\neq i}\}$
 \begin{align}
-	p\left(s_{\rm i}|{\bf s}_{\backslash \rm i}\right) &= \left( 1+e^{-2s_{\rm i} \left(h_{\rm i}+\sum_{j\neq i}J_{\rm ij}s_{\rm j}\right)} \right)^{-1}
+	p\left(\rs_{\rm i}|\{\rs_{\rm j\neq i}\}\right) &= \left( 1+e^{-2\rs_{\rm i} \left(h_{\rm i}+\sum_{j\neq i}J_{\rm ij}\rs_{\rm j}\right)} \right)^{-1}
 \end{align}
-Taking the logarithm, we define the approximate log-likelihood by summing over data points indexed by $r$:
+Taking the logarithm, we define the approximate log-likelihood by summing over data points indexed by r:
 \begin{align}
-	f(h_{\rm i},\bs{J}_{\rm i}) &= \sum_{\rm r=1}^R \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right).
+	f(h_{\rm i},\{J_{\rm ij}\}) &= \sum_{\rm r=1}^R \ln p\left(\left.\rs_{\rm i}^{(\rm r)}\right|\bs{s}_{\backslash\rm i}^{(\rm r)}\right).
 \end{align}
 In the limit where the ensemble is well sampled, the average over the data can be replaced by an average over the ensemble:
 \begin{align}
-	f(h_{\rm i},\bs{J}_{\rm i}) &= \sum_{\bs{s}} \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)p(\bs{s};h,J).\\
+	f(h_{\rm i},\{J_{\rm ij}\}) &= \sum_{\rm s} \ln p\left(\left.\rs_{\rm i}\right|\{\rs_{\rm j\neq i}\}\right)p\left(\rs;h_{\rm i},\{J_{\rm ij}\}\right).\\
 \intertext{At maximum likelihood,}
-	\frac{\partial f}{\partial J_{\rm ij}} &= \sum_{\bs{s}} \ln p\left(\left.s_{\rm i}^{(r)}\right|\bs{s}_{\backslash\rm i}^{(r)}\right)p(\bs{s};h,J)=0
+	\frac{\partial f}{\partial J_{\rm ij}} &=0
+\end{align}
+At iteration through i, the maximum likelihood parameters may not satisfy the symmetry $J_{\rm ij}=J_{\rm ji}$. We impose the symmetry by insisting that at each step the new couplings are
+\begin{align}
+	J_{\rm ij}' &= (J_{\rm ij}+J_{\rm ji})/2
 \end{align}
 
-Pseudolikelihood is extremely fast. Each iteration has runtime $\mathcal{O}(RN^2)$ and is often surprisingly accurate.
+Pseudolikelihood is extremely fast. Each calculation of the gradient of the pseudolikelihood across all spins for the Ising model has runtime $\mathcal{O}(RN^3)$ and is often surprisingly accurate.
 
 Pseudolikelihood for the Ising model is implemented in {\tt Pseudo}.
 
 \subsection{Minimum Probability Flow}
 Minimum probability flow involves analytically approximating how the probability distribution \textit{changes} as we modify the \textit{configurations} \cite{Sohl-Dickstein:2009tt,SohlDickstein:2011im}. In the methods so far mentioned, the approach has been to maximize the objective (the likelihood function) by immediately taking the derivative with respect to the parameters. With MPF, we first posit a set of dynamics that will lead the data distribution to equilibrate to that of the model. When these distributions are equivalent, then there is no ``probability flow'' between them. This technique is closely related to score matching, where we instead have a continuous state space and can directly take the derivative with respect to the states without specifying dynamics \cite{Hyvarinen:2007ed}.
 
-First note that Monte Carlo dynamics (satisfying ergodicity and detailed balance) would lead to equilibration of the two distributions. A simple transition matrix suggested in Ref \cite{SohlDickstein:2011im} is
+First note that Monte Carlo dynamics (satisfying ergodicity and detailed balance) would lead to equilibration of the two distributions. One such transition matrix suggested in Ref \cite{SohlDickstein:2011im} is
 \begin{align}
-	\dot{p}_{\rm s} &= \sum_{s'\neq s} \Gamma_{\rm ss'} p_{\rm s'} -\sum_{\rm s'\neq s} \Gamma_{\rm s's} p_{\rm s}\\
+	\dot{p}_{\rm s} &= \sum_{\rm s'\neq s} \Gamma_{\rm ss'} p_{\rm s'} -\sum_{\rm s'\neq s} \Gamma_{\rm s's} p_{\rm s}\\
 	\Gamma_{\rm ss'} &= g_{\rm ss'}\exp\left[ \frac{1}{2}\left( E_{\rm s'}-E_{\rm s} \right) \right]
 \end{align}
-with transition probabilities $\Gamma_{\rm ss'}$ from state ${\rm s'}$ to state s. The connectivity matrix $g_{\rm ss'}$ specifies whether there is edge between states s and ${\rm s'}$ such that probability can flow between them. By choosing a sparse $g_{\rm ss'}$ while not breaking ergodicity, we drastically reduce the computational cost.
+with transition probabilities $\Gamma_{\rm ss'}$ from state ${\rm s'}$ to state s. The connectivity matrix $g_{\rm ss'}$ specifies whether there is edge between states s and ${\rm s'}$ such that probability can flow between them. When data and model distributions are different, probability will flow between them and indicates that the parameters must be changed.
+ By choosing a sparse $g_{\rm ss'}$ while not breaking ergodicity, we can drastically reduce the computational cost of computing this matrix.
 
 We now minimize a derivative of the Kullback-Leibler divergence, measuring how the difference between the model and the states in the data $\mathcal{D}$ changes when the dynamics are run for an infinitesimal amount of time $\epsilon$.
 \begin{align}
-	\partial_t D_{KL}(p^{(0)}||p^{(t)}\left(\{\lambda_k\}\right)) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_k)\\
-	K(\{\lambda_{\rm k}\}) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_k)
+	\partial_t D_{\rm KL}(p^{(0)}||p^{(t)}\left(\{\lambda_{\rm k}\}\right)) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_{\rm k})\\
+	L(\{\lambda_{\rm k}\}) &= \sum_{\rm s \not\in \mathcal{D}} \dot{p}_{\rm s}(\lambda_{\rm k})
 \end{align}
-The idea is that this derivative is also minimized with optimal parameters: the MPF algorithm looks for a minimum of the objective function $K$.
+The idea is that this derivative is also minimized with optimal parameters: the MPF algorithm looks for a minimum of the objective function $L$.
 
 %MPF satisfies a number of useful properties:
 
-For the Ising model, each evaluation of the objective function has runtime $\mathcal{O}(RN^2)$.
+For the Ising model, each evaluation of the objective function where $\Gamma_{\rm s s'}$ connects each data state with $G$ neighbors has runtime $\mathcal{O}(RGN^2)$. In a large fully connected system, $G\sim 2^N$ would be prohibitively large so a sparse choice is necessary.
 
 MPF is implemented in the {\tt MPF} class.
 
@@ -372,9 +370,9 @@ Basic checks would be to compare against other correlations in the data.  This c
 % In Figure~??, we show an example of a pairwise maxent model tested against higher order correlations. 
 The most strict check would be to compare the entire model probability distribution with that of the data \cite{Lee:2015ev}, but this is only feasible when the data set is reasonably large.
 
-A summary of how well the model captures the distribution across the entire probability distribution is the multi-information. If we take a maxent model and add further constraints, the models can be ordered in terms of entropy $S_{\rm 1}>S_{2}>...S_{\rm m}>...>S_{\rm data}$, where the minimum entropy the most constrained model could have is equal to the data. To measure how much correlation in the data our model has captured, we can calculate the multi-information $I_{\rm m} = S_{\rm 1}-S_{\rm m}$, the amount of correlation captured by the model relative to the independent model. The fraction of multi-information captured is $F=I_{\rm m}/I_{\rm data}$. This is a measure of how much of the correlation in the data is captured by the model.\footnote{See Refs \cite{Bialek:2012ueb} and \cite{Lee:2015ev} for details and further references on how to estimate information quantities.}
+A summary of how well the model captures the distribution across the entire probability distribution is the multi-information \cite{Nemenman:2004wz,Schneidman:2006he}. If we take a maxent model and add further constraints, the models can be ordered in terms of entropy $S_{\rm 1}>S_{2}>...S_{\rm m}>...>S_{\rm data}$, where the minimum entropy the most constrained model could have is equal to the data. To measure how much correlation in the data our model has captured, we can calculate the multi-information $I_{\rm m} = S_{\rm 1}-S_{\rm m}$, the amount of correlation captured by the model relative to the independent model. The fraction of multi-information captured is $F=I_{\rm m}/I_{\rm data}$. This is a measure of how much of the correlation in the data is captured by the model.\footnote{See Refs \cite{Bialek:2012ueb} and \cite{Lee:2015ev} for details and further references on how to estimate information quantities.}
 
-These tools to quantify model fit then inform the important choice of which constraints to impose. Typically, the approach is to constrain the lowest order interactions that are sufficient to produce collective behavior. The intuition from physics is from the observation that many physical systems are very well described by pairwise interactions.\footnote{In statistical physics, highly correlated behavior across space and time can emerge from pairwise interactions and renormalization group flow ensures they are the only relevant parameters in the thermodynamic limit \cite{}.} In fact, just the observation that we can model a system well with only pairwise interactions may be surprising \cite{Ranganathan:2007wz}. From the model fitting perspective, however, we might choose to constrain other parts of the probability distribution. Ref \cite{Ganmor:2011ct} explores choosing correlations to constrain depending on whether or not they are signicantly large. Ref \cite{Nemenman:2016kl} discusses how a pairwise model becomes an increasingly effective description of a system with higher order interactions as the system gets larger.
+These tools to quantify model fit then inform the important choice of which constraints to impose. Typically, the approach is to constrain the lowest order interactions that are sufficient to produce collective behavior. The intuition from physics is from the observation that many physical systems are very well described by pairwise interactions \cite{Ranganathan:2007wz}.\footnote{In statistical physics, highly correlated behavior across space and time can emerge from pairwise interactions and renormalization group flow ensures they are the only relevant parameters in the thermodynamic limit \cite{}.} In fact, just the observation that we can model a system well with only pairwise interactions may be surprising. From the model fitting perspective, however, we might choose to constrain other parts of the probability distribution. Ref \cite{Ganmor:2011ct} explores choosing correlations to constrain depending on whether or not they are signicantly large. Ref \cite{Nemenman:2016kl} discusses how a pairwise model becomes an increasingly effective description of a system with higher order interactions as the system gets larger.
 
 
 

@@ -31,7 +31,7 @@
 \newcommand{\rs}[0]{{\rm s}}
 \newcommand{\rk}[0]{{\rm k}}
 
-\title{CONvenient Interface to Inverse Ising (ConIII): A Python package for solving maximum entropy models}
+\title{Convenient Interface to Inverse Ising (ConIII): A Python package for solving maximum entropy models}
 \author{$^1$Edward D Lee, $^2$Bryan C Daniels}
 \affiliation{$^1$Department of Physics, 142 Sciences Dr, Cornell University, Ithaca NY 14853, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 
@@ -43,7 +43,7 @@ ConIII (pronounced CON-ee) is an open-source Python project providing a simple i
 \maketitle
 
 \section{Introduction}
-Many biological and social systems are characterized by collective behavior: the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system \cite{XXX}, conflict participation in monkeys \cite{XXX}, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words \cite{XXX}, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective \cite{Castellano:2009ce}.
+Many biological and social systems are characterized by collective behavior: the correlated pattern of neuron firing \cite{Schneidman:2006he}, protein diversity in the immune system \cite{Mora:2010jxa}, conflict participation in monkeys \cite{Daniels:2017cq}, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words \cite{Stephens:2010hi}, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective \cite{Castellano:2009ce}.
 Recently, the development of numerical, analytic, and computational tools have made it feasible in these large collective systems to solve for the statistical model that reproduces system behavior, corresponding to solving an ``inverse problem.''
 This approach contrasts with the typical problem in statistical physics where one postulates the microscopic model (the Hamiltonian) and works out the physical behavior of the system. In the inverse problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
@@ -272,14 +272,14 @@ adds the following term, quadratic in $J$, to the negative log-likelihood:
 \end{equation}
 In this case, the regularized version of the mean-field solution in \eqref{meanFieldSolution}
 can be solved analytically, with the slowest computational step coming from the inversion
-of the correlation matrix.  For details, see Refs.~\cite{Daniels:1cq,BarCoc13}.
+of the correlation matrix.  For details, see Refs.~\cite{Daniels:2017cq,BarCoc13}.
 
 The idea is then to vary the regularization strength $\gamma$ to move between the
 non-interacting case ($\gamma \rightarrow \infty$) and the naively calculated
 mean-field solution \eqref{meanFieldSolution} ($\gamma \rightarrow 0$).
 While there is no guarantee that varying this one parameter will produce solutions that are
 good enough to ``fit within error bars,'' this approach has been successful in at least
-one case of fitting social interactions \cite{Daniels:1cq}.
+one case of fitting social interactions \cite{Daniels:2017cq}.
 
 This is implemented in {\tt RegularizedMeanField}.
 
@@ -326,7 +326,7 @@ The adaptive cluster expansion method is implemented in the {\tt ClusterExpansio
 \section{Samplers}
 For estimating statistics of a given probability distribution $p(\rs)$, we have implemented in ConIII two versions of the well-known Metropolis algorithm. One is specific to the Ising model ({\tt FastMCIsing}) and the other ({\tt Metropolis}) can sample a system given an arbitrary function that calculates the energy of each state.
 
-In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient and will be included in future releases of ConIII.
+In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient because the time to flip large numbers of spins simultaneously is extremely long. Cluster sampling like Wolff or Swendsen-Wang are much more efficient and will be included in future releases of ConIII.
 
 \section{The finite sample problem}
 A fundamental problem in model inference is that uncertainty coming
@@ -366,7 +366,7 @@ One way to formalize this is to quantify the tradeoff between a good description
 This picture is formalized by quantities like the Akaike information criterion (AIC) or the Bayesian information criterion (BIC) \cite{Anonymous:mVL3xTtr}.
 
 Although likelihood tells us how well the models are doing relative to one another, it does not tell us in detail how the model is fitting the data.
-Basic checks would be to compare against other correlations in the data.  This could include higher-order correlations than those used to fit the model or other features that are relevant to the question at hand. For instance, an important coarse-grained feature in  macaque conflict is the distribution of fight sizes, which is well reproduced by fitting only pairwise correlations \cite{Daniels:1cq}.
+Basic checks would be to compare against other correlations in the data.  This could include higher-order correlations than those used to fit the model or other features that are relevant to the question at hand. For instance, an important coarse-grained feature in  macaque conflict is the distribution of fight sizes, which is well reproduced by fitting only pairwise correlations \cite{Daniels:2017cq}.
 % In Figure~??, we show an example of a pairwise maxent model tested against higher order correlations. 
 The most strict check would be to compare the entire model probability distribution with that of the data \cite{Lee:2015ev}, but this is only feasible when the data set is reasonably large.
 

@@ -1321,17 +1321,17 @@ class MCIsing(object):
         """
         MC sample on Ising model with +/-1 formulation.
 
-        Params:
-        -------
-        n (int)
+        Parameters
+        ----------
+        n : int
             Number of elements in system.
-        theta (ndarray)
+        theta : ndarray
             Vector of parameters in Hamiltonian.
-        calc_e (function)
+        calc_e : function
             f( states, params )
-        n_jobs (int=0)
+        n_jobs : int,0
             If None, then will use all available CPUs.
-        rng (RandomState=None)
+        rng : np.random.RandomState,None
         """
         self.n = n
         self.theta = theta

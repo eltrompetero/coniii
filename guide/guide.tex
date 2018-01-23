@@ -31,13 +31,13 @@
 \newcommand{\rs}[0]{{\rm s}}
 \newcommand{\rk}[0]{{\rm k}}
 
-\title{CONvenient Interface to Inverse Ising (CONIII): A Python package for solving maximum entropy models}
+\title{CONvenient Interface to Inverse Ising (ConIII): A Python package for solving maximum entropy models}
 \author{$^1$Edward D Lee, $^2$Bryan C Daniels}
 \affiliation{$^1$Department of Physics, 142 Sciences Dr, Cornell University, Ithaca NY 14853, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 
 \begin{abstract}
-CONIII is an open-source Python project providing a simple interface to solving maximum entropy models, with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of CONIII (\url{https://github.com/bcdaniels/coniii}) including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, and minimum probability flow. We briefly explain how one should approach and validate maxent models from the perspective of model selection. Our goal is to make a variety of maximum entropy techniques accessible to those unfamiliar with the techniques and accelerate workflow for users.
-%We then show examples of models that have been solved on various data sets using CONIII.
+ConIII (pronounced CON-ee) is an open-source Python project providing a simple interface to solving maximum entropy models, with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of ConIII (\url{https://github.com/bcdaniels/coniii}) including a regularized mean field method, Monte Carlo histogram, pseudolikelihood, and minimum probability flow. We briefly explain how one should approach and validate maxent models from the perspective of model selection. Our goal is to make a variety of maximum entropy techniques accessible to those unfamiliar with the techniques and accelerate workflow for users.
+%We then show examples of models that have been solved on various data sets using ConIII.
 \end{abstract}
 
 \maketitle
@@ -48,8 +48,8 @@ Recently, the development of numerical, analytic, and computational tools have m
 This approach contrasts with the typical problem in statistical physics where one postulates the microscopic model (the Hamiltonian) and works out the physical behavior of the system. In the inverse problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
 The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve the inverse Ising problem, but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated.
-CONIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. With CONIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
-%The modular structure of CONIII was inspired by the machine learning package scikit-learn, where each algorithm is implemented in a class.
+ConIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maximum entropy problems in the future. With ConIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
+%The modular structure of ConIII was inspired by the machine learning package scikit-learn, where each algorithm is implemented in a class.
 %There are a variety of techniques for approaching the inverse problem|often in context of a particular model|but they are often presented as different approaches without clear relations to one another. Instead of focusing on the details of each technique separately, we relate these techniques to one another and point out when one would fail or be difficult to apply.
 
 %We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level in physics and beyond (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, a good background in mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
@@ -138,11 +138,11 @@ we go through the procedure of constructing the Langrangian from Eq~\ref{eq:Lagr
 \end{align}
 Thus, the resulting model is exactly the Ising model mentioned earlier.
 
-Despite the simplicity of the Ising model, the structure imposed by the discrete nature of the spins means that finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have implemented some of them in CONIII and designed a package structure to make it easily extensible to include more methods.  Here, we briefly describe the algorithms that are part of the first official version of the package. The goal is to give the user a sense (or reminder) of how they work without getting bogged down in heavy detail. For more detail, we suggest perusing the papers referenced in each section or the review \cite{Nguyen:2017ww}. For a complete beginner, it may be useful to first get familiar with a slower introduction like in the Appendix of Ref \cite{Lee:2015ev}, Ref \cite{Bialek:2012ueb}, or Ref \cite{Bretthorst:2003ua}.
+Despite the simplicity of the Ising model, the structure imposed by the discrete nature of the spins means that finding the parameters is challenging analytically and computationally. In the last few years, numerous techniques have been suggested for solving the inverse Ising problem exactly or approximately \cite{Nguyen:2017ww}. We have implemented some of them in ConIII and designed a package structure to make it easily extensible to include more methods.  Here, we briefly describe the algorithms that are part of the first official version of the package. The goal is to give the user a sense (or reminder) of how they work without getting bogged down in heavy detail. For more detail, we suggest perusing the papers referenced in each section or the review \cite{Nguyen:2017ww}. For a complete beginner, it may be useful to first get familiar with a slower introduction like in the Appendix of Ref \cite{Lee:2015ev}, Ref \cite{Bialek:2012ueb}, or Ref \cite{Bretthorst:2003ua}.
 
 
 
-\section{Inverse Ising methods implemented in CONIII}
+\section{Inverse Ising methods implemented in ConIII}
 
 
 \subsection{Enumeration}
@@ -163,7 +163,7 @@ This approach is part of the {\tt Exact} class that contains code for writing Eq
 Perhaps the most straightforward and most expensive computational approach is Monte Carlo Markov Chain (MCMC) sampling.  A series of states sampled from a proposed $p(\rs)$ is produced by MCMC to approximate $\br{f_{\rm k}}$ and determine how close we are to matching $\br{f_{\rm k}}_{\rm data}$.  The parameters are then adjusted using a learning rule, and both sampling and learning are repeated until a stopping criterion is met.
 %The magic behind MCMC approaches is that only relative probabilities of states need to be known to return a sample of the distribution. Thus, we do not need to calculate the partition function, but can instead compute the difference in energy between two states. 
 This can be combined with a variety of approximate gradient descent methods to reduce the number of sampling steps by predicting how the distribution will change if we modify the parameters slightly.
-The particular technique implemented in CONIII is the Monte Carlo Histogram (MCH) method \cite{Broderick:2007wq}.
+The particular technique implemented in ConIII is the Monte Carlo Histogram (MCH) method \cite{Broderick:2007wq}.
 
 Since the sampling step is expensive, the idea behind MCH is to reuse a sample for more than one gradient descent step \cite{Broderick:2007wq}. Given that we have a sample with probability distribution $p(\rs)$ generated with parameters $\lambda_{\rm k}$, we would like to estimate the proposed distribution $p'(\rs)$ from adjusting our parameters $\lambda_{\rm k}' = \lambda_{\rm k}+\Delta\lambda_{\rm k}$. We can leverage our current sample to make this extrapolation.
 \begin{align}
@@ -187,7 +187,7 @@ At each step, we update the Lagrangian multipliers $\{\lambda_\rk\}$ while being
 This has a fixed point at the correct parameters.
 %Another heuristic is to begin with a small sample size and increase the size of the sample set as we refine our estimates of the parameters.
 
-In practice, MCH can be difficult to tune properly and one must check in on the progress of the algorithm often. One issue is choosing how to set the learning rule parameters $\eta$ and $\epsilon$. One suggestion for $\eta$ is to shrink it as the inverse of the number of iterations \cite{Tkacik:2006vq}. Another issue is that parameters cannot be changed by too much when using the MCH approximation step or the extrapolation to $\lambda_{\rm k}'$ will be inaccurate and the algorithm will fail to converge. In CONIII, this can be controlled by setting a bound on the maximum possible change in each parameter  $\Delta\lambda_{\rm max}$ and restricting the norm of the vector of change in parameters $\sum_k \sqrt{\Delta\lambda_{\rm k}^2}$. Another issue is setting the parameters of the MCMC sampling routine. Both the burn time (the number of iterations before starting to sample) and sampling iterations (number of iterations between samples) must be large enough that we are sampling from the equilibrium distribution.  Typically, these are found by measuring how long the energy or individual parameter values remain correlated as MCMC progresses. The parameters may need to be updated during the course of MCH because the sampling parameters may need to change with the estimated parameters of the model. For some regimes of parameter space, samples are correlated over long times and alternative sampling methods like Wolff or Swendsen-Wang should be used.
+In practice, MCH can be difficult to tune properly and one must check in on the progress of the algorithm often. One issue is choosing how to set the learning rule parameters $\eta$ and $\epsilon$. One suggestion for $\eta$ is to shrink it as the inverse of the number of iterations \cite{Tkacik:2006vq}. Another issue is that parameters cannot be changed by too much when using the MCH approximation step or the extrapolation to $\lambda_{\rm k}'$ will be inaccurate and the algorithm will fail to converge. In ConIII, this can be controlled by setting a bound on the maximum possible change in each parameter  $\Delta\lambda_{\rm max}$ and restricting the norm of the vector of change in parameters $\sum_k \sqrt{\Delta\lambda_{\rm k}^2}$. Another issue is setting the parameters of the MCMC sampling routine. Both the burn time (the number of iterations before starting to sample) and sampling iterations (number of iterations between samples) must be large enough that we are sampling from the equilibrium distribution.  Typically, these are found by measuring how long the energy or individual parameter values remain correlated as MCMC progresses. The parameters may need to be updated during the course of MCH because the sampling parameters may need to change with the estimated parameters of the model. For some regimes of parameter space, samples are correlated over long times and alternative sampling methods like Wolff or Swendsen-Wang should be used.
 We do not discuss these sampling details here, but see Refs \cite{MacKay:2005wc,Newman:1999wu} for examples.
 
 The main computation cost for MCH lies in the sampling step. For each iteration of MCH, the runtime is proportional to the number of samples $n_{\rm sample}$, number of MCMC iterations $T_{\rm MC}$, the number of constraints for the Ising model $N^2$:
@@ -303,19 +303,19 @@ described in the previous section \cite{BarCoc13}.}
 The inverse Ising problem is solved independently
 on each of the clusters, which can be done exactly when the
 clusters are small.  These results are used to construct a full
-interaction matrix $J$.
+interaction matrix $J_{\rm ij}$.
 The expansion starts with small clusters and expands to use larger
 clusters, neglecting any clusters whose
 contribution $\Delta S_\Gamma$ to the entropy falls below a threshold.
 To find the best solution that does not overfit,
 the threshold is initially set at a large value and then lowered,
 gradually including more clusters in the expansion, until samples from
-the resulting $J$ fit the desired statistics of the data sufficiently well.
+the resulting $J_{\rm ij}$ fit the desired statistics of the data sufficiently well.
 
 The adaptive cluster expansion method is implemented in the {\tt ClusterExpansion} class.
 
 %\subsection{Bethe/Kikuchi free energy/cavity methods}
-%Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in CONIII.
+%Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in ConIII.
 %The cavity method involves use of the marginalized distribution.
 
 %\section{Incomplete data}
@@ -324,9 +324,9 @@ The adaptive cluster expansion method is implemented in the {\tt ClusterExpansio
 
 
 \section{Samplers}
-For estimating statistics of a given probability distribution $p(s)$, we have implemented in CONIII two versions of the well-known Metropolis algorithm. One is specific to the Ising model ({\tt MCIsing}) and the other ({\tt MC}) can sample a system given an arbitrary function that calculates the energy of each state.
+For estimating statistics of a given probability distribution $p(\rs)$, we have implemented in ConIII two versions of the well-known Metropolis algorithm. One is specific to the Ising model ({\tt FastMCIsing}) and the other ({\tt Metropolis}) can sample a system given an arbitrary function that calculates the energy of each state.
 
-In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient.
+In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient. Cluster sampling like Wolff or Swendsen-Wang are much more efficient and will be included in future releases of ConIII.
 
 \section{The finite sample problem}
 A fundamental problem in model inference is that uncertainty coming
@@ -379,7 +379,7 @@ These tools to quantify model fit then inform the important choice of which cons
 \section{Conclusion}
 Science is a process of model selection. In the ideal picture, we start with the simplest models and the fewest constraints possible, and then we increase the complexity of the model til it is sufficiently so to make good predictions. In principle, we could add as many contraints as would allow us to fit the data well, but complex models are more computationally expensive and often do not generalize well.
 Maxent is a principled framework for this picture of model building. The number of parameters and the order of the constraints we impose can be adjusted to test our hypotheses about what matters most for recreating a system's behavior.
-In this sense, the maxent approach is a useful framework for statistical inference problems far beyond statistical physics.  We have built CONIII as an easily accessible software package in the hopes that it will inspire those unfamiliar with maxent approaches to experiment and apply this technique to their own research questions.
+In this sense, the maxent approach is a useful framework for statistical inference problems far beyond statistical physics.  We have built ConIII as an easily accessible software package in the hopes that it will inspire those unfamiliar with maxent approaches to experiment and apply this technique to their own research questions.
 
 
 %\section{The microcanonical ensemble and maximum entropy}

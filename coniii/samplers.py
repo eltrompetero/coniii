@@ -142,11 +142,13 @@ class WolffIsing(object):
         """
         Wolff cluster sampling for +/-1 Ising model.
 
-        Params:
-        -------
-        J (ndarray)
+        NOTE: This has not been properly tested.
+
+        Parameters
+        ----------
+        J : ndarray
             Couplings as vector or matrix.
-        h (ndarray)
+        h : ndarray
             Local fields.
         """
         assert len(J)==(len(h)*(len(h)-1)//2)
@@ -336,19 +338,20 @@ class SWIsing(object):
     def __init__(self,n,theta,calc_e,nJobs=None,rng=None):
         """
         Swendsen-Wang sampler on Ising model with +/-1 formulation.
-        2017-02-22
 
-        Params:
-        -------
-        n (int)
+        NOTE: This has not been properly tested.
+
+        Parameters
+        ----------
+        n : int
             Number of elements in system.
-        theta (ndarray)
+        theta : ndarray
             Vector of parameters in Hamiltonian.
-        calc_e (function)
+        calc_e : function
             f( states, params )
-        nJobs (int=0)
+        nJobs : int,0
             If None, then will use all available CPUs.
-        rng (RandomState=None)
+        rng : RandomState,None
         """
         self.n = n
         self.theta = theta
@@ -535,15 +538,18 @@ class ParallelTempering(object):
                  replica_burnin=100,
                  rng=None):
         """
-        Run multiple replicas in parallel at different temperatures using Metropolis sampling to equilibrate.
+        Run multiple replicas in parallel at different temperatures using Metropolis sampling to
+        equilibrate.
 
-        Params:
-        -------
-        n (int)
-        theta (ndarray)
+        NOTE: This has not been properly tested.
+
+        Parameters
+        ----------
+        n : int
+        theta : ndarray
             Mean field and coupling parameters.
-        temps (list-like)
-        rng (numpy.RandomState=None)
+        temps : list-like
+        rng : numpy.RandomState,None
         """
         assert len(temps)>=2
 
@@ -875,16 +881,18 @@ class SimulatedTempering(object):
                  rng=None,
                  method='single'):
         """
-        Params:
-        -------
-        n (int)
-        theta (ndarray)
-        temps (list-like)
-        rng (numpy.RandomState=None)
-        method (str='single')
-            Choose between 'single' and 'multiple'. In the former, a single state is simulated while changing
-            temperatures and in the latter a set of replicas at multiple temperatures are evolved
-            simultaneously.
+        NOTE: This has not be properly tested.
+
+        Parameters
+        ----------
+        n : int
+        theta : ndarray
+        temps : list-like
+        rng : numpy.RandomState,None
+        method : str,'single'
+            Choose between 'single' and 'multiple'. In the former, a single state is simulated while
+            changing temperatures and in the latter a set of replicas at multiple temperatures are
+            evolved simultaneously.
         """
         raise NotImplementedError("This is just a copy of the old Replica MC with some code for calculating the weighting function g(beta) that I didn't want to delete.")
         self.n = n
@@ -1172,17 +1180,17 @@ class FastMCIsing(object):
         MC sample on Ising model with +/-1 formulation. Fast metropolis sampling by assuming form of
         Hamiltonian is an Ising model.
 
-        Attributes:
-        -----------
-        n (int)
+        Parameters
+        ----------
+        n : int
             Number of elements in system.
-        theta (ndarray)
+        theta : ndarray
             Vector of parameters in Hamiltonian.
-        calc_e (function)
+        calc_e : function
             f( states, params )
-        n_jobs (int=0)
+        n_jobs : int,0
             If None, then will use all available CPUs.
-        rng (RandomState=None)
+        rng : RandomState,None
         """
         self.n = n
         self.theta = theta
@@ -1316,22 +1324,22 @@ class FastMCIsing(object):
 # =================== #
 # Metropolis sampler. #
 # =================== #
-class MCIsing(object):
+class Metropolis(object):
     def __init__(self,n,theta,calc_e,n_jobs=None,rng=None):
         """
         MC sample on Ising model with +/-1 formulation.
 
-        Params:
-        -------
-        n (int)
+        Parameters
+        ----------
+        n : int
             Number of elements in system.
-        theta (ndarray)
+        theta : ndarray
             Vector of parameters in Hamiltonian.
-        calc_e (function)
+        calc_e : function
             f( states, params )
-        n_jobs (int=0)
+        n_jobs : int,0
             If None, then will use all available CPUs.
-        rng (RandomState=None)
+        rng : RandomState,None
         """
         self.n = n
         self.theta = theta
@@ -1566,7 +1574,7 @@ class MCIsing(object):
 
     def sample_metropolis(self,sample0,E0,rng=None,flip_site=None,calc_e=None):
         """
-        Metropolis sampling.
+        Metropolis sampling given an arbitrary sampling function.
         """
         rng = rng or self.rng
         flipSite = flip_site or rng.randint(sample0.size)
@@ -1584,30 +1592,30 @@ class MCIsing(object):
             return 0.
         else:
             return de
-# End MC
+# End Metropolis
 
 
 
-# =================== #
-# Metropolis sampler. #
-# =================== #
+# ================================ #
+# Hamiltonian Monte Carlo sampler. #
+# ================================ #
 class HamiltonianMC(object):
     def __init__(self,n,theta,calc_e,random_sample,grad_e=None,dt=.01,leapfrogN=20,nJobs=0):
         """
-        2016-08-17
+        NOTE: This has not been properly tested.
 
-        Params:
-        -------
-        n (int)
+        Parameters
+        ----------
+        n : int
             Number of elements in system.
-        theta (ndarray)
+        theta : ndarray
             Vector of parameters in Hamiltonian.
-        calc_e (function)
+        calc_e : function
             Must take in straight vector of numbers.
-        grad_e(function=None)
-        dt (float=.01)
+        grad_e : function,None
+        dt : float,.01
             Momentum step length.
-        leapfrogN (int=20)
+        leapfrogN : int,20
         """
         self.dt = dt
         self.leapfrogN = leapfrogN
@@ -1786,21 +1794,19 @@ def jit_sample(theta,x0,nBurn,dt,leapfrogN,randNormal,randUnif):
 class Heisenberg3DSampler(object):
     def __init__(self,J,calc_e,random_sample):
         """
-        2016-04-09
-        Params:
-        -------
-        J (ndarray)
+        NOTE: This has not been properly tested.
+
+        Parameters
+        ----------
+        J : ndarray
             vector of coupling parameters
-        calc_e (lambda)
-            Function for calculating energies of array of given states with args (J,states). States must be array with dimensions (nSamples,nSpins,3).
-        random_sample (lambda)
+        calc_e : lambda
+            Function for calculating energies of array of given states with args (J,states). States
+            must be array with dimensions (nSamples,nSpins,3).  random_sample (lambda)
             Function for returning random samples with args (rng,n_samples).
         
-        Elements:
-        ---------
-
-        Methods:
-        --------
+        Methods
+        -------
         generate_samples()
         equilibrate_samples()
         sample_metropolis()

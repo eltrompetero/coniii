@@ -1339,7 +1339,7 @@ class Metropolis(object):
             f( states, params )
         n_jobs : int,0
             If None, then will use all available CPUs.
-        rng : RandomState,None
+        rng : np.random.RandomState,None
         """
         self.n = n
         self.theta = theta

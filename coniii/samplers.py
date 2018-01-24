@@ -1064,7 +1064,7 @@ class SimulatedTempering(object):
         """
         2017-03-01
         """
-        from scipy.misc import logsumexp
+        from scipy.special import logsumexp
         E = [self.calc_e(s,theta) for s,theta in zip(listOfSample,self.theta)] # assuming that first 
                                                                               # temperature is 1
         E = np.vstack(E).T

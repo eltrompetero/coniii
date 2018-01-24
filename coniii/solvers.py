@@ -373,7 +373,7 @@ class MPF(Solver):
         --------
         logK : float
         """
-        from scipy.misc import logsumexp
+        from scipy.special import logsumexp
 
         obj = 0.
         objGrad = np.zeros((params.size))

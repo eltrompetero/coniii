@@ -17,7 +17,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 extensions = [Extension("coniii.fast",['coniii/fast.pyx'],include_dirs=[np.get_include()])]
 
 setup(name='coniii',
-      version='0.2.2',
+      version='0.2.3',
       description='Convenient Interface to Inverse Ising',
       long_description=long_description,
       url='https://github.com/bcdaniels/coniii',
@@ -31,7 +31,7 @@ setup(name='coniii',
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python :: 2.7',
       ],
-      python_requires='<=2.7',
+      python_requires='>=2.7',
       keywords='inverse ising maxent maximum entropy inference',
       packages=find_packages(),
       install_requires=['multiprocess','scipy','numpy','numba','dill','joblib'],

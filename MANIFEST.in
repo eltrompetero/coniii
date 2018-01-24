@@ -1,2 +1,1 @@
 global-include *.pyx
-include ipynb/Usage\ guide.ipynb

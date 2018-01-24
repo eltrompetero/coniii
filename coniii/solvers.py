@@ -1912,6 +1912,9 @@ class RegularizedMeanField(Solver):
         priorLmbda (0.)             : ** As of 7.20.2017, not currently implemented **
                                       Strength of noninteracting prior.
         """
+        # TO DO : Is the random sampling seed actually remaining fixed?
+        # TO DO : Is symmetrizing J (in at least two places) being done correctly?
+        
         from scipy import transpose
 
         # 7.18.2017 convert input to coocMat

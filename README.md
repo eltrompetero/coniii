@@ -1,13 +1,12 @@
-# CONvenient Interface to Inverse Ising
+# Convenient Interface to Inverse Ising
 Authors: Edward D Lee, Bryan C Daniels
 
 Python package for solving maximum entropy problems with a focus on the pairwise maximum entropy
 model, also known as the inverse Ising problem.
 
-See "Usage guide.ipynb" for usage documentation and examples.
+See "ipynb/usage_guide.ipynb" for usage documentation and examples.
 
 This project is currently being developed and will be published with an accompanying guide on arXiv.
-Any feedback would be greatly appreciated!
 
 ## Installation
 This package is available on PyPI for Linux and MacOS. It can be installed by running  
@@ -25,7 +24,7 @@ running
 > `import coniii`  
 > `coniii.__path__`
 
-Then, run
+Once inside the install directory, you can run in your bash shell
 >`python exact.py [N]` 
 
 where `[N]` should be replaced by the size of the system.

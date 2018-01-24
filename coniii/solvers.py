@@ -110,7 +110,7 @@ class Solver(object):
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
-            self.sampler = MCIsing( self.n,self.multipliers,self.calc_e )
+            self.sampler = Metropolis( self.n,self.multipliers,self.calc_e )
         
         elif sample_method=='remc':
             self.sampler = ParallelTempering( self.n,

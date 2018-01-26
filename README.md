@@ -6,7 +6,7 @@ model, also known as the inverse Ising problem.
 
 See "ipynb/usage_guide.ipynb" for usage documentation and examples.
 
-This project is currently being developed and will be published with an accompanying guide on arXiv.
+There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216].
 
 ## Installation
 This package is available on PyPI for Linux and MacOS. It can be installed by running  

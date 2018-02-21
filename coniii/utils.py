@@ -105,7 +105,7 @@ def calc_overlap(sample,ignore_zeros=False):
         return overlap / (sample.shape[1]-countZeros.max(2))
     return overlap / sample.shape[1]
 
-def pair_corr(data,
+def pair_corr(X,
               weights=None,
               concat=False,
               exclude_empty=False,
@@ -115,7 +115,7 @@ def pair_corr(data,
 
     Parameters
     ----------
-    data : ndarray
+    X : ndarray
         Dimensions (n_samples,n_dim).
     weights : np.ndarray,None : 
         Calculate single and pairwise means given fractional weights for each state in
@@ -133,14 +133,14 @@ def pair_corr(data,
     -------
     (si,sisj) or np.concatenate((si,sisj))
     """
-    assert np.array_equal( np.unique(data),np.array([-1,0,1]) ) or \
-               np.array_equal( np.unique(data),np.array([-1,0]) ) or \
-               np.array_equal( np.unique(data),np.array([0,1]) ) or \
-               np.array_equal( np.unique(data),np.array([-1,1]) ) or \
-               np.array_equal( np.unique(data),np.array([1]) ) or \
-               np.array_equal( np.unique(data),np.array([-1]) ), "Only handles -1,1 data sets."
+    assert np.array_equal( np.unique(X),np.array([-1,0,1]) ) or \
+               np.array_equal( np.unique(X),np.array([-1,0]) ) or \
+               np.array_equal( np.unique(X),np.array([0,1]) ) or \
+               np.array_equal( np.unique(X),np.array([-1,1]) ) or \
+               np.array_equal( np.unique(X),np.array([1]) ) or \
+               np.array_equal( np.unique(X),np.array([-1]) ), "Only handles -1,1 X sets."
 
-    S,N = data.shape
+    S,N = X.shape
     
     if exclude_empty:
         # Don't include 0's in calculation of averages.
@@ -151,17 +151,17 @@ def pair_corr(data,
     # Calculate pairwise correlations depending on whether or not exclude_empty was set or not.
     if len(weights)==len(X):
 	sisj=(X.T.dot(X*weights[:,None]))[np.triu_indices(X.shape[1],k=1)]
+        si=(X*weights[:,None]).sum(0)
     else:
         sisj=(X.T.dot(X))[np.triu_indices(X.shape[1],k=1)]*weights
-    si = np.nansum(data*weights[:,None],0)
+        si=X.sum(0)/(X!=0).sum(0)
     
     if subtract_mean:
         sisj = np.array([sisj[i]-si[ix[0]]*si[ix[1]] for i,ix in enumerate(combinations(range(N),2))])
-
+    
     if concat:
         return np.concatenate((si,sisj))
-    else:
-        return si, sisj
+    return si, sisj
 
 def bin_states(n,sym=False):
     """

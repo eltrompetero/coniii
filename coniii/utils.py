@@ -133,13 +133,7 @@ def pair_corr(X,
     -------
     (si,sisj) or np.concatenate((si,sisj))
     """
-    assert np.array_equal( np.unique(X),np.array([-1,0,1]) ) or \
-               np.array_equal( np.unique(X),np.array([-1,0]) ) or \
-               np.array_equal( np.unique(X),np.array([0,1]) ) or \
-               np.array_equal( np.unique(X),np.array([-1,1]) ) or \
-               np.array_equal( np.unique(X),np.array([1]) ) or \
-               np.array_equal( np.unique(X),np.array([-1]) ), "Only handles -1,1 X sets."
-
+    assert frozenset(np.unique(X))<=frozenset([-1,0,1])
     S,N = X.shape
     
     if exclude_empty:

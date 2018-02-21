@@ -122,10 +122,10 @@ def pair_corr(data,
         the data such that a state only appears with some weight, typically less than
         one
     concat : bool,False
-        return concatenated means if true
+        Return means concatenated with the pairwise correlations into one array.
     exclude_empty : bool,False
-        when using with {-1,1}, can leave entries with 0 and those will not be counted for any pair
-        weights option doesn't do anything here
+        When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
+        any pair. If True, the weights option doesn't do anything.
     subtract_mean : bool,False
         If True, return pairwise correlations with product of individual means subtracted.
 
@@ -133,34 +133,28 @@ def pair_corr(data,
     -------
     (si,sisj) or np.concatenate((si,sisj))
     """
-    S,N = data.shape
-    sisj = np.zeros(N*(N-1)//2)
-    
-    if weights is None:
-        weights = np.ones((data.shape[0]))/data.shape[0]
-
-    if exclude_empty:
-        assert np.array_equal( np.unique(data),np.array([-1,0,1]) ) or \
+    assert np.array_equal( np.unique(data),np.array([-1,0,1]) ) or \
                np.array_equal( np.unique(data),np.array([-1,0]) ) or \
                np.array_equal( np.unique(data),np.array([0,1]) ) or \
                np.array_equal( np.unique(data),np.array([-1,1]) ) or \
                np.array_equal( np.unique(data),np.array([1]) ) or \
                np.array_equal( np.unique(data),np.array([-1]) ), "Only handles -1,1 data sets."
-        k=0
-        for i in xrange(N-1):
-            for j in xrange(i+1,N):
-                sisj[k] = ( np.nansum(data[:,i]*data[:,j]) / 
-                            (np.nansum(np.logical_and(data[:,i]!=0,data[:,j]!=0)) + np.nextafter(0,1)) )
-                k+=1
-        si = np.array([ np.nansum(col[col!=0]) / np.nansum(col!=0) for col in data.T ])
-    else:
-        k=0
-        for i in xrange(N-1):
-            for j in xrange(i+1,N):
-                sisj[k] = np.nansum(data[:,i]*data[:,j]*weights)
-                k+=1
-        si = np.nansum(data*weights[:,None],0)
 
+    S,N = data.shape
+    
+    if exclude_empty:
+        # Don't include 0's in calculation of averages.
+	weights=1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] )
+    elif weights is None:
+	weights=np.ones(len(X))/len(X)
+    
+    # Calculate pairwise correlations depending on whether or not exclude_empty was set or not.
+    if len(weights)==len(X):
+	sisj=(X.T.dot(X*weights[:,None]))[np.triu_indices(X.shape[1],k=1)]
+    else:
+        sisj=(X.T.dot(X))[np.triu_indices(X.shape[1],k=1)]*weights
+    si = np.nansum(data*weights[:,None],0)
+    
     if subtract_mean:
         sisj = np.array([sisj[i]-si[ix[0]]*si[ix[1]] for i,ix in enumerate(combinations(range(N),2))])
 

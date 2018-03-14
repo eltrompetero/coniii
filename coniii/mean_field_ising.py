@@ -6,7 +6,6 @@
 
 import scipy
 import scipy.optimize
-import pylab
 import copy
 #import scipy.weave # for efficient fourth-order matrix calculation
 

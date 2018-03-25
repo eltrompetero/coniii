@@ -59,6 +59,7 @@ class Solver(object):
                  calc_observables_multipliers=None,
                  adj=None,
                  multipliers=None,
+                 constraints=None,
                  sample_size=None,
                  sample_method=None,
                  mch_approximation=None,
@@ -66,12 +67,17 @@ class Solver(object):
                  verbose=False):
         # Do basic checks on the inputs.
         assert type(n) is int
+        if not sample_size is None:
+            assert type(sample_size) is int
+        if not n_jobs is None:
+            assert type(n_jobs) is int
         
         self.n = n
         self.multipliers = multipliers
-        self.sampleSize=sample_size
-        self.sampleMethod=sample_method
-        self.mch_approximation=mch_approximation
+        self.constraints = constraints
+        self.sampleSize = sample_size
+        self.sampleMethod = sample_method
+        self.mch_approximation = mch_approximation
         
         self.calc_observables = calc_observables
         self.calc_observables_multipliers = calc_observables_multipliers
@@ -98,7 +104,7 @@ class Solver(object):
         Parameters
         ----------
         sample_method : str
-            'wolff', 'metropolic', 'remc'
+            'wolff', 'metropolis', 'remc'
         sampler_kwargs : dict
         optimize_kwargs : dict
         """
@@ -106,7 +112,7 @@ class Solver(object):
         
         if sample_method=='wolff':
             raise NotImplementedError("Need to update call.")
-            h,J = self._multipliers[:self.n],self.multipliers[self.n:]
+            h,J = self.multipliers[:self.n],self.multipliers[self.n:]
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
@@ -120,11 +126,12 @@ class Solver(object):
                                               sample_size=self.sampleSize )
             # Parallel tempering needs to optimize choice of temperatures.
             self.sampler.optimize(**optimize_kwargs)
-            
         else:
            raise NotImplementedError("Unrecognized sampler.")
+        self.samples=None
 
     def generate_samples(self,n_iters,burnin,
+                         multipliers=None,
                          sample_size=None,
                          sample_method=None,
                          initial_sample=None,
@@ -138,25 +145,24 @@ class Solver(object):
         ----------
         n_iters : int
         burnin : int 
-            I think burn in is handled automatically in REMC.
-        sample_size : int
-        sample_method : str
-        initial_sample : ndarray
-        generate_kwargs : dict
-
-        Returns
-        -------
-        None
+            Burn in is handled automatically in REMC.
+        multipliers : ndarray,None
+        sample_size : int,None
+        sample_method : str,None
+        initial_sample : ndarray,None
+        generate_kwargs : dict,{}
         """
         assert not (self.sampler is None), "Must call setup_sampler() first."
-
+        
+        if multipliers is None:
+            multipliers=self.multipliers
         sample_method = sample_method or self.sampleMethod
         sample_size = sample_size or self.sampleSize
         if initial_sample is None and (not self.samples is None) and len(self.samples)==sample_size:
             initial_sample = self.samples
         
         if sample_method=='wolff':
-            self.sampler.update_parameters(self._multipliers[self.n:],self.multipliers[:self.n])
+            self.sampler.update_parameters(multipliers[self.n:],multipliers[:self.n])
             # Burn in.
             self.samples = self.sampler.generate_sample_parallel( sample_size,burnin,
                                                                   initial_sample=initial_sample )
@@ -164,7 +170,7 @@ class Solver(object):
                                                                   initial_sample=self.sampler.samples )
 
         elif sample_method=='metropolis':
-            self.sampler.theta = self._multipliers
+            self.sampler.theta = multipliers.copy()
             # Burn in.
             self.sampler.generate_samples_parallel( sample_size,
                                                     n_iters=burnin,
@@ -177,7 +183,7 @@ class Solver(object):
             self.samples = self.sampler.samples
 
         elif sample_method=='remc':
-            self.sampler.update_parameters(self._multipliers)
+            self.sampler.update_parameters(multipliers)
             self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
             self.samples = self.sampler.replicas[0].samples
 
@@ -534,9 +540,9 @@ class MCH(Solver):
         self.setup_sampler(self.sampleMethod)
     
     def solve(self,
+              initial_guess=None,
               constraints=None,
               X=None,
-              initial_guess=None,
               tol=None,
               tolNorm=None,
               n_iters=30,
@@ -548,47 +554,70 @@ class MCH(Solver):
               learn_params_kwargs={'maxdlamda':1,'eta':1},
               generate_kwargs={}):
         """
-        Solve for parameters using MCH routine.
+        Solve for maxent model parameters using MCH routine.
         
         Parameters
         ----------
         initial_guess : ndarray,None
-            initial starting point
+            Initial starting point
+        constraints : ndarray,None
+        X : ndarray,None
+            If instead of constraints, you wish to pass the raw data on which to calculate the
+            constraints using self.calc_observables.
         tol : float,None
-            maximum error allowed in any observable
+            Maximum error allowed in any observable.
         tolNorm : float
-            norm error allowed in found solution
+            Norm error allowed in found solution.
         n_iters : int,30
             Number of iterations to make between samples in MCMC sampling.
         burnin : int,30
+            Initial burn in from random sample when MC sampling.
         max_iter : int,10
-            Max number of iterations.
+            Max number of iterations of MC sampling and MCH approximation.
         custom_convergence_f : function,None
             Function for determining convergence criterion. At each iteration, this function should
-            return the next set of learn_params_kwargs and optionally the sample size:
-            lambda i: {'maxdlamda':??, 'eta':??}
+            return the next set of learn_params_kwargs and optionally the sample size.
+
+            As an example:
+	    def learn_settings(i):
+		'''
+		Take in the iteration counter and set the maximum change allowed in any given 
+		parameter (maxdlamda) and the multiplicative factor eta, where 
+		d(parameter) = (error in observable) * eta.
+		
+		Additional option is to also return the sample size for that step by returning a 
+		tuple. Larger sample sizes are necessary for higher accuracy.
+		'''
+		if i<10:
+		    return {'maxdlamda':1,'eta':1}
+		else:
+		    return {'maxdlamda':.05,'eta':.05}
+    
         disp : bool,False
+        full_output : bool,False
+            If True, also return the errflag and error history.
         learn_parameters_kwargs : dict,{'maxdlamda':1,'eta':1}
         generate_kwargs : dict,{}
 
         Returns
         -------
         parameters : ndarray
-            Found solution.
+            Found solution to inverse problem.
         errflag : int
         errors : ndarray
-            Errors in matching constraints at each step of iteration.
+            Log of errors in matching constraints at each step of iteration.
         """
         errors = []  # history of errors to track
-
 
         # Read in constraints.
         if not constraints is None:
             self.constraints = constraints
         elif not X is None:
             self.constraints = self.calc_observables(X).mean(0)
+        else: assert not self.constraints is None
         
-        # Set initial guess for parameters.
+        # Set initial guess for parameters. self._multipliers is where the current guess for the
+        # parameters is stored.
         if not (initial_guess is None):
             assert len(initial_guess)==len(self.constraints)
             self._multipliers = initial_guess.copy()
@@ -609,9 +638,10 @@ class MCH(Solver):
         
         
         # Generate initial set of samples.
-        self.generate_samples(n_iters,burnin,
-                              generate_kwargs=generate_kwargs,
-                              initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
+        self.generate_samples( n_iters,burnin,
+                               multipliers=self._multipliers,
+                               generate_kwargs=generate_kwargs,
+                               initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
@@ -634,6 +664,7 @@ class MCH(Solver):
             if disp:
                 print "Sampling..."
             self.generate_samples( n_iters,burnin,
+                                   multipliers=self._multipliers,
                                    generate_kwargs=generate_kwargs,
                                    initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
             thisConstraints = self.calc_observables(self.samples).mean(0)
@@ -655,9 +686,10 @@ class MCH(Solver):
             else:
                 learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
         
+        self.multipliers = self._multipliers.copy()
         if full_output:
-            return self._multipliers,errflag,np.vstack((errors))
-        return self._multipliers
+            return self.multipliers,errflag,np.vstack((errors))
+        return self.multipliers
 
     def estimate_jac(self,eps=1e-3):
         """
@@ -892,9 +924,10 @@ class MCHIncompleteData(MCH):
                 errflag=1
                 keepLoop=False
         
+        self.multipliers = self._multipliers.copy()
         if full_output:
-            return self._multipliers,errflag,np.vstack((errors))
-        return self._multipliers
+            return self.multipliers,errflag,np.vstack((errors))
+        return self.multipliers
 
     def learn_parameters_mch(self,
                              estConstraints,

@@ -641,7 +641,8 @@ class MCH(Solver):
         self.generate_samples( n_iters,burnin,
                                multipliers=self._multipliers,
                                generate_kwargs=generate_kwargs,
-                               initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
+                               initial_sample=np.random.choice([-1.,1.],
+                                                               size=(self.sampleSize,self.n)) )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if disp=='detailed': print self._multipliers
@@ -666,7 +667,8 @@ class MCH(Solver):
             self.generate_samples( n_iters,burnin,
                                    multipliers=self._multipliers,
                                    generate_kwargs=generate_kwargs,
-                                   initial_sample=np.random.choice([-1.,1.],size=(self.sampleSize,self.n)) )
+                                   initial_sample=np.random.choice([-1.,1.],
+                                                                   size=(self.sampleSize,self.n)) )
             thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
             

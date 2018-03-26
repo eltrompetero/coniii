@@ -112,13 +112,17 @@ class Solver(object):
         
         if sample_method=='wolff':
             raise NotImplementedError("Need to update call.")
+            self.sampleMethod='wolff'
             h,J = self.multipliers[:self.n],self.multipliers[self.n:]
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
+            self.sampleMethod='metropolis'
             self.sampler = Metropolis( self.n,self.multipliers,self.calc_e )
         
         elif sample_method=='remc':
+            raise NotImplementedError("Need to update sampler.")
+            self.sampleMethod='remc'
             self.sampler = ParallelTempering( self.n,
                                               self._multipliers,
                                               self.calc_e,

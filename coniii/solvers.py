@@ -494,7 +494,7 @@ class MPF(Solver):
         soln = minimize( f, initial_guess,
                          bounds=[(-parameter_limits,parameter_limits)]*len(initial_guess),
                          method=method, jac=includeGrad, options=solver_kwargs )
-        # NOTE: Returning soln details in terms of {0,1} basis.
+        self.multipliers = soln['x']
         return convert_params(soln['x'][:self.n],soln['x'][self.n:],'11',True), soln
 # End MPFSolver
 

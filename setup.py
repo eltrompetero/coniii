@@ -25,7 +25,7 @@ setup(name='coniii',
       author_email='edl56@cornell.edu',
       license='MIT',
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Science/Research',
           'Topic :: Scientific/Engineering :: Information Analysis',
           'License :: OSI Approved :: MIT License',

@@ -2030,7 +2030,7 @@ class RegularizedMeanField(Solver):
            burninDefault = 100*self.n
            J = J + J.T
            self.multipliers = np.concatenate([J.diagonal(),squareform(mean_field_ising.zeroDiag(-J))])
-           self.generate_samples(nSkip,burninDefault,int(numSamples),'metropolis')
+           self.generate_samples(n_iters=nSkip,burnin=burninDefault,sample_size=int(numSamples))
            isingSamples = np.array(self.samples,dtype=float)
            return isingSamples
 

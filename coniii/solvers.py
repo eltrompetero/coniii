@@ -1,4 +1,7 @@
-# Module for algorithms for solving the inverse Ising problem.
+# =============================================================================================== #
+# ConIII module for algorithms for solving the inverse Ising problem.
+# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels (bryan.daniels.1@asu.edu)
+# =============================================================================================== #
 from __future__ import division
 from scipy.optimize import minimize,fmin_ncg,minimize_scalar
 import multiprocess as mp
@@ -611,6 +614,13 @@ class MCH(Solver):
         errors : ndarray
             Log of errors in matching constraints at each step of iteration.
         """
+        if (self.N*10)>burnin:
+            warn("Number of burn in MCMC iterations between samples may be too small for "+
+                 "convergence to stationary distribution.")
+        if (self.N*10)>n_iters:
+            warn("Number of MCMC iterations between samples may be too small for convergence to "+
+                 "stationary distribution.")
+
         errors = []  # history of errors to track
 
         # Read in constraints.

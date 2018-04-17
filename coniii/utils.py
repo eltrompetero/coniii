@@ -1,7 +1,7 @@
 from __future__ import division
 import numpy as np
 from numba import jit
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
 

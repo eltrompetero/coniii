@@ -614,10 +614,10 @@ class MCH(Solver):
         errors : ndarray
             Log of errors in matching constraints at each step of iteration.
         """
-        if (self.N*10)>burnin:
+        if (self.n*10)>burnin:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
-        if (self.N*10)>n_iters:
+        if (self.n*10)>n_iters:
             warn("Number of MCMC iterations between samples may be too small for convergence to "+
                  "stationary distribution.")
 
@@ -2029,7 +2029,7 @@ class RegularizedMeanField(Solver):
            #                     seed=seed,minSize=minSize)
            burninDefault = 100*self.n
            J = J + J.T
-           self._multipliers = np.concatenate([J.diagonal(),squareform(mean_field_ising.zeroDiag(-J))])
+           self.multipliers = np.concatenate([J.diagonal(),squareform(mean_field_ising.zeroDiag(-J))])
            self.generate_samples(nSkip,burninDefault,int(numSamples),'metropolis')
            isingSamples = np.array(self.samples,dtype=float)
            return isingSamples

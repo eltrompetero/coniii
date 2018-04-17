@@ -17,7 +17,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 extensions = [Extension("coniii.fast",['coniii/fast.pyx'],include_dirs=[np.get_include()])]
 
 setup(name='coniii',
-      version='0.2.7',
+      version='0.2.8',
       description='Convenient Interface to Inverse Ising',
       long_description=long_description,
       url='https://github.com/bcdaniels/coniii',

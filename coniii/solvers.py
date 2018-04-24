@@ -17,26 +17,6 @@ class Solver(object):
     """
     Base class for declaring common methods and attributes.
 
-    Parameters
-    ----------
-    n : int
-        System size, number of spins.
-    calc_de : lambda function,None
-        Function for calculating derivative of energy with respect to the parameters. Takes in 2d
-        state array and index of the parameter.
-        Defn: lambda state_2d,ix : delta_energy
-    calc_observables : lambda function,None
-        Defn: lambda params : observables
-    calc_observables_multipliers : lambda function,None
-        Calculate predicted observables using the parameters.
-        Defn: lambda parameters : pred_observables
-    adj : lambda function,None
-        Return adjacency matrix.
-    multipliers : ndarray,None
-        Langrangian multipliers, or parameters.
-    n_jobs : int,None
-        Number of cores to use for parallelized code.
-
     Members 
     -------
     constraints : ndarray
@@ -68,7 +48,34 @@ class Solver(object):
                  mch_approximation=None,
                  n_jobs=None,
                  verbose=False):
-        # Do basic checks on the inputs.
+        """
+        Parameters
+        ----------
+        n : int
+            System size, number of spins.
+        calc_de : lambda function,None
+            Function for calculating derivative of energy with respect to the parameters. Takes in 2d
+            state array and index of the parameter.
+            Defn: lambda state_2d,ix : delta_energy
+        calc_observables : lambda function,None
+            Defn: lambda params : observables
+        calc_observables_multipliers : lambda function,None
+            Calculate predicted observables using the parameters.
+            Defn: lambda parameters : pred_observables
+        adj : lambda function,None
+            Return adjacency matrix.
+        multipliers : ndarray,None
+            Langrangian multipliers, or parameters.
+        constraints : ndarray,None
+            Correlations to constrain.
+        sample_size : int,None
+        sample_method : str,None
+        n_jobs : int,None
+            Number of cores to use for parallelized code. If this is set to 0, sequential sampler
+            will be used. This should be set if multiprocess module does not work.
+        verbose : bool,False
+        """
+        # Basic checks on the inputs.
         assert type(n) is int
         if not sample_size is None:
             assert type(sample_size) is int
@@ -168,34 +175,64 @@ class Solver(object):
         if initial_sample is None and (not self.samples is None) and len(self.samples)==sample_size:
             initial_sample = self.samples
         
-        if sample_method=='wolff':
-            self.sampler.update_parameters(multipliers[self.n:],multipliers[:self.n])
-            # Burn in.
-            self.samples = self.sampler.generate_sample_parallel( sample_size,burnin,
-                                                                  initial_sample=initial_sample )
-            self.samples = self.sampler.generate_sample_parallel( sample_size,n_iters,
-                                                                  initial_sample=self.sampler.samples )
+        # When sequential sampling should be used.
+        if self.n_jobs==0:
+            if sample_method=='wolff':
+                self.sampler.update_parameters(multipliers[self.n:],multipliers[:self.n])
+                # Burn in.
+                self.samples = self.sampler.generate_sample( sample_size,burnin,
+                                                                      initial_sample=initial_sample )
+                self.samples = self.sampler.generate_sample( sample_size,n_iters,
+                                                                      initial_sample=self.sampler.samples )
 
-        elif sample_method=='metropolis':
-            self.sampler.theta = multipliers.copy()
-            # Burn in.
-            self.sampler.generate_samples_parallel( sample_size,
-                                                    n_iters=burnin,
-                                                    cpucount=self.n_jobs,
-                                                    initial_sample=initial_sample )
-            self.sampler.generate_samples_parallel( sample_size,
-                                                    n_iters=n_iters,
-                                                    cpucount=self.n_jobs,
-                                                    initial_sample=self.sampler.samples)
-            self.samples = self.sampler.samples
+            elif sample_method=='metropolis':
+                self.sampler.theta = multipliers.copy()
+                # Burn in.
+                self.sampler.generate_samples( sample_size,
+                                               n_iters=burnin,
+                                               initial_sample=initial_sample )
+                self.sampler.generate_samples( sample_size,
+                                               n_iters=n_iters,
+                                               initial_sample=self.sampler.samples)
+                self.samples = self.sampler.samples
 
-        elif sample_method=='remc':
-            self.sampler.update_parameters(multipliers)
-            self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
-            self.samples = self.sampler.replicas[0].samples
+            elif sample_method=='remc':
+                self.sampler.update_parameters(multipliers)
+                self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
+                self.samples = self.sampler.replicas[0].samples
 
+            else:
+               raise NotImplementedError("Unrecognized sampler.")
+        # When parallel sampling using the multiprocess module.
         else:
-           raise NotImplementedError("Unrecognized sampler.")
+            if sample_method=='wolff':
+                self.sampler.update_parameters(multipliers[self.n:],multipliers[:self.n])
+                # Burn in.
+                self.samples = self.sampler.generate_sample_parallel( sample_size,burnin,
+                                                                      initial_sample=initial_sample )
+                self.samples = self.sampler.generate_sample_parallel( sample_size,n_iters,
+                                                                      initial_sample=self.sampler.samples )
+
+            elif sample_method=='metropolis':
+                self.sampler.theta = multipliers.copy()
+                # Burn in.
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=burnin,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=initial_sample )
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=n_iters,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=self.sampler.samples)
+                self.samples = self.sampler.samples
+
+            elif sample_method=='remc':
+                self.sampler.update_parameters(multipliers)
+                self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
+                self.samples = self.sampler.replicas[0].samples
+
+            else:
+               raise NotImplementedError("Unrecognized sampler.")
 # end Solver
 
 

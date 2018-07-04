@@ -42,5 +42,6 @@ directory into which you've installed it, you can run it with
 
 Make sure that you are running Python 2 in that directory. If you run
 > python
+
 The first few lines specifying the version of Python that you are using must be 2.7. We
 have not updated it to be compatible with Python 3.

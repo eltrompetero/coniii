@@ -13,9 +13,9 @@ import multiprocess as mp
 from .utils import *
 from datetime import datetime
 
-# ---------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------------- #
 # Define calc_e() and grad_e() functions here if you wish to use jit speedup!  #
-# ---------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------------- #
 # Some sample energy functions.
 # 
 ##### Gaussian #####
@@ -34,8 +34,8 @@ from datetime import datetime
 #    Heisenberg model. 
 #    2016-08-16
 #    
-#    Params:
-#    -------
+#    Parameters
+#    ----------
 #    theta (ndarray)
 #        List of couplings Jij
 #    x (ndarray)
@@ -70,20 +70,20 @@ from datetime import datetime
 #    return g
 #
 #
-# ---------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------------- #
 @jit(nopython=True)
-def calc_e(theta,x):
+def calc_e(theta, x):
     """
     Heisenberg model. 
-    2016-08-16
     
-    Params:
-    -------
-    theta (ndarray)
+    Parameters
+    ----------
+    theta : ndarray
         List of couplings Jij
-    x (ndarray)
+    x : ndarray
         List of angles (theta_0,phi_0,theta_1,phi_1,...,theta_n,phi_n)
     """
+
     n = len(x)//2  # number of spins
     E = 0.
     k = 0
@@ -96,10 +96,11 @@ def calc_e(theta,x):
     return -E
 
 @jit(nopython=True)
-def grad_e(theta,x):
+def grad_e(theta, x):
     """
     Derivatives wrt the angles of the spins.
     """
+
     n = len(x)//2  # number of spins
     g = np.zeros((len(x)))
     
@@ -117,11 +118,11 @@ def grad_e(theta,x):
     return -g
 
 @jit(nopython=True)
-def grad_e_theta(theta,x):
+def grad_e_theta(theta, x):
     """
     Derivatives wrt the couplings theta. 
-    2016-11-26
     """
+
     n = len(x)//2  # number of spins
     g = np.zeros((len(theta)))
     k = 0
@@ -138,7 +139,7 @@ def grad_e_theta(theta,x):
 # Wolff sampler. #
 # ============== #
 class WolffIsing(object):
-    def __init__(self,J,h):
+    def __init__(self, J, h):
         """
         Wolff cluster sampling for +/-1 Ising model.
 
@@ -151,6 +152,7 @@ class WolffIsing(object):
         h : ndarray
             Local fields.
         """
+
         assert len(J)==(len(h)*(len(h)-1)//2)
 
         from scipy.spatial.distance import squareform
@@ -159,20 +161,20 @@ class WolffIsing(object):
         self.n=len(h)
         self.rng=np.random.RandomState()
    
-    def update_parameters(self,J,h):
+    def update_parameters(self, J, h):
         if J.ndim==1:
             J=squareform(J)
         self.J=J
         self.h=h
 
-    def generate_sample(self,samplesize,nIters,
+    def generate_sample(self, samplesize, nIters, 
                         initialSample=None,
                         save_history=False,
                         ):
         """
         Generate samples by starting from random initial states.
-        2017-02-10
         """
+
         if initialSample is None:
             sample = self.rng.choice([-1.,1.],size=(samplesize,self.n))
         else: sample = initialSample
@@ -196,8 +198,8 @@ class WolffIsing(object):
                                  initialSample=None):
         """
         Generate samples by starting from random or given initial states.
-        2017-01-31
         """
+
         if initialSample is None:
             sample = self.rng.choice([-1.,1.],size=(samplesize,self.n))
         else: sample = initialSample
@@ -221,6 +223,7 @@ class WolffIsing(object):
         """
         Generate samples by evolving a single state.
         """
+
         n=self.n
         state=self.rng.randint(2,size=n)*2-1.
         sample=np.zeros((samplesize,n))
@@ -238,8 +241,8 @@ class WolffIsing(object):
     def one_step(self,state,initialsite=None):
         """
         Run one iteration of the Wolff algorithm that involves finding a cluster and possibly flipping it.
-        2017-01-31
         """
+
         n,J,h=self.n,self.J,self.h
         self.expdJ = np.exp(-2*state[:,None]*J*state[None,:])
 
@@ -257,8 +260,8 @@ class WolffIsing(object):
     def build_cluster(self,state,initialsite):
         """
         Grow cluster from initial site.
-        2017-01-19
         """
+
         n=self.n
         marked,newSites=[],[]
         newSites.append(initialsite)  # list of sites to continue exploring
@@ -276,14 +279,14 @@ class WolffIsing(object):
         This is the implementation of the Wolff algorithm for finding neighbors such that detailed balance is
         satisfied. I have modified to include random fields such tha the probability of adding a neighbors
         depends both on its coupling with the current site and the neighbor's magnetic field.
-        2017-02-11
 
-        Params:
-        -------
+        Parameters
+        ----------
         state
         site
         alreadyMarked
         """
+
         # Find neighbors in cluster.
         # If spins were parallel in original system, then the probability that a bond forms between is
         # (1-exp(-2*J))
@@ -303,21 +306,21 @@ class WolffIsing(object):
 def iterate_neighbors(n,ix,expdJ,r):
     """
     Iterate through all neighbors of a particular site and see if a bond should be formed between them.
-    2017-02-11
 
-    Params:
-    -------
-    n (int)
+    Parameters
+    ----------
+    n : int
         System size.
-    ix (bool ndarray)
+    ix : ndarray of bool
         Indices of sites that have already been visited.
-    expdJ (ndarray)
+    expdJ : ndarray
         np.exp( -2*state[:,None]*state[None,:]*J )
-    r (ndarray)
+    r : ndarray
         Array of random numbers.
     """
+
     counter=0
-    neighbors=np.zeros((n),dtype=int)
+    neighbors=np.zeros((n), dtype=int)
     for i in range(n):
         # Don't include neighbors that are already marked.
         # Check against probability as specified in Wolff's paper for forming link.
@@ -327,7 +330,7 @@ def iterate_neighbors(n,ix,expdJ,r):
             neighbors[counter]=i
             counter += 1
     return neighbors[:counter]
-# End WolffIsing
+#end WolffIsing
 
 
 
@@ -335,7 +338,7 @@ def iterate_neighbors(n,ix,expdJ,r):
 # Swendsen-Wang sampler. #
 # ====================== #
 class SWIsing(object):
-    def __init__(self,n,theta,calc_e,nJobs=None,rng=None):
+    def __init__(self, n, theta, calc_e, nCpus=None, rng=None):
         """
         Swendsen-Wang sampler on Ising model with +/-1 formulation.
 
@@ -349,31 +352,33 @@ class SWIsing(object):
             Vector of parameters in Hamiltonian.
         calc_e : function
             f( states, params )
-        nJobs : int,0
+        nCpus : int,0
             If None, then will use all available CPUs.
         rng : RandomState,None
         """
+        raise NotImplementedError
         self.n = n
         self.theta = theta
         self.h,self.J = theta[:n],theta[n:]
-        self.nJobs = nJobs or mp.cpu_count()
+        self.nCpus = nCpus or mp.cpu_count()
         
         self.calc_e = calc_e
 
         if rng is None:
             self.rng=np.random.RandomState()
 
-    def generate_sample_parallel(self,n_samples,n_iters,initial_state=None,nJobs=None):
+    def generate_sample_parallel(self,n_samples,n_iters,
+                                 initial_state=None,
+                                 n_cpus=None):
         """
-        2017-02-22
-
-        Params:
-        -------
+        Parameters
+        ----------
         n_samples
         n_iters
-        initial_state (ndarray=None)
+        initial_state : ndarray,None
         """
-        nJobs = nJobs or self.nJobs
+
+        n_cpus = n_ncpus or self.nCpus
 
         if initial_state is None:
             sample = self.rng.choice([-1,1],size=(n_samples,self.n))
@@ -387,20 +392,21 @@ class SWIsing(object):
                 self.one_step(state)
             return state
 
-        p = mp.Pool(nJobs)
+        p = mp.Pool(n_cpus)
         self.sample = np.vstack( p.map(f,list(zip(list(range(n_samples)),
                                              self.rng.randint(2**31,size=n_samples),
                                              sample))) )
         p.close()
 
-    def generate_sample(self,n_samples,n_iters,initial_state=None):
+    def generate_sample(self, n_samples, n_iters, initial_state=None):
         """
-        Params:
-        -------
+        Parameters
+        ----------
         n_samples
         n_iters
-        initial_state (ndarray=None)
+        initial_state : ndarray,None
         """
+
         if initial_state is None:
             sample = self.rng.choice([-1,1],size=(n_samples,self.n))
         else:
@@ -417,10 +423,11 @@ class SWIsing(object):
         self.randomly_flip_clusters(state,self._clusters)
         return state
     
-    def get_clusters(self,state):
+    def get_clusters(self, state):
         """
         Get a random sample of clusters.
         """
+
         n,J = self.n,self.J
 
         # Generate random edges between neighbors.
@@ -429,12 +436,12 @@ class SWIsing(object):
         
         return iter_cluster(adj)
 
-    def randomly_flip_clusters(self,state,clusters):
+    def randomly_flip_clusters(self, state, clusters):
         for cls in clusters:
             if self.rng.rand()>(1/(1+np.exp(-2*self.h[cls].dot(state[cls])))):
                 state[cls] *= -1 
 
-    def print_cluster_size(self,n_iters):
+    def print_cluster_size(self, n_iters):
         n_samples = 1
         sample = self.rng.choice([-1,1],size=(n_samples,self.n))
 
@@ -454,17 +461,18 @@ def pairwise_prod(state):
     return prod
         
 @jit(nopython=True)
-def sample_bonds(p,r,state,J):
+def sample_bonds(p, r, state, J):
     """
-    Params:
-    -------
-    p (ndarray)
+    Parameters
+    ----------
+    p : ndarray
         Probability of bond formation.
-    r (ndarray)
+    r : ndarray
         Random numbers.
     state
     J
     """
+
     n = len(state)
     bonds = np.zeros((len(J)))
     counter=0
@@ -480,8 +488,8 @@ def sample_bonds(p,r,state,J):
 def iter_cluster(adj):
     """
     Cycle through all spins to get clusters.
-    2017-02-22
     """
+
     initialSites = set(range(len(adj)))
     marked = set()  # all sites that have been clustered
     clusters = []
@@ -509,11 +517,12 @@ def iter_cluster(adj):
 
 def spec_cluster(L,exact=True):
     """
-    Params:
-    -------
-    L (ndarray)
+    Parameters
+    ----------
+    L : ndarray
         Graph Laplacian
     """
+
     from scipy.linalg import eig
 
     eig,v = eig(L)
@@ -525,7 +534,7 @@ def spec_cluster(L,exact=True):
     for i in clusterix:
         cluster.append(np.nonzero(np.isclose(v[:,i],0)==0)[0])
     return cluster
-# End SWIsing
+#end SWIsing
 
 
 
@@ -544,13 +553,15 @@ class ParallelTempering(object):
         NOTE: This has not been properly tested.
 
         Parameters
-        ----------
+        -------------
         n : int
         theta : ndarray
             Mean field and coupling parameters.
         temps : list-like
         rng : numpy.RandomState,None
         """
+
+        raise NotImplementedError
         assert len(temps)>=2
 
         self.n = n
@@ -564,10 +575,11 @@ class ParallelTempering(object):
         
         self.setup_replicas(replica_burnin)
     
-    def update_parameters(self,theta=None):
+    def update_parameters(self, theta=None):
         """
         Update parameters for each replica.
         """
+
         if theta is None:
             theta = self.theta[0]
 
@@ -576,12 +588,12 @@ class ParallelTempering(object):
             rep.theta = theta
             rep.h,rep.J = theta[:self.n],squareform(theta[self.n:])
 
-    def setup_replicas(self,burnin):
+    def setup_replicas(self, burnin):
         """
         Initialize a set of replicas at different temperatures using the Metropolis algorithm as coded in
         FastMCIsing.
-        2017-03-01
         """
+
         self.nReps = len(self.temps)
 
         self.replicas = []
@@ -591,18 +603,17 @@ class ParallelTempering(object):
             self.replicas[-1].generate_samples_parallel(self.sampleSize,nIters=burnin)
         self.sample = self.replicas[0].samples
         
-    def one_step(self,pool,burn_factor,exchange=True):
+    def one_step(self, pool, burn_factor, exchange=True):
         """
-        2017-04-03
-
-        Params:
-        -------
-        pool (mp.multiprocess.Pool)
-        burn_factor (int)
+        Parameters
+        ----------
+        pool : mp.multiprocess.Pool
+        burn_factor : int
             Number of times to iterate through the system.
-        exchange (bool=True)
+        exchange : bool,True
             Run exchange sampling. This is typically turned off when you just want to burn in the replicas.
         """
+
         reps = self.replicas
         
         if exchange:
@@ -646,15 +657,14 @@ class ParallelTempering(object):
                          save_sample=True):
         """
         Burn in, run replica exchange simulation, then burnin.
-        2017-03-01
 
-        Params:
-        -------
-        n_iters (int=100)
+        Parameters
+        ----------
+        n_iters : int,100
             Number of times to run the RMC. This involves sampling from each replica N*burn_factor  times.
         initial_burn_factor,final_burn_factor (int=10)
             Number of time to iterate through system to burn in at the beginning and at the end.
-        burn_factor (int=1)
+        burn_factor : int,1
             Passed into one_step().
         """
         if initial_burn_factor>0:
@@ -675,15 +685,16 @@ class ParallelTempering(object):
         Run MC and save at each iteration. Note that this will overwrite current samples stored in replicas.
         Save a sample every exchange and a burn factor step.
 
-        Params:
-        -------
-        n_iters (int=10)
-        burn_factor (int=5)
+        Parameters
+        ----------
+        n_iters : int,10
+        burn_factor : int,5
 
-        Returns:
-        --------
-        repSamples (list of ndarrays)
+        Returns
+        -------
+        repSamples : list of ndarrays
         """
+
         repSamples = [np.zeros((self.sampleSize,self.n,n_iters)) for i in range(self.nReps)]
         pool = mp.Pool(mp.cpu_count())
         for i in range(n_iters):
@@ -698,16 +709,17 @@ class ParallelTempering(object):
         Calculate spin autocorrelation.
         E[s(t)s(t+dt)]
 
-        Params:
-        -------
+        Parameters
+        ----------
         n_iters
         burn_factor
 
-        Returns:
-        --------
+        Returns
+        -------
         autocorr
         repSamples
         """
+
         from misc.stats import acf
         autocorr = np.zeros((self.nReps,n_iters//2))
         repSamples = self.generate_trajectory(n_iters,burn_factor)
@@ -724,17 +736,17 @@ class ParallelTempering(object):
         probability is ordered from exchange between replicas i and i+1 starting from i=0.
 
         Estimate stay time at any particular replica.
-        2017-03-01
 
-        Params:
-        -------
-        n_iters (int=100)
+        Parameters
+        ----------
+        n_iters : int,100
             Number of times to run the RMC. This involves sampling from each replica N*burn_factor times.
-        initial_burn_factor (int=10)
+        initial_burn_factor : int,10
             Burn factor right after setting up random state.
-        burn_factor (int=1)
+        burn_factor : int,1
             Passed into one_step().
         """ 
+
         # See how many samples are exchanged.
         # Save current state of sample while we estimate the acceptance probabilities.
         oldSample = self.sample.copy()
@@ -755,18 +767,18 @@ class ParallelTempering(object):
         
         return exchangeix.mean(0),exchangeix
 
-    def tn(self,exchangeix):
+    def tn(self, exchangeix):
         """
         Estimate stay time at any particular replica given number of exchanges that happened during ReMC steps.
         Find stay time at replicas. This is the inverse of the probability that you switch out of a
         particular replica. Remember that replicas on the boundaries can only exchange with one other
         replica.
-        2017-03-01
 
-        Params:
-        -------
-        exchangeix (ndarray)
+        Parameters
+        ----------
+        exchangeix : ndarray
         """ 
+
         nReps = len(self.temps)
         stayTime = np.zeros((nReps))
         for i in range(nReps):
@@ -779,22 +791,23 @@ class ParallelTempering(object):
 
         return stayTime
     
-    def exchange_measures(self,pn_kwargs={}):
+    def exchange_measures(self, pn_kwargs={}):
         """
         Wrapper for computing exchange probabilities and stay times.
         """
+
         pn,exchangeix = self.pn(**pn_kwargs)
         tn = self.tn(exchangeix)
         return pn,tn
 
-    def iterate_beta(self,tau):
+    def iterate_beta(self, tau):
         """
-        2017-03-01
-        Params:
-        -------
-        tau (ndarray)
+        Parameters
+        ----------
+        tau : ndarray
             Effective time at each temperature.
         """
+
         beta = 1/np.array(self.temps)
         tauEff = tau.copy()
         tauEff[0] /= 2
@@ -814,18 +827,18 @@ class ParallelTempering(object):
         """
         Apply algorithm from Kerler and Rehberg (1994) for finding fixed point for optimal temperatures.
         Optimized temperatures rewrite self.temps.
-        2017-04-03
 
-        Params:
-        -------
-        pn_kwargs (dict={'n_iters':5})
-        max_iter (int=10)
+        Parameters
+        ----------
+        pn_kwargs : dict,{'n_iters':5}
+        max_iter : int,10
             Number of times to iterate algorithm for beta. Each iteration involves sampling from REMC.
-        disp (bool=False)
+        disp : bool,False
             Print out updated parameters.
-        save_history (bool=False)
+        save_history : bool,False
             If true, return history.
         """
+
         print("Optimizing REMC parameters...")
 
         for i in range(max_iter):
@@ -852,30 +865,28 @@ class ParallelTempering(object):
         print("Persistence time:")
         print(tn)
 
-    def burn_in(self,n_iter):
+    def burn_in(self, n_iter):
         """
         Wrapper for iterating sampling without exchanging replicas.
-        2017-02-27
 
-        Params:
-        -------
-        n_iters (int)
+        Parameters
+        ----------
+        n_iters : int
             Number of times to iterate through system.
         """
+
         pool = mp.Pool(mp.cpu_count())
         self.one_step(pool,n_iter,exchange=False)
         self.sample = self.replicas[0].samples
         pool.close()
-# End ParallelTempering
-
-
+#end ParallelTempering
 
 
 # ============================ #
 # Simulated tempering sampler. #
 # ============================ #
 class SimulatedTempering(object):
-    def __init__(self,n,theta,calc_e,temps,
+    def __init__(self, n, theta, calc_e, temps, 
                  sample_size=1000,
                  replica_burnin=100,
                  rng=None,
@@ -894,6 +905,7 @@ class SimulatedTempering(object):
             changing temperatures and in the latter a set of replicas at multiple temperatures are
             evolved simultaneously.
         """
+
         raise NotImplementedError("This is just a copy of the old Replica MC with some code for calculating the weighting function g(beta) that I didn't want to delete.")
         self.n = n
         self.theta = [theta/T for T in temps]
@@ -922,8 +934,8 @@ class SimulatedTempering(object):
         temperature, the sample is iterated burn_factor times.
         2017-03-17
 
-        Params:
-        -------
+        Parameters
+        ----------
         pool (mp.multiprocess.Pool)
         burn_factor (int)
             Number of times to iterate through the system.
@@ -967,8 +979,8 @@ class SimulatedTempering(object):
         Run replica exchange simulation then burnin.
         2017-03-01
 
-        Params:
-        -------
+        Parameters
+        ----------
         n_iters (int=100)
             Number of times to run the RMC. This involves sampling from each replica N*burn_factor  times.
         initial_burn_factor,final_burn_factor (int=10)
@@ -999,8 +1011,8 @@ class SimulatedTempering(object):
         Estimate stay time at any particular replica.
         2017-03-01
 
-        Params:
-        -------
+        Parameters
+        ----------
         n_iters (int=100)
             Number of times to run the RMC. This involves sampling from each replica N*burn_factor times.
         initial_burn_factor (int=10)
@@ -1036,8 +1048,8 @@ class SimulatedTempering(object):
         replica.
         2017-03-01
 
-        Params:
-        -------
+        Parameters
+        ----------
         exchangeix (ndarray)
         """ 
         nReps = len(self.temps)
@@ -1084,8 +1096,8 @@ class SimulatedTempering(object):
     def iterate_beta(self,tau):
         """
         2017-03-01
-        Params:
-        -------
+        Parameters
+        ----------
         tau (ndarray)
             Effective time at each temperature.
         """
@@ -1112,8 +1124,8 @@ class SimulatedTempering(object):
         Optimized temperatures rewrite self.temps.
         2017-03-01
 
-        Params:
-        -------
+        Parameters
+        ----------
         interp_kwargs (dict={'kind':'quadratic'})
             Interpoloation for gn(bn) = bn to update gn after beta update step.
         pn_kwargs (dict={'n_iters':5})
@@ -1158,8 +1170,8 @@ class SimulatedTempering(object):
         Wrapper for iterating sampling without exchanging replicas.
         2017-02-27
 
-        Params:
-        -------
+        Parameters
+        ----------
         n_iters (int)
             Number of times to iterate through system.
         """
@@ -1167,15 +1179,17 @@ class SimulatedTempering(object):
         self.one_step(pool,n_iter,exchange=False)
         self.sample = self.replicas[0].samples
         pool.close()
-# End SimulatedTempering
+#end SimulatedTempering
 
 
 
 # =================== #
 # Metropolis sampler. #
 # =================== #
-class FastMCIsing(object):
-    def __init__(self,n,theta,calc_e,n_jobs=0,rng=None):
+class FastMCIsing():
+    def __init__(self, n, theta, calc_e,
+                 n_cpus=0,
+                 rng=None):
         """
         MC sample on Ising model with +/-1 formulation. Fast metropolis sampling by assuming form of
         Hamiltonian is an Ising model.
@@ -1186,38 +1200,40 @@ class FastMCIsing(object):
             Number of elements in system.
         theta : ndarray
             Vector of parameters in Hamiltonian.
-        calc_e : function
+        calc_e : lambda function
             f( states, params )
-        n_jobs : int,0
+        n_cpus : int,0
             If None, then will use all available CPUs.
         rng : RandomState,None
         """
+
         self.n = n
         self.theta = theta
-        self.h,self.J = theta[:n],squareform(theta[n:])
-        self.nJobs = n_jobs or mp.cpu_count()
+        self.h, self.J = theta[:n], squareform(theta[n:])
+        self.nCpus = n_cpus or mp.cpu_count()
         
         self.calc_e = calc_e
 
         if rng is None:
-            self.rng=np.random.RandomState()
+            self.rng = np.random.RandomState()
     
-    def generate_samples(self,sampleSize,
+    def generate_samples(self,
+                         sampleSize,
                          nIters=1000,
                          saveHistory=False,
                          initialSample=None,
-                         systematic_iter=False ):
+                         systematic_iter=False):
         """
         Generate Metropolis samples using a for loop.
-        2017-01-15
 
-        Params:
-        -------
-        sampleSize (int)
-        nIters (int=1000)
-        saveHistory (bool=False)
-        initialSample (ndarray=None)
+        Parameters
+        ----------
+        sampleSize : int
+        nIters : int,1000
+        saveHistory : bool,False
+        initialSample : ndarray,None
         """
+
         if initialSample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
         else: self.samples = initialSample
@@ -1244,25 +1260,25 @@ class FastMCIsing(object):
                         de = self.sample_metropolis( self.samples[i] )
                         self.E[i] += de
 
-    def generate_samples_parallel(self,sampleSize,
+    def generate_samples_parallel(self,
+                                  sampleSize,
                                   n_iters=1000,
                                   cpucount=None,
                                   initial_sample=None,
-                                  systematic_iter=False,
-                                  ):
+                                  systematic_iter=False):
         """
         Metropolis sample multiple states in parallel and save them into self.samples.
-        2017-01-15
 
-        Params:
-        -------
+        Parameters
+        ----------
         sampleSize
-        n_iters (int=1000)
-        cpucount (int=None)
-        initial_sample (ndarray=None)
-        systematic_iter (bool=False)
+        n_iters : int,1000
+        cpucount : int,None
+        initial_sample : ndarray,None
+        systematic_iter : bool,False
             Iterate through spins systematically instead of choosing them randomly.
         """
+
         cpucount=cpucount or mp.cpu_count()
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
@@ -1297,11 +1313,11 @@ class FastMCIsing(object):
         self.samples=np.vstack(self.samples)
         self.E=np.concatenate(self.E)
 
-    def sample_metropolis(self,sample0,rng=None,flip_site=None):
+    def sample_metropolis(self, sample0, rng=None, flip_site=None):
         """
         Metropolis sampling.
-        2016-02-23
         """
+
         rng = rng or self.rng
         flipSite = flip_site or rng.randint(sample0.size)
         sample0[flipSite] *= -1
@@ -1316,16 +1332,13 @@ class FastMCIsing(object):
             return 0.
         else:
             return de
-# End FastMCIsing
+#end FastMCIsing
 
 
-
-
-# =================== #
-# Metropolis sampler. #
-# =================== #
 class Metropolis(object):
-    def __init__(self,n,theta,calc_e,n_jobs=None,rng=None):
+    def __init__(self, n, theta, calc_e,
+                 n_cpus=None,
+                 rng=None):
         """
         MC sample on Ising model with +/-1 formulation.
 
@@ -1337,33 +1350,36 @@ class Metropolis(object):
             Vector of parameters in Hamiltonian.
         calc_e : function
             f( states, params )
-        n_jobs : int,0
+        n_cpus : int,0
             If None, then will use all available CPUs.
         rng : np.random.RandomState,None
         """
+
         self.n = n
         self.theta = theta
-        self.nJobs = n_jobs or mp.cpu_count()
+        self.nCpus = n_cpus or mp.cpu_count()
         
         self.calc_e = calc_e
 
         if rng is None:
             self.rng=np.random.RandomState()
     
-    def generate_samples(self,sample_size,
+    def generate_samples(self,
+                         sample_size,
                          n_iters=1000,
                          saveHistory=False,
                          initial_sample=None):
         """
         Generate Metropolis samples using a for loop.
 
-        Params:
-        -------
-        sample_size (int)
-        n_iters (int=1000)
-        saveHistory (bool=False)
-        initial_sample (ndarray=None)
+        Parameters
+        ----------
+        sample_size : int
+        n_iters : int,1000
+        saveHistory : bool,False
+        initial_sample : ndarray,None
         """
+
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
         else: self.samples = initial_sample
@@ -1385,7 +1401,8 @@ class Metropolis(object):
                     self.E[i] += de
             return
 
-    def generate_samples_parallel(self,sample_size,
+    def generate_samples_parallel(self,
+                                  sample_size,
                                   n_iters=1000,
                                   cpucount=None,
                                   initial_sample=None,
@@ -1407,7 +1424,8 @@ class Metropolis(object):
         -------
         None
         """
-        cpucount = cpucount or self.nJobs
+
+        cpucount = cpucount or self.nCpus
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
         else:
@@ -1441,14 +1459,14 @@ class Metropolis(object):
         self.samples = np.vstack(self.samples)
         self.E = np.concatenate(self.E)
 
-    def generate_cond_samples(self,sample_size,
+    def generate_cond_samples(self,
+                              sample_size,
                               fixed_subset,
                               burn_in=1000,
                               cpucount=None,
                               initial_sample=None,
                               systematic_iter=False,
-                              parallel=True,
-                              ):
+                              parallel=True):
         """
         Generate samples from conditional distribution (while a subset of the spins are held fixed).
         Samples are generated in parallel.
@@ -1457,7 +1475,7 @@ class Metropolis(object):
         a row leads to increasingly slow evaluation of the code.
 
         Parameters
-        -----------
+        ----------
         sample_size : int
         fixed_subset : list of duples
             Each duple is the index of the spin and the value to fix it at.  These should be ordered
@@ -1468,7 +1486,7 @@ class Metropolis(object):
         systematic_iter : bool,False
             Iterate through spins systematically instead of choosing them randomly.
         """
-        cpucount = cpucount or self.nJobs
+        cpucount = cpucount or self.nCpus
         nSubset = self.n-len(fixed_subset)
 
         # Initialize sampler.
@@ -1478,7 +1496,7 @@ class Metropolis(object):
             self.samples = initial_sample
         
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
-        def cond_calc_e(state,theta):
+        def cond_calc_e(state, theta):
             """
             Parameters
             ----------
@@ -1487,6 +1505,7 @@ class Metropolis(object):
             theta : ndarray
                 Parameters.
             """
+
             fullstate = np.zeros((1,self.n))
             i0 = 0
             stateix = 0
@@ -1572,10 +1591,14 @@ class Metropolis(object):
         self.E = np.concatenate(self.E)
         return self.samples,self.E
 
-    def sample_metropolis(self,sample0,E0,rng=None,flip_site=None,calc_e=None):
+    def sample_metropolis(self, sample0, E0,
+                          rng=None,
+                          flip_site=None,
+                          calc_e=None):
         """
         Metropolis sampling given an arbitrary sampling function.
         """
+
         rng = rng or self.rng
         flipSite = flip_site or rng.randint(sample0.size)
         calc_e = calc_e or self.calc_e
@@ -1592,15 +1615,15 @@ class Metropolis(object):
             return 0.
         else:
             return de
-# End Metropolis
+#end Metropolis
 
 
-
-# ================================ #
-# Hamiltonian Monte Carlo sampler. #
-# ================================ #
-class HamiltonianMC(object):
-    def __init__(self,n,theta,calc_e,random_sample,grad_e=None,dt=.01,leapfrogN=20,nJobs=0):
+class HamiltonianMC():
+    def __init__(self, n, theta, calc_e, random_sample,
+                 grad_e=None,
+                 dt=.01,
+                 leapfrogN=20,
+                 nCpus=0):
         """
         NOTE: This has not been properly tested.
 
@@ -1617,14 +1640,16 @@ class HamiltonianMC(object):
             Momentum step length.
         leapfrogN : int,20
         """
+
+        raise NotImplementedError("This hasn't been properly tested.")
         self.dt = dt
         self.leapfrogN = leapfrogN
         self.n = n
         self.theta = theta
-        if nJobs is None:
-            self.nJobs = mp.cpu_count()
+        if nCpus is None:
+            self.nCpus = mp.cpu_count()
         else:
-            self.nJobs = nJobs
+            self.nCpus = nCpus
         
         self.calc_e = calc_e
         if grad_e is None:
@@ -1633,11 +1658,11 @@ class HamiltonianMC(object):
             self.grad_e = grad_e
         self.random_sample = random_sample
     
-    def sample(self,x0,nBurn,saveHistory=False):
+    def sample(self, x0, nBurn, saveHistory=False):
         """
         Get a single sample by MC sampling from this Hamiltonian. Slow method
-        2016-08-16
         """
+
         if saveHistory:
             history = [x0]
         x = x0
@@ -1684,15 +1709,15 @@ class HamiltonianMC(object):
             return x,history
         return x
     
-    def generate_samples(self,nSamples,nBurn=100,fast=True,x0=None):
+    def generate_samples(self, nSamples, nBurn=100, fast=True, x0=None):
         """
         Generate nSamples from this Hamiltonian starting from random initial conditions from each sample.
-        2016-08-17
         """
+
         if x0 is None:
             x0 = self.random_sample(nSamples)
         
-        if self.nJobs==0:
+        if self.nCpus==0:
             if fast:
                 dt,leapfrogN,theta = self.dt,self.leapfrogN,self.theta
                 @jit 
@@ -1725,33 +1750,33 @@ class HamiltonianMC(object):
             else:
                 def f(x0):
                     return self.sample(x0,nBurn)
-            p = mp.Pool(self.nJobs)
+            p = mp.Pool(self.nCpus)
             samples = np.vstack(( p.map(f,x0) ))
             p.close()
             return samples
-# End HamiltonianMC
+#end HamiltonianMC
 
 
-@jit(nopython=True)
-def jit_sample(theta,x0,nBurn,dt,leapfrogN,randNormal,randUnif):
+@njit
+def jit_sample(theta, x0, nBurn, dt, leapfrogN, randNormal, randUnif):
     """
     Get a single sample by MC sampling from this Hamiltonian.
-    2016-08-16
 
-    Params:
-    -------
-    theta (ndarray)
+    Parameters
+    ----------
+    theta : ndarray
         Parameters
-    x0 (ndarray)
+    x0 : ndarray
         Sample
-    nBurn (int)
-    dt (float)
-    leapfrogN (int)
-    randNormal (ndarray)
+    nBurn : int
+    dt : float
+    leapfrogN : int
+    randNormal : ndarray
         nBurn x ndim
-    randUnif (ndarray)
+    randUnif : ndarray
         nBurn
     """
+
     x = x0
     E = calc_e(theta,x0)
     g = grad_e(theta,x0)
@@ -1788,11 +1813,18 @@ def jit_sample(theta,x0,nBurn,dt,leapfrogN,randNormal,randUnif):
             x = xnew
 
 
-# ------------------------------------------------------------------------- #
-# Simple MC Sampling from Heisenberg model with a lot of helpful functions. #
-# ------------------------------------------------------------------------- #
-class Heisenberg3DSampler(object):
-    def __init__(self,J,calc_e,random_sample):
+class Heisenberg3DSampler():
+    """
+    Simple MC Sampling from Heisenberg model with a lot of helpful functions.
+
+    Methods
+    -------
+    generate_samples()
+    equilibrate_samples()
+    sample_metropolis()
+    sample_energy_min()
+    """
+    def __init__(self, J, calc_e, random_sample):
         """
         NOTE: This has not been properly tested.
 
@@ -1804,14 +1836,9 @@ class Heisenberg3DSampler(object):
             Function for calculating energies of array of given states with args (J,states). States
             must be array with dimensions (nSamples,nSpins,3).  random_sample (lambda)
             Function for returning random samples with args (rng,n_samples).
-        
-        Methods
-        -------
-        generate_samples()
-        equilibrate_samples()
-        sample_metropolis()
-        sample_energy_min()
         """
+
+        raise NotImplementedError("This hasn't been properly tested.")
         self.J = J
         self.Jmat = squareform(J)
         self.Jrows = np.zeros((self.Jmat.shape[0],self.Jmat.shape[0]-1))
@@ -1823,18 +1850,18 @@ class Heisenberg3DSampler(object):
         self.random_sample = random_sample
         self.rng = np.random.RandomState()
         
-    def generate_samples(self,nSamples,nIters=100,**kwargs):
+    def generate_samples(self, nSamples, nIters=100, **kwargs):
         # Initialize random samples
         samples = self.random_sample(self.rng,nSamples)
         self.equilibrate_samples( samples, nIters,**kwargs )
         return samples
     
-    def equilibrate_samples(self,samples,nIters,method='mc',nJobs=0):
-        if nJobs is None:
-            nJobs = mp.cpu_count()
+    def equilibrate_samples(self, samples, nIters, method='mc', nCpus=0):
+        if nCpus is None:
+            nCpus = mp.cpu_count()
             print("Using all cores.")
         else:
-            print("Using %d cores."%nJobs)
+            print("Using %d cores."%nCpus)
         if method=='mc':
             def sample_method(s,E):
                 for i in range(nIters):
@@ -1843,14 +1870,14 @@ class Heisenberg3DSampler(object):
         else:
             raise Exception("Unsupported sampling method.")
         
-        if nJobs==0:
+        if nCpus==0:
             E = np.zeros((len(samples)))
             for i in range(len(samples)):
                 E[i] = self.calc_e( self.J,[samples[i]] )
                 E[i] = sample_method(samples[i],E[i])
             return
         else:
-            p = mp.Pool(nJobs)
+            p = mp.Pool(nCpus)
             def f(args):
                 sample,J = args
                 E = self.calc_e( J,[sample] )
@@ -1860,7 +1887,7 @@ class Heisenberg3DSampler(object):
             E,samples[:] = list(zip( *p.map(f,list(zip(samples,[self.J]*len(samples)))) ))
             p.close()
 
-    def sample_metropolis(self,oldState,E0):
+    def sample_metropolis(self, oldState, E0):
         newState = self.sample_nearby_sample(oldState,sigma=.3)
         E1 = self.calc_e( self.J, [newState] )
         
@@ -1870,25 +1897,25 @@ class Heisenberg3DSampler(object):
         oldState[:] = newState[:]
         return newState,E1
 
-    def sample_nearby_vector(self,v,nSamples=1,otheta=None,ophi=None,sigma=.1):
+    def sample_nearby_vector(self, v, nSamples=1, otheta=None, ophi=None, sigma=.1):
         """
         Sample random vector that is nearby. It is important how you choose the width sigma.
         NOTE: code might be simplified by using arctan2 instead of arctan
-        2016-04-12
         
-        Params:
-        -------
-        v (ndarray)
+        Parameters
+        ----------
+        v : ndarray
             xyz vector about which to sample random vectors
-        nSamples (int=1)
+        nSamples : int,1
             number of random samples
-        otheta (float=None)
+        otheta : float,None
             polar angle for v
-        ophi (float=None)
+        ophi : float,None
             azimuthal angle for v
-        sigma (float=.1)
+        sigma : float,.1
             width of Gaussian about v
         """
+
         if otheta is None or ophi is None:
             r = np.sqrt( v[0]*v[0] + v[1]*v[1] )
             otheta = np.pi/2 - np.arctan( v[2]/r )
@@ -1899,24 +1926,24 @@ class Heisenberg3DSampler(object):
         
         return jit_sample_nearby_vector( self.rng.randint(2**32-1),v,nSamples,otheta,ophi,sigma )
 
-    def _sample_nearby_vector(self,v,nSamples=1,otheta=None,ophi=None,sigma=.1):
+    def _sample_nearby_vector(self, v, nSamples=1, otheta=None, ophi=None, sigma=.1):
         """
         Deprecated: old slower way. Sample random vector that is nearby.
-        2016-04-10
         
-        Params:
-        -------
-        v (ndarray)
+        Parameters
+        ----------
+        v : ndarray
             xyz vector about which to sample random vectors
-        nSamples (int=1)
+        nSamples : int=1
             number of random samples
-        otheta (float=None)
+        otheta : float=None
             polar angle for v
-        ophi (float=None)
+        ophi : float=None
             azimuthal angle for v
-        sigma (float=.1)
+        sigma : float=.1
             width of Gaussian about v
         """
+
         if otheta is None or ophi is None:
             r = np.sqrt( v[0]*v[0] + v[1]*v[1] )
             otheta = np.pi/2 - np.arctan( v[2]/r )
@@ -1938,23 +1965,24 @@ class Heisenberg3DSampler(object):
         return np.array([(r * np.cos(otheta) + np.cross(k,r)*np.sin(otheta) + k*np.dot(k,r)*(1-np.cos(otheta)))
                          for r in randv])
 
-    def sample_nearby_sample(self,X,**kwargs):
+    def sample_nearby_sample(self, X, **kwargs):
         """
         Randomly move given state around for new metropolis sample.
         Question is whether it is more efficient to push only one of the many vectors around or all of them simultaneously.
         """
+
         return np.vstack([self.sample_nearby_vector(x,**kwargs) for x in X])
 
-    def grad_E(self,X):
+    def grad_E(self, X):
         """
         Gradient wrt theta and phi.
-        2016-04-10
 
-        Params:
-        -------
-        X (ndarray)
+        Parameters
+        ----------
+        X : ndarray
             with dims (nSpins,2) with angles theta and phi
         """
+
         assert X.ndim==2
         
         g = np.zeros((X.shape[0],2))
@@ -1966,16 +1994,24 @@ class Heisenberg3DSampler(object):
                     g[i,1] += self.Jmat[i,j] * np.sin(X[j,0]) * np.sin(X[i,1]-X[j,1])
         return g
 
-    def sample_energy_min(self,nFixed=0,rng=np.random.RandomState(),initialState=None,method='powell',**kwargs):
+    def sample_energy_min(self,
+                          nFixed=0,
+                          rng=np.random.RandomState(),
+                          initialState=None,
+                          method='powell',
+                          **kwargs):
         """
-        Find local energy minimum given state in angular form. Angular representation makes it easy to be explicit about constraints on the vectors.
-        2016-04-20
+        Find local energy minimum given state in angular form. Angular representation makes it easy to be
+        explicit about constraints on the vectors.
         
-        initialState (ndarray=None)
+        Parameters
+        ----------
+        initialState : ndarray,None
             n_samples x n_features x 2
-        nFixed (int=0)
+        nFixed : int,0
             Number of vectors that are fixed.
         """
+
         n = self.Jmat.shape[0]
 
         if initialState is None:
@@ -2001,25 +2037,25 @@ class Heisenberg3DSampler(object):
     def to_dict(cls,data,names):
         """
         Convenience function taking 3d array of of samples and arranging them into n x 3 arrays in a dictionary.
-        2016-04-13
         """
+
         from collections import OrderedDict
         X = OrderedDict()
         for i,k in enumerate(names):
             X[k] = np.vstack([d[i,:] for d in data])
         return X
-# End Heisenberg3dSampler
+#end Heisenberg3dSampler
 
-# ------------------#
+# ---------------------#
 # Helper functions. #
-# ------------------#
+# ---------------------#
 @jit
 def cross(vec1, vec2):
     """ Calculate the cross product of two 3d vectors. """
     result = np.zeros((3))
     return cross_(vec1, vec2, result)
 
-@jit(nopython=True)
+@njit
 def cross_(vec1, vec2, result):
     """ Calculate the cross product of two 3d vectors. """
     a1 = vec1[0]
@@ -2033,7 +2069,7 @@ def cross_(vec1, vec2, result):
     result[2] = a1 * b2 - a2 * b1
     return result
 
-@jit(nopython=True)
+@njit
 def jit_sample_nearby_vector(rseed,v,nSamples,otheta,ophi,sigma):
     np.random.seed(rseed)
 
@@ -2064,17 +2100,17 @@ def jit_sample_nearby_vector(rseed,v,nSamples,otheta,ophi,sigma):
             rotatedv[i,j] = rotatedv_[j]
     return rotatedv
 
-def check_e_logp(sample,calc_e):
+def check_e_logp(sample, calc_e):
     """
     Boltzmann type model with discrete state space should have E propto -logP. Calculate these quantities for
     comparison.
-    2017-02-15
 
-    Params:
-    -------
+    Parameters
+    ----------
     sample
     calc_e
     """
+
     from misc.utils import unique_rows
 
     uniqueix = unique_rows(sample,return_inverse=True)

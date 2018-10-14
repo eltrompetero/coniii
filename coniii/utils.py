@@ -1,10 +1,11 @@
-from __future__ import division
+# ========================================================================================================= #
+# Miscellaneous functions used for various computations.
+# ========================================================================================================= #
 import numpy as np
 from numba import jit
 from scipy.special import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
-
 
 
 @jit(nopython=True,nogil=True,cache=True)
@@ -23,13 +24,13 @@ def sub_to_ind(n,i,j):
     """
     if i<j:
         k = 0
-        for l in xrange(1,i+2):
+        for l in range(1,i+2):
             k += n-l
         assert k>=0
         return k-n+j
     elif i>j:
         k = 0
-        for l in xrange(1,j+2):
+        for l in range(1,j+2):
             k += n-l
         assert k>=0
         return k-n+i
@@ -53,8 +54,8 @@ def ind_to_sub(n,ix):
         (i,j)
     """
     k = 0
-    for i in xrange(n-1):
-        for j in xrange(i+1,n):
+    for i in range(n-1):
+        for j in range(i+1,n):
             if k==ix:
                 return (i,j)
             k += 1
@@ -138,20 +139,20 @@ def pair_corr(X,
     
     if exclude_empty:
         # Don't include 0's in calculation of averages.
-	weights=1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] )
+        weights=1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] )
     elif weights is None:
-	weights=np.ones(len(X))/len(X)
+        weights=np.ones(len(X))/len(X)
     
     # Calculate pairwise correlations depending on whether or not exclude_empty was set or not.
     if len(weights)==len(X):
-	sisj=(X.T.dot(X*weights[:,None]))[np.triu_indices(X.shape[1],k=1)]
+        sisj=(X.T.dot(X*weights[:,None]))[np.triu_indices(X.shape[1],k=1)]
         si=(X*weights[:,None]).sum(0)
     else:
         sisj=(X.T.dot(X))[np.triu_indices(X.shape[1],k=1)]*weights
         si=X.sum(0)/(X!=0).sum(0)
     
     if subtract_mean:
-        sisj = np.array([sisj[i]-si[ix[0]]*si[ix[1]] for i,ix in enumerate(combinations(range(N),2))])
+        sisj = np.array([sisj[i]-si[ix[0]]*si[ix[1]] for i,ix in enumerate(combinations(list(range(N)),2))])
     
     if concat:
         return np.concatenate((si,sisj))
@@ -197,7 +198,7 @@ def xbin_states(n,sym=False):
     assert n>0, "n cannot be <0"
     
     def v():
-        for i in xrange(2**n):
+        for i in range(2**n):
             if sym is False:
                 yield np.array(list(np.binary_repr(i,width=n))).astype('int')
             else:
@@ -366,8 +367,8 @@ def define_pseudo_ising_helpers(N):
         ix[0] = r  # index for local field
         couplingcounter = N
         ixcounter = 1
-        for i in xrange(N-1):
-            for j in xrange(i+1,N):
+        for i in range(N-1):
+            for j in range(i+1,N):
                 if i==r or j==r:
                     ix[ixcounter] = couplingcounter  # indices for couplings
                     ixcounter += 1
@@ -392,12 +393,12 @@ def define_pseudo_ising_helpers(N):
         """
         obs = np.zeros((X.shape[0],N))
         
-        for rowix in xrange(X.shape[0]):
+        for rowix in range(X.shape[0]):
             ixcounter = 1
             obs[rowix,0] = X[rowix,r]
             
-            for i in xrange(N-1):
-                for j in xrange(i+1,N):
+            for i in range(N-1):
+                for j in range(i+1,N):
                     if i==r or j==r:
                         obs[rowix,ixcounter] = X[rowix,i]*X[rowix,j]  # indices for couplings
                         ixcounter += 1
@@ -419,10 +420,10 @@ def define_ising_helpers_functions():
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
         e = np.zeros((s.shape[0]))
-        for n in xrange(s.shape[0]):
+        for n in range(s.shape[0]):
             k = 0
-            for i in xrange(s.shape[1]-1):
-                for j in xrange(i+1,s.shape[1]):
+            for i in range(s.shape[1]-1):
+                for j in range(i+1,s.shape[1]):
                     e[n] += J[k]*s[n,i]*s[n,j]
                     k += 1
         return e
@@ -457,9 +458,9 @@ def define_ising_helpers_functions():
         obs = np.zeros((samples.shape[0],n+n*(n-1)//2))
         
         k = 0
-        for i in xrange(n):
+        for i in range(n):
             obs[:,i] = samples[:,i]
-            for j in xrange(i+1,n):
+            for j in range(i+1,n):
                 obs[:,n+k] = samples[:,i]*samples[:,j]
                 k += 1
         return obs
@@ -479,10 +480,10 @@ def define_sising_helpers_functions():
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
         e = np.zeros((s.shape[0]))
-        for n in xrange(s.shape[0]):
+        for n in range(s.shape[0]):
             k = 0
-            for i in xrange(s.shape[1]-1):
-                for j in xrange(i+1,s.shape[1]):
+            for i in range(s.shape[1]-1):
+                for j in range(i+1,s.shape[1]):
                     e[n] += J[k]*s[n,i]*s[n,j]
                     k += 1
         return e
@@ -517,8 +518,8 @@ def define_sising_helpers_functions():
         obs = np.zeros((samples.shape[0],n*(n-1)//2))
         
         k = 0
-        for i in xrange(n):
-            for j in xrange(i+1,n):
+        for i in range(n):
+            for j in range(i+1,n):
                 obs[:,k] = samples[:,i]*samples[:,j]
                 k += 1
         return obs
@@ -548,12 +549,12 @@ def adj(s,n_random_neighbors=0):
         Each row is a neighbor. s.size + n_random_neighbors are returned.
     """
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
-    for i in xrange(s.size):
+    for i in range(s.size):
         s[i] = 1-s[i]
         neighbors[i] = s.copy()
         s[i] = 1-s[i]
     if n_random_neighbors:
-        for i in xrange(n_random_neighbors):
+        for i in range(n_random_neighbors):
             match = True
             while match:
                 newneighbor = (np.random.rand(s.size)<.5)*1.
@@ -569,12 +570,12 @@ def adj_sym(s,n_random_neighbors=False):
     Symmetric version of adj() where spins are in {-1,1}.
     """
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
-    for i in xrange(s.size):
+    for i in range(s.size):
         s[i] = -1*s[i]
         neighbors[i] = s.copy()
         s[i] = -1*s[i]
     if n_random_neighbors:
-        for i in xrange(n_random_neighbors):
+        for i in range(n_random_neighbors):
             match=True
             while match:
                 newneighbor=(np.random.rand(s.size)<.5)*2.-1

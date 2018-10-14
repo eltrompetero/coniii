@@ -2,14 +2,14 @@
 # ConIII module for algorithms for solving the inverse Ising problem.
 # Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels (bryan.daniels.1@asu.edu)
 # =============================================================================================== #
-from __future__ import division
+
 from scipy.optimize import minimize,fmin_ncg,minimize_scalar
 import multiprocess as mp
 import copy
-import mean_field_ising
+from . import mean_field_ising
 from warnings import warn
-from utils import *
-from samplers import *
+from .utils import *
+from .samplers import *
 
 
 
@@ -356,7 +356,7 @@ class MPF(Solver):
                 dobj = Xcount[i] * np.exp( .5*(self.calc_e(s[None,:],params) 
                                                - self.calc_e(adjacentStates[i],params) ) )
                 if not self.calc_de is None:
-                    for j in xrange(params.size):
+                    for j in range(params.size):
                         if dobj.size!=adjacentStates[i].shape[0]:
                             raise Exception("Sizes do not match")
                         objGrad[j] += .5 * (dobj * ( self.calc_de(s[None,:],j) 
@@ -366,7 +366,7 @@ class MPF(Solver):
             # Parallel loop through objective function calculation for each state in the data.
             obj = [self.pool.apply( unwrap_self_worker_obj, 
                                     args=([Xuniq[i],Xcount[i],adjacentStates[i],params,self.calc_e],) ) 
-                        for i in xrange(Xuniq.shape[0])]
+                        for i in range(Xuniq.shape[0])]
             obj = obj.sum()
 
             if not self.calc_de is None:
@@ -435,7 +435,7 @@ class MPF(Solver):
         
         if not self.calc_de is None:
             # coefficients that come out from taking derivative of exp
-            for i in xrange(params.size):
+            for i in range(params.size):
                 gradcoef=np.zeros((len(Xuniq),len(adjacentStates[0])))  
                 for j,s in enumerate(Xuniq): 
                     gradcoef[j,:] = .5 * ( self.calc_de(s[None,:],i) 
@@ -684,7 +684,7 @@ class MCH(Solver):
         if type(custom_convergence_f(0)) is dict:
             custom_convergence_f_ = custom_convergence_f
             custom_convergence_f = lambda i:(custom_convergence_f_(i),self.sampleSize)
-        assert 'maxdlamda' and 'eta' in custom_convergence_f(0)[0].keys()
+        assert 'maxdlamda' and 'eta' in list(custom_convergence_f(0)[0].keys())
         assert type(custom_convergence_f(0)[1]) is int
         
         
@@ -696,7 +696,7 @@ class MCH(Solver):
                                                                size=(self.sampleSize,self.n)) )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
-        if disp=='detailed': print self._multipliers
+        if disp=='detailed': print(self._multipliers)
 
 
         # MCH iterations.
@@ -706,15 +706,15 @@ class MCH(Solver):
         while keepLooping:
             # MCH step
             if disp:
-                print "Iterating parameters with MCH..."
+                print("Iterating parameters with MCH...")
             self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
             if disp=='detailed':
-                print "After MCH step, the parameters are..."
-                print self._multipliers
+                print("After MCH step, the parameters are...")
+                print(self._multipliers)
             
             # MC sampling step
             if disp:
-                print "Sampling..."
+                print("Sampling...")
             self.generate_samples( n_iters,burnin,
                                    multipliers=self._multipliers,
                                    generate_kwargs=generate_kwargs,
@@ -725,15 +725,15 @@ class MCH(Solver):
             
             errors.append( thisConstraints-self.constraints )
             if disp=='detailed':
-                print "Error is %1.4f"%np.linalg.norm(errors[-1])
+                print("Error is %1.4f"%np.linalg.norm(errors[-1]))
             # Exit criteria.
             if ( np.linalg.norm(errors[-1])<tolNorm
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
-                if disp: print "Solved."
+                if disp: print("Solved.")
                 errflag=0
                 keepLooping=False
             elif counter>maxiter:
-                if disp: print "Over maxiter"
+                if disp: print("Over maxiter")
                 errflag=1
                 keepLooping=False
             else:
@@ -761,8 +761,8 @@ class MCH(Solver):
         """
         dlamda = np.zeros(self._multipliers.shape)
         jac = np.zeros((self._multipliers.size,self._multipliers.size))
-        print "evaluating jac"
-        for i in xrange(len(self._multipliers)):
+        print("evaluating jac")
+        for i in range(len(self._multipliers)):
             dlamda[i] += eps
             dConstraintsPlus = self.mch_approximation(self.samples,dlamda)     
 
@@ -928,11 +928,11 @@ class MCHIncompleteData(MCH):
                                                           return_inverse=True) )
         fullFraction = (len(X)-incompleteIx.sum())/len(X)
         if disp:
-            print "There are %d unique states."%len(uIncompleteStatesCount)
+            print("There are %d unique states."%len(uIncompleteStatesCount))
         
         # Sample.
         if disp:
-            print "Sampling..."
+            print("Sampling...")
         self.generate_samples(n_iters,burnin,
                               uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                               generate_kwargs=generate_kwargs,disp=disp)
@@ -942,22 +942,22 @@ class MCHIncompleteData(MCH):
         # MCH iterations.
         counter = 0
         keepLoop = True
-        if disp>=2: print self._multipliers
+        if disp>=2: print(self._multipliers)
         while keepLoop:
             if disp:
-                print "Iterating parameters with MCH..."
+                print("Iterating parameters with MCH...")
             self.learn_parameters_mch(thisConstraints,
                                       fullFraction,
                                       uIncompleteStates,
                                       uIncompleteStatesCount,
                                       **learn_params_kwargs)
             if disp>=2:
-                print "After MCH step, the parameters are..."
-                print self._multipliers
+                print("After MCH step, the parameters are...")
+                print(self._multipliers)
 
             # Sample.
             if disp:
-                print "Sampling..."
+                print("Sampling...")
             self.generate_samples(n_iters,burnin,
                                   uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                                   generate_kwargs=generate_kwargs,disp=disp)
@@ -969,11 +969,11 @@ class MCHIncompleteData(MCH):
             errors.append( thisConstraints-self.constraints )
             if ( np.linalg.norm(errors[-1])<tolNorm
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
-                print "Solved."
+                print("Solved.")
                 errflag=0
                 keepLoop=False
             elif counter>maxiter:
-                print "Over maxiter"
+                print("Over maxiter")
                 errflag=1
                 keepLoop=False
         
@@ -1122,7 +1122,7 @@ class MCHIncompleteData(MCH):
                 def f(args):
                     """Function for parallelizing sampling of conditional distributions."""
                     i,s = args
-                    frozenSpins = zip(np.where(s!=0)[0],s[s!=0])
+                    frozenSpins = list(zip(np.where(s!=0)[0],s[s!=0]))
                     
                     if disp:
                         start = datetime.now() 
@@ -1132,14 +1132,14 @@ class MCHIncompleteData(MCH):
                                                           parallel=False,
                                                           **generate_kwargs)
                     if disp:
-                        print "Done sampling %d out of %d unique states in %1.1f s."%(i+1,
+                        print("Done sampling %d out of %d unique states in %1.1f s."%(i+1,
                                                                       len(uIncompleteStates),
-                                                                      (datetime.now()-start).total_seconds())
+                                                                      (datetime.now()-start).total_seconds()))
                     return sample
 
                 # Parallel sampling of conditional distributions. 
                 pool = mp.Pool(self.n_jobs)
-                self.condSamples = pool.map( f,zip(range(len(uIncompleteStates)),uIncompleteStates) )
+                self.condSamples = pool.map( f,list(zip(list(range(len(uIncompleteStates))),uIncompleteStates)) )
                 pool.close()
         else:
            raise NotImplementedError("Unrecognized sampler.")
@@ -1223,7 +1223,7 @@ class Pseudo(Solver):
         """
         def f(params):
             loglikelihood = 0
-            for r in xrange(self.n):
+            for r in range(self.n):
                 E = -self.calc_observables_r(r,X).dot(self.get_multipliers_r(r,params))
                 loglikelihood += -np.log( 1+np.exp(2*E) ).sum() 
             return -loglikelihood
@@ -1253,8 +1253,8 @@ class Pseudo(Solver):
         hList = -np.log(freqs/(1.-freqs))
         Jfinal = np.zeros((self.n,self.n))
 
-        for r in xrange(self.n):
-            print "Minimizing for r =",r
+        for r in range(self.n):
+            print("Minimizing for r =",r)
             
             Jr0 = np.zeros(self.n)
             Jr0[r] = hList[r]
@@ -1377,7 +1377,7 @@ class Pseudo(Solver):
             J should be symmetric
         """
         return np.sum([ cond_log_likelihood(r,X,J) \
-                           for r in xrange(len(J)) ])
+                           for r in range(len(J)) ])
 # End Pseudo
 
 
@@ -1491,7 +1491,7 @@ class ClusterExpansion(Solver):
             #print "deltaS: found answer for",cluster
             return deltaSdict[cID],deltaJdict[cID]
         elif verbose:
-            print "deltaS: Calculating entropy for cluster",cluster
+            print("deltaS: Calculating entropy for cluster",cluster)
         
         # start with full entropy (and J)
         deltaScluster,deltaJcluster = self.S(cluster,coocMat,
@@ -1610,7 +1610,7 @@ class ClusterExpansion(Solver):
         
         N = len(coocMat)
         T = threshold
-        if cluster is None: cluster = range(N)
+        if cluster is None: cluster = list(range(N))
 
         clusters = {} # LIST
         size = 1
@@ -1620,8 +1620,8 @@ class ClusterExpansion(Solver):
             clusters[ size+1 ] = []
             numClusters = len(clusters[size])
             if verbose:
-                print "adaptiveClusterExpansion: Clusters of size", \
-                    size+1
+                print("adaptiveClusterExpansion: Clusters of size", \
+                    size+1)
             for i in range(numClusters):
               for j in range(i+1,numClusters): # some are not unique!
                 gamma1 = clusters[size][i]
@@ -1653,7 +1653,7 @@ class ClusterExpansion(Solver):
             J0 = np.zeros((N,N))
         J = J0.copy()
 
-        for size in clusters.keys():
+        for size in list(clusters.keys()):
             for cluster in clusters[size]:
                 cID = self.clusterID(cluster)
                 ent += deltaSdict[cID]
@@ -1738,12 +1738,12 @@ class ClusterExpansion(Solver):
         threshold = thresholds[thresholdIndex]
         
         if self.verbose=='detailed':
-            print 'threshold =',threshold
+            print('threshold =',threshold)
             
-        clustersOldLength = np.sum([ len(clusterlist) for clusterlist in clusters.values() ])
+        clustersOldLength = np.sum([ len(clusterlist) for clusterlist in list(clusters.values()) ])
         
         # do fitting for decreasing thresholds
-        raise Exception,"Not implemented: Need to change function call to use coniii interface"
+        raise Exception("Not implemented: Need to change function call to use coniii interface")
         ent,J,clusters,deltaSdict,deltaJdict = \
             self.solve(coocMat,threshold,priorLmbda=priorLmbda,
                  numSamples=numSamplesData,deltaSdict=deltaSdict,
@@ -1754,15 +1754,15 @@ class ClusterExpansion(Solver):
             save(deltaSdict,fileStr+'_deltaSdict.data')
             save(deltaJdict,fileStr+'_deltaJdict.data')
         
-        clustersNewLength = np.sum([ len(clusterlist) for clusterlist in clusters.values() ])
+        clustersNewLength = np.sum([ len(clusterlist) for clusterlist in list(clusters.values()) ])
         
         if clustersNewLength > clustersOldLength:
             
             if self.verbose:
-                print
-                print 'threshold =',threshold
-                print 'old number of clusters =',clustersOldLength
-                print 'new number of clusters =',clustersNewLength
+                print()
+                print('threshold =',threshold)
+                print('old number of clusters =',clustersOldLength)
+                print('new number of clusters =',clustersNewLength)
             
             #m = IsingModel(J,numProcs=numProcs)
             
@@ -1793,8 +1793,8 @@ class ClusterExpansion(Solver):
                 epsilonp = np.sqrt(np.mean(zvals[:ell]**2))
                 epsilonc = np.sqrt(np.mean(zvals[ell:]**2))
                 if self.verbose:
-                    print "epsilonp =",epsilonp
-                    print "epsilonc =",epsilonc
+                    print("epsilonp =",epsilonp)
+                    print("epsilonc =",epsilonc)
                 epsVals = [epsilonp,epsilonc]
             elif minimizeIndependent: # independent residuals; method of CocMon11
                 #
@@ -1812,8 +1812,8 @@ class ClusterExpansion(Solver):
                 epsilonp = np.sqrt(np.mean(zvals[:ell]**2))
                 epsilonc = np.sqrt(np.mean(zvals[ell:]**2))
                 if self.verbose:
-                    print "epsilonp =",epsilonp
-                    print "epsilonc =",epsilonc
+                    print("epsilonp =",epsilonp)
+                    print("epsilonc =",epsilonc)
                 epsVals = [epsilonp,epsilonc]
             else: # correlated residuals 3.10.2014
                 # (future: encapsulate into function?)
@@ -1822,14 +1822,14 @@ class ClusterExpansion(Solver):
                 zvals = np.dot( deltaCooc,U ) / np.sqrt(s)
                 coocMatMeanZSq = np.mean( numSamplesData * zvals**2 )
                 if self.verbose:
-                    print "coocMatMeanZSq =",coocMatMeanZSq
+                    print("coocMatMeanZSq =",coocMatMeanZSq)
                 epsVals = [coocMatMeanZSq]
 
             # keep track of mean event size
             meanFightSize = np.mean(np.sum(samplesCorrected,axis=1))
             meanFightSizeList.append(meanFightSize)
             if self.verbose:
-                print "mean event size =",meanFightSize
+                print("mean event size =",meanFightSize)
 
             # keep track of epsValsList
             epsValsList.append(epsVals)
@@ -1842,7 +1842,7 @@ class ClusterExpansion(Solver):
             maxClusterSize = max(clusters.keys())
             maxClusterSizeList.append(maxClusterSize)
             if self.verbose:
-                print "max cluster size =",maxClusterSize
+                print("max cluster size =",maxClusterSize)
 
             # 5.21.2014
             d = {'meanFightSizeList':meanFightSizeList,
@@ -1864,38 +1864,38 @@ class ClusterExpansion(Solver):
             if np.all( np.array(epsVals) < epsThreshold ):
                 stop = True
                 if self.verbose:
-                    print
-                    print "Using result from threshold =",threshold
-                    print
+                    print()
+                    print("Using result from threshold =",threshold)
+                    print()
             if threshold < minThreshold:
                 stop = True
                 
                 # go back to best found so far
                 if self.verbose:
-                    print "Minimum threshold passed ("+str(minThreshold)+")"
+                    print("Minimum threshold passed ("+str(minThreshold)+")")
                 J = Jbest
                 clusters = clustersBest
                 threshold = thresholdBest
 
                 if self.verbose:
-                    print
-                    print "Using result from threshold =",threshold
-                    print
+                    print()
+                    print("Using result from threshold =",threshold)
+                    print()
 
             if maxClusterSize > maxMaxClusterSize: # 5.21.2014
                 stop = True
                 
                 # go back to best found so far
                 if self.verbose:
-                    print "Maximum largest cluster size passed ("+str(maxMaxClusterSize)+")"
+                    print("Maximum largest cluster size passed ("+str(maxMaxClusterSize)+")")
                 J = Jbest
                 clusters = clustersBest
                 threshold = thresholdBest
                 
                 if self.verbose:
-                    print
-                    print "Using result from threshold =",threshold
-                    print
+                    print()
+                    print("Using result from threshold =",threshold)
+                    print()
 
             if stop and bruteForceMin:
                 # 3.6.2014 use brute force optimization to get better fit
@@ -1919,7 +1919,7 @@ class ClusterExpansion(Solver):
                 else:
                     coocCov = None
                 if self.verbose:
-                    print "Optimizing using findJmatrixBruteForce_CoocMat..."
+                    print("Optimizing using findJmatrixBruteForce_CoocMat...")
                 J = findJmatrixBruteForce_CoocMat(coocMatObserved,
                                                   coocCov=coocCov,**BFkwargs)
 
@@ -2019,7 +2019,7 @@ class RegularizedMeanField(Solver):
         
         if priorLmbda != 0.:
             # 11.24.2014 Need to fix prior implementation
-            raise Exception, "priorLmbda is not currently supported"
+            raise Exception("priorLmbda is not currently supported")
             lmbda = priorLmbda / numDataSamples
 
         # 11.21.2014 stuff defining the error model, taken from findJmatrixBruteForce_CoocMat
@@ -2030,7 +2030,7 @@ class RegularizedMeanField(Solver):
             coocStdevs = mean_field_ising.coocStdevsFlat(coocMatData,numDataSamples)
             coocStdevsRepeated = ( coocStdevs*np.ones((len(coocStdevs),len(coocStdevs))) ).T
         elif minimizeCovariance:
-            raise Exception, "minimizeCovariance is not currently supported"
+            raise Exception("minimizeCovariance is not currently supported")
             empiricalFreqs = np.diag(coocMatData)
             covTildeMean = covarianceTildeMatBayesianMean(coocMatData,numDataSamples)
             covTildeStdevs = covarianceTildeStdevsFlat(coocMatData,numDataSamples,
@@ -2038,7 +2038,7 @@ class RegularizedMeanField(Solver):
             covTildeStdevsRepeated = (
                     covTildeStdevs*np.ones((len(covTildeStdevs),len(covTildeStdevs))) ).T
         else:
-            raise Exception, "correlated residuals calculation is not currently supported"
+            raise Exception("correlated residuals calculation is not currently supported")
             # 2.7.2014
             if coocCov is None: raise Exception
             cov = coocCov # / numDataSamples (can't do this here due to numerical issues)
@@ -2050,7 +2050,7 @@ class RegularizedMeanField(Solver):
         
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
         def samples(J):
-           seed = seedIter.next()
+           seed = next(seedIter)
            #print seed
            #J = unflatten(flatJ,ell,symmetrize=True)
            if minimizeCovariance:
@@ -2105,8 +2105,8 @@ class RegularizedMeanField(Solver):
                 dc = np.concatenate([dc,priorTerm])
                 
             if self.verbose:
-                print "RegularizedMeanField.solve: Tried "+str(meanFieldGammaPrime)
-                print "RegularizedMeanField.solve: sum(dc**2) = "+str(np.sum(dc**2))
+                print("RegularizedMeanField.solve: Tried "+str(meanFieldGammaPrime))
+                print("RegularizedMeanField.solve: sum(dc**2) = "+str(np.sum(dc**2)))
                 
             return np.sum(dc**2)
 
@@ -2145,7 +2145,7 @@ class RegularizedMeanField(Solver):
         gridMinIndex = np.argmin(funcList)
         gridMin = xList[gridMinIndex]
         if (gridMinIndex == 0) or (gridMinIndex == len(xList)-1):
-            raise Exception, "Minimum at boundary"
+            raise Exception("Minimum at boundary")
         gridBracket1 = xList[ np.argmin(funcList[:gridMinIndex]) ]
         gridBracket2 = xList[ gridMinIndex + 1 + np.argmin(funcList[gridMinIndex+1:]) ]
         gridBracket = (gridBracket1,gridMin,gridBracket2)

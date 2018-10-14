@@ -1,6 +1,6 @@
 # Ising solver.
 # 2015-04-30
-from __future__ import division
+
 import numpy as np
 from misc_fcns import *
 import workspace.utils as ws
@@ -9,7 +9,7 @@ from scipy.spatial.distance import squareform
 import fast,sys,os
 from joblib import Parallel,delayed
 import scipy.optimize as opt
-from samplers import MCIsing,WolffIsing,ParallelTempering
+from .samplers import MCIsing,WolffIsing,ParallelTempering
 #import copy_reg
 #import types
 #copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
@@ -41,7 +41,7 @@ def _testing_algorithm(n,etamch,maxdjnorm,maxerr,maxlearnsteps,djexpnormscalemx,
 
     t0 = time.time()
     samples = generate_samples(J0,n,1e4)
-    print "Time to generate samples is "+str(time.time()-t0)
+    print("Time to generate samples is "+str(time.time()-t0))
     sisj0 = calc_sisj(samples)
 
     J, exitflag = solve_J(sisj0,J0+np.random.normal(scale=errscale,size=nn+n),n,
@@ -49,9 +49,9 @@ def _testing_algorithm(n,etamch,maxdjnorm,maxerr,maxlearnsteps,djexpnormscalemx,
                           maxlearnsteps=maxlearnsteps, maxdjnorm=maxdjnorm,
                           djexpnormscalemx=djexpnormscalemx, djexpnormscalemn=djexpnormscalemn)
     sisj = calc_sisj( generate_samples(J,n,1e4) )
-    print sisj.shape
-    print sisj0.shape
-    print exitflag
+    print(sisj.shape)
+    print(sisj0.shape)
+    print(exitflag)
 
     # Plotting.
 #    import matplotlib.pyplot as plt
@@ -162,7 +162,7 @@ class Solver():
                 iters = self.get_iter_length(J,samples.copy())
             iters += 30 
 
-        print "iters = %d" %iters
+        print("iters = %d" %iters)
         # Equilibrate each sample.
     #    (e,self.samples) = fast.equilibrate_samples(self.J,np.reshape(self.samples[0,:],(1,self.N)),iters,
     #                                           self.S,burnin=iters)
@@ -253,8 +253,8 @@ class Solver():
         NN = N*(N-1)/2
         JMat = fast.convert_utri_to_array(J[N:],J[:N],N)
         
-        results = zip(* Parallel(n_jobs=self.nJobs)(delayed(fast.sample_f_save_e)(s,samples[s],JMat,J,iters)
-                                                        for s in range(S)) )
+        results = list(zip(* Parallel(n_jobs=self.nJobs)(delayed(fast.sample_f_save_e)(s,samples[s],JMat,J,iters)
+                                                        for s in range(S)) ))
         save_e,samples = np.array(results[0]),np.array(samples)
         return (save_e,samples)
 
@@ -267,8 +267,8 @@ class Solver():
         samples = np.random.randint(2,size=(self.S,self.N))
         JMat = fast.convert_utri_to_array(self.J[self.N:],self.J[:self.N],self.N)
 
-        results = zip(* Parallel(n_jobs=self.nJobs)(delayed(fast.sample_f)(s,samples[s],JMat,self.J,iters,burnin)
-                                            for s in range(int(self.S))) )
+        results = list(zip(* Parallel(n_jobs=self.nJobs)(delayed(fast.sample_f)(s,samples[s],JMat,self.J,iters,burnin)
+                                            for s in range(int(self.S))) ))
         self.E = np.array(results[0])
         self.samples = np.array(results[1])
         return 
@@ -451,7 +451,7 @@ class MonteCarloHistogram(Solver):
             #if sym: 
             #    J = np.hstack(( J,-.5*np.sum(squareform(J),1) ))
             
-            print "Sampling..." 
+            print("Sampling...") 
             if iters is None:
                 self.generate_samples()
             else:
@@ -460,7 +460,7 @@ class MonteCarloHistogram(Solver):
             return self.sisj-self.constraints
 
         def jacFun(eps): 
-            print "Computing Jacobian..."
+            print("Computing Jacobian...")
             self.jac = self.get_jac_p( self.sisj, self.samples, eps=eps )
             return self.jac
         
@@ -502,7 +502,7 @@ class MonteCarloHistogram(Solver):
                 sisj_,Zfracisbad = sample_MCH(dJ,samples)
                 if eps<1e-6:
                     raise Exception("eps very small.")
-                print "eps = %1.3f" %eps
+                print("eps = %1.3f" %eps)
             jac[i,:] = (sisj_-sisj)/eps
         return jac
     
@@ -624,7 +624,7 @@ class MonteCarloHistogram(Solver):
                 sisj_,Zfracisbad = sample_MCH(dJ,samples)
                 if eps<1e-6:
                     raise Exception("eps very small.")
-                print "eps = %1.3f" %eps
+                print("eps = %1.3f" %eps)
 
             jac[:,i] = (sisj_-sisj)/eps
         return jac
@@ -722,7 +722,7 @@ class MonteCarloHistogram(Solver):
 
     def printout(self,s):
         if self.display:
-            print s
+            print(s)
     
     def MCH(self,J0=None, 
                 tol=2e-2, errnormtol=.01, samplesn=1e4, maxmchcount=10,
@@ -835,7 +835,7 @@ class MonteCarloHistogram(Solver):
             exitflag = 2
         if self.runStatus['sampleSteps']>settings['SAMPLE_STEPS_MX']:
             exitflag = 3
-            print "MC sampling steps exceed allowed max."
+            print("MC sampling steps exceed allowed max.")
         self.printout("Done")
         return exitflag
 
@@ -890,7 +890,7 @@ class _MonteCarloHistogram(Solver):
             #if sym: 
             #    J = np.hstack(( J,-.5*np.sum(squareform(J),1) ))
             
-            print "Sampling..." 
+            print("Sampling...") 
             if iters is None:
                 self.generate_samples()
             else:
@@ -899,7 +899,7 @@ class _MonteCarloHistogram(Solver):
             return self.sisj-self.constraints
 
         def jacFun(eps): 
-            print "Computing Jacobian..."
+            print("Computing Jacobian...")
             self.jac = self.get_jac_p( self.sisj, self.samples, eps=eps )
             return self.jac
         
@@ -941,7 +941,7 @@ class _MonteCarloHistogram(Solver):
                 sisj_,Zfracisbad = sample_MCH(dJ,samples)
                 if eps<1e-6:
                     raise Exception("eps very small.")
-                print "eps = %1.3f" %eps
+                print("eps = %1.3f" %eps)
             jac[i,:] = (sisj_-sisj)/eps
         return jac
     
@@ -1063,7 +1063,7 @@ class _MonteCarloHistogram(Solver):
                 sisj_,Zfracisbad = sample_MCH(dJ,samples)
                 if eps<1e-6:
                     raise Exception("eps very small.")
-                print "eps = %1.3f" %eps
+                print("eps = %1.3f" %eps)
 
             jac[:,i] = (sisj_-sisj)/eps
         return jac
@@ -1175,7 +1175,7 @@ class _MonteCarloHistogram(Solver):
 
     def printout(self,s):
         if self.display:
-            print s
+            print(s)
 
     def sample_metropolis_dJ(self,dJ,dsisj,**settings):
         """
@@ -1345,7 +1345,7 @@ class _MonteCarloHistogram(Solver):
             exitflag = 2
         if self.runStatus['sampleSteps']>settings['SAMPLE_STEPS_MX']:
             exitflag = 3
-            print "MC sampling steps exceed allowed max."
+            print("MC sampling steps exceed allowed max.")
         self.printout("Done")
         return exitflag
 
@@ -1395,11 +1395,11 @@ def sample_MCH(dJ,samples,sym=False):
 
     k = 0
     if not sym:
-        for i in xrange(N):
+        for i in range(N):
             sisj[k] = np.mean( samples[:,i]*expE )
             k += 1
-    for i in xrange(N-1):
-        for j in xrange(i+1,N):
+    for i in range(N-1):
+        for j in range(i+1,N):
             sisj[k] = np.mean( samples[:,i]*samples[:,j]*expE )
             k +=1
     sisj /= ZFrac
@@ -1419,7 +1419,7 @@ class ExactNonlinear():
         Model.__init__(self,*args)
 
     def solve(self,J0=None):
-        from exact import solve_ising
+        from .exact import solve_ising
         if J0 is None:
             self.J = solve_ising(self.N,self.constraints,self.J,0,method='fast',maxfev=3e3)
         else:
@@ -1432,7 +1432,7 @@ def iterate_metropolis( nIters, sample, E, sample_metropolis ):
     """Helper function for joblib parallelization.
     2015-08-19
     """
-    for j in xrange(nIters):
+    for j in range(nIters):
         de = sample_metropolis( sample[None,:],E )
         E += de
     return sample,E

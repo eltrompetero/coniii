@@ -24,7 +24,7 @@ def pseudoInverseIsing(samples,minSize=0):
                   (set to 2 for fights)
     """
 
-    data = array( filter(lambda f: sum(f) >= minSize, samples) )
+    data = array( [f for f in samples if sum(f) >= minSize] )
     ell = len(data[0])
     
     # start at freq. model params?
@@ -35,7 +35,7 @@ def pseudoInverseIsing(samples,minSize=0):
 
     for r in range(ell):
         
-        print "Minimizing for r =",r
+        print("Minimizing for r =",r)
         
         Jr0 = scipy.zeros(ell) #scipy.ones(ell)
         Jr0[r] = hList[r]

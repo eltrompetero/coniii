@@ -4,13 +4,13 @@
 # speedup.
 # 
 # Eddie Lee edl56@cornell.edu
-from __future__ import division
+
 #from numdifftools import Gradient
 from numba import jit,float64
 from numpy import sin,cos,exp
 from scipy.spatial.distance import squareform
 import multiprocess as mp
-from utils import *
+from .utils import *
 from datetime import datetime
 
 # ---------------------------------------------------------------------------- #
@@ -87,8 +87,8 @@ def calc_e(theta,x):
     n = len(x)//2  # number of spins
     E = 0.
     k = 0
-    for i in xrange(0,2*(n-1),2):
-        for j in xrange(i+2,2*n,2):
+    for i in range(0,2*(n-1),2):
+        for j in range(i+2,2*n,2):
             E += theta[k] * (sin(x[i])*sin(x[j])*
                      (cos(x[i+1])*cos(x[j+1])+sin(x[i+1])*sin(x[j+1])) + 
                      cos(x[i])*cos(x[j]))
@@ -103,8 +103,8 @@ def grad_e(theta,x):
     n = len(x)//2  # number of spins
     g = np.zeros((len(x)))
     
-    for i in xrange(0,2*n,2):
-        for j in xrange(0,2*n,2):
+    for i in range(0,2*n,2):
+        for j in range(0,2*n,2):
             if i!=j:
                 k = sub_to_ind(n,i//2,j//2)
                 # Derivative wrt angle theta_i
@@ -125,8 +125,8 @@ def grad_e_theta(theta,x):
     n = len(x)//2  # number of spins
     g = np.zeros((len(theta)))
     k = 0
-    for i in xrange(0,2*(n-1),2):
-        for j in xrange(i+2,2*n,2):
+    for i in range(0,2*(n-1),2):
+        for j in range(i+2,2*n,2):
             g[k] = (sin(x[i])*sin(x[j])*(cos(x[i+1])*cos(x[j+1])+sin(x[i+1])*sin(x[j+1])) + 
                      cos(x[i])*cos(x[j]))
             k += 1
@@ -181,14 +181,14 @@ class WolffIsing(object):
             history = np.zeros((samplesize,self.n,nIters+1))
             history[:,:,0] = sample.copy()
             for i,s in enumerate(sample):
-                for j in xrange(nIters):
+                for j in range(nIters):
                     self.one_step(s,initialsite=j%self.n)
                     history[i,:,j+1] = s.copy()
             return sample,history
 
         else:
             for i,s in enumerate(sample):
-                for j in xrange(nIters):
+                for j in range(nIters):
                     self.one_step(s)
             return sample
 
@@ -208,12 +208,12 @@ class WolffIsing(object):
         def f(args):
             s,seed=args
             self.rng=np.random.RandomState(seed)
-            for j in xrange(nIters):
+            for j in range(nIters):
                 self.one_step(s,initialsite=j%self.n)
             return s
         
         pool=mp.Pool(mp.cpu_count())
-        sample=np.vstack(pool.map(f,zip(sample,np.random.randint(2**31-1,size=samplesize))))
+        sample=np.vstack(pool.map(f,list(zip(sample,np.random.randint(2**31-1,size=samplesize)))))
         pool.close()
         return sample
 
@@ -318,7 +318,7 @@ def iterate_neighbors(n,ix,expdJ,r):
     """
     counter=0
     neighbors=np.zeros((n),dtype=int)
-    for i in xrange(n):
+    for i in range(n):
         # Don't include neighbors that are already marked.
         # Check against probability as specified in Wolff's paper for forming link.
         # Must index r with i and not counter because otherwise we end up with cases where we are repeating
@@ -383,14 +383,14 @@ class SWIsing(object):
         def f(params):
             i,seed,state = params
             self.rng = np.random.RandomState(seed)
-            for j in xrange(n_iters):
+            for j in range(n_iters):
                 self.one_step(state)
             return state
 
         p = mp.Pool(nJobs)
-        self.sample = np.vstack( p.map(f,zip(range(n_samples),
+        self.sample = np.vstack( p.map(f,list(zip(list(range(n_samples)),
                                              self.rng.randint(2**31,size=n_samples),
-                                             sample)) )
+                                             sample))) )
         p.close()
 
     def generate_sample(self,n_samples,n_iters,initial_state=None):
@@ -406,8 +406,8 @@ class SWIsing(object):
         else:
             sample = initial_state
 
-        for i in xrange(n_samples):
-            for j in xrange(n_iters):
+        for i in range(n_samples):
+            for j in range(n_iters):
                 self.one_step(sample[i])
 
         self.sample = sample
@@ -438,17 +438,17 @@ class SWIsing(object):
         n_samples = 1
         sample = self.rng.choice([-1,1],size=(n_samples,self.n))
 
-        for j in xrange(n_iters):
+        for j in range(n_iters):
             self.one_step(sample[0])
-            print np.mean([len(c) for c in self._clusters])
+            print(np.mean([len(c) for c in self._clusters]))
 
 @jit(nopython=True)
 def pairwise_prod(state):
     counter = 0
     n = len(state)
     prod = np.zeros((n*(n-1)//2))
-    for i in xrange(n-1):
-        for j in xrange(i+1,n):
+    for i in range(n-1):
+        for j in range(i+1,n):
             prod[counter] = state[i]*state[j]
             counter += 1
     return prod
@@ -468,8 +468,8 @@ def sample_bonds(p,r,state,J):
     n = len(state)
     bonds = np.zeros((len(J)))
     counter=0
-    for i in xrange(n-1):
-        for j in xrange(i+1,n):
+    for i in range(n-1):
+        for j in range(i+1,n):
             if J[counter]<0 and state[i]*state[j]<0 and r[counter]<p[counter]:
                 bonds[counter] = 1
             elif J[counter]>0 and state[i]*state[j]>0 and r[counter]<p[counter]:
@@ -612,7 +612,7 @@ class ParallelTempering(object):
             
             # Iterate through each pair of systems by adjacent temperature starting from the lowest T.
             exchangeix = np.zeros((self.sampleSize,len(self.temps)-1),dtype=np.bool)
-            for i in xrange(1,len(self.temps)):
+            for i in range(1,len(self.temps)):
                 exchangeix[:,i-1] = ( self.rng.rand(self.sampleSize) <
                             np.exp((E[:,i]-E[:,i-1])*(1/self.temps[i]-1/self.temps[i-1])) )
                 if exchangeix[:,i-1].any():
@@ -625,7 +625,7 @@ class ParallelTempering(object):
                     E[exchangeix[:,i-1],i-1] = E[exchangeix[:,i-1],i]
                     E[exchangeix[:,i-1],i] = tempE
                 else:
-                    print "No overlap between replica %d and %d"%(i,i-1)
+                    print("No overlap between replica %d and %d"%(i,i-1))
 
         # Evolve replicas by self.n*burn_factor iterations.
         def f(r):
@@ -661,7 +661,7 @@ class ParallelTempering(object):
             self.burn_in(initial_burn_factor)
         
         pool = mp.Pool(mp.cpu_count())
-        for i in xrange(1,n_iters):
+        for i in range(1,n_iters):
             self.one_step(pool,burn_factor)
         pool.close()
         
@@ -684,9 +684,9 @@ class ParallelTempering(object):
         --------
         repSamples (list of ndarrays)
         """
-        repSamples = [np.zeros((self.sampleSize,self.n,n_iters)) for i in xrange(self.nReps)]
+        repSamples = [np.zeros((self.sampleSize,self.n,n_iters)) for i in range(self.nReps)]
         pool = mp.Pool(mp.cpu_count())
-        for i in xrange(n_iters):
+        for i in range(n_iters):
             self.one_step(pool,burn_factor)
             for r,rep in zip(repSamples,self.replicas):
                 r[:,:,i] = rep.samples[:,:]
@@ -742,7 +742,7 @@ class ParallelTempering(object):
         # Sample for calculating exchange probabilities.
         pool = mp.Pool(mp.cpu_count())
         self.one_step(pool,initial_burn_factor,exchange=False)
-        for i in xrange(n_iters):
+        for i in range(n_iters):
             if i==0:
                 exchangeix = self.one_step(pool,burn_factor)
             else:
@@ -769,7 +769,7 @@ class ParallelTempering(object):
         """ 
         nReps = len(self.temps)
         stayTime = np.zeros((nReps))
-        for i in xrange(nReps):
+        for i in range(nReps):
             if i==0:
                 stayTime[0] = 1/exchangeix[:,0].mean()
             elif i==(nReps-1):
@@ -802,7 +802,7 @@ class ParallelTempering(object):
         a = (beta[1:]-beta[:-1])/(tauEff[1:]+tauEff[:-1])
         c = a.sum()
 
-        for i in xrange(1,self.nReps-1):
+        for i in range(1,self.nReps-1):
             beta[i] = beta[i-1] + a[i-1]*(beta[-1]-beta[0])/c
         return beta
 
@@ -826,16 +826,16 @@ class ParallelTempering(object):
         save_history (bool=False)
             If true, return history.
         """
-        print "Optimizing REMC parameters..."
+        print("Optimizing REMC parameters...")
 
-        for i in xrange(max_iter):
+        for i in range(max_iter):
             pn,tn = self.exchange_measures(pn_kwargs=pn_kwargs)
             if disp:
-                print "Iteration %d"%i
-                print "P(n): probability of exchange"
-                print pn
-                print "T(n): replica steps spent at temperature"
-                print tn
+                print("Iteration %d"%i)
+                print("P(n): probability of exchange")
+                print(pn)
+                print("T(n): replica steps spent at temperature")
+                print(tn)
             beta = self.iterate_beta(tn)
             
             self.temps = 1/beta
@@ -843,14 +843,14 @@ class ParallelTempering(object):
             self._pn = pn
             self._tn = tn
 
-        print "After optimization:"
-        print "Temperatures:"
-        print self.temps
-        print "Exchange probability:"
-        print pn
-        print "Suggested replica steps: %d"%(2/np.prod(pn))  # Calculated from time to diffuse.
-        print "Persistence time:"
-        print tn
+        print("After optimization:")
+        print("Temperatures:")
+        print(self.temps)
+        print("Exchange probability:")
+        print(pn)
+        print("Suggested replica steps: %d"%(2/np.prod(pn)))  # Calculated from time to diffuse.
+        print("Persistence time:")
+        print(tn)
 
     def burn_in(self,n_iter):
         """
@@ -980,7 +980,7 @@ class SimulatedTempering(object):
         
         def f(sample):
             rng = np.random.RandomState()
-            for i in xrange(n_iters):
+            for i in range(n_iters):
                 sample = self.one_loop(sample,burn_factor,rng)
             return sample
 
@@ -1015,7 +1015,7 @@ class SimulatedTempering(object):
         # Sample for calculating exchange probabilities.
         pool = mp.Pool(mp.cpu_count())
         self.one_step(pool,initial_burn_factor,exchange=False)
-        for i in xrange(n_iters):
+        for i in range(n_iters):
             if i==0:
                 exchangeix = self.one_step(pool,burn_factor)
             else:
@@ -1042,7 +1042,7 @@ class SimulatedTempering(object):
         """ 
         nReps = len(self.temps)
         stayTime = np.zeros((nReps))
-        for i in xrange(nReps):
+        for i in range(nReps):
             if i==0:
                 stayTime[0] = 1/exchangeix[:,0].mean()
             elif i==(nReps-1):
@@ -1096,7 +1096,7 @@ class SimulatedTempering(object):
         a = (beta[1:]-beta[:-1])/(tauEff[1:]+tauEff[:-1])
         c = a.sum()
 
-        for i in xrange(1,self.nReps-1):
+        for i in range(1,self.nReps-1):
             beta[i] = beta[i-1] + a[i-1]*(beta[-1]-beta[0])/c
         return beta
 
@@ -1125,13 +1125,13 @@ class SimulatedTempering(object):
             If true, return history.
         threshold (float=1e-2)
         """
-        print "Optimizing REMC parameters..."
+        print("Optimizing REMC parameters...")
         from scipy.interpolate import interp1d
 
-        for i in xrange(max_iter):
+        for i in range(max_iter):
             pn,tn = self.exchange_measures(pn_kwargs=pn_kwargs)
             if disp:
-                print self.gn,pn,tn
+                print(self.gn,pn,tn)
             gn = self.reweighted_gn(self._samples)
             gn_of_beta = interp1d( 1/np.array(self.temps), gn, **interp_kwargs )
             beta = self.iterate_beta(tn)
@@ -1144,14 +1144,14 @@ class SimulatedTempering(object):
             self._pn = pn
             self._tn = tn
 
-        print "After optimization:"
-        print "Temperatures:"
-        print self.temps
-        print "Exchange probability:"
-        print pn
-        print "Suggested replica steps: %d"%(2/np.prod(pn))
-        print "Persistence time:"
-        print tn
+        print("After optimization:")
+        print("Temperatures:")
+        print(self.temps)
+        print("Exchange probability:")
+        print(pn)
+        print("Suggested replica steps: %d"%(2/np.prod(pn)))
+        print("Persistence time:")
+        print(tn)
 
     def burn_in(self,n_iter):
         """
@@ -1226,21 +1226,21 @@ class FastMCIsing(object):
         if saveHistory:
             history=np.zeros((sampleSize,nIters+1))
             history[:,0]=self.E.ravel()
-            for i in xrange(sampleSize):
-                for j in xrange(nIters):
+            for i in range(sampleSize):
+                for j in range(nIters):
                     de = self.sample_metropolis( self.samples[i] )
                     self.E[i] += de
                     history[i,j+1]=self.E[i]
             return history
         else:
             if systematic_iter:
-                for i in xrange(sampleSize):
-                    for j in xrange(nIters):
+                for i in range(sampleSize):
+                    for j in range(nIters):
                         de = self.sample_metropolis( self.samples[i],flip_site=j%self.n )
                         self.E[i] += de
             else:
-                for i in xrange(sampleSize):
-                    for j in xrange(nIters):
+                for i in range(sampleSize):
+                    for j in range(nIters):
                         de = self.sample_metropolis( self.samples[i] )
                         self.E[i] += de
 
@@ -1275,7 +1275,7 @@ class FastMCIsing(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(n_iters):
+                for j in range(n_iters):
                     de = self.sample_metropolis( s,rng=rng )
                     E += de
                 return s,E
@@ -1283,15 +1283,15 @@ class FastMCIsing(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(n_iters):
+                for j in range(n_iters):
                     de = self.sample_metropolis( s,rng=rng,flip_site=j%self.n )
                     E += de
                 return s,E
         
         pool=mp.Pool(cpucount)
-        self.samples,self.E=zip(*pool.map(f,zip(self.samples,
+        self.samples,self.E=list(zip(*pool.map(f,list(zip(self.samples,
                                                 self.E,
-                                                np.random.randint(2**31-1,size=sampleSize))))
+                                                np.random.randint(2**31-1,size=sampleSize))))))
         pool.close()
 
         self.samples=np.vstack(self.samples)
@@ -1372,15 +1372,15 @@ class Metropolis(object):
         if saveHistory:
             history=np.zeros((sample_size,n_iters+1))
             history[:,0]=self.E.ravel()
-            for i in xrange(sample_size):
-                for j in xrange(n_iters):
+            for i in range(sample_size):
+                for j in range(n_iters):
                     de = self.sample_metropolis( self.samples[i],self.E[i] )
                     self.E[i] += de
                     history[i,j+1]=self.E[i]
             return history
         else:
-            for i in xrange(sample_size):
-                for j in xrange(n_iters):
+            for i in range(sample_size):
+                for j in range(n_iters):
                     de = self.sample_metropolis( self.samples[i],self.E[i] )
                     self.E[i] += de
             return
@@ -1419,7 +1419,7 @@ class Metropolis(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(n_iters):
+                for j in range(n_iters):
                     de = self.sample_metropolis( s,E,rng=rng )
                     E += de
                 return s,E
@@ -1427,15 +1427,15 @@ class Metropolis(object):
             def f(args):
                 s,E,seed=args
                 rng=np.random.RandomState(seed)
-                for j in xrange(n_iters):
+                for j in range(n_iters):
                     de = self.sample_metropolis( s,E,rng=rng,flip_site=j%self.n )
                     E += de
                 return s,E
         
         pool = mp.Pool(cpucount)
-        self.samples,self.E = zip(*pool.map(f,zip(self.samples,
+        self.samples,self.E = list(zip(*pool.map(f,list(zip(self.samples,
                                                   self.E,
-                                                  np.random.randint(2**31-1,size=sample_size))))
+                                                  np.random.randint(2**31-1,size=sample_size))))))
         pool.close()
 
         self.samples = np.vstack(self.samples)
@@ -1492,13 +1492,13 @@ class Metropolis(object):
             stateix = 0
             # Fill all spins in between fixed ones.
             for i,s in fixed_subset: 
-                for ii in xrange(i0,i):
+                for ii in range(i0,i):
                     fullstate[0,ii] = state[0,stateix] 
                     stateix += 1
                 fullstate[0,i] = s
                 i0 = i+1
             # Any reamining spots to fill.
-            for ii in xrange(i0,self.n):
+            for ii in range(i0,self.n):
                 fullstate[0,ii] = state[0,stateix]
                 stateix += 1
             return self.calc_e(fullstate,theta)
@@ -1510,7 +1510,7 @@ class Metropolis(object):
                 def f(args):
                     s,E,seed = args
                     rng = np.random.RandomState(seed)
-                    for j in xrange(burn_in):
+                    for j in range(burn_in):
                         de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
                         E += de
                     return s,E
@@ -1518,7 +1518,7 @@ class Metropolis(object):
                 def f(args):
                     s,E,seed=args
                     rng = np.random.RandomState(seed)
-                    for j in xrange(burn_in):
+                    for j in range(burn_in):
                         de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
                         E += de
                     return s,E
@@ -1526,9 +1526,9 @@ class Metropolis(object):
             #start = datetime.now()
             pool=mp.Pool(cpucount)
             #poolt = datetime.now()
-            self.samples,self.E=zip(*pool.map(f,zip(self.samples,
+            self.samples,self.E=list(zip(*pool.map(f,list(zip(self.samples,
                                                     self.E,
-                                                    np.random.randint(0,2**31-1,size=sample_size))))
+                                                    np.random.randint(0,2**31-1,size=sample_size))))))
             self.samples = np.vstack(self.samples)
             #samplet = datetime.now()
             pool.close()
@@ -1543,19 +1543,19 @@ class Metropolis(object):
             if not systematic_iter:
                 def f(args):
                     s,E = args
-                    for j in xrange(burn_in):
+                    for j in range(burn_in):
                         de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
                         E += de
                     return s,E
             else:
                 def f(args):
                     s,E=args
-                    for j in xrange(burn_in):
+                    for j in range(burn_in):
                         de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
                         E += de
                     return s,E
            
-            for i in xrange(len(self.samples)):
+            for i in range(len(self.samples)):
                 s,E = f((self.samples[i],self.E[i]))
                 self.samples[i] = s
                 self.E[i] = E
@@ -1564,9 +1564,9 @@ class Metropolis(object):
         counter = 0
         for i,s in fixed_subset:
             if i==0:
-                self.samples = np.insert(self.samples,range(i,self.samples.size,nSubset+counter),s)
+                self.samples = np.insert(self.samples,list(range(i,self.samples.size,nSubset+counter)),s)
             else:
-                self.samples = np.insert(self.samples,range(i,self.samples.size+1,nSubset+counter),s)
+                self.samples = np.insert(self.samples,list(range(i,self.samples.size+1,nSubset+counter)),s)
             counter += 1
         self.samples = np.reshape(self.samples,(sample_size,self.n))
         self.E = np.concatenate(self.E)
@@ -1656,7 +1656,7 @@ class HamiltonianMC(object):
             # Leapfrog. Involves sandwiching gradient descent on q around x gradient descent.
             xnew = x
             gnew = g
-            for t in xrange(self.leapfrogN):
+            for t in range(self.leapfrogN):
                 p -= self.dt*gnew/2
                 xnew += self.dt*p
                 
@@ -1697,7 +1697,7 @@ class HamiltonianMC(object):
                 dt,leapfrogN,theta = self.dt,self.leapfrogN,self.theta
                 @jit 
                 def f(x0):
-                    for i in xrange(nSamples):
+                    for i in range(nSamples):
                         r = np.random.normal(size=(nBurn,x0.shape[1]))
                         #r[:,::2] /= 2.
                         jit_sample( theta,x0[i],nBurn,dt,leapfrogN,
@@ -1706,7 +1706,7 @@ class HamiltonianMC(object):
                     return x0
                 return f(x0)
             else:
-                for i in xrange(nSamples):
+                for i in range(nSamples):
                     x = self.sample(x0[i],nBurn)
                     samples[i,:] = x[:]
                 return samples
@@ -1716,10 +1716,10 @@ class HamiltonianMC(object):
                 @jit
                 def f(x0):
                     rng = np.random.RandomState()
-                    for i in xrange(nSamples):
+                    for i in range(nSamples):
                         x = jit_sample(theta,x0,nBurn,dt,leapfrogN,
                                        rng.normal(size=(nBurn,len(x0))),rng.rand(nBurn))
-                        for j in xrange(len(x)):
+                        for j in range(len(x)):
                             samples[i,j] = x[j]
                     return samples
             else:
@@ -1758,9 +1758,9 @@ def jit_sample(theta,x0,nBurn,dt,leapfrogN,randNormal,randUnif):
     # Randomly sample momenta.
     p = np.zeros_like(x0)
 
-    for counter in xrange(nBurn):
+    for counter in range(nBurn):
         # Read in previously generated random momenta.
-        for i in xrange(len(x0)):
+        for i in range(len(x0)):
             p[i] = randNormal[counter,i]
 
         # Current Hamiltonian on joint space.
@@ -1769,7 +1769,7 @@ def jit_sample(theta,x0,nBurn,dt,leapfrogN,randNormal,randUnif):
         # Leapfrog. Involves sandwiching gradient descent on q around x gradient descent.
         xnew = x
         gnew = g
-        for t in xrange(leapfrogN):
+        for t in range(leapfrogN):
             p -= dt*gnew/2.
             xnew += dt*p
             
@@ -1815,7 +1815,7 @@ class Heisenberg3DSampler(object):
         self.J = J
         self.Jmat = squareform(J)
         self.Jrows = np.zeros((self.Jmat.shape[0],self.Jmat.shape[0]-1))
-        for i in xrange(self.Jmat.shape[0]):
+        for i in range(self.Jmat.shape[0]):
             ix = np.zeros((self.Jmat.shape[0]))==0
             ix[i] = False
             self.Jrows[i] = self.Jmat[i][ix]
@@ -1832,12 +1832,12 @@ class Heisenberg3DSampler(object):
     def equilibrate_samples(self,samples,nIters,method='mc',nJobs=0):
         if nJobs is None:
             nJobs = mp.cpu_count()
-            print "Using all cores."
+            print("Using all cores.")
         else:
-            print "Using %d cores."%nJobs
+            print("Using %d cores."%nJobs)
         if method=='mc':
             def sample_method(s,E):
-                for i in xrange(nIters):
+                for i in range(nIters):
                     _,E = self.sample_metropolis(s,E)
                 return E
         else:
@@ -1845,7 +1845,7 @@ class Heisenberg3DSampler(object):
         
         if nJobs==0:
             E = np.zeros((len(samples)))
-            for i in xrange(len(samples)):
+            for i in range(len(samples)):
                 E[i] = self.calc_e( self.J,[samples[i]] )
                 E[i] = sample_method(samples[i],E[i])
             return
@@ -1857,7 +1857,7 @@ class Heisenberg3DSampler(object):
                 self.rng = np.random.RandomState()
                 E = sample_method(sample,E)
                 return E,sample
-            E,samples[:] = zip( *p.map(f,zip(samples,[self.J]*len(samples))) )
+            E,samples[:] = list(zip( *p.map(f,list(zip(samples,[self.J]*len(samples)))) ))
             p.close()
 
     def sample_metropolis(self,oldState,E0):
@@ -1958,8 +1958,8 @@ class Heisenberg3DSampler(object):
         assert X.ndim==2
         
         g = np.zeros((X.shape[0],2))
-        for i in xrange(X.shape[0]):
-            for j in xrange(X.shape[0]):
+        for i in range(X.shape[0]):
+            for j in range(X.shape[0]):
                 if i!=j:
                     g[i,0] += -( self.Jmat[i,j]*( np.cos(X[i,0])*np.sin(X[j,0])*np.cos(X[i,1]-X[j,1]) -
                                  np.sin(X[i,0])*np.cos(X[j,0]) ) )
@@ -2042,13 +2042,13 @@ def jit_sample_nearby_vector(rseed,v,nSamples,otheta,ophi,sigma):
         theta = np.zeros((1))
     else:
         theta = np.zeros((nSamples))
-        for i in xrange(nSamples):
+        for i in range(nSamples):
             theta[i] = np.random.randn()*sigma
     phi = np.zeros((nSamples))
-    for i in xrange(nSamples):
+    for i in range(nSamples):
         phi[i] = np.random.rand()*2*np.pi
     randv = np.zeros((nSamples,3))
-    for i in xrange(nSamples):
+    for i in range(nSamples):
         randv[i,0] = np.sin(theta[i])*np.cos(phi[i])
         randv[i,1] = np.sin(theta[i])*np.sin(phi[i])
         randv[i,2] = np.cos(theta[i])
@@ -2058,9 +2058,9 @@ def jit_sample_nearby_vector(rseed,v,nSamples,otheta,ophi,sigma):
     k[0] = -np.sin(ophi)
     k[1] = np.cos(ophi)
     rotatedv = np.zeros_like(randv)
-    for i in xrange(len(randv)):
+    for i in range(len(randv)):
         rotatedv_ = (randv[i] * np.cos(otheta) + cross(k,randv[i])*np.sin(otheta) + k*np.dot(k,randv[i])*(1-np.cos(otheta)))
-        for j in xrange(randv.shape[1]):
+        for j in range(randv.shape[1]):
             rotatedv[i,j] = rotatedv_[j]
     return rotatedv
 

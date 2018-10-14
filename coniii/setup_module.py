@@ -20,11 +20,11 @@ if __name__=='__main__':
     run_setup()
     
     # Write Ising equation files and put them into ./ising_eqn directory.
-    from exact import main
+    from .exact import main
     if not os.path.exists('ising_eqn'):
         os.makedirs('ising_eqn')
         open('ising_eqn/__init__.py','w').write('')
-    for n in xrange(2,10):
+    for n in range(2,10):
         main(n)
         main(n,True)
         os.rename('ising_eqn_%d.py'%n,'ising_eqn/ising_eqn_%d.py'%n)

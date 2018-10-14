@@ -1,10 +1,10 @@
-from __future__ import division
-from utils import *
+
+from .utils import *
 
 def test_sub_to_ind():
-    for n in xrange(2,5):
+    for n in range(2,5):
         counter = 0
-        for i,j in combinations(range(n),2):
+        for i,j in combinations(list(range(n)),2):
             assert sub_to_ind(n,i,j)==counter
             assert ind_to_sub(n,counter)==(i,j)
             counter += 1

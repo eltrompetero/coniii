@@ -305,7 +305,7 @@ def get_nidx(k,n):
     <<<<<
     """
     if k==n:
-        return np.reshape(range(n),(n,1))
+        return np.reshape(list(range(n)),(n,1))
     elif k<n:
         allStates = bin_states(n)
         statesix = np.sum(allStates,1)==k
@@ -322,7 +322,7 @@ def get_nidx(k,n):
 def main(n,sym=0):
     assert sym==0 or sym==1
 
-    print "Writing equations for Ising model with %d spins."%n
+    print("Writing equations for Ising model with %d spins."%n)
     if sym:
         write_eqns(n,sym,[np.where(np.ones((n))==1),
                           np.where(np.triu(np.ones((n,n)),k=1)==1)],

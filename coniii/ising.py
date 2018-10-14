@@ -1,12 +1,12 @@
 # Class for storing data for solving with Ising methods.
 # 2015-04-30
-from __future__ import division
+
 import numpy as np
 from misc_fcns import *
 import workspace.utils as ws
 from scipy.spatial.distance import squareform
 import entropy.entropy as entropy
-import fast
+from . import fast
 import itertools
 
 class Data():
@@ -84,7 +84,7 @@ class IsingModel():
         2015-08-19
         """
         dMat = np.zeros((2**self.N,2**self.N))
-        for (i,j) in itertools.combinations(range(2**self.N),2):
+        for (i,j) in itertools.combinations(list(range(2**self.N)),2):
             dMat[i,j] = np.sum(np.abs(self.binStates[i].astype(float)-self.binStates[j]))
         dMat += dMat.T
         singleIx = dMat==1
@@ -179,8 +179,8 @@ class IsingModel():
         si = self.si()
         cij = []
         k = 0
-        for i in xrange(self.N-1):
-            for j in xrange(i+1,self.N):
+        for i in range(self.N-1):
+            for j in range(i+1,self.N):
                 cij.append( sisj[k] - si[i]*si[j] )
                 k += 1
         return np.array(cij)

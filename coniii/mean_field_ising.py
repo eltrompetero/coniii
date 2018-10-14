@@ -34,11 +34,11 @@ def aboveDiagFlat(mat,keepDiag=False,offDiagMult=None):
 # 1.31.2012
 def replaceDiag(mat,lst):
     if len(scipy.shape(lst)) > 1:
-        raise Exception, "Lst should be 1-dimensional"
+        raise Exception("Lst should be 1-dimensional")
     if scipy.shape(mat) != (len(lst),len(lst)):
-        raise Exception, "Incorrect dimensions."+                   \
+        raise Exception("Incorrect dimensions."+                   \
             "  shape(mat) = "+str(scipy.shape(mat))+                \
-            ", len(lst) = "+str(len(lst))
+            ", len(lst) = "+str(len(lst)))
     return mat - scipy.diag(scipy.diag(mat).copy()).copy()          \
         + scipy.diag(lst).copy()
 
@@ -214,7 +214,7 @@ def JmeanField(coocMat,**kwargs):
     including noninteracting prior weighting.
     """
     ell = len(coocMat)
-    S,JMF = SmeanField(range(ell),coocMat,**kwargs)
+    S,JMF = SmeanField(list(range(ell)),coocMat,**kwargs)
     return JMF
 
 
@@ -390,7 +390,7 @@ def coocSampleCovariance(samples,bayesianMean=True,includePrior=True):
     coocs4 = fourthOrderCoocMat(samples)
     if bayesianMean:
         #coocs4mean = coocMatBayesianMean(coocs4,len(samples))
-        print "coocSampleCovariance : WARNING : using ad-hoc 'Laplace' correction"
+        print("coocSampleCovariance : WARNING : using ad-hoc 'Laplace' correction")
         N = len(samples)
         newDiag = (scipy.diag(coocs4)*N + 1.)/(N + 2.)
         coocs4mean = replaceDiag(coocs4,newDiag)
@@ -544,9 +544,9 @@ def unsummedLogZ(J,hext=0,minSize=0):
 
 # 7.18.2017 moved from inverseIsing.py
 def fightPossibilities(ell,minSize=0):
-    fightNumbers = range(2**ell)
+    fightNumbers = list(range(2**ell))
     fp = [ [ int(x) for x in scipy.binary_repr(fN,ell) ]                  \
              for fN in fightNumbers ]
     if minSize > 0:
-        fp = scipy.array( filter(lambda x: sum(x)>=minSize, fp) )
+        fp = scipy.array( [x for x in fp if sum(x)>=minSize] )
     return fp

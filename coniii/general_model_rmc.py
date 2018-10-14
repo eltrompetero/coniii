@@ -18,8 +18,9 @@ from functools import wraps
 from subprocess import check_output
 from math import exp
 from scipy.spatial.distance import squareform
+from functools import reduce
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 try:
@@ -47,7 +48,7 @@ class GeneralSpinModel(object):
         if len(J.shape)==1:
             self.J = squareform(J)
         elif (J-J.T).sum() > 0:
-            raise(RuntimeError, "Couplings must be symmetric")
+            raise RuntimeError
         else:
             self.J = J
         if sparse:
@@ -89,7 +90,7 @@ class GeneralSpinModel(object):
         """
         for pickling, observers are not pickleable
         """
-        gooddict = {key:value for key,value in self.__dict__.iteritems() if not
+        gooddict = {key:value for key,value in self.__dict__.items() if not
                     key=='observers'}
         gooddict['observers'] = []
         return gooddict
@@ -179,7 +180,7 @@ class GeneralSpinModel(object):
         N_c = len(clusters)
         return sps.csr_matrix((data, (rows, cols)), shape=(N_c, N_c))
 
-    def next(self):
+    def __next__(self):
         """ For the iterator, do one monte carlo step"""
         for nt, T in enumerate(self.templist):
             for i, rand in enumerate(self._my_rng.rand(self.N)):
@@ -371,7 +372,7 @@ def mapCij(clust, CIJ):
     inherited from an REMC model, maps the correlation function (CIJ) onto
     the dimensions of the original system correlations
     """
-    N = np.sum(map(len, clust))
+    N = np.sum(list(map(len, clust)))
     mapped_CIJ = np.zeros((N,N))
     for cl1, row in zip(clust, CIJ):
         for cl2, corr in zip(clust, row):

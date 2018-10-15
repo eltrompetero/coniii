@@ -38,13 +38,14 @@ class Ising2D():
             If True, iterate through each spin on the lattice in sequence.
         """
 
+        flip_metropolis=self.flip_metropolis
+
         if not systematic:
             @njit
             def single_iteration(lattice, dim=self.dim, h=self.h, J=self.J):
                 for i in range(n_iters):
                     i, j=np.random.randint(dim[0]), np.random.randint(dim[1])
                     flip_metropolis(i, j, h[i,j], J, lattice)
-                return lattice
         else:
             # Fast iteration using jit.
             @njit
@@ -54,16 +55,17 @@ class Ising2D():
                 for ix_ in ix:
                     i, j = ix_//dim[1], ix_%dim[1]
                     flip_metropolis(i, j, h[i,j], J, lattice)
-                return lattice
 
         lattice=self.lattice
         counter = 0
         while counter < n_iters:
-            lattice = single_iteration(lattice)
+            single_iteration(lattice)
             counter += self.dim[0]*self.dim[1]
         self.lattice = lattice
 
-    def flip_metropolis(self, i, j):
+    @staticmethod
+    @njit
+    def flip_metropolis(i, j, h, J, lattice):
         """Flip a single lattice spin using Metropolis sampling.
         
         Parameters
@@ -73,68 +75,35 @@ class Ising2D():
         """
 
         dE=0
-        if self.lattice[(i-1)%self.dim[0],(j-1)%self.dim[1]]==self.lattice[i,j]:
-            dE+=2*self.J
+        dim=lattice.shape
+
+        # If same value as neighbor, will incur energy cost for flipping but if anti-aligned energy will
+        # decrease
+        if lattice[(i-1)%dim[0],j]==lattice[i,j]:
+            dE+=2*J
         else:
-            dE-=2*self.J
-        if self.lattice[(i+1)%self.dim[0],(j-1)%self.dim[1]]==self.lattice[i,j]:
-            dE+=2*self.J
+            dE-=2*J
+        if lattice[(i+1)%dim[0],j]==lattice[i,j]:
+            dE+=2*J
         else:
-            dE-=2*self.J
-        if self.lattice[(i+1)%self.dim[0],(j+1)%self.dim[1]]==self.lattice[i,j]:
-            dE+=2*self.J
+            dE-=2*J
+        if lattice[i,(j+1)%dim[1]]==lattice[i,j]:
+            dE+=2*J
         else:
-            dE-=2*self.J
-        if self.lattice[(i-1)%self.dim[0],(j+1)%self.dim[1]]==self.lattice[i,j]:
-            dE+=2*self.J
+            dE-=2*J
+        if lattice[i,(j-1)%dim[1]]==lattice[i,j]:
+            dE+=2*J
         else:
-            dE-=2*self.J
+            dE-=2*J
+        
+        # Local field.
+        dE-=2*lattice[i,j]*h
         
         if dE<=0:
-            self.lattice[i,j]*=-1
-        elif self.rng.rand()<np.exp(-dE): 
-            self.lattice[i,j]*=-1
-
-@njit
-def flip_metropolis(i, j, h, J, lattice):
-    """Flip a single lattice spin using Metropolis sampling.
-    
-    Parameters
-    ----------
-    i : int
-    j : int
-    """
-
-    dE=0
-    dim=lattice.shape
-
-    # If same value as neighbor, will incur energy cost for flipping but if anti-aligned energy will
-    # decrease
-    if lattice[(i-1)%dim[0],j]==lattice[i,j]:
-        dE+=2*J
-    else:
-        dE-=2*J
-    if lattice[(i+1)%dim[0],j]==lattice[i,j]:
-        dE+=2*J
-    else:
-        dE-=2*J
-    if lattice[i,(j+1)%dim[1]]==lattice[i,j]:
-        dE+=2*J
-    else:
-        dE-=2*J
-    if lattice[i,(j-1)%dim[1]]==lattice[i,j]:
-        dE+=2*J
-    else:
-        dE-=2*J
-    
-    # Local field.
-    dE-=2*lattice[i,j]*h
-    
-    if dE<=0:
-        lattice[i,j]*=-1
-    elif np.random.rand()<np.exp(-dE): 
-        lattice[i,j]*=-1
-    return lattice 
+            lattice[i,j]*=-1
+        elif np.random.rand()<np.exp(-dE): 
+            lattice[i,j]*=-1
+        return lattice 
 
 def coarse_grain(lattice, factor):
     """Block spin renormalization with majority rule."""

@@ -1,12 +1,13 @@
+# ========================================================================================================= #
 # Classes for sampling from Boltzmann type models.
-# For HamiltonianMC (aka hybrid Monte Carlo and for only continuous state space systems), you
-# should define functions calc_e(0 and grad_e() at the top of this file to use the jit 
-# speedup.
+# For HamiltonianMC (aka hybrid Monte Carlo and for only continuous state space systems), you should
+# define functions calc_e() and grad_e() at the top of this file to use the jit speedup.
 # 
 # Eddie Lee edl56@cornell.edu
+# ========================================================================================================= #
 
 #from numdifftools import Gradient
-from numba import jit,float64
+from numba import jit,njit,float64
 from numpy import sin,cos,exp
 from scipy.spatial.distance import squareform
 import multiprocess as mp
@@ -14,7 +15,7 @@ from .utils import *
 from datetime import datetime
 
 # ------------------------------------------------------------------------------- #
-# Define calc_e() and grad_e() functions here if you wish to use jit speedup!  #
+# Define calc_e() and grad_e() functions here if you wish to use jit speedup!     #
 # ------------------------------------------------------------------------------- #
 # Some sample energy functions.
 # 

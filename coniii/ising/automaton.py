@@ -1,0 +1,148 @@
+import numpy as np
+import multiprocess as mp
+from numba import njit,jit
+
+
+class Ising2D():
+    """Simulation of the Ising model on a 2D periodic lattice.
+    """
+
+    def __init__(self, dim, J, h=0, rng=None):
+        """
+        Parameters
+        ----------
+        dim : tuple
+            Pair describing the length of the system along the x and y dimensions.
+        J : float
+        h : ndarray
+            Field at every lattice point.
+        rng : np.random.RandomState
+        """
+        
+        assert len(dim)==2, "Must specify only x and y dimensions."
+        self.dim = dim
+        self.lattice = ((np.random.rand(*dim)<.5)*2.-1).astype(int)
+        self.J = J
+        if type(h) is float or type(h) is type(int):
+            self.h = np.zeros(dim)+h
+        else:
+            self.h = h or np.zeros(dim)
+        self.rng = rng or np.random.RandomState()
+
+    def iterate(self, n_iters, systematic=True):
+        """
+        Parameters
+        ----------
+        n_iters : int
+        systematic : bool,True
+            If True, iterate through each spin on the lattice in sequence.
+        """
+
+        if not systematic:
+            @njit
+            def single_iteration(lattice, dim=self.dim, h=self.h, J=self.J):
+                for i in range(n_iters):
+                    i, j=np.random.randint(dim[0]), np.random.randint(dim[1])
+                    flip_metropolis(i, j, h[i,j], J, lattice)
+                return lattice
+        else:
+            # Fast iteration using jit.
+            @njit
+            def single_iteration(lattice, dim=self.dim, h=self.h, J=self.J, size=self.dim[0]*self.dim[1]):
+                # Randomly order the lattice points for flipping or else lattice will be very important.
+                ix = np.random.permutation( np.arange(dim[0]*dim[1]) )[:size]
+                for ix_ in ix:
+                    i, j = ix_//dim[1], ix_%dim[1]
+                    flip_metropolis(i, j, h[i,j], J, lattice)
+                return lattice
+
+        lattice=self.lattice
+        counter = 0
+        while counter < n_iters:
+            lattice = single_iteration(lattice)
+            counter += self.dim[0]*self.dim[1]
+        self.lattice = lattice
+
+    def flip_metropolis(self, i, j):
+        """Flip a single lattice spin using Metropolis sampling.
+        
+        Parameters
+        ----------
+        i : int
+        j : int
+        """
+
+        dE=0
+        if self.lattice[(i-1)%self.dim[0],(j-1)%self.dim[1]]==self.lattice[i,j]:
+            dE+=2*self.J
+        else:
+            dE-=2*self.J
+        if self.lattice[(i+1)%self.dim[0],(j-1)%self.dim[1]]==self.lattice[i,j]:
+            dE+=2*self.J
+        else:
+            dE-=2*self.J
+        if self.lattice[(i+1)%self.dim[0],(j+1)%self.dim[1]]==self.lattice[i,j]:
+            dE+=2*self.J
+        else:
+            dE-=2*self.J
+        if self.lattice[(i-1)%self.dim[0],(j+1)%self.dim[1]]==self.lattice[i,j]:
+            dE+=2*self.J
+        else:
+            dE-=2*self.J
+        
+        if dE<=0:
+            self.lattice[i,j]*=-1
+        elif self.rng.rand()<np.exp(-dE): 
+            self.lattice[i,j]*=-1
+
+@njit
+def flip_metropolis(i, j, h, J, lattice):
+    """Flip a single lattice spin using Metropolis sampling.
+    
+    Parameters
+    ----------
+    i : int
+    j : int
+    """
+
+    dE=0
+    dim=lattice.shape
+
+    # If same value as neighbor, will incur energy cost for flipping but if anti-aligned energy will
+    # decrease
+    if lattice[(i-1)%dim[0],j]==lattice[i,j]:
+        dE+=2*J
+    else:
+        dE-=2*J
+    if lattice[(i+1)%dim[0],j]==lattice[i,j]:
+        dE+=2*J
+    else:
+        dE-=2*J
+    if lattice[i,(j+1)%dim[1]]==lattice[i,j]:
+        dE+=2*J
+    else:
+        dE-=2*J
+    if lattice[i,(j-1)%dim[1]]==lattice[i,j]:
+        dE+=2*J
+    else:
+        dE-=2*J
+    
+    # Local field.
+    dE-=2*lattice[i,j]*h
+    
+    if dE<=0:
+        lattice[i,j]*=-1
+    elif np.random.rand()<np.exp(-dE): 
+        lattice[i,j]*=-1
+    return lattice 
+
+def coarse_grain(lattice, factor):
+    """Block spin renormalization with majority rule."""
+
+    reLattice=np.zeros((lattice.shape[0]//factor,lattice.shape[1]//factor),dtype=int)
+    for i in range(lattice.shape[0]//factor):
+        for j in range(lattice.shape[1]//factor):
+            reLattice[i,j]=np.sign(lattice[i*factor:(i+1)*factor,j*factor:(j+1)*factor].sum())
+    # when there is a tie, randomly choose a direction
+    reLattice[reLattice==0]=np.random.choice([-1,1],size=(reLattice==0).sum())
+    return reLattice

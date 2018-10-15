@@ -108,10 +108,13 @@ class Ising2D():
 def coarse_grain(lattice, factor):
     """Block spin renormalization with majority rule."""
 
-    reLattice=np.zeros((lattice.shape[0]//factor,lattice.shape[1]//factor),dtype=int)
-    for i in range(lattice.shape[0]//factor):
-        for j in range(lattice.shape[1]//factor):
-            reLattice[i,j]=np.sign(lattice[i*factor:(i+1)*factor,j*factor:(j+1)*factor].sum())
+    reLattice=np.zeros((lattice.shape[0]//factor,lattice.shape[1]//factor), dtype=np.int16)
+    reL=len(reLattice)
+
+    for i in range(factor):
+        for j in range(factor):
+            reLattice+=lattice[i::factor,j::factor][:reL,:reL]
+    reLattice=np.sign(reLattice)
     # when there is a tie, randomly choose a direction
-    reLattice[reLattice==0]=np.random.choice([-1,1],size=(reLattice==0).sum())
+    reLattice[reLattice==0]=np.random.choice([-1,1], size=(reLattice==0).sum())
     return reLattice

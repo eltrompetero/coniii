@@ -1,10 +1,15 @@
+# =============================================================================================== #
+# Module for simulations of Ising model on a lattice. Distributed as part of ConIII package.
+# Author: Eddie Lee, edl56@cornell.edu
+# =============================================================================================== #
 import numpy as np
 import multiprocess as mp
 from numba import njit,jit
 
 
 class Ising2D():
-    """Simulation of the Ising model on a 2D periodic lattice.
+    """Simulation of the ferromagnetic Ising model on a 2D periodic lattice with quenched disorder
+    in the local fields.
     """
 
     def __init__(self, dim, J, h=0, rng=None):
@@ -14,14 +19,14 @@ class Ising2D():
         dim : tuple
             Pair describing the length of the system along the x and y dimensions.
         J : float
-        h : ndarray
+        h : ndarray or float,0
             Field at every lattice point.
-        rng : np.random.RandomState
+        rng : np.random.RandomState,None
         """
         
         assert len(dim)==2, "Must specify only x and y dimensions."
         self.dim = dim
-        self.lattice = ((np.random.rand(*dim)<.5)*2.-1).astype(int)
+        self.lattice = ((np.random.rand(*dim)<.5)*2.-1).astype(np.int8)
         self.J = J
         if type(h) is float or type(h) is type(int):
             self.h = np.zeros(dim)+h
@@ -106,9 +111,20 @@ class Ising2D():
         return lattice 
 
 def coarse_grain(lattice, factor):
-    """Block spin renormalization with majority rule."""
+    """Block spin renormalization with majority rule.
+    
+    Parameters
+    ----------
+    lattice : ndarray
+        +/-1
+    factor : int
+    
+    Returns
+    -------
+    renormalized_lattice : ndarray
+    """
 
-    reLattice=np.zeros((lattice.shape[0]//factor,lattice.shape[1]//factor), dtype=np.int16)
+    reLattice=np.zeros((lattice.shape[0]//factor, lattice.shape[1]//factor), dtype=np.int16)
     reL=len(reLattice)
 
     for i in range(factor):

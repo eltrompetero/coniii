@@ -388,12 +388,31 @@ From the model fitting perspective, however, we might choose to constrain other 
 
 
 \section{Conclusion}
-Maxent provides a coherent framework for modeling a diverse body of biological and social systems.  The approach is structured to easily consider issues of model selection,  embodying a canonical approach for the scientific process: we start with the simplest models and the fewest constraints possible and then increase the complexity of the model until it makes good predictions. In principle, we could add as many constraints as would allow us to better fit the data, but complex models are more computationally expensive and often do not generalize well.  Maxent therefore stops before adding all possible constraints, leaving the model otherwise as structureless as possible.
+Maxent provides a coherent framework for modeling a diverse body of biological and social systems.  The approach is structured to consider easily issues of model selection,  embodying a canonical approach for the scientific process: we start with the simplest models and the fewest constraints possible and then increase the complexity of the model until it makes good predictions. In principle, we could add as many constraints as would allow us to better fit the data, but complex models are more computationally expensive and often do not generalize well.  Maxent therefore stops before adding all possible constraints, leaving the model otherwise as structureless as possible.
 In this sense, the maxent approach is a principled method of statistical inference that is relevant beyond its roots in statistical physics.  We have built ConIII as an accessible software package in the hope that it will inspire those unfamiliar with maxent approaches to experiment and apply this technique to their own research questions.
 
 
 \clearpage
 \section{Software architecture}
+The package is organized around classes that correspond to different algorithms for the inverse maxent problem. This class-based structure ensures that the state of the solver including the data it was fit to and the current guess for the parameters are all contained within the instance of the algorithm class. Using the Python package {\tt dill} which allows pickling of anonymous functions, the current state of work can be saved and moved between workstations.
+
+The different algorithms available are accessible from the {\tt coniii.solvers} module: {\tt Enumerate}, {\tt MPF}, {\tt Pseudo}, {\tt ClusterExpansion}, {\tt MCH}, and {\tt RegularizedMeanField} models as described in the above sections. These algorithm classes are all derived from a base {\tt Solver} class. In the accompanying release version of the package, v1.0.0, the each class has a {\tt solve} method for solving the inverse maxent problem. Furthermore, the parent {\tt Solver} class contains methods for sampling from the maxent model found by the solver.
+
+Besides the solvers, the {\tt coniii.samplers} module contains an analogous class-based architecture for sampling from maxent models.
+
+\section{Contributing}
+To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes already implemented as part of v1.0.0. 
+
+\section{How to use}
+Each algorithm class instance must be instantiated with a few parameters that describe the particular maxent problem at hand. For example, all of the classes require a {\tt calc\_observables} keyword argument to be defined. This function will take a 2-dimensional sample (each row is a single state vector and each column is an entry in the state vector) from the ensemble and calculate the observables that correspond to the maxent model of interest. Some algorithms require other functions that are specific both to the problem and the algorithm. For example, the pseudolikelihood algorithm needs the likelihood of a single entry in the state vector ({\it i.e.} a single spin or a single vote) conditional on the rest of the state which depends on the maxent model. We have written helper methods for defining necessary inputs for all the available algorithms for the pairwise maxent problem. Examples of how to use these are given in the accompanying Jupyter notebook.
+
+Once an algorithm class is instantiated, it can be run by calling the {\tt solve} method and by providing the data in the corresponding format for the algorithm. Some algorithms like {\tt MCH} only require the correlations that are constrained in the maxent model. Others like {\tt MPF} require the full data set. 
+
+To check if an algorithm has converged to reasonably close agreement with the data, 
+
+Examples of this workflow for all the provided algorithms are given in the usage guide accompanying the Github package.
+
+
 
 %\section{The microcanonical ensemble and maximum entropy}
 %The conventional textbook in statistical mechanics first introduces the concept of entropy as a way of counting the phase volume available to the system at a given energy

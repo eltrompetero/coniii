@@ -1,4 +1,5 @@
-# Convenient Interface to Inverse Ising Authors: Edward D Lee, Bryan C Daniels
+# Convenient Interface to Inverse Ising
+# Edward D Lee, Bryan C Daniels
 
 Python package for solving maximum entropy problems with a focus on the pairwise maximum
 entropy model, also known as the inverse Ising problem.

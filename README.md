@@ -6,7 +6,8 @@ entropy model, also known as the inverse Ising problem.
 
 See "ipynb/usage_guide.ipynb" for usage documentation and examples.
 
-There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216].
+There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216]. Please cite this if you
+use ConIII for your research! Citations fuel further open source work of this kind.
 
 ## Installation
 This package is available on PyPI for Linux and MacOS. It can be installed by running  

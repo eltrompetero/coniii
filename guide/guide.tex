@@ -32,7 +32,7 @@
 \newcommand{\rk}[0]{{\rm k}}
 
 \title{Convenient Interface to Inverse Ising (ConIII): A Python package for solving maximum entropy models}
-\author{$^1$Edward D Lee, $^2$Bryan C Daniels}
+\author{Edward D Lee,$^1$ Bryan C Daniels$^2$}
 \affiliation{$^1$Department of Physics, 142 Sciences Dr, Cornell University, Ithaca NY 14853, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 
 \begin{abstract}
@@ -211,7 +211,7 @@ In the limit where the ensemble is well sampled, the average over the data can b
 	f(h_{\rm i},\{J_{\rm ij}\}) &= \sum_{\rm s} \ln p\left(\left.\rs_{\rm i}\right|\{\rs_{\rm j\neq i}\}\right)p\left(\rs;h_{\rm i},\{J_{\rm ij}\}\right).
 \end{align}
 
-To find the point of maximum likelihood for a single spin $\rs_{\rm i}$, we calculate the analytical gradient and Hessian, $\partial f/\partial J_{\rm ij}$ and $\partial f/\partial J_{\rm ij}\partial J_{\rm i'j'}$ for a Newton conjugate-gradient descent method. After maximizing likelihood for all spins, the maximum likelihood parameters may not satisfy the symmetry $J_{\rm ij}=J_{\rm ji}$. We impose the symmetry by insisting that
+To find the point of maximum likelihood for a single spin $\rs_{\rm i}$, we calculate the analytical gradient and Hessian, $\partial f/\partial J_{\rm ij}$ and $\partial^2 f/\partial J_{\rm ij}\partial J_{\rm i'j'}$ for a Newton conjugate-gradient descent method. After maximizing likelihood for all spins, the maximum likelihood parameters may not satisfy the symmetry $J_{\rm ij}=J_{\rm ji}$. We impose the symmetry by insisting that
 \begin{align}
 	J_{\rm ij}' &= (J_{\rm ij}+J_{\rm ji})/2.
 \end{align}
@@ -392,6 +392,8 @@ Maxent provides a coherent framework for modeling a diverse body of biological a
 In this sense, the maxent approach is a principled method of statistical inference that is relevant beyond its roots in statistical physics.  We have built ConIII as an accessible software package in the hope that it will inspire those unfamiliar with maxent approaches to experiment and apply this technique to their own research questions.
 
 
+\clearpage
+\section{Software architecture}
 
 %\section{The microcanonical ensemble and maximum entropy}
 %The conventional textbook in statistical mechanics first introduces the concept of entropy as a way of counting the phase volume available to the system at a given energy

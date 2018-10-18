@@ -13,9 +13,9 @@ from .samplers import *
 
 
 
-class Solver(object):
+class Solver():
     """
-    Base class for declaring common methods and attributes.
+    Base class for declaring common methods and attributes for inverse maxent algorithms.
 
     Members 
     -------
@@ -25,7 +25,8 @@ class Solver(object):
     calc_observables : lambda function
         Calculate observables from given sample of states.
         lambda X: Y
-        where X and Y are of dimensions (n_samples,n_constraints)
+        where X is of dimensions (n_samples, n_dim)
+        and Y is of dimensions (n_samples, n_constraints)
     multipliers : ndarray
         Langrangian multipliers
 
@@ -75,6 +76,7 @@ class Solver(object):
             will be used. This should be set if multiprocess module does not work.
         verbose : bool,False
         """
+
         # Basic checks on the inputs.
         assert type(n) is int
         if not sample_size is None:
@@ -101,7 +103,7 @@ class Solver(object):
     def solve(self):
         return
               
-    def estimate_jac(self,eps=1e-3):
+    def estimate_jac(self, eps=1e-3):
         return 
 
     def setup_sampler(self,
@@ -118,6 +120,7 @@ class Solver(object):
         sampler_kwargs : dict
         optimize_kwargs : dict
         """
+
         sample_method = sample_method or self.sampleMethod
         
         if sample_method=='wolff':
@@ -166,10 +169,11 @@ class Solver(object):
         initial_sample : ndarray,None
         generate_kwargs : dict,{}
         """
+
         assert not (self.sampler is None), "Must call setup_sampler() first."
         
         if multipliers is None:
-            multipliers=self.multipliers
+            multipliers = self.multipliers
         sample_method = sample_method or self.sampleMethod
         sample_size = sample_size or self.sampleSize
         if initial_sample is None and (not self.samples is None) and len(self.samples)==sample_size:
@@ -241,19 +245,21 @@ class Enumerate(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.
-
-    Parameters
-    ----------
-    n : int
-        System size.
-    calc_observables_multipliers : function
-        Function for calculating the observables given a set of multipliers. Function call is 
-        lambda params: return observables
-    calc_observables : function
-        lambda params: return observables
     """
+
     def __init__(self, *args, **kwargs):
-        super(Enumerate,self).__init__(*args,**kwargs)
+        """
+        Parameters
+        ----------
+        n : int
+            System size.
+        calc_observables_multipliers : function
+            Function for calculating the observables given a set of multipliers. Function call is 
+            lambda params: return observables
+        calc_observables : function
+            lambda params: return observables
+        """
+        super(Enumerate, self).__init__(*args, **kwargs)
 
     def solve(self,
               constraints=None,
@@ -266,7 +272,7 @@ class Enumerate(Solver):
         ----------
         constraints : ndarray
         samples : ndarray
-            (n_samples,n_dim)
+            (n_samples, n_dim)
         initial_guess : ndarray,None
             initial starting point
         fsolve_kwargs : dict,{'method':'powell'}
@@ -276,6 +282,7 @@ class Enumerate(Solver):
         -------
         Tuple of solved parameters and output from scipy.optimize.minimize
         """
+
         if not constraints is None:
             self.constraints = constraints
         elif not samples is None:
@@ -339,16 +346,18 @@ class MPF(Solver):
         Compute objective function.
         
         Parameters
-        -------
-        Xuniq (ndata x ndims ndarray)
+        ----------
+        Xuniq : ndarray
+            (ndata x ndims)
             unique states that appear in the data
-        Xcount (ndarray of ints)
+        Xcount : ndarray of int
             number of times that each unique state appears in the data
-        adjacentStates (list of ndarrays)
+        adjacentStates : list of ndarray
             list of adjacent states for each given unique state
         params : ndarray
             parameters for computation of energy
         """
+
         if self.pool is None:
             obj = 0.
             objGrad = np.zeros((params.size))
@@ -385,6 +394,7 @@ class MPF(Solver):
         parameters will have an extra negative, the returned J's will be halved and the energy calculation
         should include a 1/2 factor in front of h's.
         """
+
         nbatch, ndims = X.shape
         X = X.T
         
@@ -409,20 +419,22 @@ class MPF(Solver):
         Compute log of objective function.
         
         Parameters
-        -------
-        Xuniq (ndata x ndims ndarray)
+        ----------
+        Xuniq : ndarray
+            (n_samples, n_dim)
             unique states that appear in the data
-        Xcount (ndarray of ints)
+        Xcount : ndarray of int
             number of times that each unique state appears in the data
-        adjacentStates (list of ndarrays)
+        adjacentStates : list of ndarray
             list of adjacent states for each given unique state
         params : ndarray
             parameters for computation of energy
 
         Returns
-        --------
+        -------
         logK : float
         """
+
         from scipy.special import logsumexp
 
         obj = 0.
@@ -449,30 +461,29 @@ class MPF(Solver):
             return obj / Xcount.sum(), objGrad / Xcount.sum()
         else:
             return obj / Xcount.sum()
-    # End logK
 
-    def solve( self,
-               X=None, 
-               initial_guess=None,
-               method='L-BFGS-B',
-               all_connected=True,
-               parameter_limits=100,
-               solver_kwargs={'maxiter':100,'disp':True,'ftol':1e-15},
-               uselog=True,
-               ):
+    def solve(self,
+              X=None, 
+              initial_guess=None,
+              method='L-BFGS-B',
+              all_connected=True,
+              parameter_limits=100,
+              solver_kwargs={'maxiter':100,'disp':True,'ftol':1e-15},
+              uselog=True):
         """
         Minimize MPF objective function using scipy.optimize.minimize.
 
         Parameters
-        -------
-        X (ndata x ndim ndarray)
+        ----------
+        X : ndarray
+            (ndata, ndim)
             array of states compatible with given energy and adjacent neighbors functions
-        adj (lambda state)
+        adj : lambda state
             returns adjacent states for any given state
-        all_connected (bool=True)
+        all_connected : bool,True
             switch for summing over all states that data sets could be connected to or just summing over
             non-data states (second summation in Eq 10 in Sohl-Dickstein 2011)
-        iterate (int=0)
+        iterate : int,0
             number of times to try new initial conditions if first try doesn't work. Right now, this is a
             pretty coarse test because the fit can be good even without converging.
         parameter_limits : float
@@ -482,12 +493,13 @@ class MPF(Solver):
             For scipy.optimize.minimize.
 
         Returns
-        --------
+        -------
         soln : ndarray
             found solution to problem
         output : dict
             full output from minimize solver
         """
+
         assert parameter_limits>0
         assert not X is None, "samples must be provided by MPF"
 
@@ -546,6 +558,21 @@ class MCH(Solver):
 
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the
     inverse pairwise Ising problem. arXiv 1-8 (2007).
+
+    Members
+    -------
+    constraints : ndarray
+    calc_observables (function)
+        takes in samples as argument
+    calc_e (function)
+        with args (sample,parameters) where sample is 2d
+    mch_approximation (function)
+    sampleSize : int
+    multipliers : ndarray
+        set the Langrangian multipliers
+
+    Methods
+    -------
     """
     def __init__(self, *args, **kwargs):
         """
@@ -555,22 +582,8 @@ class MCH(Solver):
             takes in samples as argument
         n_jobs : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
-        
-        Members
-        -------
-        constraints : ndarray
-        calc_observables (function)
-            takes in samples as argument
-        calc_e (function)
-            with args (sample,parameters) where sample is 2d
-        mch_approximation (function)
-        sampleSize : int
-        multipliers : ndarray
-            set the Langrangian multipliers
-
-        Methods
-        -------
         """
+
         super(MCH,self).__init__(*args,**kwargs)
         assert not self.sampleSize is None, "Must specify sample_size."
         assert not self.sampleMethod is None, "Must specify sample_method."
@@ -651,6 +664,7 @@ class MCH(Solver):
         errors : ndarray
             Log of errors in matching constraints at each step of iteration.
         """
+
         if (self.n*10)>burnin:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
@@ -744,7 +758,7 @@ class MCH(Solver):
             return self.multipliers,errflag,np.vstack((errors))
         return self.multipliers
 
-    def estimate_jac(self,eps=1e-3):
+    def estimate_jac(self, eps=1e-3):
         """
         Approximation Jacobian using the MCH approximation. 
 
@@ -759,6 +773,7 @@ class MCH(Solver):
             single parameter.
 
         """
+
         dlamda = np.zeros(self._multipliers.shape)
         jac = np.zeros((self._multipliers.size,self._multipliers.size))
         print("evaluating jac")
@@ -782,17 +797,18 @@ class MCH(Solver):
         Parameters
         ----------
         estConstraints : ndarray
-        maxdlamda (float=1)
-        maxdlamdaNorm (float=1)
+        maxdlamda : float,1
+        maxdlamdaNorm : float,1
         maxLearningSteps : int
             max learning steps before ending MCH
-        eta (float=1)
+        eta : float,1
             factor for changing dlamda
 
         Returns
-        --------
+        -------
         estimatedConstraints : ndarray
         """
+
         keepLearning = True
         dlamda = np.zeros((self.constraints.size))
         learningSteps = 0
@@ -833,10 +849,11 @@ class MCHIncompleteData(MCH):
     solutions of the inverse pairwise Ising problem. arXiv 1-8 (2007).
 
     NOTE: This only works for Ising model.
+          Not ready for release.
     """
     def __init__(self, *args, **kwargs):
         """
-        Do not use.
+        Not ready for release.
         """
         kwargs['sample_method'] = 'metropolis'
         warn("Only Ising model is implemented for MCHIncompleteData.")
@@ -897,6 +914,7 @@ class MCHIncompleteData(MCH):
         errors : ndarray
             Errors in matching constraints at each step of iteration.
         """
+
         # Check args.
         import types
         assert (not X is None) and (not constraints is None), "Must provide data and constriants."
@@ -1018,6 +1036,7 @@ class MCHIncompleteData(MCH):
         -------
         estimatedConstraints : ndarray
         """
+
         keepLearning = True
         dlamda = np.zeros((self.constraints.size))
         learningSteps = 0
@@ -1093,6 +1112,7 @@ class MCHIncompleteData(MCH):
         -------
         None
         """
+
         from datetime import datetime  # for debugging
         assert not (self.sampler is None), "Must call setup_sampler() first."
 
@@ -1148,11 +1168,23 @@ class MCHIncompleteData(MCH):
 
 
 class Pseudo(Solver):
+    """
+    Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell
+    and Ekeberg, PRL 108, 090201 (2012).
+
+    Members
+    -------
+            
+    Methods
+    -------
+    solve
+    _solve
+    cond_log_likelihood
+    cond_jac
+    cond_hess
+    """
     def __init__(self, *args, **kwargs):
         """
-        Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell
-        and Ekeberg, PRL 108, 090201 (2012).
-
         For this technique, must specify how to calculate the energy specific to the conditional
         probability of spin r given the rest of the spins. These will be passed in with
         "get_observables_r" and "calc_observables_r".
@@ -1165,25 +1197,15 @@ class Pseudo(Solver):
         calc_observables_r : lambda function
             Takes index r and samples X.
             Defn: lambda r,X : r_observable
-        
-        Members
-        -------
-                
-        Methods
-        -------
-        solve
-        _solve
-        cond_log_likelihood
-        cond_jac
-        cond_hess
         """
+
         self.calc_observables_r = kwargs.get('calc_observables_r',None)
         self.get_multipliers_r = kwargs.get('get_multipliers_r',None)
         assert not ( (self.calc_observables_r is None) or (self.get_multipliers_r is None) )
         del kwargs['calc_observables_r'],kwargs['get_multipliers_r']
         super(Pseudo,self).__init__(*args,**kwargs)
 
-    def solve(self,*args,**kwargs):
+    def solve(self, *args, **kwargs):
         """
         Two different methods are implemented and can be called from self.solve. One is specific to
         the Ising model and the other uses a general all-purpose optimization (scipy.optimize) to
@@ -1196,11 +1218,12 @@ class Pseudo(Solver):
             resulting pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
             implemented (self._solve_ising).
         """
+
         if kwargs.get('general_case',True):
             return self._solve_general(*args,**kwargs)
         return self._solve_ising(*args,**kwargs)
 
-    def _solve_general(self,X=None,initial_guess=None,return_all=False,solver_kwargs={}):
+    def _solve_general(self, X=None, initial_guess=None, return_all=False, solver_kwargs={}):
         """
         Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
@@ -1221,6 +1244,7 @@ class Pseudo(Solver):
         minimize_output : dict
             Output from scipy.minimize.
         """
+
         def f(params):
             loglikelihood = 0
             for r in range(self.n):
@@ -1234,7 +1258,7 @@ class Pseudo(Solver):
             return soln['x'],soln
         return soln['x']
 
-    def _solve_ising(self,X=None,initial_guess=None):
+    def _solve_ising(self, X=None, initial_guess=None):
         """
         Method for solving Ising model specifically.
 
@@ -1244,8 +1268,8 @@ class Pseudo(Solver):
             Data set if dimensions (n_samples, n_dim).
         initial_guess : ndarray
             Initial guess for the parameter values.
-
         """
+
         X = (X + 1)/2  # change from {-1,1} to {0,1}
         
         # start at freq. model params?
@@ -1280,7 +1304,7 @@ class Pseudo(Solver):
 
         return self.multipliers
 
-    def cond_log_likelihood(self,r,X,Jr):
+    def cond_log_likelihood(self, r, X, Jr):
         """
         Equals the conditional log likelihood -L_r.
         
@@ -1293,6 +1317,7 @@ class Pseudo(Solver):
         Jr : ndarray
             (dimension of system) x (1)
         """
+
         X,Jr = np.array(X),np.array(Jr)
         
         sigmaRtilde = (2.*X[:,r] - 1.)
@@ -1306,11 +1331,12 @@ class Pseudo(Solver):
 
         return -logLs.sum()
 
-    def cond_jac(self,r,X,Jr):
+    def cond_jac(self, r, X, Jr):
         """
         Returns d cond_log_likelihood / d Jr,
         with shape (dimension of system)
         """
+
         X,Jr = np.array(X),np.array(Jr)
         
         sigmaRtilde = (2.*X[:,r] - 1.)
@@ -1323,7 +1349,7 @@ class Pseudo(Solver):
 
         return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
 
-    def cond_hess(self,r,X,Jr,pairCoocRhat=None):
+    def cond_hess(self, r, X, Jr, pairCoocRhat=None):
         """
         Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
         (dimension of system)x(dimension of system)
@@ -1337,6 +1363,7 @@ class Pseudo(Solver):
         pairCooc : ndarray,None
             Pass pair_cooc_mat(X) to speed calculation.
         """
+
         X,Jr = np.array(X),np.array(Jr)
         
         sigmaRtilde = (2.*X[:,r] - 1.)
@@ -1353,7 +1380,7 @@ class Pseudo(Solver):
         #filteredSigmaRtildeSq = filterVec * (2.*X[:,r] + 1.) # (# X)x(1)
         return np.dot( energyMults, pairCoocRhat )
 
-    def pair_cooc_mat(self,X):
+    def pair_cooc_mat(self, X):
         """
         Returns matrix of shape (self.n)x(# X)x(self.n).
         
@@ -1361,10 +1388,11 @@ class Pseudo(Solver):
         
         Slow because I haven't thought of a better way of doing it yet.
         """
+
         p = [ np.outer(f,f) for f in X ]
         return np.transpose(p,(1,0,2))
 
-    def pseudo_log_likelhood(self,X,J):
+    def pseudo_log_likelhood(self, X, J):
         """
         (Could probably be made more efficient.)
 
@@ -1376,6 +1404,7 @@ class Pseudo(Solver):
             (dimension of system) x (dimension of system)
             J should be symmetric
         """
+
         return np.sum([ cond_log_likelihood(r,X,J) \
                            for r in range(len(J)) ])
 # End Pseudo
@@ -1383,24 +1412,27 @@ class Pseudo(Solver):
 
 
 class ClusterExpansion(Solver):
+    """
+    Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
+    described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
+    
+    Specific to pairwise Ising constraints.
+            
+    Members
+    -------
+    
+    Methods
+    -------
+    """
+
     def __init__(self, *args, **kwargs):
-        """
-        Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
-        described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
-        
-        Specific to pairwise Ising constraints.
-                
-        Members
-        -------
-        
-        Methods
-        -------
-        """
         super(ClusterExpansion,self).__init__(*args,**kwargs)
         self.setup_sampler('metropolis')
     
-    def S(self,cluster,coocMat,deltaJdict={},
-          useAnalyticResults=False,priorLmbda=0.,
+    def S(self, cluster, coocMat,
+          deltaJdict={}, 
+          useAnalyticResults=False,
+          priorLmbda=0.,
           numSamples=None):
         """
         Calculate pairwise entropy of cluster.
@@ -1409,6 +1441,7 @@ class ClusterExpansion(Solver):
         useAnalyticResults : bool,False
             Probably want False until analytic formulas are changed to include prior on J
         """
+
         if len(cluster) == 0:
             raise Exception
         elif (len(cluster) == 1) and useAnalyticResults:
@@ -1469,14 +1502,24 @@ class ClusterExpansion(Solver):
         return Sind,Jfull
 
     # "Algorithm 1"
-    def deltaS(self,cluster,coocMat,deltaSdict=None,deltaJdict=None,
-        verbose=True,meanFieldRef=False,priorLmbda=0.,
-        numSamples=None,independentRef=False,meanFieldPriorLmbda=None):
+    def deltaS(self, cluster, coocMat, 
+               deltaSdict=None,
+               deltaJdict=None,
+               verbose=True,
+               meanFieldRef=False,
+               priorLmbda=0.,
+               numSamples=None,
+               independentRef=False,
+               meanFieldPriorLmbda=None):
         """
-        cluster         : List of indices in cluster
-        independentRef  : If True, expand about independent entropy
-        meanFieldRef    : If True, expand about mean field entropy
+        cluster : list 
+            List of indices in cluster
+        independentRef : bool,False
+            If True, expand about independent entropy
+        meanFieldRef : bool,False
+            If True, expand about mean field entropy
         """
+
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}
         
@@ -1530,14 +1573,15 @@ class ClusterExpansion(Solver):
 
         return deltaScluster,deltaJcluster
 
-    def clusterID(self,cluster):
+    def clusterID(self, cluster):
         return tuple(np.sort(cluster))
 
-    def subsets(self,set,size,sort=False):
+    def subsets(self, set, size, sort=False):
         """
         Given a list, returns a list of all unique subsets
         of that list with given size.
         """
+
         if len(set) != len(np.unique(set)): raise Exception
         
         if size == len(set): return [set]
@@ -1561,14 +1605,20 @@ class ClusterExpansion(Solver):
             return np.sort(sub)
         return sub
 
-
     # "Algorithm 2"
     # was "adaptiveClusterExpansion"
-    def solve(self,X,threshold,
-              cluster=None,deltaSdict=None,deltaJdict=None,
-              verbose=True,priorLmbda=0.,numSamples=None,
-              meanFieldRef=False,independentRef=True,veryVerbose=False,
-              meanFieldPriorLmbda=None,return_all=False):
+    def solve(self, X, threshold, 
+              cluster=None,
+              deltaSdict=None,
+              deltaJdict=None,
+              verbose=True,
+              priorLmbda=0.,
+              numSamples=None,
+              meanFieldRef=False,
+              independentRef=True,
+              veryVerbose=False,
+              meanFieldPriorLmbda=None,
+              return_all=False):
         """
         Parameters
         ----------
@@ -1597,6 +1647,7 @@ class ClusterExpansion(Solver):
             deltaSdict  : 
             deltaJdict  :
         """
+
         # 7.18.2017 convert input to coocMat
         coocMat = mean_field_ising.cooccurrence_matrix((X+1)/2)
         
@@ -1672,23 +1723,23 @@ class ClusterExpansion(Solver):
 
     # 8.13.2014 took code from runSelectiveClusterExpansion
     def iterate_cluster_expansion(coocMat,
-        retall=False,
-        epsThreshold=1.,
-        gammaPrime=0.1,
-        logThresholdRange=(-6,-2),
-        numThresholds=1000,
-        numSamplesData=None,
-        numSamplesError=1e4,
-        saveSamplesAtEveryStep=False,
-        numProcs=1,
-        minimizeIndependent=True,
-        minimizeCovariance=False,
-        maxMaxClusterSize=None,
-        fileStr=None,
-        meanFieldGammaPrime=None,
-        minThreshold=0.,
-        bruteForceMin=False,
-        **kwargs):
+                                  retall=False,
+                                  epsThreshold=1.,
+                                  gammaPrime=0.1,
+                                  logThresholdRange=(-6,-2),
+                                  numThresholds=1000,
+                                  numSamplesData=None,
+                                  numSamplesError=1e4,
+                                  saveSamplesAtEveryStep=False,
+                                  numProcs=1,
+                                  minimizeIndependent=True,
+                                  minimizeCovariance=False,
+                                  maxMaxClusterSize=None,
+                                  fileStr=None,
+                                  meanFieldGammaPrime=None,
+                                  minThreshold=0.,
+                                  bruteForceMin=False,
+                                  **kwargs):
       """
       ***  As of 7.18.2017, not yet converted to be usable in coniii. ***
       
@@ -1704,6 +1755,7 @@ class ClusterExpansion(Solver):
                                   for a brute force estimation
                                   (not used recently?)
       """
+
       thresholds = np.logspace(logThresholdRange[0],
                                   logThresholdRange[1],
                                   numThresholds)[::-1]
@@ -1932,35 +1984,42 @@ class ClusterExpansion(Solver):
 
 
 class RegularizedMeanField(Solver):
-    def __init__(self, *args, **kwargs):
-        """
-        Implementation of regularized mean field method for solving the inverse Ising problem, as
-        described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.  ``Control of
-        Finite Critical Behaviour in a Small-Scale Social System.'' Nature Communications 8 (2017):
-        14301.  doi:10.1038/ncomms14301
-        
-        Specific to pairwise Ising constraints.
-        
-        Parameters
-        ----------
+    """
+    Implementation of regularized mean field method for solving the inverse Ising problem, as
+    described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.  ``Control of
+    Finite Critical Behaviour in a Small-Scale Social System.'' Nature Communications 8 (2017):
+    14301.  doi:10.1038/ncomms14301
+    
+    Specific to pairwise Ising constraints.
+    
+    Parameters
+    ----------
 
-        Members
-        -------
-        Methods
-        -------
-        """
+    Members
+    -------
+    Methods
+    -------
+    """
+    def __init__(self, *args, **kwargs):
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
         self.setup_sampler('metropolis')
     
         # Do I really need this?
         self.samples = np.zeros(self.n)
 
-    def solve(self,samples,
-              numSamples=1e5,nSkip=None,seed=0,
-              changeSeed=False,numProcs=1,
-              numDataSamples=None,minSize=0,
-              minimizeCovariance=False,minimizeIndependent=True,
-              coocCov=None,priorLmbda=0.,bracket=None,
+    def solve(self, samples,
+              numSamples=1e5,
+              nSkip=None,
+              seed=0,
+              changeSeed=False,
+              numProcs=1,
+              numDataSamples=None,
+              minSize=0,
+              minimizeCovariance=False,
+              minimizeIndependent=True,
+              coocCov=None,
+              priorLmbda=0.,
+              bracket=None,
               numGridPoints=200):
         """
         Varies the strength of regularization on the mean field J to best fit given cooccurrence
@@ -2133,7 +2192,7 @@ class RegularizedMeanField(Solver):
         return self.multipliers
 
     # 3.18.2016
-    def bracket1d(self,xList,funcList):
+    def bracket1d(self, xList, funcList):
         """
         Assumes xList is monotonically increasing
         
@@ -2142,6 +2201,7 @@ class RegularizedMeanField(Solver):
         
         If minimum is at one end, raise error.
         """
+
         gridMinIndex = np.argmin(funcList)
         gridMin = xList[gridMinIndex]
         if (gridMinIndex == 0) or (gridMinIndex == len(xList)-1):

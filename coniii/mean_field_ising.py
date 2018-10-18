@@ -349,13 +349,13 @@ def findJmatrixAnalytic_CoocMat(coocMatData,Jinit=None,bayesianMean=False,
     return Jnew
 
 # 7.18.2017 moved from inverseIsing.py
-def unflatten(flatList,ell,symmetrize=False):
+def unflatten(flatList, ell, symmetrize=False):
     """
     Inverse of aboveDiagFlat with keepDiag=True.
     """
-    mat = scipy.sum([ scipy.diag(                                           \
-        flatList[diagFlatIndex(0,j,ell):diagFlatIndex(0,j+1,ell)],k=j )     \
-        for j in range(ell)], axis=0)
+    
+    mat = scipy.sum([ scipy.diag(flatList[diagFlatIndex(0,j,ell):diagFlatIndex(0,j+1,ell)], k=j)
+                      for j in range(ell)], axis=0)
     if symmetrize:
         return 0.5*(mat + mat.T)
     else:
@@ -367,7 +367,7 @@ def diagFlatIndex(i,j,ell):
     Should have j>=i...
     """
     D = j-i
-    return i + D*ell - D*(D-1)/2
+    return i + D*ell - D*(D-1)//2
 
 # 7.18.2017 moved from inverseIsing.py
 # 2.18.2014
@@ -399,7 +399,7 @@ def coocSampleCovariance(samples,bayesianMean=True,includePrior=True):
     cov = coocs4mean*(1.-coocs4mean)
     if includePrior:
         ell = len(samples[0])
-        one = scipy.ones(ell*(ell-1)/2)
+        one = scipy.ones(ell*(ell-1)//2)
         return scipy.linalg.block_diag( cov, scipy.diag(one) )
     else:
         return cov
@@ -429,11 +429,11 @@ def cooccurrence_matrix(samples,keepDiag=True):
 # 7.20.2017 moved from inverseIsing.py
 # 7.20.2017 TO DO: change to slowMethod=False by incorporating weave or something else
 # 2.17.2012
-def fourthOrderCoocMat(samples,slowMethod=True):
+def fourthOrderCoocMat(samples, slowMethod=True):
     ell = len(samples[0])
     samples = scipy.array(samples)
-    jdim = (ell+1)*ell/2
-    f = scipy.zeros((jdim,jdim))
+    jdim = (ell+1)*ell//2
+    f = scipy.zeros((jdim, jdim))
     
     if slowMethod:
         for i in range(ell):

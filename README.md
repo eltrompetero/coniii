@@ -56,3 +56,6 @@ Make sure that you are running Python 3.6. If you run
 
 The first few lines specifying the version of Python that you are using must be 3.6. This package is
 not supported for Python 2.
+
+## Troubleshooting
+Some users may encounter difficulties with the multiprocess module in which case the `n_jobs` kwarg should be set to 0 when the algorithm class instance is declared.

@@ -1,5 +1,5 @@
 # Convenient Interface to Inverse Ising
-# Edward D Lee, Bryan C Daniels
+Edward D Lee, Bryan C Daniels
 
 Python package for solving maximum entropy problems with a focus on the pairwise maximum
 entropy model, also known as the inverse Ising problem.
@@ -8,8 +8,8 @@ See "ipynb/usage_guide.ipynb" for usage documentation and examples.
 
 There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216].
 
-## Installation This package is available on PyPI for Linux and MacOS. It can be installed
-by running  
+## Installation
+This package is available on PyPI for Linux and MacOS. It can be installed by running  
 >`pip install coniii`
 
 If you have trouble using `pip` and PyPI, then you can always build this from source.

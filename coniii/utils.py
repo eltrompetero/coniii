@@ -2,7 +2,7 @@
 # Miscellaneous functions used for various computations.
 # ========================================================================================================= #
 import numpy as np
-from numba import jit
+from numba import jit,njit
 from scipy.special import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
@@ -466,7 +466,7 @@ def define_ising_helpers_functions():
         return obs
     return calc_e,calc_observables,mch_approximation
 
-def define_sising_helpers_functions():
+def define_ising_helper_functions():
     """
     Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no fields.
 
@@ -476,7 +476,7 @@ def define_sising_helpers_functions():
     calc_observables
     mch_approximation
     """
-    @jit(nopython=True,cache=True)
+    @njit(cache=True)
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
         e = np.zeros((s.shape[0]))
@@ -488,8 +488,8 @@ def define_sising_helpers_functions():
                     k += 1
         return e
     
-    @jit(nopython=True)
-    def calc_e(s,params):
+    @njit
+    def calc_e(s, params):
         """
         Parameters
         ----------
@@ -497,6 +497,10 @@ def define_sising_helpers_functions():
             state either {0,1} or {+/-1}
         params : ndarray
             (h,J) vector
+
+        Returns
+        -------
+        E : ndarray
         """
         return -fast_sum(params,s)
 
@@ -511,7 +515,7 @@ def define_sising_helpers_functions():
                                                                                                predsisj.max())
         return predsisj
     
-    @jit(nopython=True)
+    @njit
     def calc_observables(samples):
         """Observables for symmetrized Ising model."""
         n = samples.shape[1]
@@ -523,7 +527,7 @@ def define_sising_helpers_functions():
                 obs[:,k] = samples[:,i]*samples[:,j]
                 k += 1
         return obs
-    return calc_e,calc_observables,mch_approximation
+    return calc_e, calc_observables, mch_approximation
 
 
 @jit(nopython=True)

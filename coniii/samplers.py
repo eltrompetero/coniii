@@ -1188,9 +1188,10 @@ class SimulatedTempering(object):
 # Metropolis sampler. #
 # =================== #
 class FastMCIsing():
-    def __init__(self, n, theta, calc_e,
-                 n_cpus=0,
-                 rng=None):
+    def __init__(self, n, theta,
+                 n_cpus=None,
+                 rng=None,
+                 use_numba=True):
         """
         MC sample on Ising model with +/-1 formulation. Fast metropolis sampling by assuming form of
         Hamiltonian is an Ising model.
@@ -1200,68 +1201,254 @@ class FastMCIsing():
         n : int
             Number of elements in system.
         theta : ndarray
-            Vector of parameters in Hamiltonian.
-        calc_e : lambda function
-            f( states, params )
+            Concatenated vector of the field hi and couplings Jij. They should be ordered in
+            ascending order 0<=i<n and for Jij in order of 0<=i<j<n.
         n_cpus : int,0
-            If None, then will use all available CPUs.
+            If None, then will use all available CPUs minus 1.
         rng : RandomState,None
+        use_numba : bool,True
+            If True, use jit to speed up sampling, but random seed generator cannot be set by the user if this
+            is switched on. If having problems with numba, this can be switched off.
         """
-
+        
         self.n = n
         self.theta = theta
         self.h, self.J = theta[:n], squareform(theta[n:])
-        self.nCpus = n_cpus or mp.cpu_count()
-        
+        self.nCpus = n_cpus or mp.cpu_count()-1
+       
+        calc_e, calc_observables, mch_approximation = define_ising_helper_functions()
         self.calc_e = calc_e
+        
+        if use_numba:
+            rng=None
+        else:
+            if rng is None:
+                self.rng = np.random.RandomState()
+        self.setup_sampling(use_numba)
 
-        if rng is None:
-            self.rng = np.random.RandomState()
-    
-    def generate_samples(self,
+    def setup_sampling(self, use_numba):
+        if use_numba:
+            self.sample_metropolist = self._jit_sample_metropolis
+            self.generate_samples = self._jit_generate_samples
+            self.generate_samples_parallel = self._jit_generate_samples_parallel
+        else:
+            self.sample_metropolist = self._sample_metropolis
+            self.generate_samples = self._generate_samples
+            self.generate_samples_parallel = self._generate_samples_parallel
+
+    def _jit_generate_samples(self,
                          sampleSize,
                          nIters=1000,
                          saveHistory=False,
                          initialSample=None,
                          systematic_iter=False):
         """
-        Generate Metropolis samples using a for loop.
+        Generate Metropolis samples using a for loop and save samples in self.samples.
 
         Parameters
         ----------
         sampleSize : int
+            Number of samples to take.
         nIters : int,1000
+            Number of iterations to run Metropolis sampler.
         saveHistory : bool,False
+            If True, the energy of the system after each Metropolis sampling step will be recorded.
+            This can be useful for making sure that the system has reached equilibrium.
         initialSample : ndarray,None
+            If this is given, then this is used as the starting point for the Markov chain instead
+            of a random sample.
+        systematic_iter : bool,False
+            If True, will iterate through each spin in a fixed sequence. This ensures that all spins
+            receive in equal number of chances to flip.
+        """
+        
+        sample_metropolis = self._jit_sample_metropolis
+
+        if initialSample is None:
+            samples = np.random.choice([-1,1],size=(sampleSize,self.n)).astype(float)
+        else: samples = initialSample.astype(int)
+        E = np.array([ self.calc_e( s[None,:], self.theta ) for s in samples ])
+        h, J = self.h, self.J
+        n = self.n
+        
+        if saveHistory:
+            if systematic_iter:
+                @jit
+                def sample():
+                    history=np.zeros((sampleSize,nIters+1))
+                    history[:,0]=E.ravel()
+                    for i in range(sampleSize):
+                        for j in range(nIters):
+                            de = sample_metropolis( samples[i], h, J, j%n )
+                            E[i] += de
+                            history[i,j+1]=E[i]
+                    return history
+            else:
+                @jit
+                def sample():
+                    history = np.zeros((sampleSize,nIters+1))
+                    history[:,0] = E.ravel()
+                    for i in range(sampleSize):
+                        for j in range(nIters):
+                            de = sample_metropolis( samples[i], h, J, np.random.randint(n) )
+                            E[i] += de
+                            history[i,j+1] = E[i]
+                    return history
+
+            history = sample()
+            self.E = E
+            self.samples = samples
+            return history
+        else:
+            if systematic_iter:
+                @jit(locals={'de':'float64'})
+                def sample():
+                    for i in range(sampleSize):
+                        for j in range(nIters):
+                            de = sample_metropolis( samples[i], h, J, j%n )
+                            E[i] += de
+            else:
+                @jit(locals={'de':'float64'})
+                def sample():
+                    for i in range(sampleSize):
+                        for j in range(nIters):
+                            de = sample_metropolis( samples[i], h, J, np.random.randint(n) )
+                            E[i] += de
+
+        sample()
+        # read out variables
+        self.E = E
+        self.samples = samples
+
+    def _generate_samples(self,
+                         sampleSize,
+                         nIters=1000,
+                         saveHistory=False,
+                         initialSample=None,
+                         systematic_iter=False):
+        """
+        Generate Metropolis samples using a for loop and save samples in self.samples.
+
+        Parameters
+        ----------
+        sampleSize : int
+            Number of samples to take.
+        nIters : int,1000
+            Number of iterations to run Metropolis sampler.
+        saveHistory : bool,False
+            If True, the energy of the system after each Metropolis sampling step will be recorded.
+            This can be useful for making sure that the system has reached equilibrium.
+        initialSample : ndarray,None
+            If this is given, then this is used as the starting point for the Markov chain instead
+            of a random sample.
+        systematic_iter : bool,False
+            If True, will iterate through each spin in a fixed sequence. This ensures that all spins
+            receive in equal number of chances to flip.
         """
 
         if initialSample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
         else: self.samples = initialSample
         self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
-
+        
         if saveHistory:
-            history=np.zeros((sampleSize,nIters+1))
-            history[:,0]=self.E.ravel()
-            for i in range(sampleSize):
-                for j in range(nIters):
-                    de = self.sample_metropolis( self.samples[i] )
-                    self.E[i] += de
-                    history[i,j+1]=self.E[i]
-            return history
+            if systematic_iter:
+                history=np.zeros((sampleSize,nIters+1))
+                history[:,0]=self.E.ravel()
+                for i in range(sampleSize):
+                    for j in range(nIters):
+                        de = self._sample_metropolis( self.samples[i], flip_site=j%self.n )
+                        self.E[i] += de
+                        history[i,j+1]=self.E[i]
+                return history
+            else:
+                history=np.zeros((sampleSize,nIters+1))
+                history[:,0]=self.E.ravel()
+                for i in range(sampleSize):
+                    for j in range(nIters):
+                        de = self._sample_metropolis( self.samples[i] )
+                        self.E[i] += de
+                        history[i,j+1]=self.E[i]
+                return history
         else:
             if systematic_iter:
                 for i in range(sampleSize):
                     for j in range(nIters):
-                        de = self.sample_metropolis( self.samples[i],flip_site=j%self.n )
+                        de = self._sample_metropolis( self.samples[i], flip_site=j%self.n )
                         self.E[i] += de
             else:
+                print(self.J)
                 for i in range(sampleSize):
                     for j in range(nIters):
-                        de = self.sample_metropolis( self.samples[i] )
+                        de = self._sample_metropolis( self.samples[i], self.rng, self.h, self.J )
                         self.E[i] += de
+    
+    def _jit_generate_samples_parallel(self,
+                                       sampleSize,
+                                       n_iters=1000,
+                                       cpucount=None,
+                                       initial_sample=None,
+                                       systematic_iter=False):
+        """
+        Metropolis sample multiple states in parallel and save them into self.samples.
 
-    def generate_samples_parallel(self,
+        Parameters
+        ----------
+        sampleSize : int
+            Number of samples to take.
+        nIters : int,1000
+            Number of iterations to run Metropolis sampler.
+        saveHistory : bool,False
+            If True, the energy of the system after each Metropolis sampling step will be recorded.
+            This can be useful for making sure that the system has reached equilibrium.
+        initialSample : ndarray,None
+            If this is given, then this is used as the starting point for the Markov chain instead
+            of a random sample.
+        systematic_iter : bool,False
+            If True, will iterate through each spin in a fixed sequence. This ensures that all spins
+            receive in equal number of chances to flip.
+        """
+
+        cpucount=cpucount or self.nCpus
+        sample_metropolis = self._jit_sample_metropolis
+        if initial_sample is None:
+            self.samples = np.random.choice([-1.,1.], size=(sampleSize,self.n))
+        else:
+            self.samples = initial_sample
+        self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
+        h, J = self.h, self.J
+        n = self.n
+       
+        # Parallel sample.
+        if not systematic_iter:
+            @njit
+            def f(args):
+                s, E, seed = args
+                np.random.seed(seed)
+                for j in range(n_iters):
+                    de = sample_metropolis( s, h, J, np.random.randint(n) )
+                    E += de
+                return s,E
+        else:
+            @njit
+            def f(args):
+                s,E,seed = args
+                np.random.seed(seed)
+                for j in range(n_iters):
+                    de = sample_metropolis( s, h, J, j%n )
+                    E += de
+                return s, E
+        
+        pool=mp.Pool(cpucount)
+        self.samples,self.E = list(zip(*pool.map(f, list(zip(self.samples,
+                                                     self.E,
+                                                     np.random.randint(2**31-1,size=sampleSize))))))
+        pool.close()
+
+        self.samples = np.vstack(self.samples)
+        self.E = np.concatenate(self.E)
+
+    def _generate_samples_parallel(self,
                                   sampleSize,
                                   n_iters=1000,
                                   cpucount=None,
@@ -1272,15 +1459,22 @@ class FastMCIsing():
 
         Parameters
         ----------
-        sampleSize
-        n_iters : int,1000
-        cpucount : int,None
-        initial_sample : ndarray,None
+        sampleSize : int
+            Number of samples to take.
+        nIters : int,1000
+            Number of iterations to run Metropolis sampler.
+        saveHistory : bool,False
+            If True, the energy of the system after each Metropolis sampling step will be recorded.
+            This can be useful for making sure that the system has reached equilibrium.
+        initialSample : ndarray,None
+            If this is given, then this is used as the starting point for the Markov chain instead
+            of a random sample.
         systematic_iter : bool,False
-            Iterate through spins systematically instead of choosing them randomly.
+            If True, will iterate through each spin in a fixed sequence. This ensures that all spins
+            receive in equal number of chances to flip.
         """
 
-        cpucount=cpucount or mp.cpu_count()
+        cpucount=cpucount or self.nCpus
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
         else:
@@ -1290,31 +1484,51 @@ class FastMCIsing():
         # Parallel sample.
         if not systematic_iter:
             def f(args):
-                s,E,seed=args
+                s, E, seed = args
                 rng=np.random.RandomState(seed)
                 for j in range(n_iters):
-                    de = self.sample_metropolis( s,rng=rng )
+                    de = self._sample_metropolis( s, rng=rng )
                     E += de
                 return s,E
         else:
             def f(args):
-                s,E,seed=args
+                s,E,seed = args
                 rng=np.random.RandomState(seed)
                 for j in range(n_iters):
-                    de = self.sample_metropolis( s,rng=rng,flip_site=j%self.n )
+                    de = self._sample_metropolis( s, rng=rng,flip_site=j%self.n )
                     E += de
                 return s,E
         
         pool=mp.Pool(cpucount)
-        self.samples,self.E=list(zip(*pool.map(f,list(zip(self.samples,
+        self.samples,self.E = list(zip(*pool.map(f,list(zip(self.samples,
                                                 self.E,
                                                 np.random.randint(2**31-1,size=sampleSize))))))
         pool.close()
 
-        self.samples=np.vstack(self.samples)
-        self.E=np.concatenate(self.E)
+        self.samples = np.vstack(self.samples)
+        self.E = np.concatenate(self.E)
+    
+    @staticmethod
+    @njit
+    def _jit_sample_metropolis(sample0, h, J, flip_site):
+        """
+        Metropolis sampling.
+        """
+        
+        sample0[flip_site] *= -1
+        de = -2*sample0[flip_site]*h[flip_site] - 2*J[flip_site].dot(sample0[flip_site]*sample0)
 
-    def sample_metropolis(self, sample0, rng=None, flip_site=None):
+        # Only accept flip if dE<=0 or probability exp(-dE)
+        # Thus reject flip if dE>0 and with probability (1-exp(-dE))
+        if de < 0:
+            return de
+        elif np.random.rand() > np.exp(-de):
+            sample0[flip_site] *= -1.
+            return 0.
+        else:
+            return de
+
+    def _sample_metropolis(self, sample0, rng=None, flip_site=None):
         """
         Metropolis sampling.
         """

@@ -1212,8 +1212,7 @@ class FastMCIsing():
         """
         
         self.n = n
-        self.theta = theta
-        self.h, self.J = theta[:n], squareform(theta[n:])
+        self.update_parameters(theta)
         self.nCpus = n_cpus or mp.cpu_count()-1
        
         calc_e, calc_observables, mch_approximation = define_ising_helper_functions()
@@ -1225,6 +1224,10 @@ class FastMCIsing():
             if rng is None:
                 self.rng = np.random.RandomState()
         self.setup_sampling(use_numba)
+
+    def update_parameters(self, theta):
+        self.theta = theta
+        self.h, self.J = theta[:self.n], squareform(theta[self.n:])
 
     def setup_sampling(self, use_numba):
         if use_numba:

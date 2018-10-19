@@ -125,17 +125,24 @@ class Solver():
         
         if sample_method=='wolff':
             raise NotImplementedError("Need to update call.")
-            self.sampleMethod='wolff'
+            self.sampleMethod=sample_method
             h,J = self.multipliers[:self.n],self.multipliers[self.n:]
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
-            self.sampleMethod='metropolis'
+            self.sampleMethod=sample_method
             self.sampler = Metropolis( self.n,self.multipliers,self.calc_e )
-        
+      
+        elif sample_method=='ising_metropolis':
+            self.sampleMethod=sample_method
+            if self.multipliers is None:
+                self.sampler = FastMCIsing( self.n, np.zeros(self.n+self.n*(self.n+1)//2) )
+            else:
+                self.sampler = FastMCIsing( self.n, self.multipliers )
+
         elif sample_method=='remc':
             raise NotImplementedError("Need to update sampler.")
-            self.sampleMethod='remc'
+            self.sampleMethod=sample_method
             self.sampler = ParallelTempering( self.n,
                                               self._multipliers,
                                               self.calc_e,
@@ -200,6 +207,17 @@ class Solver():
                                                initial_sample=self.sampler.samples)
                 self.samples = self.sampler.samples
 
+            elif sample_method=='ising_metropolis':
+                self.sampler.update_parameters(multipliers)
+                # Burn in.
+                self.sampler.generate_samples( sample_size,
+                                               n_iters=burnin,
+                                               initial_sample=initial_sample )
+                self.sampler.generate_samples( sample_size,
+                                               n_iters=n_iters,
+                                               initial_sample=self.sampler.samples)
+                self.samples = self.sampler.samples
+
             elif sample_method=='remc':
                 self.sampler.update_parameters(multipliers)
                 self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
@@ -219,6 +237,19 @@ class Solver():
 
             elif sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
+                # Burn in.
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=burnin,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=initial_sample )
+                self.sampler.generate_samples_parallel( sample_size,
+                                                        n_iters=n_iters,
+                                                        cpucount=self.n_jobs,
+                                                        initial_sample=self.sampler.samples)
+                self.samples = self.sampler.samples
+
+            elif sample_method=='ising_metropolis':
+                self.sampler.update_parameters(multipliers)
                 # Burn in.
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=burnin,

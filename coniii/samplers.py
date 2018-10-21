@@ -1454,8 +1454,9 @@ class FastMCIsing():
 
         # setup case where initial_sample is given
         else:
-            assert len(initial_sample)==len(self.E)==sample_size, "Given sample is of wrong length."
+            assert len(initial_sample)==sample_size, "Given sample is of wrong length."
             assert initial_sample.shape[1]==self.n, "Given sample is wrong dimension."
+            self.E = self.calc_e( initial_sample, self.theta )
 
             if not systematic_iter:
                 @njit
@@ -1465,7 +1466,7 @@ class FastMCIsing():
                     for j in range(n_iters):
                         de = sample_metropolis( s, h, J, np.random.randint(n) )
                         E += de
-                    return s,E
+                    return s, E
             else:
                 @njit
                 def f(args):
@@ -1484,7 +1485,7 @@ class FastMCIsing():
         
         # save results of sampling into instance data members
         self.samples = np.vstack(self.samples)
-        self.E = np.concatenate(self.E)
+        self.E = np.array(self.E)
 
     def _generate_samples_parallel(self,
                                    sampleSize,

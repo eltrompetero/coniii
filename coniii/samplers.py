@@ -1543,7 +1543,7 @@ class FastMCIsing():
         self.E = np.concatenate(self.E)
     
     @staticmethod
-    @njit(cache=True)
+    @njit
     def _jit_sample_metropolis(sample0, h, J, flip_site):
         """
         Metropolis sampling.

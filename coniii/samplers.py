@@ -1387,7 +1387,7 @@ class FastMCIsing():
                         self.E[i] += de
     
     def _jit_generate_samples_parallel(self,
-                                       sampleSize,
+                                       sample_size,
                                        n_iters=1000,
                                        cpucount=None,
                                        initial_sample=None,
@@ -1397,14 +1397,11 @@ class FastMCIsing():
 
         Parameters
         ----------
-        sampleSize : int
+        sample_size : int
             Number of samples to take.
-        nIters : int,1000
+        n_iters : int,1000
             Number of iterations to run Metropolis sampler.
-        saveHistory : bool,False
-            If True, the energy of the system after each Metropolis sampling step will be recorded.
-            This can be useful for making sure that the system has reached equilibrium.
-        initialSample : ndarray,None
+        initial_sample : ndarray,None
             If this is given, then this is used as the starting point for the Markov chain instead
             of a random sample.
         systematic_iter : bool,False
@@ -1414,49 +1411,83 @@ class FastMCIsing():
 
         cpucount=cpucount or self.nCpus
         sample_metropolis = self._jit_sample_metropolis
-        if initial_sample is None:
-            self.samples = np.random.choice([-1.,1.], size=(sampleSize,self.n))
-        else:
-            self.samples = initial_sample
         self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
         h, J = self.h, self.J
         n = self.n
-       
-        # Parallel sample.
-        if not systematic_iter:
-            @njit
-            def f(args):
-                s, E, seed = args
-                np.random.seed(seed)
-                for j in range(n_iters):
-                    de = sample_metropolis( s, h, J, np.random.randint(n) )
-                    E += de
-                return s,E
-        else:
-            @njit
-            def f(args):
-                s,E,seed = args
-                np.random.seed(seed)
-                for j in range(n_iters):
-                    de = sample_metropolis( s, h, J, j%n )
-                    E += de
-                return s, E
         
-        pool=mp.Pool(cpucount)
-        self.samples,self.E = list(zip(*pool.map(f, list(zip(self.samples,
-                                                     self.E,
-                                                     np.random.randint(2**31-1,size=sampleSize))))))
-        pool.close()
+        # setup case where initial_sample is not given
+        if initial_sample is None:
+            if not systematic_iter:
+                @njit
+                def f(args):
+                    E, seed = args
+                    np.random.seed(seed)
+                    s=np.zeros(n)
 
+                    for i in range(n):
+                        s[i]=np.random.randint(2)*2-1
+
+                    for j in range(n_iters):
+                        de = sample_metropolis( s, h, J, np.random.randint(n) )
+                        E += de
+                    return s, E
+            else:
+                @njit
+                def f(args):
+                    E, seed = args
+                    np.random.seed(seed)
+                    s = np.zeros(n)
+
+                    for i in range(n):
+                        s[i] = np.random.randint(2)*2-1
+
+                    for j in range(n_iters):
+                        de = sample_metropolis( s, h, J, j%n )
+                        E += de
+                    return s, E
+            
+            args=zip(self.E, np.random.randint(2**31-1, size=sample_size))
+
+        # setup case where initial_sample is given
+        else:
+            assert len(initial_sample)==len(self.E)==sample_size, "Given sample is of wrong length."
+            assert initial_sample.shape[1]==self.n, "Given sample is wrong dimension."
+
+            if not systematic_iter:
+                @njit
+                def f(args):
+                    s, E, seed = args
+                    np.random.seed(seed)
+                    for j in range(n_iters):
+                        de = sample_metropolis( s, h, J, np.random.randint(n) )
+                        E += de
+                    return s,E
+            else:
+                @njit
+                def f(args):
+                    s, E, seed = args
+                    np.random.seed(seed)
+                    for j in range(n_iters):
+                        de = sample_metropolis( s, h, J, j%n )
+                        E += de
+                    return s, E
+            args = zip(initial_sample, self.E, np.random.randint(2**31-1, size=sample_size))
+        
+        # run sampling
+        pool = mp.Pool(cpucount)
+        self.samples, self.E = list(zip(*pool.map(f, args)))
+        pool.close()
+        
+        # save results of sampling into instance data members
         self.samples = np.vstack(self.samples)
         self.E = np.concatenate(self.E)
 
     def _generate_samples_parallel(self,
-                                  sampleSize,
-                                  n_iters=1000,
-                                  cpucount=None,
-                                  initial_sample=None,
-                                  systematic_iter=False):
+                                   sampleSize,
+                                   n_iters=1000,
+                                   cpucount=None,
+                                   initial_sample=None,
+                                   systematic_iter=False):
         """
         Metropolis sample multiple states in parallel and save them into self.samples.
 
@@ -1512,7 +1543,7 @@ class FastMCIsing():
         self.E = np.concatenate(self.E)
     
     @staticmethod
-    @njit
+    @njit(cache=True)
     def _jit_sample_metropolis(sample0, h, J, flip_site):
         """
         Metropolis sampling.

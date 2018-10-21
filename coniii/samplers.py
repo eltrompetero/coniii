@@ -1411,42 +1411,46 @@ class FastMCIsing():
 
         cpucount=cpucount or self.nCpus
         sample_metropolis = self._jit_sample_metropolis
-        self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
         h, J = self.h, self.J
         n = self.n
         
         # setup case where initial_sample is not given
         if initial_sample is None:
+            calc_e = self.calc_e
+            theta = self.theta
+
             if not systematic_iter:
                 @njit
                 def f(args):
-                    E, seed = args
+                    seed, theta = args
                     np.random.seed(seed)
-                    s=np.zeros(n)
+                    s = np.zeros((1,n))
 
                     for i in range(n):
-                        s[i]=np.random.randint(2)*2-1
+                        s[0,i]=np.random.randint(2)*2-1
+                    E = calc_e(s, theta)
 
                     for j in range(n_iters):
-                        de = sample_metropolis( s, h, J, np.random.randint(n) )
+                        de = sample_metropolis( s[0], h, J, np.random.randint(n) )
                         E += de
                     return s, E
             else:
                 @njit
                 def f(args):
-                    E, seed = args
+                    seed, theta = args
                     np.random.seed(seed)
-                    s = np.zeros(n)
+                    s = np.zeros((1,n))
 
                     for i in range(n):
-                        s[i] = np.random.randint(2)*2-1
+                        s[0,i] = np.random.randint(2)*2-1
+                    E = calc_e(s, theta)
 
                     for j in range(n_iters):
-                        de = sample_metropolis( s, h, J, j%n )
+                        de = sample_metropolis( s[0], h, J, j%n )
                         E += de
                     return s, E
             
-            args=zip(self.E, np.random.randint(2**31-1, size=sample_size))
+            args=((i,theta) for i in np.random.randint(2**31-1, size=sample_size))
 
         # setup case where initial_sample is given
         else:

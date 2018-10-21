@@ -130,8 +130,8 @@ class Solver():
             self.sampler = WolffIsing( J,h )
 
         elif sample_method=='metropolis':
-            self.sampleMethod=sample_method
-            self.sampler = Metropolis( self.n,self.multipliers,self.calc_e )
+            self.sampleMethod = sample_method
+            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e )
       
         elif sample_method=='ising_metropolis':
             self.sampleMethod=sample_method
@@ -611,6 +611,8 @@ class MCH(Solver):
         ----------
         calc_observables : function
             takes in samples as argument
+        sample_method : str
+            Can be 'ising_metropolis', 'metropolis'.
         n_jobs : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         """

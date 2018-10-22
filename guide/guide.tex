@@ -394,11 +394,17 @@ In this sense, the maxent approach is a principled method of statistical inferen
 
 \clearpage
 \section{Software architecture}
-The package is organized around classes that correspond to different algorithms for the inverse maxent problem. This class-based structure ensures that the state of the solver including the data it was fit to and the current guess for the parameters are all contained within the instance of the algorithm class. Using the Python package {\tt dill} which allows pickling of anonymous functions, the current state of work can be saved and moved between workstations.
+The package is organized around classes that correspond to different algorithms for the inverse maxent problem. This class-based structure ensures that the state of the solver including the data it was fit to and the current guess for the parameters are all contained within the instance of the algorithm class. As a result, the current state of work can be saved and moved between workstations using the Python package {\tt dill}.
 
-The different algorithms available are accessible from the {\tt coniii.solvers} module: {\tt Enumerate}, {\tt MPF}, {\tt Pseudo}, {\tt ClusterExpansion}, {\tt MCH}, and {\tt RegularizedMeanField} models as described in the above sections. These algorithm classes are all derived from a base {\tt Solver} class. In the accompanying release version of the package, v1.0.0, the each class has a {\tt solve} method for solving the inverse maxent problem. Furthermore, the parent {\tt Solver} class contains methods for sampling from the maxent model found by the solver.
+The different algorithms available are accessible from the {\tt coniii.solvers} module: {\tt Enumerate}, {\tt MPF}, {\tt Pseudo}, {\tt ClusterExpansion}, {\tt MCH}, and {\tt RegularizedMeanField} algorithms as described in the above sections. These algorithm classes are all derived from a base {\tt Solver} class. In the accompanying release version of the package, v1.0.0, each class has a {\tt solve} method for solving the inverse maxent problem. Furthermore, the parent {\tt Solver} class has a data member named {\tt Solver.sampler} that is a instance of a sampling class for obtaining a Monte Carlo realization from the maxent model. For the Ising model, this is typically an instance of {\tt FastMCIsing} from the {\tt coniii.solvers} module.
 
 Besides the solvers, the {\tt coniii.samplers} module contains an analogous class-based architecture for sampling from maxent models.
+
+\begin{figure}
+	\includegraphics[width=\linewidth,clip=True,trim=100 360 80 0]{architecture}
+	\caption{ConIII architecture. The principal modules are {\tt solvers.py}, {\tt samplers.py}, and {\tt utils.py}. The module {\tt solvers.py} contains classes based on a the super class {\tt Solver} that each implement a different algorithm for solving the relevant inverse maxent problem accessible through the method {\tt Solver.solve()}. The {\tt samplers.py} module contains two algorithms for Monte Carlo Markov Chain sampling and will support other samplers in future versions (gray font) including the Wolff sampling, Swendsen-Wang sampling, and parallel tempering. The {\tt utils.py} module contains supporting functions for the other modules. This highly modularized structure ensures that contributed algorithms can be appended independently of existing code.}
+	\label{gr:architecture}
+\end{figure}
 
 \section{Contributing}
 To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes already implemented as part of v1.0.0. 

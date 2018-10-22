@@ -47,7 +47,7 @@ class Solver():
                  sample_size=None,
                  sample_method=None,
                  mch_approximation=None,
-                 n_jobs=None,
+                 n_cpus=None,
                  verbose=False):
         """
         Parameters
@@ -71,7 +71,7 @@ class Solver():
             Correlations to constrain.
         sample_size : int,None
         sample_method : str,None
-        n_jobs : int,None
+        n_cpus : int,None
             Number of cores to use for parallelized code. If this is set to 0, sequential sampler
             will be used. This should be set if multiprocess module does not work.
         verbose : bool,False
@@ -81,8 +81,8 @@ class Solver():
         assert type(n) is int
         if not sample_size is None:
             assert type(sample_size) is int
-        if not n_jobs is None:
-            assert type(n_jobs) is int
+        if not n_cpus is None:
+            assert type(n_cpus) is int
         
         self.n = n
         self.multipliers = multipliers
@@ -97,7 +97,7 @@ class Solver():
         self.calc_de = calc_de
         self.adj = adj
         
-        self.n_jobs = n_jobs or mp.cpu_count()
+        self.n_cpus = n_cpus or mp.cpu_count()-1
         self.verbose = verbose
 
     def solve(self):
@@ -123,33 +123,17 @@ class Solver():
 
         sample_method = sample_method or self.sampleMethod
         
-        if sample_method=='wolff':
-            raise NotImplementedError("Need to update call.")
-            self.sampleMethod=sample_method
-            h,J = self.multipliers[:self.n],self.multipliers[self.n:]
-            self.sampler = WolffIsing( J,h )
-
-        elif sample_method=='metropolis':
+        if sample_method=='metropolis':
             self.sampleMethod=sample_method
             self.sampler = Metropolis( self.n,self.multipliers,self.calc_e )
       
         elif sample_method=='ising_metropolis':
             self.sampleMethod=sample_method
             if self.multipliers is None:
-                self.sampler = FastMCIsing( self.n, np.zeros(self.n+self.n*(self.n+1)//2) )
+                self.sampler = FastMCIsing( self.n, np.zeros(self.n+self.n*(self.n-1)//2) )
             else:
                 self.sampler = FastMCIsing( self.n, self.multipliers )
 
-        elif sample_method=='remc':
-            raise NotImplementedError("Need to update sampler.")
-            self.sampleMethod=sample_method
-            self.sampler = ParallelTempering( self.n,
-                                              self._multipliers,
-                                              self.calc_e,
-                                              sampler_kwargs['temps'],
-                                              sample_size=self.sampleSize )
-            # Parallel tempering needs to optimize choice of temperatures.
-            self.sampler.optimize(**optimize_kwargs)
         else:
            raise NotImplementedError("Unrecognized sampler.")
         self.samples=None
@@ -187,84 +171,45 @@ class Solver():
             initial_sample = self.samples
         
         # When sequential sampling should be used.
-        if self.n_jobs==0:
-            if sample_method=='wolff':
-                self.sampler.update_parameters(multipliers[self.n:],multipliers[:self.n])
-                # Burn in.
-                self.samples = self.sampler.generate_sample( sample_size,burnin,
-                                                                      initial_sample=initial_sample )
-                self.samples = self.sampler.generate_sample( sample_size,n_iters,
-                                                                      initial_sample=self.sampler.samples )
-
-            elif sample_method=='metropolis':
+        if self.n_cpus<=1:
+            if sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
                 # Burn in.
-                self.sampler.generate_samples( sample_size,
-                                               n_iters=burnin,
-                                               initial_sample=initial_sample )
-                self.sampler.generate_samples( sample_size,
-                                               n_iters=n_iters,
-                                               initial_sample=self.sampler.samples)
+                self.sampler.generate_samples(sample_size,
+                                              n_iters=burnin,
+                                              initial_sample=initial_sample)
+                self.sampler.generate_samples(sample_size,
+                                              n_iters=n_iters,
+                                              initial_sample=self.sampler.samples)
                 self.samples = self.sampler.samples
 
             elif sample_method=='ising_metropolis':
                 self.sampler.update_parameters(multipliers)
                 # Burn in.
-                self.sampler.generate_samples( sample_size,
-                                               n_iters=burnin,
-                                               initial_sample=initial_sample )
-                self.sampler.generate_samples( sample_size,
-                                               n_iters=n_iters,
-                                               initial_sample=self.sampler.samples)
+                self.sampler.generate_samples(sample_size,
+                                              n_iters=burnin+n_iters,
+                                              initial_sample=initial_sample)
                 self.samples = self.sampler.samples
-
-            elif sample_method=='remc':
-                self.sampler.update_parameters(multipliers)
-                self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
-                self.samples = self.sampler.replicas[0].samples
 
             else:
                raise NotImplementedError("Unrecognized sampler.")
         # When parallel sampling using the multiprocess module.
         else:
-            if sample_method=='wolff':
-                self.sampler.update_parameters(multipliers[self.n:],multipliers[:self.n])
-                # Burn in.
-                self.samples = self.sampler.generate_sample_parallel( sample_size,burnin,
-                                                                      initial_sample=initial_sample )
-                self.samples = self.sampler.generate_sample_parallel( sample_size,n_iters,
-                                                                      initial_sample=self.sampler.samples )
-
-            elif sample_method=='metropolis':
+            if sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
-                # Burn in.
-                self.sampler.generate_samples_parallel( sample_size,
-                                                        n_iters=burnin,
-                                                        cpucount=self.n_jobs,
-                                                        initial_sample=initial_sample )
-                self.sampler.generate_samples_parallel( sample_size,
-                                                        n_iters=n_iters,
-                                                        cpucount=self.n_jobs,
-                                                        initial_sample=self.sampler.samples)
+                self.sampler.generate_samples_parallel(sample_size,
+                                                       n_iters=burnin+n_iters,
+                                                       cpucount=self.n_cpus,
+                                                       initial_sample=initial_sample)
                 self.samples = self.sampler.samples
 
             elif sample_method=='ising_metropolis':
                 self.sampler.update_parameters(multipliers)
-                # Burn in.
                 self.sampler.generate_samples_parallel( sample_size,
-                                                        n_iters=burnin,
-                                                        cpucount=self.n_jobs,
+                                                        n_iters=burnin+n_iters,
+                                                        cpucount=self.n_cpus,
                                                         initial_sample=initial_sample )
-                self.sampler.generate_samples_parallel( sample_size,
-                                                        n_iters=n_iters,
-                                                        cpucount=self.n_jobs,
-                                                        initial_sample=self.sampler.samples)
                 self.samples = self.sampler.samples
-
-            elif sample_method=='remc':
-                self.sampler.update_parameters(multipliers)
-                self.sampler.generate_samples(n_iters=n_iters,**generate_kwargs)
-                self.samples = self.sampler.replicas[0].samples
 
             else:
                raise NotImplementedError("Unrecognized sampler.")
@@ -356,7 +301,7 @@ class MPF(Solver):
         calc_de (lambda=None)
             Function for calculating derivative of energy wrt parameters. Takes in 2d state array and index of
             the parameter.
-        n_jobs (int=0)
+        n_cpus (int=0)
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         
         Members
@@ -611,7 +556,7 @@ class MCH(Solver):
         ----------
         calc_observables : function
             takes in samples as argument
-        n_jobs : int,0
+        n_cpus : int,0
             If 0 no parallel processing, other numbers above 0 specify number of cores to use.
         """
 
@@ -1160,11 +1105,11 @@ class MCHIncompleteData(MCH):
                 # Burn in.
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=burnin,
-                                                        cpucount=self.n_jobs,
+                                                        cpucount=self.n_cpus,
                                                         initial_sample=initial_sample )
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=n_iters,
-                                                        cpucount=self.n_jobs,
+                                                        cpucount=self.n_cpus,
                                                         initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
             if run_cond_sampler: 
@@ -1189,7 +1134,7 @@ class MCHIncompleteData(MCH):
                     return sample
 
                 # Parallel sampling of conditional distributions. 
-                pool = mp.Pool(self.n_jobs)
+                pool = mp.Pool(self.n_cpus)
                 self.condSamples = pool.map( f,list(zip(list(range(len(uIncompleteStates))),uIncompleteStates)) )
                 pool.close()
         else:

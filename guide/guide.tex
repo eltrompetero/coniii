@@ -1,5 +1,5 @@
 \documentclass[aps,prl,twocolumn,nofootinbib]{revtex4-1}
-\usepackage{graphics,color,graphicx,amsmath}
+\usepackage{graphics,color,graphicx,amsmath,hyperref}
 \usepackage{xr,natbib}
 \bibliographystyle{nature}
 \usepackage{amsbsy}
@@ -31,31 +31,34 @@
 \newcommand{\rs}[0]{{\rm s}}
 \newcommand{\rk}[0]{{\rm k}}
 
-\title{Convenient Interface to Inverse Ising (ConIII): A Python package for solving maximum entropy models}
+\title{Convenient Interface to Inverse Ising (ConIII): A Python 3 package for solving maximum entropy models}
 \author{Edward D Lee,$^1$ Bryan C Daniels$^2$}
 \affiliation{$^1$Department of Physics, 142 Sciences Dr, Cornell University, Ithaca NY 14853, $^2$ASU--SFI Center for Biosocial Complex Systems, Arizona State University, Tempe, AZ 85287}
 
 \begin{abstract}
-ConIII (pronounced CON-ee) is an open-source Python project providing a simple interface to solving maximum entropy models, with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of ConIII (\url{https://github.com/bcdaniels/coniii}) including Monte Carlo histogram, pseudolikelihood,  minimum probability flow, a regularized mean field method, and a cluster expansion method. We briefly explain how one should approach and validate maxent models from the perspective of model selection. Our goal is to make a variety of maximum entropy techniques accessible to those unfamiliar with the techniques and accelerate workflow for users.
+ConIII (pronounced CON-ee) is an open-source Python project providing a simple interface to solving maximum entropy models, with a focus on the Ising model. We describe the maximum entropy problem and give an overview of the algorithms that are implemented as part of ConIII (\url{https://github.com/eltrompetero/coniii}) including Monte Carlo histogram, pseudolikelihood,  minimum probability flow, a regularized mean field method, and a cluster expansion method. We briefly explain how one should approach and validate maxent models from the perspective of model selection. Our goal is to make a variety of maximum entropy techniques accessible to those unfamiliar with the techniques and accelerate workflow for users.
 %We then show examples of models that have been solved on various data sets using ConIII.
 \end{abstract}
 
 \maketitle
 
 \section{Introduction}
-Many biological and social systems are characterized by collective behavior: the correlated pattern of neural firing \cite{Schneidman:2006he}, protein diversity in the immune system \cite{Mora:2010jxa}, conflict participation in monkeys \cite{Daniels:2017cq}, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words \cite{Stephens:2010hi}, or consensus voting in the US Supreme Court \cite{Lee:2015ev}. Statistical physics is a natural approach to probing such systems precisely because they are collective \cite{Castellano:2009ce}.
+Many biological and social systems are characterized by collective behavior: the correlated pattern of neural firing \cite{Schneidman:2006he}, protein diversity in the immune system \cite{Mora:2010jxa}, conflict participation in monkeys \cite{Daniels:2017cq}, flocking in birds \cite{Bialek:2012cs}, statistics of letters in words \cite{Stephens:2010hi}, or consensus voting in the US Supreme Court \cite{Lee:2015ev,Lee:ky}. Statistical physics is a natural approach to probing such systems precisely because they are collective \cite{Castellano:2009ce}.
 Recently, the development of numerical, analytic, and computational tools have made it feasible in these large collective systems to solve for the maximum entropy (maxent) model that reproduces system behavior, corresponding to solving an ``inverse problem.''
 This approach contrasts with the typical problem in statistical physics where one postulates the microscopic model (the Hamiltonian) and works out the physical behavior of the system. In the inverse problem, we  find the parameters that correspond to observed behavior of a known system. In many cases, this is a very difficult problem to solve and does not have an analytical solution, and we must rely on analytic approximation and numerical techniques to estimate the parameters.
 
-The Ising model has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve the inverse Ising problem, but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated.
-ConIII (Convenient Interface to Inverse Ising) is a Python project intended to provide a centralized resource for the inverse Ising problem and provide a base for the addition of more maxent problems in the future. With ConIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code.
+The pairwise maxent model, the Ising model, has been of particular interest because of its simplicity and generality. A variety of algorithms have been proposed to solve the inverse Ising problem, but different approaches are disparately available on separate code bases in different coding languages, which makes comparison difficult and pedagogy more complicated. With ConIII, it is possible to solve the inverse Ising problem with a variety of algorithms in just a few lines of code. 
+
+ConIII is intended to provide a centralized resource for the inverse Ising problem and easy extension to other maxent problems. Although some of the implemented algorithms are specific to the Ising model and convenient, Ising-specific functions are included as part of package, other maxent models can be solved as well by specifying the particular constraints of the maxent model of interest. 
 %The modular structure of ConIII was inspired by the machine learning package scikit-learn, where each algorithm is implemented in a class.
 %There are a variety of techniques for approaching the inverse problem|often in context of a particular model|but they are often presented as different approaches without clear relations to one another. Instead of focusing on the details of each technique separately, we relate these techniques to one another and point out when one would fail or be difficult to apply.
 
 %We hope to provide a (soft) introduction to the analytic, numerical, and computational techniques used to solve these problems to make them accessible to students especially at the graduate level in physics and beyond (and even advanced undergraduates). With the goal of furthering general understanding, we aim not to be rigorous but to be accurate and comprehensible, pointing to the relevant literature whenever possible. Although we strive to be as clear and explicit as possible across this guide, a good background in mathematics or physics will be extremely helpful. In some places, we have left out steps in the derivations, and we encourage the reader to work out the missing steps.
 
+In the first few sections of this paper, we give a brief overview of maxent and describe the algorithms implemented in this package. Then, we discuss at a high level some of the model fitting issues that are relevant for building and fitting maxent models. Finally, we describe the architecture of the package and how to contribute.
+
 \section{What is maximum entropy?}
-Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on some elementary principles of consistency. According to Shannon, the entropy over the probability distribution $p(\rs)$ of possible discrete configurations $\mathcal S$ of a system is
+Shannon introduced the concept of information entropy in his seminal paper about communication over a noisy channel \cite{Shannon:1948wk}. Information entropy is the unique measure of uncertainty that follows from insisting on elementary principles of consistency. According to Shannon, the entropy over the probability distribution $p(\rs)$ of possible discrete configurations $\mathcal S$ of a system is
 \begin{align}
 	S[p] &= -\sum_{{\rm s}\in \mathcal{S}} p({\rm s}) \log p({\rm s}).
 \end{align}
@@ -108,11 +111,11 @@ Finding the parameters $\lambda_{\rm k}$ that match the constraints $\br{f_{\rm 
  In other words, the parameters of the maxent model are the ones that minimize the information theoretic ``distance'' to the distribution of the data given the constraints. Note that these parameters are given by the data: once the constraints have been chosen, there is a single maxent solution, with no free parameters.
 
 \subsection{The Ising model}
-The Ising model is a statistical physics model of magnetism \cite{Ising:1924vf}. It consists of a set of spins $\rs_{\rm i}$ with 2 possible orientations (up and down), each coupled to an external magnetic field $h_{\rm i}$ and coupled to each other with couplings $J_{\rm ij}$. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings determine whether the spins tend to point together ($J_{\rm ij}>0$) or against each other ($J_{\rm ij}<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying network structure. Figure \ref{gr:ising} shows a fully-connected example.
+The Ising model is a statistical physics model of magnetism \cite{Ising:1924vf}. It consists of a set of spins $\rs_{\rm i}$ with 2 possible orientations (up and down), each coupled to an external magnetic field $h_{\rm i}$ and coupled to each other with pairwise couplings $J_{\rm ij}$. The strength of the magnetic field determines the tendency of each of the spins to orient in a particular direction and the couplings determine whether the spins tend to point together ($J_{\rm ij}>0$) or against each other ($J_{\rm ij}<0$). Typically, neighbors are defined as spins that interact with one another given by some underlying network structure. Figure \ref{gr:ising} shows a fully-connected example.
 
-\begin{figure}[tbp]\centering
+\begin{figure}[tb]\centering
 	\includegraphics[width=.85\linewidth,clip,trim={100 70 70 60}]{ising_example.pdf}
-\caption{Example of a fully connected Ising model with random couplings. Each spin $\rs_{\rm i}$ (circle) can take one of two states (black or white, corresponding to $-1$ and $+1$) and is connected to every other spin in the system with a positive or negative coupling.  This schematic represents one possible state of the spins.  The inverse Ising problem starts with statistics about the states observed in the system and infers the coupling strengths $J_{\rm ij}$ and individual biases $h_{\rm i}$ that reproduce such statistics. }
+\caption{Example of a fully connected Ising model with random couplings. Each spin $\rs_{\rm i}$ (circle) can take one of two states (black or white, corresponding to $-1$ and $+1$) and is connected to every other spin in the system with a positive or negative coupling. These states could describe the on-off patterns of firing in neurons, the arrangement of letters in a word, or the orientation of spins in a material. This schematic represents one possible state of the spins.  The inverse Ising problem starts with statistics about the states observed in the system and infers the coupling strengths $J_{\rm ij}$ and individual biases $h_{\rm i}$ that reproduce such statistics. }
 \label{gr:ising}
 \end{figure}
 
@@ -157,7 +160,7 @@ This approach, however, involves enumerating all states of the system, whose num
 
 For the Ising model, writing down the equations has a number of steps $\mathcal{O}(K^2 2^{N})$, where $K$ is the number of constraints and $N$ the number of spins.  Each evaluation of the objective in the root-finding algorithm will be of the same order. For relatively small systems, around $N\leq15$, this approach is feasible on a typical desktop computer and is a good way to test the results of a more complicated algorithm.
 
-This approach is part of the {\tt Exact} class that contains code for writing Eqs~\ref{eq:fk-fk} into a file and solving them with the {\tt scipy.optimize} library.
+This approach is implemented by the {\tt Enumerate} class.
 
 
 \subsection{Monte Carlo method}
@@ -323,15 +326,10 @@ The adaptive cluster expansion method is implemented in the {\tt ClusterExpansio
 %Another approach involves a cluster-expansion of the free energy, also known as the cavity method. This has not yet been implemented in ConIII.
 %The cavity method involves use of the marginalized distribution.
 
-%\section{Incomplete data}
-
-
-
-
-\section{Samplers}
-For estimating statistics of a given probability distribution $p(\rs)$, we have implemented in ConIII two versions of the well-known Metropolis algorithm. One is specific to the Ising model ({\tt FastMCIsing}) and the other ({\tt Metropolis}) can sample a system given an arbitrary function that calculates the energy of each state.
-
-In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient because the time to flip large numbers of spins simultaneously is extremely long. Cluster sampling like Wolff or Swendsen-Wang are much more efficient and will be included in future releases of ConIII.
+%\section{Samplers}
+%For estimating statistics of a given probability distribution $p(\rs)$, we have implemented in ConIII two versions of the well-known Metropolis algorithm. One is specific to the Ising model ({\tt FastMCIsing}) and the other ({\tt Metropolis}) can sample a system given an arbitrary function that calculates the energy of each state.
+%
+%In some parameter regimes where spins are tightly correlated, the Metropolis algorithm is very inefficient because the time to flip large numbers of spins simultaneously is extremely long. Cluster sampling like Wolff or Swendsen-Wang are much more efficient and will be included in future releases of ConIII.
 
 \section{The finite sample problem}
 A fundamental problem in model inference is that uncertainty coming
@@ -386,37 +384,45 @@ These tools to quantify model fit then inform the important choice of which cons
 From the model fitting perspective, however, we might choose to constrain other parts of the probability distribution. Ref \cite{Ganmor:2011ct} explores choosing correlations to constrain depending on whether they are signicantly large. Ref \cite{Nemenman:2016kl} discusses how a pairwise model becomes an increasingly effective description of a system with higher order interactions as the system gets larger.
 
 
+\section{Software architecture}
+The package is divided into three principal modules containing the algorithms for solving the inverse maxent problem ({\tt solvers.py}), the Monte Carlo Markov Chain (MCMC) sampling algorithms ({\tt samplers.py}), and supporting ``utility'' functions for the remaining modules ({\tt utils.py}) as shown in Fig.~\ref{gr:architecture}.
+Besides the {\tt utils.py} module, the package is organized around classes that correspond to different algorithms. This class-based structure ensures that the state of the solver or sampler, including the data it was fit to and the current guess for the parameters, are all contained within the instance of the algorithm class. As a result, the current state of work can be saved and moved between workstations using the Python package {\tt dill}.
+
+For the solvers, the different algorithms available are accessible from the {\tt coniii.solvers} module as listed in Fig.~\ref{gr:architecture}. These algorithm classes are all derived from a base {\tt Solver} class as shown in Fig.~\ref{gr:architecture}. In the accompanying release version of the package, v1.0.0, the method {\tt Solver.solve} serves as the interface for solving the inverse maxent problem. Once a solution has been found, samples can be taken from the model distribution by calling {\tt Solver.generate\_samples()} that wraps calls to the {\tt Solver.sampler} instance of a sampling class. For the Ising model, this is typically an instance of {\tt FastMCIsing} from the {\tt coniii.solvers} module. The only other available class is {\tt Metropolis}, but other sampling algorithms listed in the {\tt samplers.py} box in Fig.~\ref{gr:architecture} will be released with later versions of this package.
+
+To keep the solution algorithms generic, they require definition of the maxent model upon instantiation through the definition of the keyword argument {\tt calc\_observables}.
+
+\begin{figure}[tb]
+	\includegraphics[width=\linewidth,clip=True,trim=100 360 80 0]{architecture}
+	\caption{ConIII architecture. The principal modules are {\tt solvers.py}, {\tt samplers.py}, and {\tt utils.py}. The module {\tt solvers.py} contains classes based on a the super class {\tt Solver} that each implement a different algorithm for solving the relevant inverse maxent problem accessible through the method {\tt Solver.solve()}. The {\tt samplers.py} module contains two algorithms for Monte Carlo Markov Chain sampling and will support other samplers in future versions (gray font) including the Wolff sampling, Swendsen-Wang sampling, and parallel tempering. The {\tt utils.py} module contains supporting functions for the other modules such as the few examples listed. ConIII's highly modularized structure ensures that contributed algorithms can be appended independently of existing code.}
+	\label{gr:architecture}
+\end{figure}
+
+
+\section{Reuse}
+To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes described in the base {\tt Solver} and {\tt Sampler} classes. New algorithms should be pushed to the Github repository along with an example of an example solution that can be included in the usage guide Jupyter notebook.
+
+
+\section{Quality Control}
+For checks of basic functionality, the package is released with test modules that can be run with the package \href{https://pytest.org}{pytest}.
+
+For a test of the algorithms, the most direct one is to generate a system where the parameters are known, sample from the system to generate a data set, and to run the inverse solution to make sure that the found parameters and correlations match. With a finite sample, exact correspondence to the correct parameters is not expected. Furthermore, most of the algorithms only return an approximate solution. For others, the fidelity of the found parameters to the original ones will depend on whether or not the approximation is valid. The Jupyter notebook released with the software provides examples for using the algorithms included in ConIII for a random system of five spins. The included examples show how well the different algorithm might be expected to do in this case. We recommend that that user run this notebook to check that the algorithms when run on their workstation converge closely the resulting solutions that are already included in the provided figures in the notebook.
+
 
 \section{Conclusion}
 Maxent provides a coherent framework for modeling a diverse body of biological and social systems.  The approach is structured to consider easily issues of model selection,  embodying a canonical approach for the scientific process: we start with the simplest models and the fewest constraints possible and then increase the complexity of the model until it makes good predictions. In principle, we could add as many constraints as would allow us to better fit the data, but complex models are more computationally expensive and often do not generalize well.  Maxent therefore stops before adding all possible constraints, leaving the model otherwise as structureless as possible.
 In this sense, the maxent approach is a principled method of statistical inference that is relevant beyond its roots in statistical physics.  We have built ConIII as an accessible software package in the hope that it will inspire those unfamiliar with maxent approaches to experiment and apply this technique to their own research questions.
 
 
-\clearpage
-\section{Software architecture}
-The package is organized around classes that correspond to different algorithms for the inverse maxent problem. This class-based structure ensures that the state of the solver including the data it was fit to and the current guess for the parameters are all contained within the instance of the algorithm class. As a result, the current state of work can be saved and moved between workstations using the Python package {\tt dill}.
 
-The different algorithms available are accessible from the {\tt coniii.solvers} module: {\tt Enumerate}, {\tt MPF}, {\tt Pseudo}, {\tt ClusterExpansion}, {\tt MCH}, and {\tt RegularizedMeanField} algorithms as described in the above sections. These algorithm classes are all derived from a base {\tt Solver} class. In the accompanying release version of the package, v1.0.0, each class has a {\tt solve} method for solving the inverse maxent problem. Furthermore, the parent {\tt Solver} class has a data member named {\tt Solver.sampler} that is a instance of a sampling class for obtaining a Monte Carlo realization from the maxent model. For the Ising model, this is typically an instance of {\tt FastMCIsing} from the {\tt coniii.solvers} module.
-
-Besides the solvers, the {\tt coniii.samplers} module contains an analogous class-based architecture for sampling from maxent models.
-
-\begin{figure}
-	\includegraphics[width=\linewidth,clip=True,trim=100 360 80 0]{architecture}
-	\caption{ConIII architecture. The principal modules are {\tt solvers.py}, {\tt samplers.py}, and {\tt utils.py}. The module {\tt solvers.py} contains classes based on a the super class {\tt Solver} that each implement a different algorithm for solving the relevant inverse maxent problem accessible through the method {\tt Solver.solve()}. The {\tt samplers.py} module contains two algorithms for Monte Carlo Markov Chain sampling and will support other samplers in future versions (gray font) including the Wolff sampling, Swendsen-Wang sampling, and parallel tempering. The {\tt utils.py} module contains supporting functions for the other modules. This highly modularized structure ensures that contributed algorithms can be appended independently of existing code.}
-	\label{gr:architecture}
-\end{figure}
-
-\section{Contributing}
-To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes already implemented as part of v1.0.0. 
-
-\section{How to use}
-Each algorithm class instance must be instantiated with a few parameters that describe the particular maxent problem at hand. For example, all of the classes require a {\tt calc\_observables} keyword argument to be defined. This function will take a 2-dimensional sample (each row is a single state vector and each column is an entry in the state vector) from the ensemble and calculate the observables that correspond to the maxent model of interest. Some algorithms require other functions that are specific both to the problem and the algorithm. For example, the pseudolikelihood algorithm needs the likelihood of a single entry in the state vector ({\it i.e.} a single spin or a single vote) conditional on the rest of the state which depends on the maxent model. We have written helper methods for defining necessary inputs for all the available algorithms for the pairwise maxent problem. Examples of how to use these are given in the accompanying Jupyter notebook.
-
-Once an algorithm class is instantiated, it can be run by calling the {\tt solve} method and by providing the data in the corresponding format for the algorithm. Some algorithms like {\tt MCH} only require the correlations that are constrained in the maxent model. Others like {\tt MPF} require the full data set. 
-
-To check if an algorithm has converged to reasonably close agreement with the data, 
-
-Examples of this workflow for all the provided algorithms are given in the usage guide accompanying the Github package.
+%\section{How to use}
+%Each algorithm class instance must be instantiated with a few parameters that describe the particular maxent problem at hand. For example, all of the classes require a {\tt calc\_observables} keyword argument to be defined. This function will take a 2-dimensional sample (each row is a single state vector and each column is an entry in the state vector) from the ensemble and calculate the observables that correspond to the maxent model of interest. Some algorithms require other functions that are specific both to the problem and the algorithm. For example, the pseudolikelihood algorithm needs the likelihood of a single entry in the state vector ({\it i.e.} a single spin or a single vote) conditional on the rest of the state which depends on the maxent model. We have written helper methods for defining necessary inputs for all the available algorithms for the pairwise maxent problem. Examples of how to use these are given in the accompanying Jupyter notebook.
+%
+%Once an algorithm class is instantiated, it can be run by calling the {\tt solve} method and by providing the data in the corresponding format for the algorithm. Some algorithms like {\tt MCH} only require the correlations that are constrained in the maxent model. Others like {\tt MPF} require the full data set. 
+%
+%To check if an algorithm has converged to reasonably close agreement with the data, 
+%
+%Examples of this workflow for all the provided algorithms are given in the usage guide accompanying the Github package.
 
 
 

@@ -58,4 +58,4 @@ The first few lines specifying the version of Python that you are using must be 
 not supported for Python 2.
 
 ## Troubleshooting
-Some users may encounter difficulties with the multiprocess module in which case the `n_jobs` kwarg should be set to 0 when the algorithm class instance is declared.
+Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg should be set to 0 when the algorithm class instance is declared.

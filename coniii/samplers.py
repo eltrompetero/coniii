@@ -1215,8 +1215,7 @@ class FastMCIsing():
         self.update_parameters(theta)
         self.nCpus = n_cpus or mp.cpu_count()-1
         
-        calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
-        self.calc_e = lambda s,multipliers:-calc_observables(s).dot(multipliers)
+        self.calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
         
         if use_numba:
             rng=None
@@ -1351,7 +1350,7 @@ class FastMCIsing():
         if initialSample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
         else: self.samples = initialSample
-        self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
+        self.E = self.calc_e( self.samples, self.theta )
         
         if saveHistory:
             if systematic_iter:

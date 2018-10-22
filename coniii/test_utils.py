@@ -13,12 +13,12 @@ def test_state_gen_and_count():
     assert np.array_equal( bin_states(5),np.vstack([i for i in xbin_states(5)]) )
 
     states = bin_states(5)
-    p,s = state_probs(states)
-    assert (p==1/32).all()
+    p, s = state_probs(states)
+    assert np.isclose(p, 1/32).all()
     assert np.array_equal(s,states)
 
-    states = bin_states(5,sym=True)
-    p,s = state_probs(states)
-    assert (p==1/32).all()
-    assert np.array_equal(s,states)
+    states = bin_states(5, sym=True)
+    p, s = state_probs(states)
+    assert np.isclose(p, 1/32).all()
+    assert np.array_equal(s, states)
 

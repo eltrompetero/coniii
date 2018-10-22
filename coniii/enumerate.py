@@ -1,4 +1,7 @@
+# ========================================================================================================= #
 # Module for solving small n Ising models exactly.
+# Author : Edward Lee, edlee@alumni.princeton.edu
+# ========================================================================================================= #
 import numpy as np
 import scipy.special as ss
 import string

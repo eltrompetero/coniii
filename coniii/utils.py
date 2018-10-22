@@ -1,5 +1,6 @@
 # ========================================================================================================= #
 # Miscellaneous functions used for various computations.
+# Author : Edward Lee, edlee@alumni.princeton.edu
 # ========================================================================================================= #
 import numpy as np
 from numba import jit,njit
@@ -8,7 +9,7 @@ from itertools import combinations
 from scipy.spatial.distance import squareform
 
 
-@jit(nopython=True,nogil=True,cache=True)
+@njit(nogil=True,cache=True)
 def sub_to_ind(n,i,j):
     """Convert pair of coordinates of a symmetric square array into consecutive index of flattened
     upper triangle. This is slimmed down so it won't throw errors like if i>n or j>n or if they're
@@ -37,7 +38,7 @@ def sub_to_ind(n,i,j):
     else:
         raise Exception("Indices cannot be the same.")
 
-@jit(nopython=True,cache=True)
+@njit(cache=True)
 def ind_to_sub(n,ix):
     """Convert index from flattened upper triangular matrix to pair subindex.
 
@@ -349,7 +350,8 @@ def define_pseudo_ising_helpers(N):
     -------
     get_multipliers_r, calc_observables_r 
     """
-    @jit(nopython=True)
+
+    @njit
     def get_multipliers_r(r,multipliers):
         """
         Return the parameters relevant for calculating the conditional probability of spin r.
@@ -363,6 +365,7 @@ def define_pseudo_ising_helpers(N):
         -------
         multipliers
         """
+
         ix = np.arange(N)
         ix[0] = r  # index for local field
         couplingcounter = N
@@ -376,7 +379,7 @@ def define_pseudo_ising_helpers(N):
         
         return multipliers[ix]
 
-    @jit(nopython=True)
+    @njit
     def calc_observables_r(r,X):
         """
         Return the observables relevant for calculating the conditional probability of spin r.
@@ -391,6 +394,7 @@ def define_pseudo_ising_helpers(N):
         -------
         observables
         """
+
         obs = np.zeros((X.shape[0],N))
         
         for rowix in range(X.shape[0]):
@@ -416,6 +420,7 @@ def define_ising_helper_functions():
     calc_observables
     mch_approximation
     """
+
     @njit(cache=True)
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
@@ -438,6 +443,7 @@ def define_ising_helper_functions():
         params : ndarray
             (h,J) vector
         """
+
         e = -fast_sum(params[s.shape[1]:],s)
         e -= np.dot(s,params[:s.shape[1]])
         return e
@@ -532,8 +538,8 @@ def define_ising_helper_functions_sym():
     return calc_e, calc_observables, mch_approximation
 
 
-@jit(nopython=True)
-def adj(s,n_random_neighbors=0):
+@njit
+def adj(s, n_random_neighbors=0):
     """
     Return one-flip neighbors and a set of random neighbors. This is written to be used with
     the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.
@@ -554,6 +560,7 @@ def adj(s,n_random_neighbors=0):
     neighbors : ndarray
         Each row is a neighbor. s.size + n_random_neighbors are returned.
     """
+
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
     for i in range(s.size):
         s[i] = 1-s[i]
@@ -570,11 +577,12 @@ def adj(s,n_random_neighbors=0):
             neighbors[i+s.size] = newneighbor
     return neighbors
 
-@jit(nopython=True)
-def adj_sym(s,n_random_neighbors=False):
+@njit
+def adj_sym(s, n_random_neighbors=False):
     """
     Symmetric version of adj() where spins are in {-1,1}.
     """
+
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
     for i in range(s.size):
         s[i] = -1*s[i]

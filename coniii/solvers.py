@@ -116,7 +116,7 @@ class Solver():
         Parameters
         ----------
         sample_method : str
-            'wolff', 'metropolis', 'remc'
+            'ising_metropolis', 'metropolis'
         sampler_kwargs : dict
         optimize_kwargs : dict
         """
@@ -1403,7 +1403,7 @@ class ClusterExpansion(Solver):
 
     def __init__(self, *args, **kwargs):
         super(ClusterExpansion,self).__init__(*args,**kwargs)
-        self.setup_sampler('metropolis')
+        self.setup_sampler(kwargs.get('sample_method','metropolis'))
     
     def S(self, cluster, coocMat,
           deltaJdict={}, 
@@ -1807,8 +1807,10 @@ class ClusterExpansion(Solver):
             nSkipDefault = 10*self.n
             burninDefault = 100*self.n
             self._multipliers = np.concatenate([J.diagonal(),squareform(zeroDiag(-J))])
-            samplesCorrected = self.generate_samples(nSkipDefault,burninDefault,
-                                        numSamplesError,'metropolis')
+            samplesCorrected = self.generate_samples(nSkipDefault,
+                                                     burninDefault,
+                                                     numSamplesError,
+                                                     self.sampleMethod)
             if minimizeCovariance:
                 raise Exception # 3.31.2014 are you sure you want to do this?
                 covStdevs = covarianceTildeStdevsFlat(coocMat,
@@ -1978,7 +1980,7 @@ class RegularizedMeanField(Solver):
     """
     def __init__(self, *args, **kwargs):
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
-        self.setup_sampler('metropolis')
+        self.setup_sampler(kwargs.get('sample_method','metropolis'))
     
         # Do I really need this?
         self.samples = np.zeros(self.n)

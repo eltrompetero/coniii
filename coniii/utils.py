@@ -406,7 +406,7 @@ def define_pseudo_ising_helpers(N):
 
     return get_multipliers_r,calc_observables_r 
 
-def define_ising_helpers_functions():
+def define_ising_helper_functions():
     """
     Functions for plugging into solvers for +/-1 Ising model with fields h_i and couplings J_ij.
 
@@ -416,7 +416,7 @@ def define_ising_helpers_functions():
     calc_observables
     mch_approximation
     """
-    @jit(nopython=True,cache=True)
+    @njit(cache=True)
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
         e = np.zeros((s.shape[0]))
@@ -427,8 +427,9 @@ def define_ising_helpers_functions():
                     e[n] += J[k]*s[n,i]*s[n,j]
                     k += 1
         return e
-    
-    def calc_e(s,params):
+
+    @njit(cache=True)
+    def calc_e(s, params):
         """
         Parameters
         ----------
@@ -440,7 +441,7 @@ def define_ising_helpers_functions():
         e = -fast_sum(params[s.shape[1]:],s)
         e -= np.dot(s,params[:s.shape[1]])
         return e
-
+    
     def mch_approximation( samples, dlamda ):
         """Function for making MCH approximation step for Ising model."""
         dE = calc_e(samples,dlamda)
@@ -451,7 +452,7 @@ def define_ising_helpers_functions():
                                                                                                predsisj.max())
         return predsisj
     
-    @jit(nopython=True)
+    @njit(cache=True)
     def calc_observables(samples):
         """Observables for Ising model."""
         n = samples.shape[1]
@@ -466,7 +467,7 @@ def define_ising_helpers_functions():
         return obs
     return calc_e,calc_observables,mch_approximation
 
-def define_ising_helper_functions():
+def define_ising_helper_functions_sym():
     """
     Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no fields.
 

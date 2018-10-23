@@ -51,11 +51,8 @@ Make sure you copy the notebook into a directory outside the CONIII directory. O
 into which you've installed it, you can run it with
 > jupyter notebook
 
-Make sure that you are running Python 3.6. If you run
-> python
-
-The first few lines specifying the version of Python that you are using must be 3.6. This package is
-not supported for Python 2.
+Make sure that you are running Python 3.6 which you can check by running
+> python --version
 
 ## Troubleshooting
 Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg should be set to 0 when the algorithm class instance is declared.

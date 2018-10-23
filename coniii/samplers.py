@@ -135,11 +135,20 @@ def grad_e_theta(theta, x):
     return -g
 
 
+class Sampler():
+    """Base class for MCMC sampling."""
+    def __init__(self):
+        return
+
+    def update_parameters(self):
+        return
+#end Sampler
+
 
 # ============== #
 # Wolff sampler. #
 # ============== #
-class WolffIsing(object):
+class WolffIsing(Sampler):
     def __init__(self, J, h):
         """
         Wolff cluster sampling for +/-1 Ising model.
@@ -338,7 +347,7 @@ def iterate_neighbors(n,ix,expdJ,r):
 # ====================== #
 # Swendsen-Wang sampler. #
 # ====================== #
-class SWIsing(object):
+class SWIsing(Sampler):
     def __init__(self, n, theta, calc_e, nCpus=None, rng=None):
         """
         Swendsen-Wang sampler on Ising model with +/-1 formulation.
@@ -542,7 +551,7 @@ def spec_cluster(L,exact=True):
 # =========================== #
 # Parallel tempering sampler. #
 # =========================== #
-class ParallelTempering(object):
+class ParallelTempering(Sampler):
     def __init__(self,n,theta,calc_e,temps,
                  sample_size=1000,
                  replica_burnin=100,
@@ -886,7 +895,7 @@ class ParallelTempering(object):
 # ============================ #
 # Simulated tempering sampler. #
 # ============================ #
-class SimulatedTempering(object):
+class SimulatedTempering(Sampler):
     def __init__(self, n, theta, calc_e, temps, 
                  sample_size=1000,
                  replica_burnin=100,
@@ -1187,7 +1196,7 @@ class SimulatedTempering(object):
 # =================== #
 # Metropolis sampler. #
 # =================== #
-class FastMCIsing():
+class FastMCIsing(Sampler):
     def __init__(self, n, theta,
                  n_cpus=None,
                  rng=None,
@@ -1586,7 +1595,7 @@ class FastMCIsing():
 #end FastMCIsing
 
 
-class Metropolis(object):
+class Metropolis(Sampler):
     def __init__(self, n, theta, calc_e,
                  n_cpus=None,
                  rng=None):
@@ -1870,7 +1879,7 @@ class Metropolis(object):
 #end Metropolis
 
 
-class HamiltonianMC():
+class HamiltonianMC(Sampler):
     def __init__(self, n, theta, calc_e, random_sample,
                  grad_e=None,
                  dt=.01,
@@ -2065,7 +2074,7 @@ def jit_sample(theta, x0, nBurn, dt, leapfrogN, randNormal, randUnif):
             x = xnew
 
 
-class Heisenberg3DSampler():
+class Heisenberg3DSampler(Sampler):
     """
     Simple MC Sampling from Heisenberg model with a lot of helpful functions.
 

@@ -20,13 +20,13 @@ Inside `coniii`, you must run
 > `python setup_module.py build_ext --inplace`
 
 If you would like to use the `Enumerate` solver for system sizes greater than 9, you must run
-exact.py to write those files yourself. This can be run from the install directory.  If you do not
+enumerate.py to write those files yourself. This can be run from the install directory.  If you do not
 know where the installation directory is, you can find it by opening up an iPython notebook and
 running
 > `import coniii`  `coniii.__path__`
 
 Once inside the install directory, you can run in your bash shell
->`python exact.py [N]` 
+>`python enumerate.py [N]` 
 
 where `[N]` should be replaced by the size of the system.
 

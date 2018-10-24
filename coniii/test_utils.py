@@ -22,3 +22,11 @@ def test_state_gen_and_count():
     assert np.isclose(p, 1/32).all()
     assert np.array_equal(s, states)
 
+def test_convert_params():
+    from .utils import _expand_binomial
+    terms = _expand_binomial(np.exp(1), np.pi, 2)
+    assert len(terms)==4
+    assert terms[0]==np.exp(1)**2 and terms[1]==np.exp(1)*np.pi and terms[3]==np.pi**2
+    
+if __name__=='__main__':
+    test_convert_params()

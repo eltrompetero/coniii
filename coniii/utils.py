@@ -207,42 +207,83 @@ def xbin_states(n,sym=False):
 
     return v()
 
-def convert_params(h,J,convertTo='01',concat=False):
+def convert_params(h, J, convert_to='01', concat=False):
     """
     Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.
 
-    Params:
-    -------
-    h (ndarray)
-    J (ndarray)
-    convertTo (str)
+    Parameters
+    ----------
+    h : ndarray
+    J : ndarray
+    convert_to : str
         '01' or '11'
-    concat (bool=False)
+    concat : bool,False
         If True, return a vector concatenating fields and couplings.
     
-    Returns:
-    --------
-    h (ndarray)
-    J (ndarray)
+    Returns
+    -------
+    h : ndarray
+    J : ndarray
     """
+
     if len(J.shape)!=2:
         Jmat = squareform(J)
     else:
         Jmat = J
         J = squareform(J)
     
-    if convertTo=='11':
+    if convert_to=='11':
         # Convert from 0,1 to -/+1
         Jp = J/4.
         hp = h/2 + np.sum(Jmat,1)/4.
-    elif convertTo=='01':
+    elif convert_to=='01':
         # Convert from -/+1 to 0,1
         hp = 2.*(h - np.sum(Jmat,1))
         Jp = J*4.
 
     if concat:
-        return np.concatenate((hp,Jp))
-    return hp,Jp
+        return np.concatenate((hp, Jp))
+    return hp, Jp
+
+def _convert_params(oparams, convert_to='01', concat=False):
+    """
+
+    Parametes
+    ---------
+    oparams : tuple of lists
+        Tuple of lists of interactions between spins starting with the highest order interactions.
+    convert_to : str,'01'
+    concat : bool,False
+
+    Returns
+    -------
+    params : tuple of lists or list
+        New parameters in order of highest order interactions to mean biases. Can all be
+        concatenated together if concat switch is True.
+    """
+
+    params=[]
+
+    # basically need to expand polynomials to all terms after 
+    
+    return params
+
+def _expand_binomial(a, b, n=2):
+    """Expand a product of binomials that have the same coefficients given by a and b.
+    E.g. (a*x0 + b) * (a*x1 + b) * ... * (a*xn + b)
+
+    Parameters
+    ----------
+    a : float
+    b : float
+    n : int,2
+    """
+    
+    from scipy.special import binom
+    coeffs=[]
+    for i in range(n+1):
+        coeffs.extend( [a**(n-i)*b**i]*int(binom(n,i)) )
+    return coeffs
 
 def convert_corr(si,sisj,convertTo='11',concat=False):
     """

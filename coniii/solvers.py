@@ -523,7 +523,7 @@ class MPF(Solver):
                          bounds=[(-parameter_limits,parameter_limits)]*len(initial_guess),
                          method=method, jac=includeGrad, options=solver_kwargs )
         self.multipliers = soln['x']
-        return convert_params(soln['x'][:self.n],soln['x'][self.n:],'11',True), soln
+        return convert_params(soln['x'][:self.n],soln['x'][self.n:], '11', True), soln
 # End MPFSolver
 
 

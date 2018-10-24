@@ -33,6 +33,15 @@ def test_convert_params():
     for d in range(2,5):
         for i,multidimix in enumerate(combinations(range(n),d)):
             assert i==unravel_index(multidimix,n), (i,multidimix,unravel_index(pairix,n))
-    
+
+    h = np.random.normal(size=n)
+    J = np.random.normal(size=n*(n-1)//2)
+    h1, J1 = convert_params(h, J, convert_to='01')
+    J2, h2 = ising_convert_params([J,h], convert_to='01')
+    assert np.isclose(h1, h2).all() and np.isclose(J1, J2).all()
+    h1, J1 = convert_params(h, J, convert_to='11')
+    J2, h2 = ising_convert_params([J,h], convert_to='11')
+    assert np.isclose(h1, h2).all() and np.isclose(J1, J2).all()
+   
 if __name__=='__main__':
     test_convert_params()

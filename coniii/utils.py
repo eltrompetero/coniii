@@ -245,38 +245,68 @@ def convert_params(h, J, convert_to='01', concat=False):
         return np.concatenate((hp, Jp))
     return hp, Jp
 
-def _convert_params(oparams, convert_to='01', concat=False):
+def ising_convert_params(oparams, convert_to='01', concat=False):
     """
     Take set of Ising model parameters up to nth order interactions in either {0,1} or {-1,1} basis
     and convert to other basis.
 
-    Parametes
-    ---------
+    Parameters
+    ----------
     oparams : tuple of lists
-        Tuple of lists of interactions between spins starting with the highest order interactions.
+        Tuple of lists of interactions between spins starting with the highest order interactions. Each list
+        should consist of all interactions of that order such that the length of each list should be
+        binomial(n,i) for all i.
     convert_to : str,'01'
     concat : bool,False
 
     Returns
     -------
     params : tuple of lists or list
-        New parameters in order of highest order interactions to mean biases. Can all be
-        concatenated together if concat switch is True.
+        New parameters in order of highest order interactions to mean biases. Can all be concatenated together
+        if concat switch is True.
     """
     
     from scipy.special import binom
-    params=[np.zeros(binom(n,i)) for i in range(len(oparams)+1,0,-1)]
+    n = len(oparams[-1])
+    params = [np.zeros(int(binom(n,i))) for i in range(len(oparams),0,-1)]
+    
+    if convert_to=='01':
+        # basically need to expand polynomials to all lower order terms
+        # start at the highest order terms
+        for counter,order in enumerate(range(len(oparams),0,-1)):
+            # iterate through all combinations of indices of order
+            for ijkcounter,ijk in enumerate(combinations(range(n), order)):
+                ijkcoeff = oparams[counter][ijkcounter]
 
-    # basically need to expand polynomials to all terms after 
-    for order in range(len(oparams)+1,0,-1):
-        # expand to lower orders
-        pass
+                # same order term is only multiplied by powers of two
+                params[counter][ijkcounter] += 2**order * ijkcoeff
+                # break this term down to lower order terms in the new basis
+                for subcounter,suborder in enumerate(range(order-1,0,-1)):
+                    for subijk in combinations(ijk, suborder):
+                        ix = unravel_index(subijk, n)
+                        params[subcounter+counter+1][ix] += ijkcoeff * 2**suborder * (-1)**(order-suborder)
+        return params
+
+    # basically need to expand polynomials to all lower order terms
+    # start at the highest order terms
+    for counter,order in enumerate(range(len(oparams),0,-1)):
+        # iterate through all combinations of indices of order
+        for ijkcounter,ijk in enumerate(combinations(range(n), order)):
+            ijkcoeff = oparams[counter][ijkcounter]
+
+            # same order term is only multiplied by powers of two
+            params[counter][ijkcounter] += 2**-order * ijkcoeff
+            # break this term down to lower order terms in the new basis
+            for subcounter,suborder in enumerate(range(order-1,0,-1)):
+                for subijk in combinations(ijk, suborder):
+                    ix = unravel_index(subijk, n)
+                    params[subcounter+counter+1][ix] += ijkcoeff * 2**-order
     return params
 
 def unravel_index(ijk, n):
     """
-    Unravel multi-dimensional index to unidimensional index in flattened symmetric (to permutation)
-    n-dimensional array.
+    Unravel multi-dimensional index to unidimensional index in flattened multi-dimensional analog of
+    an upper triangular array.
 
     Parameters
     ----------
@@ -289,6 +319,11 @@ def unravel_index(ijk, n):
         Unraveled index.
     """
     
+    if type(ijk) is int:
+        return ijk
+    if len(ijk)==1:
+        return ijk[0]
+
     from scipy.special import binom
     assert (np.diff(ijk)>0).all()
     assert all([i<n for i in ijk])

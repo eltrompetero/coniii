@@ -247,6 +247,8 @@ def convert_params(h, J, convert_to='01', concat=False):
 
 def _convert_params(oparams, convert_to='01', concat=False):
     """
+    Take set of Ising model parameters up to nth order interactions in either {0,1} or {-1,1} basis
+    and convert to other basis.
 
     Parametes
     ---------
@@ -261,12 +263,47 @@ def _convert_params(oparams, convert_to='01', concat=False):
         New parameters in order of highest order interactions to mean biases. Can all be
         concatenated together if concat switch is True.
     """
-
-    params=[]
+    
+    from scipy.special import binom
+    params=[np.zeros(binom(n,i)) for i in range(len(oparams)+1,0,-1)]
 
     # basically need to expand polynomials to all terms after 
-    
+    for order in range(len(oparams)+1,0,-1):
+        # expand to lower orders
+        pass
     return params
+
+def unravel_index(ijk, n):
+    """
+    Unravel multi-dimensional index to unidimensional index in flattened symmetric (to permutation)
+    n-dimensional array.
+
+    Parameters
+    ----------
+    ijk : tuple
+    n : int
+
+    Returns
+    -------
+    ix : int
+        Unraveled index.
+    """
+    
+    from scipy.special import binom
+    assert (np.diff(ijk)>0).all()
+    assert all([i<n for i in ijk])
+
+    ix = sum([int(binom(n-1-i,len(ijk)-1)) for i in range(ijk[0])])
+    for d in range(1, len(ijk)-1):
+        if (ijk[d]-ijk[d-1])>1:
+            ix += sum([int(binom(n-i-1,len(ijk)-d-1)) for i in range(ijk[d-1]+1, ijk[d])])
+    ix += ijk[-1] -ijk[-2] -1
+    return ix
+
+def multinomial(*args):
+    from scipy.special import factorial
+    assert sum(args[1:])==args[0]
+    return int(np.exp( np.log(factorial(args[0])) - sum([np.log(factorial(a)) for a in args[1:]]) ))
 
 def _expand_binomial(a, b, n=2):
     """Expand a product of binomials that have the same coefficients given by a and b.

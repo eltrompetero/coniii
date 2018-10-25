@@ -14,8 +14,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
 
-extensions = [Extension("coniii.fast",['coniii/fast.pyx'],include_dirs=[np.get_include()])]
-
 setup(name='coniii',
       version='0.3.0',
       description='Convenient Interface to Inverse Ising (ConIII)',
@@ -43,7 +41,7 @@ setup(name='coniii',
                         'dill',
                         'joblib'],
       include_package_data=True,
-      package_data={'coniii':['setup_module.py','fast.pyx','usage_guide.ipynb']},  # files to include in coniii directory
+      package_data={'coniii':['setup_module.py','usage_guide.ipynb']},  # files to include in coniii directory
       py_modules=['coniii.enumerate',
                   'coniii.general_model_rmc',
                   'coniii.ising',
@@ -52,7 +50,5 @@ setup(name='coniii',
                   'coniii.pseudo_inverse_ising',
                   'coniii.samplers',
                   'coniii.solvers',
-                  'coniii.utils'],
-      ext_modules=cythonize(extensions)
+                  'coniii.utils']
 )
-

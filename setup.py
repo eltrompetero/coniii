@@ -27,8 +27,6 @@ from codecs import open
 from os import path
 from distutils.extension import Extension
 import numpy as np
-from Cython.Build import cythonize
-from Cython.Distutils import build_ext
 
 here = path.abspath(path.dirname(__file__))
 

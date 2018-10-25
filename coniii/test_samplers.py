@@ -1,3 +1,8 @@
+# =============================================================================================== #
+# Testing for samplers.py module.
+# Released with ConIII package.
+# Author : Eddie Lee, edlee@alumni.princeton.edu
+# =============================================================================================== #
 from .samplers import FastMCIsing,Metropolis
 from .utils import define_ising_helper_functions
 import numpy as np
@@ -5,7 +10,7 @@ import time
 
 
 def test_Metropolis():
-    # Check that everything compiles.
+    # Check that everything compiles and runs.
     n=10
     theta=np.random.normal(size=55)
     calc_e, _, _ = define_ising_helper_functions()
@@ -38,7 +43,7 @@ def test_Metropolis():
     print()
 
 def test_FastMCIsing(run_timing=False):
-    # Check that everything compiles.
+    # Check that everything compiles and runs.
     n=10
     print("Running timing suite for Ising sampling functions for n=%d..."%n)
 

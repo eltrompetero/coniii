@@ -1,4 +1,10 @@
+# =============================================================================================== #
+# Testing for utils.py module.
+# Released with ConIII package.
+# Author : Eddie Lee, edlee@alumni.princeton.edu
+# =============================================================================================== #
 from .utils import *
+
 
 def test_sub_to_ind():
     for n in range(2,5):
@@ -27,9 +33,10 @@ def test_convert_params():
     terms = _expand_binomial(np.exp(1), np.pi, 2)
     assert len(terms)==4
     assert terms[0]==np.exp(1)**2 and terms[1]==np.exp(1)*np.pi and terms[3]==np.pi**2
-
+    
     from itertools import combinations
     n=9
+    # iterate through indices to several dimensions of tensors
     for d in range(2,5):
         for i,multidimix in enumerate(combinations(range(n),d)):
             assert i==unravel_index(multidimix,n), (i,multidimix,unravel_index(pairix,n))
@@ -38,7 +45,6 @@ def test_convert_params():
     J = np.random.normal(size=n*(n-1)//2)
     h1, J1 = convert_params(h, J, convert_to='01')
     h2, J2 = ising_convert_params([h,J], convert_to='01')
-    print(len(h2),len(J2))
     assert np.isclose(h1, h2).all() and np.isclose(J1, J2).all()
     h1, J1 = convert_params(h, J, convert_to='11')
     h2, J2 = ising_convert_params([h,J], convert_to='11')

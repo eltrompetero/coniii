@@ -25,7 +25,9 @@ If you would like to use the `Enumerate` solver for system sizes greater than 9,
 enumerate.py to write those files yourself. This can be run from the install directory.  If you do
 not know where the installation directory is, you can find it by starting a Python terminal and
 running
-> `import coniii` `coniii.__path__`
+> `import coniii`
+
+> `coniii.__path__`
 
 Once inside the install directory, you can run in your bash shell
 >`python enumerate.py [N]` 
@@ -53,7 +55,9 @@ download it from the Github link provided above.
 
 Make sure you copy the notebook into a directory outside the ConIII directory. Once in the directory
 into which you've installed it, you can run it with
-> jupyter notebook
+> jupyter notebook --ip="0.0.0.0"
+
+This should open up a Jupyter notebook in your default web browser.
 
 ## Troubleshooting
 This package is only maintained for Python 3.6 as of October 2018. Make sure that you are running

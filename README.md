@@ -2,8 +2,8 @@
 Edward D Lee, Bryan C Daniels
 
 Python package for solving maximum entropy problems with a focus on the pairwise maximum entropy
-model, also known as the inverse Ising problem. Support for Python 3.6 only (v0.2.5 works with Python
-2.7 but is no longer actively maintained).
+model, also known as the inverse Ising problem. Support for Python 3.6 only (v0.2.5 works with
+Python 2.7 but is no longer actively maintained).
 
 See "ipynb/usage_guide.ipynb" for usage documentation and examples.
 
@@ -14,45 +14,50 @@ use ConIII for your research! Citations fuel further open source work of this ki
 This package is available on PyPI for Linux and MacOS. It can be installed by running  
 >`pip install coniii`
 
-If you have trouble using `pip` and PyPI, then you can always build this package from source.  Download this
-package from GitHub and move the `coniii` folder to wherever you would like to have the module.
-Inside `coniii`, you must run
+If you have trouble using `pip` and PyPI, then you can always build this package from source.
+Download this package from GitHub and move the "coniii" folder to wherever you would like to have
+the module (make sure this folder is in your file path and that you are running Python 3.6).  Inside
+"coniii", you must run
 > `python setup_module.py build_ext --inplace`
 
 If you would like to use the `Enumerate` solver for system sizes greater than 9, you must run
-enumerate.py to write those files yourself. This can be run from the install directory.  If you do not
-know where the installation directory is, you can find it by opening up an iPython notebook and
+enumerate.py to write those files yourself. This can be run from the install directory.  If you do
+not know where the installation directory is, you can find it by starting a Python terminal and
 running
-> `import coniii`  `coniii.__path__`
+> `import coniii` `coniii.__path__`
 
 Once inside the install directory, you can run in your bash shell
 >`python enumerate.py [N]` 
 
-where `[N]` should be replaced by the size of the system.
+where `[N]` should be replaced by the size of the system. For more details, see the __main__ block
+at the end of the file.
 
 ## Usage examples
-The Jupyter notebook with the examples for how to use CONIII is available in the ipynb directory on
-the Github: 
-[https://github.com/bcdaniels/coniii/blob/master/ipynb/usage_guide.ipynb]
-
-In order to run the usage guide Jupyter notebook, you must have both jupyter and matplotlib
-installed. These can be fetched with
+In order to run the usage guide Jupyter notebook, you must have both Jupyter and matplotlib
+installed. These are automatically installed into your Python path when you install ConIII through
+listed dependencies. If you prefer to install them yourself, you can use the Python package
+[pip](https://pypi.org/project/pip/). Open a terminal and run
 >`pip install jupyter matplotlib`
 
-However, we strongly recommend that you use the Anaconda package manager
-[https://www.anaconda.com/download/] in which case you can install the packages by running
+However, we strongly recommend that you use the [Anaconda](https://www.anaconda.com/download/)
+package manager in which case you can install the packages by running
 >`conda install jupyter matplotlib`
 
-The notebook is also installed into your environment directory if you used pip. If you do not know how to
-navigate to your Python site-packages directory, I would recommend that you just download it from
-the Github link provided above.
+The Jupyter notebook with the examples for how to use ConIII is available in the ipynb directory on
+the Github: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb]
 
-Make sure you copy the notebook into a directory outside the CONIII directory. Once in the directory
+The notebook is also installed into your coniii package directory if you used pip. If you do not
+know how to navigate to your Python site-packages directory, I would recommend that you just
+download it from the Github link provided above.
+
+Make sure you copy the notebook into a directory outside the ConIII directory. Once in the directory
 into which you've installed it, you can run it with
 > jupyter notebook
 
-Make sure that you are running Python 3.6 which you can check by running
+## Troubleshooting
+This package is only maintained for Python 3.6 as of (October 2018). Make sure that you are running
+Python 3.6 which you can check by running
 > python --version
 
-## Troubleshooting
-Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg should be set to 0 when the algorithm class instance is declared.
+Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg
+should be set to 0 when the algorithm class instance is declared.

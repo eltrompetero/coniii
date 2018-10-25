@@ -475,9 +475,10 @@ class MPF(Solver):
         output : dict
             full output from minimize solver
         """
-
+        
+        from .utils import split_concat_params
         assert parameter_limits>0
-        assert not X is None, "samples must be provided by MPF"
+        assert not X is None, "samples from distribution of states must be provided for MPF"
 
         # Convert from {0,1} to {+/-1} asis.
         X = (X+1)/2
@@ -488,13 +489,13 @@ class MPF(Solver):
             includeGrad = False
         X = X.astype(float)
         if initial_guess is None:
-            initial_guess = self.calc_observables(X).mean(0)#np.zeros(self.n+self.n*(self.n-1)//2)
+            initial_guess = self.calc_observables(X).mean(0)
          
         # Get list of unique data states and how frequently they appear.
         Xuniq = X[unique_rows(X)]
-        ix = unique_rows(X,return_inverse=True)
+        ix = unique_rows(X, return_inverse=True)
         Xcount = np.bincount(ix)
-        M,N = Xuniq.shape
+        M, N = Xuniq.shape
         
         adjacentStates = []
         for s in Xuniq:
@@ -523,8 +524,8 @@ class MPF(Solver):
                          bounds=[(-parameter_limits,parameter_limits)]*len(initial_guess),
                          method=method, jac=includeGrad, options=solver_kwargs )
         self.multipliers = soln['x']
-        return convert_params(soln['x'][:self.n],soln['x'][self.n:], '11', True), soln
-# End MPFSolver
+        return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
+#end MPF
 
 
 

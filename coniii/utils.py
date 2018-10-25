@@ -286,6 +286,8 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
                     for subijk in combinations(ijk, suborder):
                         ix = unravel_index(subijk, n)
                         params[subcounter+counter+1][ix] += ijkcoeff * 2**suborder * (-1)**(order-suborder)
+        if concat:
+            return np.concatenate(params[::-1])
         return params[::-1]
 
     # basically need to expand polynomials to all lower order terms
@@ -302,6 +304,8 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
                 for subijk in combinations(ijk, suborder):
                     ix = unravel_index(subijk, n)
                     params[subcounter+counter+1][ix] += ijkcoeff * 2**-order
+    if concat:
+        return np.concatenate(params[::-1])
     return params[::-1]
 
 def unravel_index(ijk, n):
@@ -357,6 +361,31 @@ def _expand_binomial(a, b, n=2):
     for i in range(n+1):
         coeffs.extend( [a**(n-i)*b**i]*int(binom(n,i)) )
     return coeffs
+
+def split_concat_params(p, n):
+    """Split parameters for Ising model that have all been concatenated together into a single list into
+    separate lists. Assumes that the parameters are increasing in order of interaction and that all parameters
+    are present.
+    
+    Parameters
+    ----------
+    p : list-like
+    
+    Returns
+    -------
+    splitp : list of list-like
+        Parameters increase in order (h, Jij, Kijk, ... )
+    """
+    
+    from scipy.special import binom
+    splitp = []
+    counter = 0
+    i = 1
+    while counter<len(p):
+        splitp.append( p[counter:counter+int(binom(n,i))] )
+        counter += int(binom(n,i))
+        i += 1
+    return splitp
 
 def convert_corr(si,sisj,convertTo='11',concat=False):
     """

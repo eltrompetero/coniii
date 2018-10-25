@@ -187,6 +187,48 @@ def bin_states(n,sym=False):
     else:
         return v*-2.+1
 
+def k_corr(X, k,
+           weights=None,
+           exclude_empty=False):
+    """
+    Calculate kth order correlations of spins.
+
+    Parameters
+    ----------
+    X : ndarray
+        Dimensions (n_samples,n_dim).
+    k : int
+        Order of correlation <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
+    weights : np.ndarray,None : 
+        Calculate single and pairwise means given fractional weights for each state in
+        the data such that a state only appears with some weight, typically less than
+        one
+    exclude_empty : bool,False
+        When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
+        any pair. If True, the weights option doesn't do anything.
+
+    Returns
+    -------
+    kcorr : ndarray
+        <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
+    """
+    
+    from scipy.special import binom
+    assert frozenset(np.unique(X))<=frozenset([-1,0,1])
+    S, N = X.shape
+    kcorr = np.zeros(int(binom(N,k)))
+    
+    if exclude_empty:
+        for counter,ijk in enumerate(combinations(range(N), k)):
+            p = np.prod(X[:,ijk], axis=1)
+            kcorr[counter] = p[p!=0].mean()
+    
+    if weights is None:
+        weights = np.ones(S)/S
+    for counter,ijk in enumerate(combinations(range(N), k)):
+        kcorr[counter] = np.prod(X[:,ijk], axis=1).dot(weights)
+    return kcorr
+
 def xbin_states(n,sym=False):
     """Generator for producing binary states.
 

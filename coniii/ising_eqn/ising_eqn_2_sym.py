@@ -1,6 +1,6 @@
 # Equations of 2-spin Ising model.
 
-# 30/12/2017
+# 25/10/2018
 from numpy import zeros, exp
 
 def calc_observables(params):

@@ -135,10 +135,11 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     """
     Write out equations to solve for Python.
 
-    Params:
-    -------
+    Parameters
+    ----------
     extra (str,'') : any extra lines to add at the end
     """
+
     import time
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
 
@@ -167,7 +168,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     f.write(fargs)
     f.write("\t\"\"\"\n\tGive each set of parameters concatenated into one array.\n\t\"\"\"\n")
     f.write(vardec)
-    f.write("\tZ = "+Z+"\n")
+    _write_Z(f, Z)
     f.write(eqns)
     f.write("\n\treturn(Cout)\n\n")
 
@@ -184,14 +185,27 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
         vardec += '\t'+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
     vardec += '\tPout = zeros(('+str(2**n)+'))\n' # string of variable declarations
     f.write(vardec)
-
-    f.write('\tZ = '+Z+'\n')
+    _write_Z(f, Z)
     for i in range(len(expterms)):
         f.write('\tPout['+str(i)+'] = '+expterms[i]+'/Z\n')
 
     f.write(extra)
     f.write("\n\treturn(Pout)\n")
     f.close()
+
+def _write_Z(f, Z):
+    f.write('\tZ = ')
+    i=0
+    while i<len(Z):
+        iend=i+100
+        # end line on a +
+        while iend<len(Z) and Z[iend-1]!='+':
+            iend+=1
+        if iend>=len(Z):
+            f.write(Z[i:]+'\n')
+        else:
+            f.write('\t'+Z[i:iend]+'\\\n')
+        i=iend
 
 def add_to_fitterm11(fitterm,subix,expterm,binstate):
     """

@@ -1,6 +1,6 @@
 # Equations of 3-spin Ising model.
 
-# 30/12/2017
+# 25/10/2018
 from numpy import zeros, exp
 
 def calc_observables(params):
@@ -10,7 +10,8 @@ def calc_observables(params):
 	Cout = zeros((6))
 	H = params[0:3]
 	J = params[3:6]
-	Z = +exp(+0)+exp(+H[2]+0)+exp(+H[1]+0)+exp(+H[1]+H[2]+J[2])+exp(+H[0]+0)+exp(+H[0]+H[2]+J[1])+exp(+H[0]+H[1]+J[0])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2])
+	Z = 	+exp(+0)+exp(+H[2]+0)+exp(+H[1]+0)+exp(+H[1]+H[2]+J[2])+exp(+H[0]+0)+exp(+H[0]+H[2]+J[1])+exp(+H[0]+\
+H[1]+J[0])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2])
 	Cout[0] = (+exp(+H[0]+0)+exp(+H[0]+H[2]+J[1])+exp(+H[0]+H[1]+J[0])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2]))/Z
 	Cout[1] = (+exp(+H[1]+0)+exp(+H[1]+H[2]+J[2])+exp(+H[0]+H[1]+J[0])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2]))/Z
 	Cout[2] = (+exp(+H[2]+0)+exp(+H[1]+H[2]+J[2])+exp(+H[0]+H[2]+J[1])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2]))/Z
@@ -30,7 +31,8 @@ def p(params):
 	H = params[0:3]
 	J = params[3:6]
 	Pout = zeros((8))
-	Z = +exp(+0)+exp(+H[2]+0)+exp(+H[1]+0)+exp(+H[1]+H[2]+J[2])+exp(+H[0]+0)+exp(+H[0]+H[2]+J[1])+exp(+H[0]+H[1]+J[0])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2])
+	Z = 	+exp(+0)+exp(+H[2]+0)+exp(+H[1]+0)+exp(+H[1]+H[2]+J[2])+exp(+H[0]+0)+exp(+H[0]+H[2]+J[1])+exp(+H[0]+\
+H[1]+J[0])+exp(+H[0]+H[1]+H[2]+J[0]+J[1]+J[2])
 	Pout[0] = +exp(+0)/Z
 	Pout[1] = +exp(+H[2]+0)/Z
 	Pout[2] = +exp(+H[1]+0)/Z

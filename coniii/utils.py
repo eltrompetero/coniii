@@ -185,7 +185,7 @@ def bin_states(n,sym=False):
     if sym is False:
         return v
     else:
-        return v*-2.+1
+        return v*2.-1
 
 def k_corr(X, k,
            weights=None,
@@ -636,7 +636,7 @@ def define_ising_helper_functions():
         """
 
         e = -fast_sum(params[s.shape[1]:],s)
-        e -= np.sum(s*params[:s.shape[1]])
+        e -= np.sum(s*params[:s.shape[1]],1)
         return e
     
     def mch_approximation( samples, dlamda ):

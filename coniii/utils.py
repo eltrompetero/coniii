@@ -135,6 +135,7 @@ def pair_corr(X,
     -------
     (si,sisj) or np.concatenate((si,sisj))
     """
+
     assert frozenset(np.unique(X))<=frozenset([-1,0,1])
     S,N = X.shape
     

@@ -4,7 +4,8 @@
 # ========================================================================================================= #
 import numpy as np
 import scipy.special as ss
-import string
+from itertools import combinations
+
 
 def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
     """
@@ -68,7 +69,7 @@ def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
                 add_to_fitterm01(fitterms[i],terms[i],expterms[state],binstates[state])
             else:
                 pass
-    Z = string.join(expterms,sep="")
+    Z = ''.join(expterms)
 
     if writeto=="matlab":
         write_matlab(n,terms,fitterms,expterms,Z,suffix=suffix)
@@ -322,10 +323,10 @@ def get_nidx(k,n):
                 j += 1
         return np.array(ix)[:,::-1] # make sure last idx increases first
 
-def main(n,sym=0):
+def pairwise(n, sym=0):
     assert sym==0 or sym==1
 
-    print("Writing equations for Ising model with %d spins."%n)
+    print("Writing equations for pairwise Ising model with %d spins."%n)
     if sym:
         write_eqns(n,sym,[np.where(np.ones((n))==1),
                           np.where(np.triu(np.ones((n,n)),k=1)==1)],
@@ -335,6 +336,21 @@ def main(n,sym=0):
                           np.where(np.triu(np.ones((n,n)),k=1)==1)],
                    writeto="py")
 
+def triplet(n, sym=0):
+    assert sym==0 or sym==1
+
+    print("Writing equations for Ising model with triplet interactions and %d spins."%n)
+    if sym:
+        write_eqns(n,sym,[(range(n),),
+                          list(zip(*list(combinations(range(n),2)))),
+                          list(zip(*list(combinations(range(n),3))))],
+                   writeto="py", suffix='_sym_triplet')
+    else:
+        write_eqns(n,sym,[(range(n),),
+                          list(zip(*list(combinations(range(n),2)))),
+                          list(zip(*list(combinations(range(n),3))))],
+                   writeto="py", suffix='_triplet')
+
 if __name__=='__main__':
     """
     When run with Python, this will write the equations for the Ising model
@@ -343,17 +359,34 @@ if __name__=='__main__':
     {-1,+1} basis.
 
     To write the Ising model equations for a system of size 3 in the {0,1} basis, call
-    >>> python exact.py 3
+    >>> python enumerate.py 3
 
     For the {-1,1} basis, call
-    >>> python exact.py 3 1
+    >>> python enumerate.py 3 1
+
+    To include triplet order interactions, include a 3 at the very end
+    >>> python enumerate.py 3 0 3
     """
+
     import sys
     n = int(sys.argv[1])
-    if len(sys.argv)>2:
+    if len(sys.argv)==2:
+        sym = 0
+        order = 2
+    elif len(sys.argv)==3:
         sym = int(sys.argv[2])
         assert sym==0 or sym==1
+        order = 2
+    elif len(sys.argv)==4:
+        sym = int(sys.argv[2])
+        order = int(sys.argv[3])
     else:
-        sym = 0
+        raise Exception("Unrecognized arguments.")
+    
+    if order==2:
+        pairwise(n, sym) 
+    elif order==3:
+        triplet(n, sym) 
+    else:
+        raise NotImplementedError("Only order up to 3 implemented for this convenient interface.")
 
-    main(n,sym) 

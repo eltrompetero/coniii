@@ -1687,34 +1687,33 @@ class Metropolis(Sampler):
 
         cpucount = cpucount or self.nCpus
         if initial_sample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
+            self.samples = self.rng.choice([-1.,1.], size=(sample_size,self.n))
         else:
             self.samples = initial_sample
-        #self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
         self.E = self.calc_e( self.samples, self.theta )
        
         # Parallel sample.
         if not systematic_iter:
             def f(args):
-                s,E,seed=args
-                rng=np.random.RandomState(seed)
+                s, E, seed = args
+                rng = np.random.RandomState(seed)
                 for j in range(n_iters):
-                    de = self.sample_metropolis( s,E,rng=rng )
+                    de = self.sample_metropolis( s, E, rng=rng )
                     E += de
-                return s,E
+                return s, E
         else:
             def f(args):
-                s,E,seed=args
-                rng=np.random.RandomState(seed)
+                s, E, seed = args
+                rng = np.random.RandomState(seed)
                 for j in range(n_iters):
-                    de = self.sample_metropolis( s,E,rng=rng,flip_site=j%self.n )
+                    de = self.sample_metropolis( s, E, rng=rng, flip_site=j%self.n )
                     E += de
-                return s,E
+                return s, E
         
         pool = mp.Pool(cpucount)
-        self.samples,self.E = list(zip(*pool.map(f,zip(self.samples,
-                                                  self.E,
-                                                  np.random.randint(2**31-1,size=sample_size)))))
+        self.samples, self.E = list(zip(*pool.map(f,zip(self.samples,
+                                                        self.E,
+                                                        np.random.randint(2**31-1,size=sample_size)))))
         pool.close()
 
         self.samples = np.vstack(self.samples)
@@ -1856,24 +1855,22 @@ class Metropolis(Sampler):
                           rng=None,
                           flip_site=None,
                           calc_e=None):
-        """
-        Metropolis sampling given an arbitrary sampling function.
+        """Metropolis sampling given an arbitrary sampling function.
         """
 
         rng = rng or self.rng
-        flipSite = flip_site or rng.randint(sample0.size)
+        flip_site = flip_site or rng.randint(sample0.size)
         calc_e = calc_e or self.calc_e
 
-        sample0[flipSite] *= -1
+        sample0[flip_site] *= -1
         E1 = calc_e( sample0[None,:], self.theta )
-        
         de = E1-E0
 
         # Only accept flip if dE<=0 or probability exp(-dE)
         # Thus reject flip if dE>0 and with probability (1-exp(-dE))
         if ( de>0 and (rng.rand()>np.exp(-de)) ):
-            sample0[flipSite] *= -1.
-            return 0.
+            sample0[flip_site] *= -1.
+            return np.zeros(1)
         else:
             return de
 #end Metropolis

@@ -125,7 +125,7 @@ class Solver():
         
         if sample_method=='metropolis':
             self.sampleMethod=sample_method
-            self.sampler = Metropolis( self.n,self.multipliers,self.calc_e )
+            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e )
       
         elif sample_method=='ising_metropolis':
             self.sampleMethod=sample_method

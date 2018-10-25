@@ -2,10 +2,11 @@
 Edward D Lee, Bryan C Daniels
 
 Python package for solving maximum entropy problems with a focus on the pairwise maximum entropy
-model, also known as the inverse Ising problem. Support for Python 3.6 only (v0.2.5 works with
+model, also known as the inverse Ising problem. Support for Python 3.6 only (v0.2.10 works with
 Python 2.7 but is no longer actively maintained).
 
-See "ipynb/usage_guide.ipynb" for usage documentation and examples.
+See ["ipynb/usage_guide.ipynb"](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb)
+for usage documentation and examples.
 
 There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216]. Please cite this if you
 use ConIII for your research! Citations fuel further open source work of this kind.
@@ -29,8 +30,8 @@ running
 Once inside the install directory, you can run in your bash shell
 >`python enumerate.py [N]` 
 
-where `[N]` should be replaced by the size of the system. For more details, see the __main__ block
-at the end of the file.
+where `[N]` should be replaced by the size of the system. For more details, see the \_\_main\_\_ block
+at the end of the file enumerate.py.
 
 ## Usage examples
 In order to run the usage guide Jupyter notebook, you must have both Jupyter and matplotlib
@@ -56,7 +57,7 @@ into which you've installed it, you can run it with
 
 ## Troubleshooting
 This package is only maintained for Python 3.6 as of (October 2018). Make sure that you are running
-Python 3.6 which you can check by running
+Python 3.6 which you can check by running in your bash terminal
 > python --version
 
 Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg

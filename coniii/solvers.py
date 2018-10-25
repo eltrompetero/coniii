@@ -640,6 +640,8 @@ class MCH(Solver):
         parameters : ndarray
             Found solution to inverse problem.
         errflag : int
+            0, converged within given criterion
+            1, max iterations reached
         errors : ndarray
             Log of errors in matching constraints at each step of iteration.
         """

@@ -1285,7 +1285,7 @@ class FastMCIsing(Sampler):
         
         if saveHistory:
             if systematic_iter:
-                @jit
+                @jit('float64[:,:]()', locals={'samples':float64[:,:]}, forceobj=True)
                 def sample():
                     history=np.zeros((sample_size,n_iters+1))
                     history[:,0]=E.ravel()
@@ -1296,7 +1296,7 @@ class FastMCIsing(Sampler):
                             history[i,j+1]=E[i]
                     return history
             else:
-                @jit
+                @jit('float64[:,:]()', locals={'samples':float64[:,:]}, forceobj=True)
                 def sample():
                     history = np.zeros((sample_size,n_iters+1))
                     history[:,0] = E.ravel()

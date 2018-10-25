@@ -628,10 +628,15 @@ def define_ising_helper_functions():
             state either {0,1} or {+/-1}
         params : ndarray
             (h,J) vector
+
+        Returns
+        -------
+        E : ndarray
+            Energies of all given states.
         """
 
         e = -fast_sum(params[s.shape[1]:],s)
-        e -= np.dot(s,params[:s.shape[1]])
+        e -= np.sum(s*params[:s.shape[1]])
         return e
     
     def mch_approximation( samples, dlamda ):

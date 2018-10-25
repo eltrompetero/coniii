@@ -253,20 +253,21 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
     Parameters
     ----------
     oparams : tuple of lists
-        Tuple of lists of interactions between spins starting with the highest order interactions. Each list
+        Tuple of lists of interactions between spins starting with the lowest order interactions. Each list
         should consist of all interactions of that order such that the length of each list should be
-        binomial(n,i) for all i.
+        binomial(n,i) for all i starting with i>=1.
     convert_to : str,'01'
     concat : bool,False
 
     Returns
     -------
     params : tuple of lists or list
-        New parameters in order of highest order interactions to mean biases. Can all be concatenated together
-        if concat switch is True.
+        New parameters in order of lowest to highest order interactions to mean biases. Can all be
+        concatenated together if concat switch is True.
     """
     
     from scipy.special import binom
+    oparams = oparams[::-1]
     n = len(oparams[-1])
     params = [np.zeros(int(binom(n,i))) for i in range(len(oparams),0,-1)]
     
@@ -285,7 +286,7 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
                     for subijk in combinations(ijk, suborder):
                         ix = unravel_index(subijk, n)
                         params[subcounter+counter+1][ix] += ijkcoeff * 2**suborder * (-1)**(order-suborder)
-        return params
+        return params[::-1]
 
     # basically need to expand polynomials to all lower order terms
     # start at the highest order terms
@@ -301,7 +302,7 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
                 for subijk in combinations(ijk, suborder):
                     ix = unravel_index(subijk, n)
                     params[subcounter+counter+1][ix] += ijkcoeff * 2**-order
-    return params
+    return params[::-1]
 
 def unravel_index(ijk, n):
     """

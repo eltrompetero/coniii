@@ -37,10 +37,11 @@ def test_convert_params():
     h = np.random.normal(size=n)
     J = np.random.normal(size=n*(n-1)//2)
     h1, J1 = convert_params(h, J, convert_to='01')
-    J2, h2 = ising_convert_params([J,h], convert_to='01')
+    h2, J2 = ising_convert_params([h,J], convert_to='01')
+    print(len(h2),len(J2))
     assert np.isclose(h1, h2).all() and np.isclose(J1, J2).all()
     h1, J1 = convert_params(h, J, convert_to='11')
-    J2, h2 = ising_convert_params([J,h], convert_to='11')
+    h2, J2 = ising_convert_params([h,J], convert_to='11')
     assert np.isclose(h1, h2).all() and np.isclose(J1, J2).all()
    
 if __name__=='__main__':

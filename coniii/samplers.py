@@ -1627,6 +1627,7 @@ class Metropolis(Sampler):
     def generate_samples(self,
                          sample_size,
                          n_iters=1000,
+                         systematic_iter=False,
                          saveHistory=False,
                          initial_sample=None):
         """
@@ -1636,8 +1637,13 @@ class Metropolis(Sampler):
         ----------
         sample_size : int
         n_iters : int,1000
+        systematic_iter : bool,False
         saveHistory : bool,False
         initial_sample : ndarray,None
+
+        Returns
+        -------
+        history : ndarray
         """
 
         if initial_sample is None:
@@ -1648,18 +1654,31 @@ class Metropolis(Sampler):
         if saveHistory:
             history=np.zeros((sample_size,n_iters+1))
             history[:,0]=self.E.ravel()
-            for i in range(sample_size):
-                for j in range(n_iters):
-                    de = self.sample_metropolis( self.samples[i],self.E[i] )
-                    self.E[i] += de
-                    history[i,j+1]=self.E[i]
+
+            if systematic_iter:
+                for i in range(sample_size):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis( self.samples[i], self.E[i], flip_site=j%self.n )
+                        self.E[i] += de
+                        history[i,j+1]=self.E[i]
+            else:
+                for i in range(sample_size):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis( self.samples[i], self.E[i] )
+                        self.E[i] += de
+                        history[i,j+1]=self.E[i]
             return history
         else:
-            for i in range(sample_size):
-                for j in range(n_iters):
-                    de = self.sample_metropolis( self.samples[i],self.E[i] )
-                    self.E[i] += de
-            return
+            if systematic_iter:
+                for i in range(sample_size):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis( self.samples[i], self.E[i], flip_site=j%self.n )
+                        self.E[i] += de
+            else:
+                for i in range(sample_size):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis( self.samples[i], self.E[i] )
+                        self.E[i] += de
 
     def generate_samples_parallel(self,
                                   sample_size,

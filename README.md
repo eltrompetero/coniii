@@ -19,7 +19,10 @@ If you have trouble using `pip` and PyPI, then you can always build this package
 Download this package from GitHub and move the "coniii" folder to wherever you would like to have
 the module (make sure this folder is in your file path and that you are running Python 3.6).  Inside
 "coniii", you must run
-> `python setup_module.py build_ext --inplace`
+> `pip install .`
+
+Using setuptools like in the usual way of `python setup.py install` will not work because eggs are
+incompatible with the cached jit functions!
 
 If you would like to use the `Enumerate` solver for system sizes greater than 9, you must run
 enumerate.py to write those files yourself. This can be run from the install directory.  If you do

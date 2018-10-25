@@ -159,11 +159,49 @@ def grad_e_theta(theta, x):
 
 class Sampler():
     """Base class for MCMC sampling."""
-    def __init__(self):
+    def __init__(self, n, theta, **kwargs):
+        """
+        Parameters
+        ----------
+        n : int
+            System size.
+        theta : ndarray
+            Lagrangian multipliers.
+        """
+
+        self.n = n
+        self.theta = theta
         return
 
-    def update_parameters(self):
+    def update_parameters(self, new_parameters):
         return
+    
+    def generate_samples(self, sample_size, **kwargs):
+        """
+        Parameters
+        ----------
+        sample_size : int
+        """
+        return
+
+    def generate_samples_parallel(self, sample_size, **kwargs):
+        """
+        Parameters
+        ----------
+        sample_size : int
+        """
+        return
+    
+    def sample_metropolis(self, s, energy):
+        """
+        Parameters
+        ----------
+        s : ndarray
+            State to perturb randomly.
+        energy : float
+            Energy of configuration.
+        """
+        return 
 #end Sampler
 
 

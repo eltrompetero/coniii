@@ -24,7 +24,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # =============================================================================================== #
-
 from scipy.optimize import minimize,fmin_ncg,minimize_scalar
 import multiprocess as mp
 import copy
@@ -32,7 +31,6 @@ from . import mean_field_ising
 from warnings import warn
 from .utils import *
 from .samplers import *
-
 
 
 class Solver():

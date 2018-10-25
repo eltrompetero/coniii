@@ -45,7 +45,7 @@ package manager in which case you can install the packages by running
 >`conda install jupyter matplotlib`
 
 The Jupyter notebook with the examples for how to use ConIII is available in the ipynb directory on
-the Github: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb]
+the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb]
 
 The notebook is also installed into your coniii package directory if you used pip. If you do not
 know how to navigate to your Python site-packages directory, I would recommend that you just
@@ -56,9 +56,11 @@ into which you've installed it, you can run it with
 > jupyter notebook
 
 ## Troubleshooting
-This package is only maintained for Python 3.6 as of (October 2018). Make sure that you are running
+This package is only maintained for Python 3.6 as of October 2018. Make sure that you are running
 Python 3.6 which you can check by running in your bash terminal
 > python --version
 
 Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg
 should be set to 0 when the algorithm class instance is declared.
+
+Please register a pull request here if you have any issues.

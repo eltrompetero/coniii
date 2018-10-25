@@ -29,5 +29,3 @@ do
 done
 python enumerate.py 5 0 3
 python enumerate.py 5 1 3
-
-mv ising_eqn*.py ising_eqn/

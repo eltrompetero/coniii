@@ -166,7 +166,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
 
     # Write function to solve to file.
-    f = open('ising_eqn_%d%s.py'%(n,suffix),'w')
+    f = open('ising_eqn/ising_eqn_%d%s.py'%(n,suffix),'w')
     f.write("# Equations of %d-spin Ising model.\n\n"%n)
     f.write("# ")
     f.write(time.strftime("%d/%m/%Y")+"\n")

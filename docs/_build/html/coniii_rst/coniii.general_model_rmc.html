@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>coniii.general_model_rmc module &#8212; ConIII 1.0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="ConIII 1.0.2 documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-coniii.general_model_rmc">
+<span id="coniii-general-model-rmc-module"></span><h1>coniii.general_model_rmc module<a class="headerlink" href="#module-coniii.general_model_rmc" title="Permalink to this headline">¶</a></h1>
+<p>Swendson &amp; Wang Replica Monte Carlo for general ising model.</p>
+<p>Author: Colin Clement
+Date: 2016-6-11</p>
+<p>This implementation follows: arXiv:cond-mat/0407273v1
+The only modification is a general implementation for any
+graph with two-spin interactions.</p>
+<dl class="class">
+<dt id="coniii.general_model_rmc.GeneralSpinModel">
+<em class="property">class </em><code class="descclassname">coniii.general_model_rmc.</code><code class="descname">GeneralSpinModel</code><span class="sig-paren">(</span><em>J, templist=[1.0], observers=None, sparse=True, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.GeneralSpinModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Swendsen and Wang replica Monte Carlo for ising model with arbitrary
+couplings and interaction graphs</p>
+<dl class="method">
+<dt id="coniii.general_model_rmc.GeneralSpinModel.clusterStep">
+<code class="descname">clusterStep</code><span class="sig-paren">(</span><em>s0</em>, <em>T0</em>, <em>s1</em>, <em>T1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.GeneralSpinModel.clusterStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find clusters of constant overlap between
+spin configurations s0 and s1, perform one sweep
+of replica cluster Monte Carlo.
+input:</p>
+<blockquote>
+<div>s0: spin configuration 0
+T0: Temperature of spin configuration 0
+s1: spin configuration 1
+T1: Temperature of spin configuration 1</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.general_model_rmc.GeneralSpinModel.energy">
+<code class="descname">energy</code><span class="sig-paren">(</span><em>s</em>, <em>J=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.GeneralSpinModel.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the energy of the current state</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.general_model_rmc.GeneralSpinModel.getClusterCouplings">
+<code class="descname">getClusterCouplings</code><span class="sig-paren">(</span><em>clusters</em>, <em>s0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.GeneralSpinModel.getClusterCouplings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the effective cluster couplings as prescribed
+by Swendsen and Wang.
+input:</p>
+<blockquote>
+<div>clusters: list of lists of cluster indicies
+s0: reference spin configuration</div></blockquote>
+<dl class="docutils">
+<dt>returns:</dt>
+<dd>sparse matrix of effective couplings</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.general_model_rmc.GeneralSpinModel.notify_observers">
+<code class="descname">notify_observers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.GeneralSpinModel.notify_observers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send state to observers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.general_model_rmc.GeneralSpinModel.thermalize">
+<code class="descname">thermalize</code><span class="sig-paren">(</span><em>relax_time</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.GeneralSpinModel.thermalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>performs relax_time (int) monte carlo steps</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.boundaries">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">boundaries</code><span class="sig-paren">(</span><em>cls</em>, <em>bonds</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.boundaries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.coroutine">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">coroutine</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.coroutine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that initializes coroutines (return yield)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.fileName">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">fileName</code><span class="sig-paren">(</span><em>model</em>, <em>directory='time_series/'</em>, <em>protocol='.pkl'</em>, <em>appendnote=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.fileName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a unique file name for a given model final string first 10
+characters from the current git commit hash</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.general_model_rmc.flipFast">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">flipFast</code><a class="headerlink" href="#coniii.general_model_rmc.flipFast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Much more efficient version of _oneSweep MC
+input:</p>
+<blockquote>
+<div>index: spin to attempt flipping
+s: spin configuration
+T: temperature
+rand: a uniform random float
+neighs: list of neighboring sites to index
+bonds: list of bonds connections index to its neighbors</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.getClusters">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">getClusters</code><span class="sig-paren">(</span><em>taus</em>, <em>neighborsets</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.getClusters" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>input:</dt>
+<dd><dl class="first docutils">
+<dt>taus</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">values of overlap between two spin configurations.</span><dd>Array of N spin-values.</dd>
+</dl>
+<p class="last">neighborsets: list ordered by spin index, whose
+elements are the spins neighboring the spin at that index.</p>
+</dd>
+<dt>output:</dt>
+<dd>list of cluster indices split according to the adjacency
+matrix to find contiguous regions of &#8216;up&#8217; or &#8216;down&#8217; spins</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.mapCij">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">mapCij</code><span class="sig-paren">(</span><em>clust</em>, <em>CIJ</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.mapCij" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a ClusterModel correlation function and, using the cluster assignment
+inherited from an REMC model, maps the correlation function (CIJ) onto
+the dimensions of the original system correlations</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.neighbors">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">neighbors</code><span class="sig-paren">(</span><em>ind</em>, <em>adj</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given adjacency matrix, return the neighbors
+of node &#8216;ind&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.onlinePairCorr">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">onlinePairCorr</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.onlinePairCorr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the pair correlation function using the same online
+Welford-type algorithm as for the FIM. Only calculates cross moments.
+PairCorr is calculated upon pickling by dividing by self.pairtime and T**2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.packSpins">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">packSpins</code><span class="sig-paren">(</span><em>spins</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.packSpins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.pickleLoader">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">pickleLoader</code><span class="sig-paren">(</span><em>pklfile</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.pickleLoader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.saveTimeSeries">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">saveTimeSeries</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.saveTimeSeries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observer which saves spin state of model to a file. specify directory to save in,
+protocol: &#8216;pkl&#8217; or &#8216;h5 for pickling or hdf5</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.simplifyNestedClustering">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">simplifyNestedClustering</code><span class="sig-paren">(</span><em>supercluster</em>, <em>cluster</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.simplifyNestedClustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpacks a clustering of clusters. supercluster is a list of indices from
+cluster, cluster is a list of original indicies. The output is the indices
+of cluster organizes according to supercluster</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.timeSeriesLoader">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">timeSeriesLoader</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.timeSeriesLoader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="coniii.general_model_rmc.unpackSpins">
+<code class="descclassname">coniii.general_model_rmc.</code><code class="descname">unpackSpins</code><span class="sig-paren">(</span><em>ints</em>, <em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.general_model_rmc.unpackSpins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/coniii_rst/coniii.general_model_rmc.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Edward D. Lee, Bryan C. Daniels.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/coniii_rst/coniii.general_model_rmc.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

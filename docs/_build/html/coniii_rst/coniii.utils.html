@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>coniii.utils module &#8212; ConIII 1.0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="ConIII 1.0.2 documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-coniii.utils">
+<span id="coniii-utils-module"></span><h1>coniii.utils module<a class="headerlink" href="#module-coniii.utils" title="Permalink to this headline">¶</a></h1>
+<dl class="attribute">
+<dt id="coniii.utils.adj">
+<code class="descclassname">coniii.utils.</code><code class="descname">adj</code><a class="headerlink" href="#coniii.utils.adj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return one-flip neighbors and a set of random neighbors. This is written to be used with
+the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.</p>
+<p>NOTE: For random neighbors, there is no check to make sure neighbors don&#8217;t repeat but this
+shouldn&#8217;t be a problem as long as state space is large enough.</p>
+<dl class="docutils">
+<dt>s</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>State whose neighbors are found. One-dimensional vector of spins.</dd>
+<dt>n_random_neighbors</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,0</span><dd>If &gt;0, return this many random neighbors. Neighbors are just random states, but they are
+called &#8220;neighbors&#8221; because of the terminology in MPF.</dd>
+</dl>
+<dl class="docutils">
+<dt>neighbors</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Each row is a neighbor. s.size + n_random_neighbors are returned.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.utils.adj_sym">
+<code class="descclassname">coniii.utils.</code><code class="descname">adj_sym</code><a class="headerlink" href="#coniii.utils.adj_sym" title="Permalink to this definition">¶</a></dt>
+<dd><p>Symmetric version of adj() where spins are in {-1,1}.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.bin_states">
+<code class="descclassname">coniii.utils.</code><code class="descname">bin_states</code><span class="sig-paren">(</span><em>n</em>, <em>sym=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.bin_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all possible binary spin states.</p>
+<dl class="docutils">
+<dt>n</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>number of spins</dd>
+<dt>sym</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>if true, return {-1,1} basis</dd>
+</dl>
+<p>v : ndarray</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.calc_de">
+<code class="descclassname">coniii.utils.</code><code class="descname">calc_de</code><span class="sig-paren">(</span><em>s</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_de" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the derivative of the energy wrt parameters given the state and
+index of the parameter. In this case, the parameters are the concatenated
+vector of {h_i,J_ij}.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.calc_overlap">
+<code class="descclassname">coniii.utils.</code><code class="descname">calc_overlap</code><span class="sig-paren">(</span><em>sample</em>, <em>ignore_zeros=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>&lt;si_a si_b&gt; between all pairs of replicas a and b</p>
+<p>sample
+ignore_zeros (bool=False)</p>
+<blockquote>
+<div>Instead of normalizing by the number of spins, normalize by the minimum number of nonzero spins.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.convert_corr">
+<code class="descclassname">coniii.utils.</code><code class="descname">convert_corr</code><span class="sig-paren">(</span><em>si</em>, <em>sisj</em>, <em>convertTo='11'</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.</p>
+<p>si (ndarray)
+sisj (ndarray)
+convertTo (str,&#8216;11&#8217;)</p>
+<blockquote>
+<div>&#8216;11&#8217; will convert {0,1} formulation to +/-1 and &#8216;01&#8217; will convert +/-1 formulation to {0,1}</div></blockquote>
+<dl class="docutils">
+<dt>concat (bool=False)</dt>
+<dd>If True, return concatenation of means and pairwise correlations.</dd>
+</dl>
+<dl class="docutils">
+<dt>si</dt>
+<dd>Converted to appropriate basis</dd>
+<dt>sisj</dt>
+<dd>converted to appropriate basis</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.convert_params">
+<code class="descclassname">coniii.utils.</code><code class="descname">convert_params</code><span class="sig-paren">(</span><em>h</em>, <em>J</em>, <em>convert_to='01'</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.</p>
+<p>h : ndarray
+J : ndarray
+convert_to : str</p>
+<blockquote>
+<div>&#8216;01&#8217; or &#8216;11&#8217;</div></blockquote>
+<dl class="docutils">
+<dt>concat</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>If True, return a vector concatenating fields and couplings.</dd>
+</dl>
+<p>h : ndarray
+J : ndarray</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.define_ising_helper_functions">
+<code class="descclassname">coniii.utils.</code><code class="descname">define_ising_helper_functions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Functions for plugging into solvers for +/-1 Ising model with fields h_i and couplings J_ij.</p>
+<p>calc_e
+calc_observables
+mch_approximation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.define_ising_helper_functions_sym">
+<code class="descclassname">coniii.utils.</code><code class="descname">define_ising_helper_functions_sym</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions_sym" title="Permalink to this definition">¶</a></dt>
+<dd><p>Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no fields.</p>
+<p>calc_e
+calc_observables
+mch_approximation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.define_pseudo_ising_helpers">
+<code class="descclassname">coniii.utils.</code><code class="descname">define_pseudo_ising_helpers</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_pseudo_ising_helpers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define helper functions for using Pseudo method on fully connected Ising model.</p>
+<dl class="docutils">
+<dt>N</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>System size.</dd>
+</dl>
+<p>get_multipliers_r, calc_observables_r</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.utils.ind_to_sub">
+<code class="descclassname">coniii.utils.</code><code class="descname">ind_to_sub</code><a class="headerlink" href="#coniii.utils.ind_to_sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert index from flattened upper triangular matrix to pair subindex.</p>
+<dl class="docutils">
+<dt>n</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Dimension size of square array.</dd>
+<dt>ix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Index to convert.</dd>
+</dl>
+<dl class="docutils">
+<dt>subix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span><dd>(i,j)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.ising_convert_params">
+<code class="descclassname">coniii.utils.</code><code class="descname">ising_convert_params</code><span class="sig-paren">(</span><em>oparams</em>, <em>convert_to='01'</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ising_convert_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take set of Ising model parameters up to nth order interactions in either {0,1} or {-1,1} basis
+and convert to other basis.</p>
+<dl class="docutils">
+<dt>oparams</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple of lists</span><dd>Tuple of lists of interactions between spins starting with the lowest order interactions. Each list
+should consist of all interactions of that order such that the length of each list should be
+binomial(n,i) for all i starting with i&gt;=1.</dd>
+</dl>
+<p>convert_to : str,&#8216;01&#8217;
+concat : bool,False</p>
+<dl class="docutils">
+<dt>params</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple of lists or list</span><dd>New parameters in order of lowest to highest order interactions to mean biases. Can all be
+concatenated together if concat switch is True.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.k_corr">
+<code class="descclassname">coniii.utils.</code><code class="descname">k_corr</code><span class="sig-paren">(</span><em>X</em>, <em>k</em>, <em>weights=None</em>, <em>exclude_empty=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.k_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate kth order correlations of spins.</p>
+<dl class="docutils">
+<dt>X</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Dimensions (n_samples,n_dim).</dd>
+<dt>k</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Order of correlation &lt;s_{i_1} * s_{i_2} * ... * s_{i_k}&gt;.</dd>
+<dt>weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray,None</span> <span class="classifier-delimiter">:</span> <span class="classifier"></span><dd>Calculate single and pairwise means given fractional weights for each state in
+the data such that a state only appears with some weight, typically less than
+one</dd>
+<dt>exclude_empty</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
+any pair. If True, the weights option doesn&#8217;t do anything.</dd>
+</dl>
+<dl class="docutils">
+<dt>kcorr</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>&lt;s_{i_1} * s_{i_2} * ... * s_{i_k}&gt;.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.multinomial">
+<code class="descclassname">coniii.utils.</code><code class="descname">multinomial</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.multinomial" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.pair_corr">
+<code class="descclassname">coniii.utils.</code><code class="descname">pair_corr</code><span class="sig-paren">(</span><em>X</em>, <em>weights=None</em>, <em>concat=False</em>, <em>exclude_empty=False</em>, <em>subtract_mean=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.pair_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate averages and pairwise correlations of spins.</p>
+<dl class="docutils">
+<dt>X</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Dimensions (n_samples,n_dim).</dd>
+<dt>weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray,None</span> <span class="classifier-delimiter">:</span> <span class="classifier"></span><dd>Calculate single and pairwise means given fractional weights for each state in
+the data such that a state only appears with some weight, typically less than
+one</dd>
+<dt>concat</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>Return means concatenated with the pairwise correlations into one array.</dd>
+<dt>exclude_empty</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
+any pair. If True, the weights option doesn&#8217;t do anything.</dd>
+<dt>subtract_mean</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>If True, return pairwise correlations with product of individual means subtracted.</dd>
+</dl>
+<p>(si,sisj) or np.concatenate((si,sisj))</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.split_concat_params">
+<code class="descclassname">coniii.utils.</code><code class="descname">split_concat_params</code><span class="sig-paren">(</span><em>p</em>, <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.split_concat_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split parameters for Ising model that have all been concatenated together into a single list into
+separate lists. Assumes that the parameters are increasing in order of interaction and that all parameters
+are present.</p>
+<p>p : list-like</p>
+<dl class="docutils">
+<dt>splitp</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list of list-like</span><dd>Parameters increase in order (h, Jij, Kijk, ... )</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.state_probs">
+<code class="descclassname">coniii.utils.</code><code class="descname">state_probs</code><span class="sig-paren">(</span><em>v</em>, <em>allstates=None</em>, <em>weights=None</em>, <em>normalized=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.state_probs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get probability of unique states. There is an option to allow for weights counting of the words.</p>
+<dl class="docutils">
+<dt>states (ndarray)</dt>
+<dd>(n_samples,n_dim)</dd>
+</dl>
+<p>weights (vector)
+normalized (bool=True)</p>
+<blockquote>
+<div>Return probability distribution instead of frequency count</div></blockquote>
+<dl class="docutils">
+<dt>freq (ndarray)</dt>
+<dd>Vector of the probabilities of each state</dd>
+<dt>allstates (ndarray)</dt>
+<dd>All unique states found in the data.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.utils.sub_to_ind">
+<code class="descclassname">coniii.utils.</code><code class="descname">sub_to_ind</code><a class="headerlink" href="#coniii.utils.sub_to_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert pair of coordinates of a symmetric square array into consecutive index of flattened
+upper triangle. This is slimmed down so it won&#8217;t throw errors like if i&gt;n or j&gt;n or if they&#8217;re
+negative. Only checking for if the returned index is negative which could be problematic with
+wrapped indices.</p>
+<dl class="docutils">
+<dt>n</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Dimension of square array</dd>
+<dt>i,j</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>coordinates</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.unique_rows">
+<code class="descclassname">coniii.utils.</code><code class="descname">unique_rows</code><span class="sig-paren">(</span><em>mat</em>, <em>return_inverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.unique_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return unique rows indices of a numeric numpy array.</p>
+<p>mat (ndarray)
+<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs
+return_inverse (bool)</p>
+<blockquote>
+<div>If True, return inverse that returns back indices of unique array that would return the
+original array</div></blockquote>
+<dl class="docutils">
+<dt>u (ndarray)</dt>
+<dd>Unique elements of matrix.</dd>
+<dt>idx (ndarray)</dt>
+<dd>row indices of given mat that will give unique array</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.unravel_index">
+<code class="descclassname">coniii.utils.</code><code class="descname">unravel_index</code><span class="sig-paren">(</span><em>ijk</em>, <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.unravel_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unravel multi-dimensional index to unidimensional index in flattened multi-dimensional analog of
+an upper triangular array.</p>
+<p>ijk : tuple
+n : int</p>
+<dl class="docutils">
+<dt>ix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Unraveled index.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.xbin_states">
+<code class="descclassname">coniii.utils.</code><code class="descname">xbin_states</code><span class="sig-paren">(</span><em>n</em>, <em>sym=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.xbin_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator for producing binary states.</p>
+<dl class="docutils">
+<dt>n</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>number of spins</dd>
+<dt>sym</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>if true, return {-1,1} basis</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/coniii_rst/coniii.utils.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Edward D. Lee, Bryan C. Daniels.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/coniii_rst/coniii.utils.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -6,11 +6,15 @@
 Welcome to ConIII's documentation!
 ==================================
 
+.. automodule:: coniii.solvers
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
+   coniii_rst/coniii.enumerate.rst
+   coniii_rst/coniii.solvers.rst
+   coniii_rst/coniii.samplers.rst
+   coniii_rst/coniii.utils.rst
 
 Indices and tables
 ==================

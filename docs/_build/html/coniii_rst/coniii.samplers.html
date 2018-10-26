@@ -1,0 +1,777 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>coniii.samplers module &#8212; ConIII 1.0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="ConIII 1.0.2 documentation" href="../index.html" />
+    <link rel="prev" title="coniii.solvers module" href="coniii.solvers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-coniii.samplers">
+<span id="coniii-samplers-module"></span><h1>coniii.samplers module<a class="headerlink" href="#module-coniii.samplers" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="coniii.samplers.FastMCIsing">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">FastMCIsing</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>n_cpus=None</em>, <em>rng=None</em>, <em>use_numba=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.FastMCIsing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.FastMCIsing.setup_sampling">
+<code class="descname">setup_sampling</code><span class="sig-paren">(</span><em>use_numba</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.FastMCIsing.setup_sampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.FastMCIsing.update_parameters">
+<code class="descname">update_parameters</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.FastMCIsing.update_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.HamiltonianMC">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">HamiltonianMC</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>calc_e</em>, <em>random_sample</em>, <em>grad_e=None</em>, <em>dt=0.01</em>, <em>leapfrogN=20</em>, <em>nCpus=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.HamiltonianMC.generate_samples">
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>nSamples</em>, <em>nBurn=100</em>, <em>fast=True</em>, <em>x0=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate nSamples from this Hamiltonian starting from random initial conditions from each sample.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.HamiltonianMC.sample">
+<code class="descname">sample</code><span class="sig-paren">(</span><em>x0</em>, <em>nBurn</em>, <em>saveHistory=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a single sample by MC sampling from this Hamiltonian. Slow method</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.Heisenberg3DSampler">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">Heisenberg3DSampler</code><span class="sig-paren">(</span><em>J</em>, <em>calc_e</em>, <em>random_sample</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<p>Simple MC Sampling from Heisenberg model with a lot of helpful functions.</p>
+<p>generate_samples()
+equilibrate_samples()
+sample_metropolis()
+sample_energy_min()</p>
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.equilibrate_samples">
+<code class="descname">equilibrate_samples</code><span class="sig-paren">(</span><em>samples</em>, <em>n_iters</em>, <em>method='mc'</em>, <em>nCpus=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.equilibrate_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.generate_samples">
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>nSamples</em>, <em>n_iters=100</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.grad_E">
+<code class="descname">grad_E</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.grad_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gradient wrt theta and phi.</p>
+<dl class="docutils">
+<dt>X</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>with dims (nSpins,2) with angles theta and phi</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.sample_energy_min">
+<code class="descname">sample_energy_min</code><span class="sig-paren">(</span><em>nFixed=0</em>, <em>rng=&lt;mtrand.RandomState object&gt;</em>, <em>initialState=None</em>, <em>method='powell'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find local energy minimum given state in angular form. Angular representation makes it easy to be
+explicit about constraints on the vectors.</p>
+<dl class="docutils">
+<dt>initialState</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray,None</span><dd>n_samples x n_features x 2</dd>
+<dt>nFixed</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,0</span><dd>Number of vectors that are fixed.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.sample_metropolis">
+<code class="descname">sample_metropolis</code><span class="sig-paren">(</span><em>oldState</em>, <em>E0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.sample_nearby_sample">
+<code class="descname">sample_nearby_sample</code><span class="sig-paren">(</span><em>X</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly move given state around for new metropolis sample.
+Question is whether it is more efficient to push only one of the many vectors around or all of them simultaneously.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Heisenberg3DSampler.sample_nearby_vector">
+<code class="descname">sample_nearby_vector</code><span class="sig-paren">(</span><em>v</em>, <em>nSamples=1</em>, <em>otheta=None</em>, <em>ophi=None</em>, <em>sigma=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample random vector that is nearby. It is important how you choose the width sigma.
+NOTE: code might be simplified by using arctan2 instead of arctan</p>
+<dl class="docutils">
+<dt>v</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>xyz vector about which to sample random vectors</dd>
+<dt>nSamples</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,1</span><dd>number of random samples</dd>
+<dt>otheta</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float,None</span><dd>polar angle for v</dd>
+<dt>ophi</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float,None</span><dd>azimuthal angle for v</dd>
+<dt>sigma</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float,.1</span><dd>width of Gaussian about v</dd>
+</dl>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="coniii.samplers.Heisenberg3DSampler.to_dict">
+<em class="property">classmethod </em><code class="descname">to_dict</code><span class="sig-paren">(</span><em>data</em>, <em>names</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function taking 3d array of of samples and arranging them into n x 3 arrays in a dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.Metropolis">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">Metropolis</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>calc_e</em>, <em>n_cpus=None</em>, <em>rng=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.generate_cond_samples">
+<code class="descname">generate_cond_samples</code><span class="sig-paren">(</span><em>sample_size</em>, <em>fixed_subset</em>, <em>burn_in=1000</em>, <em>cpucount=None</em>, <em>initial_sample=None</em>, <em>systematic_iter=False</em>, <em>parallel=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_cond_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples from conditional distribution (while a subset of the spins are held fixed).
+Samples are generated in parallel.</p>
+<p>NOTE: There is a bug with multiprocess where many calls to the parallel sampling routine in
+a row leads to increasingly slow evaluation of the code.</p>
+<p>sample_size : int
+fixed_subset : list of duples</p>
+<blockquote>
+<div>Each duple is the index of the spin and the value to fix it at.  These should be ordered
+by spin index.</div></blockquote>
+<p>burn_in : int,1000
+cpucount : int,None
+initial_sample : ndarray,None
+systematic_iter : bool,False</p>
+<blockquote>
+<div>Iterate through spins systematically instead of choosing them randomly.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.generate_samples">
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>sample_size</em>, <em>n_iters=1000</em>, <em>systematic_iter=False</em>, <em>saveHistory=False</em>, <em>initial_sample=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Metropolis samples using a for loop.</p>
+<p>sample_size : int
+n_iters : int,1000
+systematic_iter : bool,False
+saveHistory : bool,False
+initial_sample : ndarray,None</p>
+<p>history : ndarray</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.generate_samples_parallel">
+<code class="descname">generate_samples_parallel</code><span class="sig-paren">(</span><em>sample_size</em>, <em>n_iters=1000</em>, <em>cpucount=None</em>, <em>initial_sample=None</em>, <em>systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples in parallel and save them into self.samples and their energies into self.E.</p>
+<p>sample_size : int
+n_iters : int,1000
+cpucount : int,None
+initial_sample : ndarray,None
+systematic_iter : bool,False</p>
+<blockquote>
+<div>Iterate through spins systematically instead of choosing them randomly.</div></blockquote>
+<p>None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.sample_metropolis">
+<code class="descname">sample_metropolis</code><span class="sig-paren">(</span><em>sample0</em>, <em>E0</em>, <em>rng=None</em>, <em>flip_site=None</em>, <em>calc_e=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metropolis sampling given an arbitrary sampling function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.ParallelTempering">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">ParallelTempering</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>calc_e</em>, <em>temps</em>, <em>sample_size=1000</em>, <em>replica_burnin=100</em>, <em>rng=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.autocorr_spin">
+<code class="descname">autocorr_spin</code><span class="sig-paren">(</span><em>n_iters</em>, <em>burn_factor</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.autocorr_spin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate spin autocorrelation.
+E[s(t)s(t+dt)]</p>
+<p>n_iters
+burn_factor</p>
+<p>autocorr
+repSamples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.burn_in">
+<code class="descname">burn_in</code><span class="sig-paren">(</span><em>n_iter</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.burn_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for iterating sampling without exchanging replicas.</p>
+<dl class="docutils">
+<dt>n_iters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Number of times to iterate through system.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.exchange_measures">
+<code class="descname">exchange_measures</code><span class="sig-paren">(</span><em>pn_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.exchange_measures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for computing exchange probabilities and stay times.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.generate_samples">
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters=100</em>, <em>initial_burn_factor=10</em>, <em>final_burn_factor=10</em>, <em>burn_factor=1</em>, <em>save_sample=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Burn in, run replica exchange simulation, then burnin.</p>
+<dl class="docutils">
+<dt>n_iters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,100</span><dd>Number of times to run the RMC. This involves sampling from each replica N*burn_factor  times.</dd>
+<dt>initial_burn_factor,final_burn_factor (int=10)</dt>
+<dd>Number of time to iterate through system to burn in at the beginning and at the end.</dd>
+<dt>burn_factor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,1</span><dd>Passed into one_step().</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.generate_trajectory">
+<code class="descname">generate_trajectory</code><span class="sig-paren">(</span><em>n_iters=10</em>, <em>burn_factor=5</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.generate_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run MC and save at each iteration. Note that this will overwrite current samples stored in replicas.
+Save a sample every exchange and a burn factor step.</p>
+<p>n_iters : int,10
+burn_factor : int,5</p>
+<p>repSamples : list of ndarrays</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.iterate_beta">
+<code class="descname">iterate_beta</code><span class="sig-paren">(</span><em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.iterate_beta" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>tau</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Effective time at each temperature.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.one_step">
+<code class="descname">one_step</code><span class="sig-paren">(</span><em>pool</em>, <em>burn_factor</em>, <em>exchange=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.one_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>pool : mp.multiprocess.Pool
+burn_factor : int</p>
+<blockquote>
+<div>Number of times to iterate through the system.</div></blockquote>
+<dl class="docutils">
+<dt>exchange</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,True</span><dd>Run exchange sampling. This is typically turned off when you just want to burn in the replicas.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>pn_kwargs={'n_iters': 5}</em>, <em>max_iter=10</em>, <em>disp=False</em>, <em>save_history=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply algorithm from Kerler and Rehberg (1994) for finding fixed point for optimal temperatures.
+Optimized temperatures rewrite self.temps.</p>
+<p>pn_kwargs : dict,{&#8216;n_iters&#8217;:5}
+max_iter : int,10</p>
+<blockquote>
+<div>Number of times to iterate algorithm for beta. Each iteration involves sampling from REMC.</div></blockquote>
+<dl class="docutils">
+<dt>disp</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>Print out updated parameters.</dd>
+<dt>save_history</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span><dd>If true, return history.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.pn">
+<code class="descname">pn</code><span class="sig-paren">(</span><em>n_iters=1</em>, <em>initial_burn_factor=10</em>, <em>burn_factor=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.pn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate acceptance probabilities of exchange between two adjacent temperatures. The acceptance
+probability is ordered from exchange between replicas i and i+1 starting from i=0.</p>
+<p>Estimate stay time at any particular replica.</p>
+<dl class="docutils">
+<dt>n_iters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,100</span><dd>Number of times to run the RMC. This involves sampling from each replica N*burn_factor times.</dd>
+<dt>initial_burn_factor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,10</span><dd>Burn factor right after setting up random state.</dd>
+<dt>burn_factor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int,1</span><dd>Passed into one_step().</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.setup_replicas">
+<code class="descname">setup_replicas</code><span class="sig-paren">(</span><em>burnin</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.setup_replicas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a set of replicas at different temperatures using the Metropolis algorithm as coded in
+FastMCIsing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.tn">
+<code class="descname">tn</code><span class="sig-paren">(</span><em>exchangeix</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.tn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate stay time at any particular replica given number of exchanges that happened during ReMC steps.
+Find stay time at replicas. This is the inverse of the probability that you switch out of a
+particular replica. Remember that replicas on the boundaries can only exchange with one other
+replica.</p>
+<p>exchangeix : ndarray</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.ParallelTempering.update_parameters">
+<code class="descname">update_parameters</code><span class="sig-paren">(</span><em>theta=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.update_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update parameters for each replica.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.SWIsing">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">SWIsing</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>calc_e</em>, <em>nCpus=None</em>, <em>rng=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.SWIsing.generate_sample">
+<code class="descname">generate_sample</code><span class="sig-paren">(</span><em>n_samples</em>, <em>n_iters</em>, <em>initial_state=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.generate_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>n_samples
+n_iters
+initial_state : ndarray,None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SWIsing.generate_sample_parallel">
+<code class="descname">generate_sample_parallel</code><span class="sig-paren">(</span><em>n_samples</em>, <em>n_iters</em>, <em>initial_state=None</em>, <em>n_cpus=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>n_samples
+n_iters
+initial_state : ndarray,None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SWIsing.get_clusters">
+<code class="descname">get_clusters</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.get_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random sample of clusters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SWIsing.one_step">
+<code class="descname">one_step</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.one_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SWIsing.print_cluster_size">
+<code class="descname">print_cluster_size</code><span class="sig-paren">(</span><em>n_iters</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.print_cluster_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SWIsing.randomly_flip_clusters">
+<code class="descname">randomly_flip_clusters</code><span class="sig-paren">(</span><em>state</em>, <em>clusters</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.randomly_flip_clusters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.Sampler">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">Sampler</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for MCMC sampling.</p>
+<dl class="method">
+<dt id="coniii.samplers.Sampler.generate_samples">
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>sample_size</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>sample_size : int</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Sampler.generate_samples_parallel">
+<code class="descname">generate_samples_parallel</code><span class="sig-paren">(</span><em>sample_size</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.generate_samples_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>sample_size : int</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Sampler.sample_metropolis">
+<code class="descname">sample_metropolis</code><span class="sig-paren">(</span><em>s</em>, <em>energy</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>s</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>State to perturb randomly.</dd>
+<dt>energy</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float</span><dd>Energy of configuration.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Sampler.update_parameters">
+<code class="descname">update_parameters</code><span class="sig-paren">(</span><em>new_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.update_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.SimulatedTempering">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">SimulatedTempering</code><span class="sig-paren">(</span><em>n</em>, <em>theta</em>, <em>calc_e</em>, <em>temps</em>, <em>sample_size=1000</em>, <em>replica_burnin=100</em>, <em>rng=None</em>, <em>method='single'</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.burn_in">
+<code class="descname">burn_in</code><span class="sig-paren">(</span><em>n_iter</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.burn_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for iterating sampling without exchanging replicas.
+2017-02-27</p>
+<dl class="docutils">
+<dt>n_iters (int)</dt>
+<dd>Number of times to iterate through system.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.exchange_measures">
+<code class="descname">exchange_measures</code><span class="sig-paren">(</span><em>pn_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.exchange_measures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for computing exchange probabilities and stay times.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.generate_samples">
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters=100</em>, <em>initial_burn_factor=10</em>, <em>final_burn_factor=10</em>, <em>burn_factor=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run replica exchange simulation then burnin.
+2017-03-01</p>
+<dl class="docutils">
+<dt>n_iters (int=100)</dt>
+<dd>Number of times to run the RMC. This involves sampling from each replica N*burn_factor  times.</dd>
+<dt>initial_burn_factor,final_burn_factor (int=10)</dt>
+<dd>Number of time to iterate through system to burn in at the beginning and at the end.</dd>
+<dt>burn_factor (int=1)</dt>
+<dd>Passed into one_step().</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.iterate_beta">
+<code class="descname">iterate_beta</code><span class="sig-paren">(</span><em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.iterate_beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>2017-03-01
+Parameters
+&#8212;&#8212;&#8212;-
+tau (ndarray)</p>
+<blockquote>
+<div>Effective time at each temperature.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.one_loop">
+<code class="descname">one_loop</code><span class="sig-paren">(</span><em>sample</em>, <em>burn_factor</em>, <em>rng=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.one_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metropolis sample state til it reaches the highest temperature and returns to T=1. At each new
+temperature, the sample is iterated burn_factor times.
+2017-03-17</p>
+<p>pool (mp.multiprocess.Pool)
+burn_factor (int)</p>
+<blockquote>
+<div>Number of times to iterate through the system.</div></blockquote>
+<dl class="docutils">
+<dt>exchange (bool=True)</dt>
+<dd>Run exchange sampling. This is typically turned off when you just want to burn in the replicas.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>interp_kwargs={'kind': 'quadratic'}</em>, <em>pn_kwargs={'n_iters': 5}</em>, <em>max_iter=10</em>, <em>disp=False</em>, <em>save_history=False</em>, <em>threshold=0.01</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply algorithm from Kerler and Rehberg (1994) for finding fixed point for optimal temperatures.
+Optimized temperatures rewrite self.temps.
+2017-03-01</p>
+<dl class="docutils">
+<dt>interp_kwargs (dict={&#8216;kind&#8217;:&#8217;quadratic&#8217;})</dt>
+<dd>Interpoloation for gn(bn) = bn to update gn after beta update step.</dd>
+</dl>
+<p>pn_kwargs (dict={&#8216;n_iters&#8217;:5})
+max_iter (int=10)</p>
+<blockquote>
+<div>Number of times to iterate algorithm for beta. Each iteration involves sampling from REMC.</div></blockquote>
+<dl class="docutils">
+<dt>disp (bool=False)</dt>
+<dd>Print out updated parameters.</dd>
+<dt>save_history (bool=False)</dt>
+<dd>If true, return history.</dd>
+</dl>
+<p>threshold (float=1e-2)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.pn">
+<code class="descname">pn</code><span class="sig-paren">(</span><em>n_iters=1</em>, <em>initial_burn_factor=10</em>, <em>burn_factor=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.pn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate acceptance probabilities of exchange between two adjacent temperatures. The acceptance
+probability is ordered from exchange between replicas i and i+1 starting from i=0.</p>
+<p>Estimate stay time at any particular replica.
+2017-03-01</p>
+<dl class="docutils">
+<dt>n_iters (int=100)</dt>
+<dd>Number of times to run the RMC. This involves sampling from each replica N*burn_factor times.</dd>
+<dt>initial_burn_factor (int=10)</dt>
+<dd>Burn factor right after setting up random state.</dd>
+<dt>burn_factor (int=1)</dt>
+<dd>Passed into one_step().</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.reweighted_gn">
+<code class="descname">reweighted_gn</code><span class="sig-paren">(</span><em>listOfSample</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.reweighted_gn" title="Permalink to this definition">¶</a></dt>
+<dd><p>2017-03-01</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.tn">
+<code class="descname">tn</code><span class="sig-paren">(</span><em>exchangeix</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.tn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate stay time at any particular replica given number of exchanges that happened during ReMC steps.
+Find stay time at replicas. This is the inverse of the probability that you switch out of a
+particular replica. Remember that replicas on the boundaries can only exchange with one other
+replica.
+2017-03-01</p>
+<p>exchangeix (ndarray)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.SimulatedTempering.update_parameters">
+<code class="descname">update_parameters</code><span class="sig-paren">(</span><em>theta=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SimulatedTempering.update_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.WolffIsing">
+<em class="property">class </em><code class="descclassname">coniii.samplers.</code><code class="descname">WolffIsing</code><span class="sig-paren">(</span><em>J</em>, <em>h</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.WolffIsing.build_cluster">
+<code class="descname">build_cluster</code><span class="sig-paren">(</span><em>state</em>, <em>initialsite</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.build_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grow cluster from initial site.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.WolffIsing.find_neighbors">
+<code class="descname">find_neighbors</code><span class="sig-paren">(</span><em>state</em>, <em>site</em>, <em>alreadyMarked</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.find_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return neighbors of given site that need to be visited excluding sites that have already been visited.
+This is the implementation of the Wolff algorithm for finding neighbors such that detailed balance is
+satisfied. I have modified to include random fields such tha the probability of adding a neighbors
+depends both on its coupling with the current site and the neighbor&#8217;s magnetic field.</p>
+<p>state
+site
+alreadyMarked</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.WolffIsing.generate_sample">
+<code class="descname">generate_sample</code><span class="sig-paren">(</span><em>samplesize</em>, <em>n_iters</em>, <em>initialSample=None</em>, <em>save_history=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.generate_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples by starting from random initial states.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.WolffIsing.generate_sample_parallel">
+<code class="descname">generate_sample_parallel</code><span class="sig-paren">(</span><em>samplesize</em>, <em>n_iters</em>, <em>initialSample=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples by starting from random or given initial states.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.WolffIsing.one_step">
+<code class="descname">one_step</code><span class="sig-paren">(</span><em>state</em>, <em>initialsite=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.one_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run one iteration of the Wolff algorithm that involves finding a cluster and possibly flipping it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.WolffIsing.update_parameters">
+<code class="descname">update_parameters</code><span class="sig-paren">(</span><em>J</em>, <em>h</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.update_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.calc_e">
+<code class="descclassname">coniii.samplers.</code><code class="descname">calc_e</code><a class="headerlink" href="#coniii.samplers.calc_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Heisenberg model.</p>
+<dl class="docutils">
+<dt>theta</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>List of couplings Jij</dd>
+<dt>x</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>List of angles (theta_0,phi_0,theta_1,phi_1,...,theta_n,phi_n)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.samplers.check_e_logp">
+<code class="descclassname">coniii.samplers.</code><code class="descname">check_e_logp</code><span class="sig-paren">(</span><em>sample</em>, <em>calc_e</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.check_e_logp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boltzmann type model with discrete state space should have E propto -logP. Calculate these quantities for
+comparison.</p>
+<p>sample
+calc_e</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.cross">
+<code class="descclassname">coniii.samplers.</code><code class="descname">cross</code><a class="headerlink" href="#coniii.samplers.cross" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the cross product of two 3d vectors.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.cross_">
+<code class="descclassname">coniii.samplers.</code><code class="descname">cross_</code><a class="headerlink" href="#coniii.samplers.cross_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the cross product of two 3d vectors.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.grad_e">
+<code class="descclassname">coniii.samplers.</code><code class="descname">grad_e</code><a class="headerlink" href="#coniii.samplers.grad_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derivatives wrt the angles of the spins.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.grad_e_theta">
+<code class="descclassname">coniii.samplers.</code><code class="descname">grad_e_theta</code><a class="headerlink" href="#coniii.samplers.grad_e_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derivatives wrt the couplings theta.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.samplers.iter_cluster">
+<code class="descclassname">coniii.samplers.</code><code class="descname">iter_cluster</code><span class="sig-paren">(</span><em>adj</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.iter_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cycle through all spins to get clusters.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.iterate_neighbors">
+<code class="descclassname">coniii.samplers.</code><code class="descname">iterate_neighbors</code><a class="headerlink" href="#coniii.samplers.iterate_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through all neighbors of a particular site and see if a bond should be formed between them.</p>
+<dl class="docutils">
+<dt>n</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>System size.</dd>
+<dt>ix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray of bool</span><dd>Indices of sites that have already been visited.</dd>
+<dt>expdJ</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>np.exp( -2*state[:,None]*state[None,:]*J )</dd>
+<dt>r</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Array of random numbers.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.jit_sample">
+<code class="descclassname">coniii.samplers.</code><code class="descname">jit_sample</code><a class="headerlink" href="#coniii.samplers.jit_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a single sample by MC sampling from this Hamiltonian.</p>
+<dl class="docutils">
+<dt>theta</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Parameters</dd>
+<dt>x0</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Sample</dd>
+</dl>
+<p>nBurn : int
+dt : float
+leapfrogN : int
+randNormal : ndarray</p>
+<blockquote>
+<div>nBurn x ndim</div></blockquote>
+<dl class="docutils">
+<dt>randUnif</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>nBurn</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.jit_sample_nearby_vector">
+<code class="descclassname">coniii.samplers.</code><code class="descname">jit_sample_nearby_vector</code><a class="headerlink" href="#coniii.samplers.jit_sample_nearby_vector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.pairwise_prod">
+<code class="descclassname">coniii.samplers.</code><code class="descname">pairwise_prod</code><a class="headerlink" href="#coniii.samplers.pairwise_prod" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.samplers.sample_bonds">
+<code class="descclassname">coniii.samplers.</code><code class="descname">sample_bonds</code><a class="headerlink" href="#coniii.samplers.sample_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>p</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Probability of bond formation.</dd>
+<dt>r</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Random numbers.</dd>
+</dl>
+<p>state
+J</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.samplers.spec_cluster">
+<code class="descclassname">coniii.samplers.</code><code class="descname">spec_cluster</code><span class="sig-paren">(</span><em>L</em>, <em>exact=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.spec_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>L</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Graph Laplacian</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="coniii.solvers.html" title="previous chapter">coniii.solvers module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/coniii_rst/coniii.samplers.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Edward D. Lee, Bryan C. Daniels.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/coniii_rst/coniii.samplers.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

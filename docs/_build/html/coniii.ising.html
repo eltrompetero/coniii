@@ -1,0 +1,179 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>coniii.ising package &#8212; ConIII 1.0.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="coniii package" href="coniii.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="coniii-ising-package">
+<h1>coniii.ising package<a class="headerlink" href="#coniii-ising-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-coniii.ising.automaton">
+<span id="coniii-ising-automaton-module"></span><h2>coniii.ising.automaton module<a class="headerlink" href="#module-coniii.ising.automaton" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="coniii.ising.automaton.Ising2D">
+<em class="property">class </em><code class="descclassname">coniii.ising.automaton.</code><code class="descname">Ising2D</code><span class="sig-paren">(</span><em>dim</em>, <em>J</em>, <em>h=0</em>, <em>rng=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Simulation of the ferromagnetic Ising model on a 2D periodic lattice with quenched disorder
+in the local fields.</p>
+<dl class="attribute">
+<dt id="coniii.ising.automaton.Ising2D.flip_metropolis">
+<code class="descname">flip_metropolis</code><a class="headerlink" href="#coniii.ising.automaton.Ising2D.flip_metropolis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flip a single lattice spin using Metropolis sampling.</p>
+<p>i : int
+j : int</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.ising.automaton.Ising2D.iterate">
+<code class="descname">iterate</code><span class="sig-paren">(</span><em>n_iters</em>, <em>systematic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D.iterate" title="Permalink to this definition">¶</a></dt>
+<dd><p>n_iters : int
+systematic : bool,True</p>
+<blockquote>
+<div>If True, iterate through each spin on the lattice in sequence.</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.ising.automaton.coarse_grain">
+<code class="descclassname">coniii.ising.automaton.</code><code class="descname">coarse_grain</code><span class="sig-paren">(</span><em>lattice</em>, <em>factor</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.coarse_grain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block spin renormalization with majority rule.</p>
+<dl class="docutils">
+<dt>lattice <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>+/-1</dd>
+</dl>
+<p>factor : int</p>
+<p>renormalized_lattice : ndarray</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-coniii.ising.test_automaton">
+<span id="coniii-ising-test-automaton-module"></span><h2>coniii.ising.test_automaton module<a class="headerlink" href="#module-coniii.ising.test_automaton" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-coniii.ising">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coniii.ising" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">ConIII</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="coniii.html">coniii package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coniii.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#coniii-custom-maxent-module">coniii.custom_maxent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.enumerate">coniii.enumerate module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.general_model_rmc">coniii.general_model_rmc module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.ising">coniii.ising module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#coniii-mc-hist-module">coniii.mc_hist module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.mean_field_ising">coniii.mean_field_ising module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.pseudo_inverse_ising">coniii.pseudo_inverse_ising module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.samplers">coniii.samplers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.solvers">coniii.solvers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.test_samplers">coniii.test_samplers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.test_solvers">coniii.test_solvers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.test_utils">coniii.test_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii.utils">coniii.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.html#module-coniii">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="coniii.html">coniii package</a><ul>
+      <li>Previous: <a href="coniii.html" title="previous chapter">coniii package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Edward D. Lee, Bryan C. Daniels.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/coniii.ising.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>coniii.pseudo_inverse_ising module &#8212; ConIII 1.0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="ConIII 1.0.2 documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-coniii.pseudo_inverse_ising">
+<span id="coniii-pseudo-inverse-ising-module"></span><h1>coniii.pseudo_inverse_ising module<a class="headerlink" href="#module-coniii.pseudo_inverse_ising" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.conditionalHessian">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">conditionalHessian</code><span class="sig-paren">(</span><em>r</em>, <em>samples</em>, <em>Jr</em>, <em>minSize=0</em>, <em>pairCoocRhat=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalHessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns d^2 conditionalLogLikelihood / d Jri d Jrj,
+with shape (dimension of system)x(dimension of system)</p>
+<dl class="docutils">
+<dt>pairCooc (None)</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">Pass pairCoocMat(samples) to speed</span><dd>calculation.</dd>
+</dl>
+<p>Current implementation uses more memory for speed.
+For large #samples, it may make sense to break up differently
+if too much memory is being used.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.conditionalJacobian">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">conditionalJacobian</code><span class="sig-paren">(</span><em>r</em>, <em>samples</em>, <em>Jr</em>, <em>minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalJacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns d conditionalLogLikelihood / d Jr,
+with shape (dimension of system)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.conditionalLogLikelihood">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">conditionalLogLikelihood</code><span class="sig-paren">(</span><em>r</em>, <em>samples</em>, <em>Jr</em>, <em>minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalLogLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Equals -L_r from my notes.)</p>
+<p>r           : individual index
+samples     : binary matrix, (# samples) x (dimension of system)
+Jr          : (dimension of system) x (1)
+minSize (0) : minimum number of participants (set to 2 for fights)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.pairCoocMat">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">pairCoocMat</code><span class="sig-paren">(</span><em>samples</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pairCoocMat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns matrix of shape (ell)x(# samples)x(ell).</p>
+<p>For use with conditionalHessian.</p>
+<p>Slow because I haven&#8217;t thought of a better way of doing it yet.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.pseudoInverseIsing">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">pseudoInverseIsing</code><span class="sig-paren">(</span><em>samples</em>, <em>minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pseudoInverseIsing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>minSize (0)</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">minimum number of participants per sample</span><dd>(set to 2 for fights)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.pseudoLogLikelihood">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">pseudoLogLikelihood</code><span class="sig-paren">(</span><em>samples</em>, <em>J</em>, <em>minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pseudoLogLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>samples     : binary matrix, (# samples) x (dimension of system)
+J           : (dimension of system) x (dimension of system)</p>
+<blockquote>
+<div>: J should be symmetric</div></blockquote>
+<p>(Could probably be made more efficient.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.pseudo_inverse_ising.testDerivatives">
+<code class="descclassname">coniii.pseudo_inverse_ising.</code><code class="descname">testDerivatives</code><span class="sig-paren">(</span><em>r</em>, <em>i</em>, <em>samples</em>, <em>J</em>, <em>minSize=0</em>, <em>deltaMax=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.testDerivatives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/coniii_rst/coniii.pseudo_inverse_ising.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Edward D. Lee, Bryan C. Daniels.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/coniii_rst/coniii.pseudo_inverse_ising.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

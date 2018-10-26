@@ -278,7 +278,8 @@ class Enumerate(Solver):
         Returns
         -------
         multiplers : ndarray
-        solve_details : output from scipy.optimize.minimize
+        solve_details : dict
+            output from scipy.optimize.minimize
         """
 
         if not constraints is None:
@@ -300,7 +301,7 @@ class Enumerate(Solver):
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
         if full_output:
-            return soln['x'],soln
+            return soln['x'], soln
         return soln['x']
 #end Enumerate
 
@@ -356,31 +357,34 @@ class MPF(Solver):
             list of adjacent states for each given unique state
         params : ndarray
             parameters for computation of energy
+
+        Returns
+        -------
+        K : float
         """
 
-        if self.pool is None:
-            obj = 0.
-            objGrad = np.zeros((params.size))
-            for i,s in enumerate(Xuniq):
-                dobj = Xcount[i] * np.exp( .5*(self.calc_e(s[None,:],params) 
-                                               - self.calc_e(adjacentStates[i],params) ) )
-                if not self.calc_de is None:
-                    for j in range(params.size):
-                        if dobj.size!=adjacentStates[i].shape[0]:
-                            raise Exception("Sizes do not match")
-                        objGrad[j] += .5 * (dobj * ( self.calc_de(s[None,:],j) 
-                                            - self.calc_de(adjacentStates[i],j) )).sum()
-                obj += dobj.sum()
-        else:
-            # Parallel loop through objective function calculation for each state in the data.
-            obj = [self.pool.apply( unwrap_self_worker_obj, 
-                                    args=([Xuniq[i],Xcount[i],adjacentStates[i],params,self.calc_e],) ) 
-                        for i in range(Xuniq.shape[0])]
-            obj = obj.sum()
-
+        obj = 0.
+        objGrad = np.zeros((params.size))
+        for i,s in enumerate(Xuniq):
+            dobj = Xcount[i] * np.exp( .5*(self.calc_e(s[None,:], params) 
+                                           - self.calc_e(adjacentStates[i], params) ) )
             if not self.calc_de is None:
-                from warning import warn
-                warn("Gradient computation not written fro parallel loop.")
+                for j in range(params.size):
+                    if dobj.size != adjacentStates[i].shape[0]:
+                        raise Exception("Sizes do not match")
+                    objGrad[j] += .5 * (dobj * ( self.calc_de(s[None,:],j) 
+                                        - self.calc_de(adjacentStates[i],j) )).sum()
+            obj += dobj.sum()
+        #else:
+        #    # Parallel loop through objective function calculation for each state in the data.
+        #    obj = [self.pool.apply( unwrap_self_worker_obj, 
+        #                            args=([Xuniq[i],Xcount[i],adjacentStates[i],params,self.calc_e],) ) 
+        #                for i in range(Xuniq.shape[0])]
+        #    obj = obj.sum()
+
+        #    if not self.calc_de is None:
+        #        from warning import warn
+        #        warn("Gradient computation not written for parallel loop.")
 
         if not self.calc_de is None:
             return obj / Xcount.sum(), objGrad / Xcount.sum()
@@ -439,33 +443,63 @@ class MPF(Solver):
 
         obj = 0.
         objGrad = np.zeros((params.size))
-        power=np.zeros((len(Xuniq),len(adjacentStates[0])))  # energy differences
+        power=np.zeros((len(Xuniq), len(adjacentStates[0])))  # energy differences
         for i,s in enumerate(Xuniq):
             power[i,:] = .5*( self.calc_e(s[None,:],params) - self.calc_e(adjacentStates[i],params) )
             
-        obj=logsumexp( power+np.log(Xcount)[:,None] )
+        obj = logsumexp( power + np.log(Xcount)[:,None] -np.log(Xcount.sum()) )
         
-        if not self.calc_de is None:
-            # coefficients that come out from taking derivative of exp
-            for i in range(params.size):
-                gradcoef=np.zeros((len(Xuniq),len(adjacentStates[0])))  
-                for j,s in enumerate(Xuniq): 
-                    gradcoef[j,:] = .5 * ( self.calc_de(s[None,:],i) 
-                                           - self.calc_de(adjacentStates[j],i) )
-                power -= power.max()
-                objGrad[i]=(gradcoef*np.exp(power)*Xcount[:,None]).sum()/(np.exp(power)*Xcount[:,None]).sum()
+        if self.calc_de is None:
+            return obj
 
-        if not self.calc_de is None:
-            if objGrad.size==1:
-                raise Exception("")
-            return obj / Xcount.sum(), objGrad / Xcount.sum()
-        else:
-            return obj / Xcount.sum()
+        # coefficients that come out from taking derivative of exp
+        for i in range(params.size):
+            gradcoef = np.zeros((len(Xuniq), len(adjacentStates[0])))  
+            for j,s in enumerate(Xuniq): 
+                gradcoef[j,:] = .5 * ( self.calc_de(s[None,:],i) - self.calc_de(adjacentStates[j],i) )
+            power -= power.max()
+            objGrad[i] = ((gradcoef*np.exp(power)*Xcount[:,None]).sum() /
+                          (np.exp(power)*Xcount[:,None]).sum())
+        objGrad -= np.log(Xcount.sum())
+        
+        if objGrad.size==1:
+            raise Exception("")
+        return obj, objGrad
+
+    def list_adjacent_states(self, Xuniq, all_connected):
+        """
+        Use self.adj to evaluate all adjacent states in Xuniq.
+
+        Parameters
+        ----------
+        Xuniq : ndarray
+        all_connected : bool
+
+        Returns
+        -------
+        adjacentStates
+        """
+
+        adjacentStates = []
+        for s in Xuniq:
+            adjacentStates.append( self.adj(s) )
+            # Remove states already in data
+            if not all_connected:
+                ix = np.zeros((s.size))==0
+                for i,t in enumerate(adjacentStates[-1]):
+                    if np.any(np.all(t[None,:]==Xuniq,1)):
+                        ix[i] = False
+                if np.sum(ix)==X.shape[1]:
+                    raise Exception("This data set does not satisfy MPF assumption that each \
+                                    state be connected to at least one non-data state (?)")
+                adjacentStates[-1] = adjacentStates[-1][ix]
+        return adjacentStates
 
     def solve(self,
               X=None, 
               initial_guess=None,
               method='L-BFGS-B',
+              full_output=False,
               all_connected=True,
               parameter_limits=100,
               solver_kwargs={'maxiter':100,'disp':True,'ftol':1e-15},
@@ -491,6 +525,9 @@ class MPF(Solver):
             magnitude of any single parameter.
         solver_kwargs : dict
             For scipy.optimize.minimize.
+        uselog : bool,True
+            If True, calculate log of the objective function. This can help with numerical precision
+            errors.
 
         Returns
         -------
@@ -519,21 +556,7 @@ class MPF(Solver):
         Xuniq = X[unique_rows(X)]
         ix = unique_rows(X, return_inverse=True)
         Xcount = np.bincount(ix)
-        M, N = Xuniq.shape
-        
-        adjacentStates = []
-        for s in Xuniq:
-            adjacentStates.append( self.adj(s) )
-            # Remove states already in data.
-            if not all_connected:
-                ix = np.zeros((s.size))==0
-                for i,t in enumerate(adjacentStates[-1]):
-                    if np.any(np.all(t[None,:]==Xuniq,1)):
-                        ix[i] = False
-                if np.sum(ix)==X.shape[1]:
-                    raise Exception("This data set does not satisfy MPF assumption that each \
-                                    state be connected to at least one non-data state (?)")
-                adjacentStates[-1] = adjacentStates[-1][ix]
+        adjacentStates = self.list_adjacent_states(Xuniq, all_connected)
 
         # Interface to objective function.
         if uselog:
@@ -548,7 +571,9 @@ class MPF(Solver):
                          bounds=[(-parameter_limits,parameter_limits)]*len(initial_guess),
                          method=method, jac=includeGrad, options=solver_kwargs )
         self.multipliers = soln['x']
-        return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
+        if full_output:
+            return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
+        return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True)
 #end MPF
 
 

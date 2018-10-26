@@ -643,7 +643,7 @@ def define_ising_helper_functions():
                     k += 1
         return e
 
-    @njit("float64[:](float64[:,:],float64[:])", cache=True)
+    @njit("float64[:](float64[:,:],float64[:])")
     def calc_e(s, params):
         """
         Parameters

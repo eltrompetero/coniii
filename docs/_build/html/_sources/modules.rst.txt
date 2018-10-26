@@ -1,8 +1,0 @@
-coniii
-======
-
-.. toctree::
-   :maxdepth: 4
-
-   coniii
-   setup

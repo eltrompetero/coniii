@@ -1,20 +1,19 @@
 .. ConIII documentation master file, created by
-   sphinx-quickstart on Fri Oct 26 00:29:34 2018.
+   sphinx-quickstart on Thu Oct 25 23:43:30 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 Welcome to ConIII's documentation!
 ==================================
 
-.. automodule:: coniii.solvers
+Contents:
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   
+   solvers.py
+   samplers.py
 
-   coniii_rst/coniii.enumerate.rst
-   coniii_rst/coniii.solvers.rst
-   coniii_rst/coniii.samplers.rst
-   coniii_rst/coniii.utils.rst
 
 Indices and tables
 ==================
@@ -22,3 +21,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+

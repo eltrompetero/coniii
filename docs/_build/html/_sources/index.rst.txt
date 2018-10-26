@@ -10,8 +10,11 @@ Welcome to ConIII's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
-   coniii.rst
+
+   coniii_rst/coniii.enumerate.rst
+   coniii_rst/coniii.solvers.rst
+   coniii_rst/coniii.samplers.rst
+   coniii_rst/coniii.utils.rst
 
 Indices and tables
 ==================

@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     coniii.ising
-    coniii.ising_eqn
 
 Submodules
 ----------

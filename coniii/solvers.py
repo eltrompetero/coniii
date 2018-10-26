@@ -158,7 +158,7 @@ class Solver():
            raise NotImplementedError("Unrecognized sampler.")
         self.samples=None
 
-    def generate_samples(self,n_iters,burnin,
+    def generate_samples(self, n_iters, burnin,
                          multipliers=None,
                          sample_size=None,
                          sample_method=None,
@@ -262,6 +262,7 @@ class Enumerate(Solver):
               samples=None,
               initial_guess=None,
               max_param_value=50,
+              full_output=False,
               fsolve_kwargs={'method':'powell'}):
         """
         Parameters
@@ -276,7 +277,9 @@ class Enumerate(Solver):
 
         Returns
         -------
-        Tuple of solved parameters and output from scipy.optimize.minimize
+        multiplers : ndarray
+        solve_details : dict
+            output from scipy.optimize.minimize
         """
 
         if not constraints is None:
@@ -297,7 +300,9 @@ class Enumerate(Solver):
 
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
-        return soln['x'],soln
+        if full_output:
+            return soln['x'], soln
+        return soln['x']
 #end Enumerate
 
 
@@ -352,31 +357,34 @@ class MPF(Solver):
             list of adjacent states for each given unique state
         params : ndarray
             parameters for computation of energy
+
+        Returns
+        -------
+        K : float
         """
 
-        if self.pool is None:
-            obj = 0.
-            objGrad = np.zeros((params.size))
-            for i,s in enumerate(Xuniq):
-                dobj = Xcount[i] * np.exp( .5*(self.calc_e(s[None,:],params) 
-                                               - self.calc_e(adjacentStates[i],params) ) )
-                if not self.calc_de is None:
-                    for j in range(params.size):
-                        if dobj.size!=adjacentStates[i].shape[0]:
-                            raise Exception("Sizes do not match")
-                        objGrad[j] += .5 * (dobj * ( self.calc_de(s[None,:],j) 
-                                            - self.calc_de(adjacentStates[i],j) )).sum()
-                obj += dobj.sum()
-        else:
-            # Parallel loop through objective function calculation for each state in the data.
-            obj = [self.pool.apply( unwrap_self_worker_obj, 
-                                    args=([Xuniq[i],Xcount[i],adjacentStates[i],params,self.calc_e],) ) 
-                        for i in range(Xuniq.shape[0])]
-            obj = obj.sum()
-
+        obj = 0.
+        objGrad = np.zeros((params.size))
+        for i,s in enumerate(Xuniq):
+            dobj = Xcount[i] * np.exp( .5*(self.calc_e(s[None,:], params) 
+                                           - self.calc_e(adjacentStates[i], params) ) )
             if not self.calc_de is None:
-                from warning import warn
-                warn("Gradient computation not written fro parallel loop.")
+                for j in range(params.size):
+                    if dobj.size != adjacentStates[i].shape[0]:
+                        raise Exception("Sizes do not match")
+                    objGrad[j] += .5 * (dobj * ( self.calc_de(s[None,:],j) 
+                                        - self.calc_de(adjacentStates[i],j) )).sum()
+            obj += dobj.sum()
+        #else:
+        #    # Parallel loop through objective function calculation for each state in the data.
+        #    obj = [self.pool.apply( unwrap_self_worker_obj, 
+        #                            args=([Xuniq[i],Xcount[i],adjacentStates[i],params,self.calc_e],) ) 
+        #                for i in range(Xuniq.shape[0])]
+        #    obj = obj.sum()
+
+        #    if not self.calc_de is None:
+        #        from warning import warn
+        #        warn("Gradient computation not written for parallel loop.")
 
         if not self.calc_de is None:
             return obj / Xcount.sum(), objGrad / Xcount.sum()
@@ -435,33 +443,63 @@ class MPF(Solver):
 
         obj = 0.
         objGrad = np.zeros((params.size))
-        power=np.zeros((len(Xuniq),len(adjacentStates[0])))  # energy differences
+        power=np.zeros((len(Xuniq), len(adjacentStates[0])))  # energy differences
         for i,s in enumerate(Xuniq):
             power[i,:] = .5*( self.calc_e(s[None,:],params) - self.calc_e(adjacentStates[i],params) )
             
-        obj=logsumexp( power+np.log(Xcount)[:,None] )
+        obj = logsumexp( power + np.log(Xcount)[:,None] -np.log(Xcount.sum()) )
         
-        if not self.calc_de is None:
-            # coefficients that come out from taking derivative of exp
-            for i in range(params.size):
-                gradcoef=np.zeros((len(Xuniq),len(adjacentStates[0])))  
-                for j,s in enumerate(Xuniq): 
-                    gradcoef[j,:] = .5 * ( self.calc_de(s[None,:],i) 
-                                           - self.calc_de(adjacentStates[j],i) )
-                power -= power.max()
-                objGrad[i]=(gradcoef*np.exp(power)*Xcount[:,None]).sum()/(np.exp(power)*Xcount[:,None]).sum()
+        if self.calc_de is None:
+            return obj
 
-        if not self.calc_de is None:
-            if objGrad.size==1:
-                raise Exception("")
-            return obj / Xcount.sum(), objGrad / Xcount.sum()
-        else:
-            return obj / Xcount.sum()
+        # coefficients that come out from taking derivative of exp
+        for i in range(params.size):
+            gradcoef = np.zeros((len(Xuniq), len(adjacentStates[0])))  
+            for j,s in enumerate(Xuniq): 
+                gradcoef[j,:] = .5 * ( self.calc_de(s[None,:],i) - self.calc_de(adjacentStates[j],i) )
+            power -= power.max()
+            objGrad[i] = ((gradcoef*np.exp(power)*Xcount[:,None]).sum() /
+                          (np.exp(power)*Xcount[:,None]).sum())
+        objGrad -= np.log(Xcount.sum())
+        
+        if objGrad.size==1:
+            raise Exception("")
+        return obj, objGrad
+
+    def list_adjacent_states(self, Xuniq, all_connected):
+        """
+        Use self.adj to evaluate all adjacent states in Xuniq.
+
+        Parameters
+        ----------
+        Xuniq : ndarray
+        all_connected : bool
+
+        Returns
+        -------
+        adjacentStates
+        """
+
+        adjacentStates = []
+        for s in Xuniq:
+            adjacentStates.append( self.adj(s) )
+            # Remove states already in data
+            if not all_connected:
+                ix = np.zeros((s.size))==0
+                for i,t in enumerate(adjacentStates[-1]):
+                    if np.any(np.all(t[None,:]==Xuniq,1)):
+                        ix[i] = False
+                if np.sum(ix)==X.shape[1]:
+                    raise Exception("This data set does not satisfy MPF assumption that each \
+                                    state be connected to at least one non-data state (?)")
+                adjacentStates[-1] = adjacentStates[-1][ix]
+        return adjacentStates
 
     def solve(self,
               X=None, 
               initial_guess=None,
               method='L-BFGS-B',
+              full_output=False,
               all_connected=True,
               parameter_limits=100,
               solver_kwargs={'maxiter':100,'disp':True,'ftol':1e-15},
@@ -487,6 +525,9 @@ class MPF(Solver):
             magnitude of any single parameter.
         solver_kwargs : dict
             For scipy.optimize.minimize.
+        uselog : bool,True
+            If True, calculate log of the objective function. This can help with numerical precision
+            errors.
 
         Returns
         -------
@@ -515,21 +556,7 @@ class MPF(Solver):
         Xuniq = X[unique_rows(X)]
         ix = unique_rows(X, return_inverse=True)
         Xcount = np.bincount(ix)
-        M, N = Xuniq.shape
-        
-        adjacentStates = []
-        for s in Xuniq:
-            adjacentStates.append( self.adj(s) )
-            # Remove states already in data.
-            if not all_connected:
-                ix = np.zeros((s.size))==0
-                for i,t in enumerate(adjacentStates[-1]):
-                    if np.any(np.all(t[None,:]==Xuniq,1)):
-                        ix[i] = False
-                if np.sum(ix)==X.shape[1]:
-                    raise Exception("This data set does not satisfy MPF assumption that each \
-                                    state be connected to at least one non-data state (?)")
-                adjacentStates[-1] = adjacentStates[-1][ix]
+        adjacentStates = self.list_adjacent_states(Xuniq, all_connected)
 
         # Interface to objective function.
         if uselog:
@@ -544,7 +571,9 @@ class MPF(Solver):
                          bounds=[(-parameter_limits,parameter_limits)]*len(initial_guess),
                          method=method, jac=includeGrad, options=solver_kwargs )
         self.multipliers = soln['x']
-        return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
+        if full_output:
+            return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
+        return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True)
 #end MPF
 
 
@@ -555,21 +584,6 @@ class MCH(Solver):
 
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the
     inverse pairwise Ising problem. arXiv 1-8 (2007).
-
-    Members
-    -------
-    constraints : ndarray
-    calc_observables (function)
-        takes in samples as argument
-    calc_e (function)
-        with args (sample,parameters) where sample is 2d
-    mch_approximation (function)
-    sampleSize : int
-    multipliers : ndarray
-        set the Langrangian multipliers
-
-    Methods
-    -------
     """
     def __init__(self, *args, **kwargs):
         """
@@ -772,7 +786,6 @@ class MCH(Solver):
         jac : ndarray
             Jacobian is an n x n matrix where each row corresponds to the behavior of fvec wrt to a
             single parameter.
-
         """
 
         dlamda = np.zeros(self._multipliers.shape)
@@ -837,8 +850,7 @@ class MCH(Solver):
 
         self._multipliers += dlamda
         return estConstraints
-# End MCH
-
+#end MCH
 
 
 class MCHIncompleteData(MCH):
@@ -1213,6 +1225,7 @@ class Pseudo(Solver):
         """
 
         if kwargs.get('general_case',False):
+            del kwargs['general_case']
             return self._solve_general(*args,**kwargs)
         return self._solve_ising(*args,**kwargs)
 
@@ -1412,12 +1425,6 @@ class ClusterExpansion(Solver):
     described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
     
     Specific to pairwise Ising constraints.
-            
-    Members
-    -------
-    
-    Methods
-    -------
     """
 
     def __init__(self, *args, **kwargs):
@@ -1433,8 +1440,21 @@ class ClusterExpansion(Solver):
         Calculate pairwise entropy of cluster.
         (First fits pairwise Ising model.)
         
+        Parameters
+        ----------
+        cluster : list
+            List of indices belonging to each cluster.
+        coocMat : ndarray
+            Pairwise correlations.
+        deltaJdict : dict,{}
         useAnalyticResults : bool,False
             Probably want False until analytic formulas are changed to include prior on J
+
+        Returns
+        -------
+        entropy : float
+        Jfull : ndarray
+            Matrix of couplings.
         """
 
         if len(cluster) == 0:
@@ -1459,9 +1479,9 @@ class ClusterExpansion(Solver):
             coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
             Jinit = None # <--- potential for speed-up here
             J = mean_field_ising.findJmatrixAnalytic_CoocMat(coocMatCluster,
-                                            Jinit=Jinit,
-                                            priorLmbda=priorLmbda,
-                                            numSamples=numSamples)
+                                                             Jinit=Jinit,
+                                                             priorLmbda=priorLmbda,
+                                                             numSamples=numSamples)
         
         # make 'full' version of J (of size NxN)
         N = len(coocMat)
@@ -1469,32 +1489,46 @@ class ClusterExpansion(Solver):
         
         ent = mean_field_ising.analyticEntropy(J)
 
-        return ent,Jfull 
+        return ent, Jfull 
 
     # 3.24.2014
-    def Sindependent(self,cluster,coocMat):
+    def Sindependent(self, cluster, coocMat):
         """
+        Entropy approximation assuming that each cluster appears independently of the others.
+
+        Parameters
+        ----------
+        cluster : list
+        coocMat : ndarray
+            Pairwise correlations.
+
+        Returns
+        -------
+        Sind : float
+            Independent entropy.
+        Jfull : ndarray
+            Pairwise couplings.
         """
-        coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
+        
+        # sort by cluster indices
+        coocMatCluster = mean_field_ising.coocCluster(coocMat, cluster)
         # in case we're given an upper-triangular coocMat:
         coocMatCluster = mean_field_ising.symmetrizeUsingUpper(coocMatCluster)
         
-        N = len(cluster)
-        
         freqs = np.diag(coocMatCluster).copy()
 
-        h = - np.log(freqs/(1.-freqs))
+        h = -np.log(freqs/(1.-freqs))
         Jind = np.diag(h)
-
-        Sinds = -freqs*np.log(freqs)             \
-            -(1.-freqs)*np.log(1.-freqs)
+        
+        # independent approx
+        Sinds = -freqs*np.log(freqs) - (1.-freqs)*np.log(1.-freqs)
         Sind = np.sum(Sinds)
 
         # make 'full' version of J (of size NfullxNfull)
         Nfull = len(coocMat)
-        Jfull = mean_field_ising.JfullFromCluster(Jind,cluster,Nfull)
+        Jfull = mean_field_ising.JfullFromCluster(Jind, cluster, Nfull)
 
-        return Sind,Jfull
+        return Sind, Jfull
 
     # "Algorithm 1"
     def deltaS(self, cluster, coocMat, 
@@ -1507,12 +1541,26 @@ class ClusterExpansion(Solver):
                independentRef=False,
                meanFieldPriorLmbda=None):
         """
+        Parameters
+        ----------
         cluster : list 
             List of indices in cluster
+        coocMat : ndarray
+        deltaSdict : dict,None
+        deltaJdict : dict,None
+        verbose : bool,True
+        meanFieldRef : bool,False
+        priorLmda : float,0.
+        numSamples : int,None
         independentRef : bool,False
             If True, expand about independent entropy
         meanFieldRef : bool,False
             If True, expand about mean field entropy
+
+        Returns
+        -------
+        deltaScluster
+        deltaJcluster
         """
 
         if deltaSdict is None: deltaSdict = {}
@@ -1533,9 +1581,9 @@ class ClusterExpansion(Solver):
         
         # start with full entropy (and J)
         deltaScluster,deltaJcluster = self.S(cluster,coocMat,
-                                        deltaJdict,
-                                        priorLmbda=priorLmbda,
-                                        numSamples=numSamples)
+                                            deltaJdict,
+                                            priorLmbda=priorLmbda,
+                                            numSamples=numSamples)
         
         if independentRef:
             # subtract independent reference entropy
@@ -1566,15 +1614,25 @@ class ClusterExpansion(Solver):
         deltaSdict[cID] = deltaScluster
         deltaJdict[cID] = deltaJcluster
 
-        return deltaScluster,deltaJcluster
+        return deltaScluster, deltaJcluster
 
     def clusterID(self, cluster):
         return tuple(np.sort(cluster))
 
     def subsets(self, set, size, sort=False):
         """
-        Given a list, returns a list of all unique subsets
-        of that list with given size.
+        Given a list, returns a list of all unique subsets of that list with given size.
+
+        Parameters
+        ----------
+        set : list
+        size : int
+        sort : bool,False
+
+        Returns
+        -------
+        sub : list
+            All subsets of given size.
         """
 
         if len(set) != len(np.unique(set)): raise Exception
@@ -1717,7 +1775,6 @@ class ClusterExpansion(Solver):
 # end ClusterExpansion
 
 
-
 class RegularizedMeanField(Solver):
     """
     Implementation of regularized mean field method for solving the inverse Ising problem, as
@@ -1726,21 +1783,13 @@ class RegularizedMeanField(Solver):
     14301.  doi:10.1038/ncomms14301
     
     Specific to pairwise Ising constraints.
-    
-    Parameters
-    ----------
-
-    Members
-    -------
-    Methods
-    -------
     """
     def __init__(self, *args, **kwargs):
+        """
+        See Solver. Default sample_method is 'ising_metropolis'.
+        """
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
-        self.setup_sampler(kwargs.get('sample_method','metropolis'))
-    
-        # Do I really need this?
-        self.samples = np.zeros(self.n)
+        self.setup_sampler(kwargs.get('sample_method', 'ising_metropolis'))
 
     def solve(self, samples,
               numSamples=1e5,
@@ -1845,24 +1894,13 @@ class RegularizedMeanField(Solver):
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
         def samples(J):
            seed = next(seedIter)
-           #print seed
-           #J = unflatten(flatJ,ell,symmetrize=True)
            if minimizeCovariance:
                J = tildeJ2normalJ(J,empiricalFreqs)
-           # 7.20.2017 Bryan's old sampler
-           #if numProcs > 1:
-           #    isingSamples = metropolisSampleIsing_pypar(numProcs,J,
-           #                       numSamples,startConfig=None,nSkip=nSkip,
-           #                       seed=seed,minSize=minSize)
-           #else:
-           #    isingSamples = metropolisSampleIsing(J,
-           #                     numSamples,startConfig=None,nSkip=nSkip,
-           #                     seed=seed,minSize=minSize)
            burninDefault = 100*self.n
            J = J + J.T
-           self.multipliers = np.concatenate([J.diagonal(),squareform(mean_field_ising.zeroDiag(-J))])
-           self.generate_samples(n_iters=nSkip,burnin=burninDefault,sample_size=int(numSamples))
-           isingSamples = np.array(self.samples,dtype=float)
+           self.multipliers = np.concatenate([J.diagonal(), squareform(mean_field_ising.zeroDiag(-J))])
+           self.generate_samples(n_iters=nSkip, burnin=burninDefault, sample_size=int(numSamples))
+           isingSamples = self.samples.copy()
            return isingSamples
 
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
@@ -1873,8 +1911,8 @@ class RegularizedMeanField(Solver):
             
             # calculate regularized mean field J
             J = mean_field_ising.JmeanField(coocMatData,
-                                          meanFieldPriorLmbda=meanFieldPriorLmbda,
-                                          numSamples=numDataSamples)
+                                            meanFieldPriorLmbda=meanFieldPriorLmbda,
+                                            numSamples=numDataSamples)
 
             # sample from J
             isingSamples = samples(J)
@@ -1905,21 +1943,21 @@ class RegularizedMeanField(Solver):
             return np.sum(dc**2)
 
         if bracket is not None:
-            gridPoints = np.linspace(bracket[0],bracket[1],numGridPoints)
+            gridPoints = np.linspace(bracket[0], bracket[1], numGridPoints)
             gridResults = [ func(p) for p in gridPoints ]
-            gridBracket = self.bracket1d(gridPoints,gridResults)
-            solution = minimize_scalar(func,bracket=gridBracket)
+            gridBracket = self.bracket1d(gridPoints, gridResults)
+            solution = minimize_scalar(func, bracket=gridBracket)
         else:
             solution = minimize_scalar(func)
 
         gammaPrimeMin = solution['x']
         meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)
         J = mean_field_ising.JmeanField(coocMatData,
-                                      meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
-                                      numSamples=numDataSamples)
+                                        meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
+                                        numSamples=numDataSamples)
         J = J + J.T
 
-        # 7.18.2017 convert J to {-1,1}
+        # convert J to {-1,1}
         h = -J.diagonal()
         J = -mean_field_ising.zeroDiag(J)
         self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )

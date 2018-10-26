@@ -48,10 +48,11 @@ $ python enumerate.py [N]
 where `[N]` should be replaced by the size of the system. For more details, see the \_\_main\_\_ block
 at the end of the file enumerate.py.
 
-## Usage examples
+## Quick guide
 
 A Jupyter notebook with examples for how to use ConIII is available in the ipynb directory on
-the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb]
+the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb].
+There is a brief introduction as well in there.
 
 The notebook is installed into your coniii package directory if you used pip, or you can
 download it from the above Github link.
@@ -93,4 +94,5 @@ ConIII has been tested on the following systems
 Some users may encounter difficulties with the multiprocess module, in which case the `n_cpus` kwarg
 can be set to 0 when the algorithm class instance is declared.  This will disable the parallel computing functionality provided by the multiprocess module.
 
+### Support
 Please file an issue on the GitHub if you have any problems or feature requests.

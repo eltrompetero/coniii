@@ -4,7 +4,7 @@
 # Author : Eddie Lee, edlee@alumni.princeton.edu
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee
+# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,17 +37,17 @@ def test_sub_to_ind():
 
 def test_state_gen_and_count():
     """Test generation of binary states using bin_states() and xbin_states()."""
-    assert np.array_equal( bin_states(5),np.vstack([i for i in xbin_states(5)]) )
+    assert np.array_equal( bin_states(5), np.vstack([i for i in xbin_states(5)]) )
 
     states = bin_states(5)
     p, s = state_probs(states)
     assert np.isclose(p, 1/32).all()
-    assert np.array_equal(s,states)
+    assert np.array_equal(s, states)
 
     states = bin_states(5, sym=True)
     p, s = state_probs(states)
     assert np.isclose(p, 1/32).all()
-    assert np.array_equal(s, states)
+    assert np.array_equal(s[::-1], states)
 
 def test_convert_params():
     from .utils import _expand_binomial

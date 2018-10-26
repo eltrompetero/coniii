@@ -75,4 +75,4 @@ Python 3.6 which you can check by running in your bash terminal
 Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg
 should be set to 0 when the algorithm class instance is declared.
 
-Please register a pull request here if you have any issues.
+Please file an issue on the GitHub if you have any problems or feature requests.

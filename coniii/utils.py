@@ -492,25 +492,27 @@ def convert_corr(si,sisj,convertTo='11',concat=False):
         return np.concatenate((newsi,newsisj))
     return newsi,newsisj
 
-def state_probs(v,allstates=None,weights=None,normalized=True):
+def state_probs(v, allstates=None, weights=None, normalized=True):
     """
     Get probability of unique states. There is an option to allow for weights counting of the words.
     
-    Params:
-    -------
-    states (ndarray)
+    Parameters
+    ----------
+    states : ndarray
         (n_samples,n_dim)
-    weights (vector)
-    normalized (bool=True)
+    allstates : ndarray,None
+    weights : vector,None
+    normalized : bool=True
         Return probability distribution instead of frequency count
     
-    Returns:
-    --------
-    freq (ndarray)
+    Returns
+    -------
+    freq : ndarray
         Vector of the probabilities of each state
-    allstates (ndarray)
+    allstates : ndarray
         All unique states found in the data.
     """
+
     if v.ndim==1:
         v = v[:,None]
     n = v.shape[1]
@@ -519,7 +521,7 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
 
     if allstates is None:
         allstates = v[unique_rows(v)]
-        uniqIx = unique_rows(v,return_inverse=True)
+        uniqIx = unique_rows(v, return_inverse=True)
         freq = np.bincount( uniqIx )
         return_all_states = True
     else:
@@ -538,7 +540,7 @@ def state_probs(v,allstates=None,weights=None,normalized=True):
         freq = freq.astype(float)/np.sum(freq)
 
     if return_all_states:
-        return freq,allstates
+        return freq, allstates
     return freq
 
     

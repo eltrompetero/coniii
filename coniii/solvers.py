@@ -262,6 +262,7 @@ class Enumerate(Solver):
               samples=None,
               initial_guess=None,
               max_param_value=50,
+              full_output=False,
               fsolve_kwargs={'method':'powell'}):
         """
         Parameters
@@ -276,7 +277,8 @@ class Enumerate(Solver):
 
         Returns
         -------
-        Tuple of solved parameters and output from scipy.optimize.minimize
+        multiplers : ndarray
+        solve_details : output from scipy.optimize.minimize
         """
 
         if not constraints is None:
@@ -297,7 +299,9 @@ class Enumerate(Solver):
 
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
-        return soln['x'],soln
+        if full_output:
+            return soln['x'],soln
+        return soln['x']
 #end Enumerate
 
 

@@ -1,0 +1,158 @@
+coniii.ising\_eqn package
+=========================
+
+Submodules
+----------
+
+coniii.ising\_eqn.ising\_eqn\_2 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_2\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_2_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_3 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_3
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_3\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_3_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_4 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_4
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_4\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_4_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_5 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_5
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_5\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_5_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_5\_sym\_triplet module
+----------------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_5_sym_triplet
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_5\_triplet module
+-----------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_5_triplet
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_6 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_6
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_6\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_6_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_7 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_7
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_7\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_7_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_8 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_8
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_8\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_8_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_9 module
+--------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_9
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+coniii.ising\_eqn.ising\_eqn\_9\_sym module
+-------------------------------------------
+
+.. automodule:: coniii.ising_eqn.ising_eqn_9_sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: coniii.ising_eqn
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -10,8 +10,10 @@ Python 2.7 but is no longer actively maintained).
 See ["ipynb/usage_guide.ipynb"](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb)
 for usage documentation and examples.
 
-There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216]. Please cite this if you
-use ConIII for your research! Citations fuel further open source work of this kind.
+There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216]. 
+
+If you use ConIII for your research, please cite the following:
+> Lee, Edward D. and Daniels, Bryan C.  Convenient Interface to Inverse Ising (ConIII): A Python package for solving maximum entropy models.  arXiv preprint:1801.08216 (2018).
 
 Documentation is included in the docs/\_build/html/index.html webpage. Unfortunately, the online
 documentation on readthedocs.org seems to compiling properly but the functions are not displaying!
@@ -26,8 +28,8 @@ the module (make sure this folder is in your file path and that you are running 
 "coniii", you must run
 > `pip install .`
 
-Using setuptools like in the usual way of `python setup.py install` will not work because eggs are
-incompatible with the cached jit functions!
+Note: Using setuptools in the usual way of `python setup.py install` will not work because eggs are
+incompatible with cached jit functions.
 
 If you would like to use the `Enumerate` solver for system sizes greater than 9, you must run
 enumerate.py to write those files yourself. This can be run from the install directory.  If you do
@@ -44,6 +46,20 @@ where `[N]` should be replaced by the size of the system. For more details, see 
 at the end of the file enumerate.py.
 
 ## Usage examples
+
+A Jupyter notebook with examples for how to use ConIII is available in the ipynb directory on
+the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb]
+
+The notebook is installed into your coniii package directory if you used pip, or you can
+download it from the above Github link.
+
+First copy the notebook file `usage_guide.ipynb` into a directory outside the ConIII directory. Change to this directory and run
+> jupyter notebook
+
+This should open the notebook in your default web browser.
+
+## Dependencies
+
 In order to run the usage guide Jupyter notebook, you must have both Jupyter and matplotlib
 installed. These are automatically installed into your Python path when you install ConIII through
 listed dependencies. If you prefer to install them yourself, you can use the Python package
@@ -51,28 +67,15 @@ listed dependencies. If you prefer to install them yourself, you can use the Pyt
 >`pip install jupyter matplotlib`
 
 However, we strongly recommend that you use the [Anaconda](https://www.anaconda.com/download/)
-package manager in which case you can install the packages by running
+package manager, in which case you can install the packages by running
 >`conda install jupyter matplotlib`
-
-The Jupyter notebook with the examples for how to use ConIII is available in the ipynb directory on
-the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb]
-
-The notebook is also installed into your coniii package directory if you used pip. If you do not
-know how to navigate to your Python site-packages directory, I would recommend that you just
-download it from the Github link provided above.
-
-Make sure you copy the notebook into a directory outside the ConIII directory. Once in the directory
-into which you've installed it, you can run it with
-> jupyter notebook --ip="0.0.0.0"
-
-This should open up a Jupyter notebook in your default web browser.
 
 ## Troubleshooting
 This package is only maintained for Python 3.6 as of October 2018. Make sure that you are running
 Python 3.6 which you can check by running in your bash terminal
 > python --version
 
-Some users may encounter difficulties with the multiprocess module in which case the `n_cpus` kwarg
-should be set to 0 when the algorithm class instance is declared.
+Some users may encounter difficulties with the multiprocess module, in which case the `n_cpus` kwarg
+can be set to 0 when the algorithm class instance is declared.  This will disable the parallel computing functionality provided by the multiprocess module.
 
 Please file an issue on the GitHub if you have any problems or feature requests.

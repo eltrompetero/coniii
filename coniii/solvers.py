@@ -298,7 +298,7 @@ class Enumerate(Solver):
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
         return soln['x'],soln
-# End Enumerate
+#end Enumerate
 
 
 
@@ -555,21 +555,6 @@ class MCH(Solver):
 
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the
     inverse pairwise Ising problem. arXiv 1-8 (2007).
-
-    Members
-    -------
-    constraints : ndarray
-    calc_observables (function)
-        takes in samples as argument
-    calc_e (function)
-        with args (sample,parameters) where sample is 2d
-    mch_approximation (function)
-    sampleSize : int
-    multipliers : ndarray
-        set the Langrangian multipliers
-
-    Methods
-    -------
     """
     def __init__(self, *args, **kwargs):
         """
@@ -772,7 +757,6 @@ class MCH(Solver):
         jac : ndarray
             Jacobian is an n x n matrix where each row corresponds to the behavior of fvec wrt to a
             single parameter.
-
         """
 
         dlamda = np.zeros(self._multipliers.shape)
@@ -1402,7 +1386,7 @@ class Pseudo(Solver):
 
         return np.sum([ cond_log_likelihood(r,X,J) \
                            for r in range(len(J)) ])
-# End Pseudo
+#end Pseudo
 
 
 
@@ -1412,12 +1396,6 @@ class ClusterExpansion(Solver):
     described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
     
     Specific to pairwise Ising constraints.
-            
-    Members
-    -------
-    
-    Methods
-    -------
     """
 
     def __init__(self, *args, **kwargs):
@@ -1433,8 +1411,21 @@ class ClusterExpansion(Solver):
         Calculate pairwise entropy of cluster.
         (First fits pairwise Ising model.)
         
+        Parameters
+        ----------
+        cluster : list
+            List of indices belonging to each cluster.
+        coocMat : ndarray
+            Pairwise correlations.
+        deltaJdict : dict,{}
         useAnalyticResults : bool,False
             Probably want False until analytic formulas are changed to include prior on J
+
+        Returns
+        -------
+        entropy : float
+        Jfull : ndarray
+            Matrix of couplings.
         """
 
         if len(cluster) == 0:
@@ -1459,9 +1450,9 @@ class ClusterExpansion(Solver):
             coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
             Jinit = None # <--- potential for speed-up here
             J = mean_field_ising.findJmatrixAnalytic_CoocMat(coocMatCluster,
-                                            Jinit=Jinit,
-                                            priorLmbda=priorLmbda,
-                                            numSamples=numSamples)
+                                                             Jinit=Jinit,
+                                                             priorLmbda=priorLmbda,
+                                                             numSamples=numSamples)
         
         # make 'full' version of J (of size NxN)
         N = len(coocMat)
@@ -1469,12 +1460,25 @@ class ClusterExpansion(Solver):
         
         ent = mean_field_ising.analyticEntropy(J)
 
-        return ent,Jfull 
+        return ent, Jfull 
 
     # 3.24.2014
-    def Sindependent(self,cluster,coocMat):
+    def Sindependent(self, cluster, coocMat):
         """
+        Parameters
+        ----------
+        cluster : list
+        coocMat : ndarray
+            Pairwise correlations.
+
+        Returns
+        -------
+        Sind : float
+            Independent entropy.
+        Jfull : ndarray
+            Pairwise couplings.
         """
+
         coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
         # in case we're given an upper-triangular coocMat:
         coocMatCluster = mean_field_ising.symmetrizeUsingUpper(coocMatCluster)
@@ -1507,8 +1511,17 @@ class ClusterExpansion(Solver):
                independentRef=False,
                meanFieldPriorLmbda=None):
         """
+        Parameters
+        ----------
         cluster : list 
             List of indices in cluster
+        coocMat : ndarray
+        deltaSdict : dict,None
+        deltaJdict : dict,None
+        verbose : bool,True
+        meanFieldRef : bool,False
+        priorLmda : float,0.
+        numSamples : int,None
         independentRef : bool,False
             If True, expand about independent entropy
         meanFieldRef : bool,False
@@ -1533,9 +1546,9 @@ class ClusterExpansion(Solver):
         
         # start with full entropy (and J)
         deltaScluster,deltaJcluster = self.S(cluster,coocMat,
-                                        deltaJdict,
-                                        priorLmbda=priorLmbda,
-                                        numSamples=numSamples)
+                                            deltaJdict,
+                                            priorLmbda=priorLmbda,
+                                            numSamples=numSamples)
         
         if independentRef:
             # subtract independent reference entropy
@@ -1573,8 +1586,18 @@ class ClusterExpansion(Solver):
 
     def subsets(self, set, size, sort=False):
         """
-        Given a list, returns a list of all unique subsets
-        of that list with given size.
+        Given a list, returns a list of all unique subsets of that list with given size.
+
+        Parameters
+        ----------
+        set : list
+        size : int
+        sort : bool,False
+
+        Returns
+        -------
+        sub : list
+            All subsets of given size.
         """
 
         if len(set) != len(np.unique(set)): raise Exception
@@ -1737,10 +1760,7 @@ class RegularizedMeanField(Solver):
     """
     def __init__(self, *args, **kwargs):
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
-        self.setup_sampler(kwargs.get('sample_method','metropolis'))
-    
-        # Do I really need this?
-        self.samples = np.zeros(self.n)
+        self.setup_sampler(kwargs.get('sample_method', 'ising_metropolis'))
 
     def solve(self, samples,
               numSamples=1e5,
@@ -1845,24 +1865,13 @@ class RegularizedMeanField(Solver):
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
         def samples(J):
            seed = next(seedIter)
-           #print seed
-           #J = unflatten(flatJ,ell,symmetrize=True)
            if minimizeCovariance:
                J = tildeJ2normalJ(J,empiricalFreqs)
-           # 7.20.2017 Bryan's old sampler
-           #if numProcs > 1:
-           #    isingSamples = metropolisSampleIsing_pypar(numProcs,J,
-           #                       numSamples,startConfig=None,nSkip=nSkip,
-           #                       seed=seed,minSize=minSize)
-           #else:
-           #    isingSamples = metropolisSampleIsing(J,
-           #                     numSamples,startConfig=None,nSkip=nSkip,
-           #                     seed=seed,minSize=minSize)
            burninDefault = 100*self.n
            J = J + J.T
-           self.multipliers = np.concatenate([J.diagonal(),squareform(mean_field_ising.zeroDiag(-J))])
-           self.generate_samples(n_iters=nSkip,burnin=burninDefault,sample_size=int(numSamples))
-           isingSamples = np.array(self.samples,dtype=float)
+           self.multipliers = np.concatenate([J.diagonal(), squareform(mean_field_ising.zeroDiag(-J))])
+           self.generate_samples(n_iters=nSkip, burnin=burninDefault, sample_size=int(numSamples))
+           isingSamples = self.samples.copy()
            return isingSamples
 
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
@@ -1873,8 +1882,8 @@ class RegularizedMeanField(Solver):
             
             # calculate regularized mean field J
             J = mean_field_ising.JmeanField(coocMatData,
-                                          meanFieldPriorLmbda=meanFieldPriorLmbda,
-                                          numSamples=numDataSamples)
+                                            meanFieldPriorLmbda=meanFieldPriorLmbda,
+                                            numSamples=numDataSamples)
 
             # sample from J
             isingSamples = samples(J)
@@ -1905,21 +1914,21 @@ class RegularizedMeanField(Solver):
             return np.sum(dc**2)
 
         if bracket is not None:
-            gridPoints = np.linspace(bracket[0],bracket[1],numGridPoints)
+            gridPoints = np.linspace(bracket[0], bracket[1], numGridPoints)
             gridResults = [ func(p) for p in gridPoints ]
-            gridBracket = self.bracket1d(gridPoints,gridResults)
-            solution = minimize_scalar(func,bracket=gridBracket)
+            gridBracket = self.bracket1d(gridPoints, gridResults)
+            solution = minimize_scalar(func, bracket=gridBracket)
         else:
             solution = minimize_scalar(func)
 
         gammaPrimeMin = solution['x']
         meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)
         J = mean_field_ising.JmeanField(coocMatData,
-                                      meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
-                                      numSamples=numDataSamples)
+                                        meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
+                                        numSamples=numDataSamples)
         J = J + J.T
 
-        # 7.18.2017 convert J to {-1,1}
+        # convert J to {-1,1}
         h = -J.diagonal()
         J = -mean_field_ising.zeroDiag(J)
         self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
@@ -1945,4 +1954,4 @@ class RegularizedMeanField(Solver):
         gridBracket2 = xList[ gridMinIndex + 1 + np.argmin(funcList[gridMinIndex+1:]) ]
         gridBracket = (gridBracket1,gridMin,gridBracket2)
         return gridBracket
-# end RegularizedMeanField
+#end RegularizedMeanField

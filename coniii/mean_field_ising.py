@@ -127,7 +127,7 @@ def coocCluster(coocMat,cluster):
 # 3.27.2014 moved from selectiveClusterExpansion.py
 def JfullFromCluster(Jcluster,cluster,N):
     """
-    There is perhaps a faster way of doing this?
+    NOTE: There is perhaps a faster way of doing this?
     """
     J = scipy.zeros((N,N))
     for i,iFull in enumerate(cluster):
@@ -327,8 +327,12 @@ def independentEntropyHomogeneous2(h,J,N):
 
 # 7.18.2017 moved from inverseIsing.py
 # 7.6.2012
-def findJmatrixAnalytic_CoocMat(coocMatData,Jinit=None,bayesianMean=False,
-    numSamples=None,priorLmbda=0.,minSize=0):
+def findJmatrixAnalytic_CoocMat(coocMatData,
+                                Jinit=None,
+                                bayesianMean=False,
+                                numSamples=None,
+                                priorLmbda=0.,
+                                minSize=0):
     
     ell = len(coocMatData)
     

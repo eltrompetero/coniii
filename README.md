@@ -13,6 +13,9 @@ for usage documentation and examples.
 There is an accompanying guide on arXiv: [https://arxiv.org/abs/1801.08216]. Please cite this if you
 use ConIII for your research! Citations fuel further open source work of this kind.
 
+Documentation is included in the docs/\_build/html/index.html webpage. Unfortunately, the online
+documentation on readthedocs.org seems to compiling properly but the functions are not displaying!
+
 ## Installation
 This package is available on PyPI for Linux and MacOS. It can be installed by running  
 >`pip install coniii`

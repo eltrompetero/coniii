@@ -1170,25 +1170,14 @@ class MCHIncompleteData(MCH):
 
 class Pseudo(Solver):
     """
-    Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell
-    and Ekeberg, PRL 108, 090201 (2012).
-
-    Members
-    -------
-            
-    Methods
-    -------
-    solve
-    _solve
-    cond_log_likelihood
-    cond_jac
-    cond_hess
+    Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell and Ekeberg,
+    PRL 108, 090201 (2012).
     """
     def __init__(self, *args, **kwargs):
         """
-        For this technique, must specify how to calculate the energy specific to the conditional
-        probability of spin r given the rest of the spins. These will be passed in with
-        "get_observables_r" and "calc_observables_r".
+        For this technique, must specify how to calculate the energy specific to the conditional probability
+        of spin r given the rest of the spins. These will be passed in with "get_observables_r" and
+        "calc_observables_r".
         
         Parameters
         ----------
@@ -1208,19 +1197,22 @@ class Pseudo(Solver):
 
     def solve(self, *args, **kwargs):
         """
-        Two different methods are implemented and can be called from self.solve. One is specific to
-        the Ising model and the other uses a general all-purpose optimization (scipy.optimize) to
-        solve the problem.
+        Two different methods are implemented and can be called from self.solve. One is specific to the Ising
+        model and the other uses a general all-purpose optimization (scipy.optimize) to solve the problem.
 
         Parameters
         ----------
         general_case : bool,True
-            If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the
-            resulting pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
+            If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the resulting
+            pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
             implemented (self._solve_ising).
+
+        Returns
+        -------
+        multipliers : ndarray
         """
 
-        if kwargs.get('general_case',True):
+        if kwargs.get('general_case',False):
             return self._solve_general(*args,**kwargs)
         return self._solve_ising(*args,**kwargs)
 
@@ -1261,7 +1253,7 @@ class Pseudo(Solver):
 
     def _solve_ising(self, X=None, initial_guess=None):
         """
-        Method for solving Ising model specifically.
+        Solve Ising model specifically.
 
         Parameters
         ----------
@@ -1269,6 +1261,10 @@ class Pseudo(Solver):
             Data set if dimensions (n_samples, n_dim).
         initial_guess : ndarray
             Initial guess for the parameter values.
+
+        Returns
+        -------
+        multipliers : ndarray
         """
 
         X = (X + 1)/2  # change from {-1,1} to {0,1}
@@ -1279,8 +1275,6 @@ class Pseudo(Solver):
         Jfinal = np.zeros((self.n,self.n))
 
         for r in range(self.n):
-            print("Minimizing for r =",r)
-            
             Jr0 = np.zeros(self.n)
             Jr0[r] = hList[r]
             
@@ -1293,15 +1287,15 @@ class Pseudo(Solver):
             fprime = lambda Jr: self.cond_jac(r,X,Jr)
             fhess = lambda Jr: self.cond_hess(r,X,Jr,pairCoocRhat=pairCoocRhat)
             
-            Jr = fmin_ncg(Lr,Jr0,fprime,fhess=fhess)
+            Jr = fmin_ncg(Lr, Jr0, fprime, fhess=fhess, disp=False)
             Jfinal[r] = Jr
 
         Jfinal = -0.5*( Jfinal + Jfinal.T )
         hfinal = Jfinal[np.diag_indices(self.n)]
 
-        # Convert parameters into {-1,1} basis as is standard.
+        # Convert parameters into {-1,1} basis as is standard for this package.
         Jfinal[np.diag_indices(self.n)] = 0
-        self.multipliers = convert_params( hfinal,squareform(Jfinal)*2,'11',concat=True )
+        self.multipliers = convert_params( hfinal, squareform(Jfinal)*2, '11', concat=True )
 
         return self.multipliers
 

@@ -298,7 +298,7 @@ class Enumerate(Solver):
         soln = minimize(f,initial_guess,**fsolve_kwargs)
         self.multipliers = soln['x']
         return soln['x'],soln
-# End Enumerate
+#end Enumerate
 
 
 
@@ -1402,7 +1402,7 @@ class Pseudo(Solver):
 
         return np.sum([ cond_log_likelihood(r,X,J) \
                            for r in range(len(J)) ])
-# End Pseudo
+#end Pseudo
 
 
 
@@ -1945,4 +1945,4 @@ class RegularizedMeanField(Solver):
         gridBracket2 = xList[ gridMinIndex + 1 + np.argmin(funcList[gridMinIndex+1:]) ]
         gridBracket = (gridBracket1,gridMin,gridBracket2)
         return gridBracket
-# end RegularizedMeanField
+#end RegularizedMeanField

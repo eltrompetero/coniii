@@ -57,7 +57,9 @@ The notebook is installed into your coniii package directory if you used pip, or
 download it from the above Github link.
 
 First copy the notebook file `usage_guide.ipynb` into a directory outside the ConIII directory. Change to this directory and run
-> jupyter notebook
+```bash
+$ jupyter notebook
+```
 
 This should open the notebook in your default web browser.
 
@@ -73,7 +75,9 @@ $ pip install jupyter matplotlib
 
 However, we strongly recommend that you use the [Anaconda](https://www.anaconda.com/download/)
 package manager, in which case you can install the packages by running
->`conda install jupyter matplotlib`
+```bash
+$ conda install jupyter matplotlib
+```
 
 ## Troubleshooting
 This package is only maintained for Python 3.6 as of October 2018. Make sure that you are running

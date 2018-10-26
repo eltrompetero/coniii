@@ -1,3 +1,5 @@
+[![PyPI version fury.io](https://badge.fury.io/py/coniii.svg)](https://pypi.python.org/pypi/coniii/) [![PyPI license](https://img.shields.io/pypi/l/coniii.svg)](https://pypi.python.org/pypi/coniii/)
+
 # Convenient Interface to Inverse Ising
 Edward D Lee, Bryan C Daniels
 

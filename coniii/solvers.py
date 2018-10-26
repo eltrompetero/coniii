@@ -158,7 +158,7 @@ class Solver():
            raise NotImplementedError("Unrecognized sampler.")
         self.samples=None
 
-    def generate_samples(self,n_iters,burnin,
+    def generate_samples(self, n_iters, burnin,
                          multipliers=None,
                          sample_size=None,
                          sample_method=None,
@@ -850,8 +850,7 @@ class MCH(Solver):
 
         self._multipliers += dlamda
         return estConstraints
-# End MCH
-
+#end MCH
 
 
 class MCHIncompleteData(MCH):
@@ -1226,6 +1225,7 @@ class Pseudo(Solver):
         """
 
         if kwargs.get('general_case',False):
+            del kwargs['general_case']
             return self._solve_general(*args,**kwargs)
         return self._solve_ising(*args,**kwargs)
 
@@ -1494,6 +1494,8 @@ class ClusterExpansion(Solver):
     # 3.24.2014
     def Sindependent(self, cluster, coocMat):
         """
+        Entropy approximation assuming that each cluster appears independently of the others.
+
         Parameters
         ----------
         cluster : list
@@ -1507,27 +1509,26 @@ class ClusterExpansion(Solver):
         Jfull : ndarray
             Pairwise couplings.
         """
-
-        coocMatCluster = mean_field_ising.coocCluster(coocMat,cluster)
+        
+        # sort by cluster indices
+        coocMatCluster = mean_field_ising.coocCluster(coocMat, cluster)
         # in case we're given an upper-triangular coocMat:
         coocMatCluster = mean_field_ising.symmetrizeUsingUpper(coocMatCluster)
         
-        N = len(cluster)
-        
         freqs = np.diag(coocMatCluster).copy()
 
-        h = - np.log(freqs/(1.-freqs))
+        h = -np.log(freqs/(1.-freqs))
         Jind = np.diag(h)
-
-        Sinds = -freqs*np.log(freqs)             \
-            -(1.-freqs)*np.log(1.-freqs)
+        
+        # independent approx
+        Sinds = -freqs*np.log(freqs) - (1.-freqs)*np.log(1.-freqs)
         Sind = np.sum(Sinds)
 
         # make 'full' version of J (of size NfullxNfull)
         Nfull = len(coocMat)
-        Jfull = mean_field_ising.JfullFromCluster(Jind,cluster,Nfull)
+        Jfull = mean_field_ising.JfullFromCluster(Jind, cluster, Nfull)
 
-        return Sind,Jfull
+        return Sind, Jfull
 
     # "Algorithm 1"
     def deltaS(self, cluster, coocMat, 
@@ -1555,6 +1556,11 @@ class ClusterExpansion(Solver):
             If True, expand about independent entropy
         meanFieldRef : bool,False
             If True, expand about mean field entropy
+
+        Returns
+        -------
+        deltaScluster
+        deltaJcluster
         """
 
         if deltaSdict is None: deltaSdict = {}
@@ -1608,7 +1614,7 @@ class ClusterExpansion(Solver):
         deltaSdict[cID] = deltaScluster
         deltaJdict[cID] = deltaJcluster
 
-        return deltaScluster,deltaJcluster
+        return deltaScluster, deltaJcluster
 
     def clusterID(self, cluster):
         return tuple(np.sort(cluster))
@@ -1769,7 +1775,6 @@ class ClusterExpansion(Solver):
 # end ClusterExpansion
 
 
-
 class RegularizedMeanField(Solver):
     """
     Implementation of regularized mean field method for solving the inverse Ising problem, as
@@ -1778,16 +1783,11 @@ class RegularizedMeanField(Solver):
     14301.  doi:10.1038/ncomms14301
     
     Specific to pairwise Ising constraints.
-    
-    Parameters
-    ----------
-
-    Members
-    -------
-    Methods
-    -------
     """
     def __init__(self, *args, **kwargs):
+        """
+        See Solver. Default sample_method is 'ising_metropolis'.
+        """
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
         self.setup_sampler(kwargs.get('sample_method', 'ising_metropolis'))
 

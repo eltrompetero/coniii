@@ -1,9 +1,10 @@
+# =============================================================================================== #
 # meanFieldIsing.py
 # Author : Bryan Daniels
 # 
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee
+# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +23,25 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+# =============================================================================================== #
 import scipy
 import scipy.optimize
 import copy
 #import scipy.weave # for efficient fourth-order matrix calculation
 
-exp,cosh = scipy.exp,scipy.cosh
+exp, cosh = scipy.exp, scipy.cosh
 dot = scipy.dot
 
 # 4.8.2011
 # 8.16.2012 moved from generateFightData.py
-def aboveDiagFlat(mat,keepDiag=False,offDiagMult=None):
+def aboveDiagFlat(mat, keepDiag=False, offDiagMult=None):
     """
     Return a flattened list of all elements of the 
     matrix above the diagonal.
     
     Use offDiagMult = 2 for symmetric J matrix.
     """
+
     m = copy.copy(mat)
     if offDiagMult is not None:
         m *= offDiagMult*(1.-scipy.tri(len(m)))+scipy.diag(scipy.ones(len(m))) 
@@ -108,21 +110,19 @@ def specificHeat(h,J,ell,T):
              ( 1. + 1./denomFactor ) )
     """
 
-# 6.23.2014
 def susc(h,J,ell,T):
     mr = m(h,J,ell,T)
     hloc = (ell-1)*mr*J - h
 
     return 1./(T**2 * (exp(-hloc) + exp(+hloc) + 2.))
 
-# 3.27.2014 moved from selectiveClusterExpansion.py
-def coocCluster(coocMat,cluster):
-    #orderedIndices = scipy.sort(cluster)
+def coocCluster(coocMat, cluster):
+    """Sort coocMat by the cluster indices"""
     orderedIndices = cluster
-    newMat = scipy.array(coocMat)[:]
-    newMat = newMat[orderedIndices,:]
-    newMat = newMat[:,orderedIndices]
-    return newMat
+    sortedMat = scipy.array(coocMat)[:]
+    sortedMat = sortedMat[orderedIndices,:]
+    sortedMat = sortedMat[:,orderedIndices]
+    return sortedMat
 
 # 3.27.2014 moved from selectiveClusterExpansion.py
 def JfullFromCluster(Jcluster,cluster,N):

@@ -1,4 +1,4 @@
-[![PyPI version fury.io](https://badge.fury.io/py/coniii.svg)](https://pypi.python.org/pypi/coniii/) [![PyPI license](https://img.shields.io/pypi/l/coniii.svg)](https://pypi.python.org/pypi/coniii/) [![Documentation Status](https://readthedocs.org/projects/coniii/badge/?version=latest)](http://coniii.readthedocs.io/?badge=latest)
+[![PyPI version fury.io](https://badge.fury.io/py/coniii.svg)](https://pypi.python.org/pypi/coniii/) [![PyPI license](https://img.shields.io/pypi/l/coniii.svg)](https://pypi.python.org/pypi/coniii/)
 
 # Convenient Interface to Inverse Ising
 
@@ -21,7 +21,7 @@ $ pip install coniii
 ```
 
 If you have trouble using `pip` and PyPI, then you can always build this package from source.
-Download this package from GitHub and move the "coniii" folder to wherever you would like to have
+Download the latest release from GitHub and move the "coniii" folder to wherever you would like to have
 the module (make sure this folder is in your file path and that you are running Python 3.6).  Inside
 "coniii", you must run
 ```bash
@@ -54,10 +54,11 @@ A Jupyter notebook with examples for how to use ConIII is available in the ipynb
 the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb].
 There is a brief introduction as well in there.
 
-The notebook is installed into your coniii package directory if you used pip, or you can
-download it from the above Github link.
+The notebook is installed into your coniii package directory if you used pip, or you can download it
+from the above Github link.
 
-First copy the notebook file `usage_guide.ipynb` into a directory outside the ConIII directory. Change to this directory and run
+First copy the notebook file `usage_guide.ipynb` into a directory outside the ConIII directory.
+Change to this directory and run
 ```bash
 $ jupyter notebook
 ```

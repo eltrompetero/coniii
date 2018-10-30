@@ -25,6 +25,9 @@
 # SOFTWARE.
 # =============================================================================================== #
 from .utils import *
+import sys
+version = sys.version_info
+assert version.major>=3 and version.minor>=6
 
 
 def test_sub_to_ind():

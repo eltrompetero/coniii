@@ -95,8 +95,8 @@ ConIII has been tested on the following systems
 * Mac OS X 10.13 (High Sierra)
 
 Please let us know if your system has problems by filing an issue request on the GitHub page. Please provide a
-stack trace or other information that would be helpful in debugging. You can also run the unit tests included
-by navigating to the "coniii" directory and running
+stack trace or other information (like OS and system configuration details) that would be helpful in
+debugging. You can also run the unit tests included by navigating to the "coniii" directory and running
 
 ```bash
 $ pytest -q

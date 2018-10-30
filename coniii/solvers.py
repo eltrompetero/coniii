@@ -1785,7 +1785,7 @@ class RegularizedMeanField(Solver):
                                sampler_kwargs={'use_numba':False,'n_cpus':1})
 
     def solve(self, samples,
-              sample_size=100_000,
+              sample_size=100000,
               seed=0,
               change_seed=False,
               min_size=0,

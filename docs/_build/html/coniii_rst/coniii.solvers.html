@@ -1,37 +1,59 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>coniii.solvers module &#8212; ConIII 1.0.2 documentation</title>
+    
+    <title>coniii.solvers module &mdash; ConIII 1.0.2 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="ConIII 1.0.2 documentation" href="../index.html" />
     <link rel="next" title="coniii.samplers module" href="coniii.samplers.html" />
     <link rel="prev" title="coniii.enumerate module" href="coniii.enumerate.html" />
    
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
-  </head><body>
-  
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coniii.samplers.html" title="coniii.samplers module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="coniii.enumerate.html" title="coniii.enumerate module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ConIII 1.0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <div class="section" id="module-coniii.solvers">
@@ -39,7 +61,7 @@
 <dl class="class">
 <dt id="coniii.solvers.ClusterExpansion">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">ClusterExpansion</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
 described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).</p>
 <p>Specific to pairwise Ising constraints.</p>
@@ -97,7 +119,6 @@ deltaSdict : dict,None
 deltaJdict : dict,None
 verbose : bool,True
 meanFieldRef : bool,False
-priorLmda : float,0.
 numSamples : int,None
 independentRef : bool,False</p>
 <blockquote>
@@ -160,7 +181,7 @@ sort : bool,False</p>
 <dl class="class">
 <dt id="coniii.solvers.Enumerate">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">Enumerate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
 in arbitrary constraints.</p>
 <dl class="method">
@@ -173,7 +194,7 @@ samples : ndarray</p>
 <dl class="docutils">
 <dt>initial_guess <span class="classifier-delimiter">:</span> <span class="classifier">ndarray,None</span></dt>
 <dd>initial starting point</dd>
-<dt>fsolve_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict,{‘method’:’powell’}</span></dt>
+<dt>fsolve_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict,{&#8216;method&#8217;:&#8217;powell&#8217;}</span></dt>
 <dd>Powell method is slower but tends to converge better.</dd>
 </dl>
 <p>multiplers : ndarray
@@ -187,7 +208,7 @@ solve_details : dict</p>
 <dl class="class">
 <dt id="coniii.solvers.MCH">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">MCH</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Class for solving maxent problems using the Monte Carlo Histogram method.</p>
 <p>Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. &amp; Bialek, W. Faster solutions of the
 inverse pairwise Ising problem. arXiv 1-8 (2007).</p>
@@ -249,19 +270,19 @@ return the next set of learn_params_kwargs and optionally the sample size.</p>
 <p>As an example:
 def learn_settings(i):</p>
 <blockquote class="last">
-<div><p>‘’’
+<div><p>&#8216;&#8217;&#8217;
 Take in the iteration counter and set the maximum change allowed in any given 
 parameter (maxdlamda) and the multiplicative factor eta, where 
 d(parameter) = (error in observable) * eta.</p>
 <p>Additional option is to also return the sample size for that step by returning a 
 tuple. Larger sample sizes are necessary for higher accuracy.
-‘’’
+&#8216;&#8217;&#8217;
 if i&lt;10:</p>
 <blockquote>
-<div>return {‘maxdlamda’:1,’eta’:1}</div></blockquote>
+<div>return {&#8216;maxdlamda&#8217;:1,&#8217;eta&#8217;:1}</div></blockquote>
 <dl class="docutils">
 <dt>else:</dt>
-<dd>return {‘maxdlamda’:.05,’eta’:.05}</dd>
+<dd>return {&#8216;maxdlamda&#8217;:.05,&#8217;eta&#8217;:.05}</dd>
 </dl>
 </div></blockquote>
 </dd>
@@ -270,7 +291,7 @@ if i&lt;10:</p>
 full_output : bool,False</p>
 <blockquote>
 <div>If True, also return the errflag and error history.</div></blockquote>
-<p>learn_parameters_kwargs : dict,{‘maxdlamda’:1,’eta’:1}
+<p>learn_parameters_kwargs : dict,{&#8216;maxdlamda&#8217;:1,&#8217;eta&#8217;:1}
 generate_kwargs : dict,{}</p>
 <dl class="docutils">
 <dt>parameters <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
@@ -288,7 +309,7 @@ generate_kwargs : dict,{}</p>
 <dl class="class">
 <dt id="coniii.solvers.MCHIncompleteData">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">MCHIncompleteData</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.MCH" title="coniii.solvers.MCH"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.MCH</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.MCH" title="coniii.solvers.MCH"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.MCH</span></code></a></p>
 <p>Class for solving maxent problems using the Monte Carlo Histogram method on
 incomplete data where some spins may not be visible.</p>
 <p>Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. &amp; Bialek, W. Faster
@@ -400,7 +421,7 @@ errors : ndarray</p>
 <dl class="class">
 <dt id="coniii.solvers.MPF">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">MPF</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <dl class="method">
 <dt id="coniii.solvers.MPF.K">
 <code class="descname">K</code><span class="sig-paren">(</span><em>Xuniq</em>, <em>Xcount</em>, <em>adjacentStates</em>, <em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.K" title="Permalink to this definition">¶</a></dt>
@@ -460,7 +481,7 @@ array of states compatible with given energy and adjacent neighbors functions</d
 <dd>switch for summing over all states that data sets could be connected to or just summing over
 non-data states (second summation in Eq 10 in Sohl-Dickstein 2011)</dd>
 <dt>iterate <span class="classifier-delimiter">:</span> <span class="classifier">int,0</span></dt>
-<dd>number of times to try new initial conditions if first try doesn’t work. Right now, this is a
+<dd>number of times to try new initial conditions if first try doesn&#8217;t work. Right now, this is a
 pretty coarse test because the fit can be good even without converging.</dd>
 <dt>parameter_limits <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>some limit to constrain the space that the solver has to search. This is the maximum allowed
@@ -489,7 +510,7 @@ errors.</dd>
 <dl class="class">
 <dt id="coniii.solvers.Pseudo">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">Pseudo</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell and Ekeberg,
 PRL 108, 090201 (2012).</p>
 <dl class="method">
@@ -532,7 +553,7 @@ with shape (dimension of system)</p>
 <code class="descname">pair_cooc_mat</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.pair_cooc_mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns matrix of shape (self.n)x(# X)x(self.n).</p>
 <p>For use with cond_hess.</p>
-<p>Slow because I haven’t thought of a better way of doing it yet.</p>
+<p>Slow because I haven&#8217;t thought of a better way of doing it yet.</p>
 </dd></dl>
 
 <dl class="method">
@@ -567,10 +588,10 @@ implemented (self._solve_ising).</dd>
 <dl class="class">
 <dt id="coniii.solvers.RegularizedMeanField">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">RegularizedMeanField</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Implementation of regularized mean field method for solving the inverse Ising problem, as
 described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.  <a href="#id1"><span class="problematic" id="id2">``</span></a>Control of
-Finite Critical Behaviour in a Small-Scale Social System.’’ Nature Communications 8 (2017):
+Finite Critical Behaviour in a Small-Scale Social System.&#8217;&#8217; Nature Communications 8 (2017):
 14301.  doi:10.1038/ncomms14301</p>
 <p>Specific to pairwise Ising constraints.</p>
 <dl class="method">
@@ -584,45 +605,37 @@ Finite Critical Behaviour in a Small-Scale Social System.’’ Nature Communica
 
 <dl class="method">
 <dt id="coniii.solvers.RegularizedMeanField.solve">
-<code class="descname">solve</code><span class="sig-paren">(</span><em>samples</em>, <em>numSamples=100000.0</em>, <em>nSkip=None</em>, <em>seed=0</em>, <em>changeSeed=False</em>, <em>numProcs=1</em>, <em>numDataSamples=None</em>, <em>minSize=0</em>, <em>minimizeCovariance=False</em>, <em>minimizeIndependent=True</em>, <em>coocCov=None</em>, <em>priorLmbda=0.0</em>, <em>bracket=None</em>, <em>numGridPoints=200</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Varies the strength of regularization on the mean field J to best fit given cooccurrence
-data.</p>
+<code class="descname">solve</code><span class="sig-paren">(</span><em>samples</em>, <em>sample_size=100000</em>, <em>seed=0</em>, <em>change_seed=False</em>, <em>min_size=0</em>, <em>min_covariance=False</em>, <em>min_independent=True</em>, <em>cooc_cov=None</em>, <em>priorLmbda=0.0</em>, <em>bracket=None</em>, <em>n_grid_points=200</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Varies the strength of regularization on the mean field J to best fit given cooccurrence data.</p>
 <dl class="docutils">
-<dt>numGridPoints (200) <span class="classifier-delimiter">:</span> <span class="classifier">If bracket is given, first test at numGridPoints</span></dt>
-<dd>points evenly spaced in the bracket interval, then give
-the lowest three points to scipy.optimize.minimize_scalar</dd>
+<dt>n_grid_points <span class="classifier-delimiter">:</span> <span class="classifier">int,200</span></dt>
+<dd>If bracket is given, first test at n_grid_points points evenly spaced in the bracket interval,
+then give the lowest three points to scipy.optimize.minimize_scalar</dd>
 </dl>
-<p>numSamples (1e5)            : 
-nSkip (None)                :
-seed (0)                    :
-changeSeed (False)          :
-numProcs (1)                :
-minSize (0)                 : 3.8.2013 Use a modified model in which</p>
+<p>sample_size : int,100_000
+seed : int,0</p>
 <blockquote>
-<div>samples with fewer ones than minSize are not
-allowed.</div></blockquote>
+<div>initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if change Seed option
+is True</div></blockquote>
+<p>change_seed : bool,False
+min_size : int,0</p>
+<blockquote>
+<div>Use a modified model in which samples with fewer ones than min_size are not allowed.</div></blockquote>
 <dl class="docutils">
-<dt>gradDesc (False) <span class="classifier-delimiter">:</span> <span class="classifier">5.29.2013 Take a naive gradient descent step</span></dt>
-<dd>after each LM minimization</dd>
-<dt>minimizeCovariance (False) <span class="classifier-delimiter">:</span> <span class="classifier">** As of 7.20.2017, not currently supported **</span></dt>
-<dd>6.3.2013 Minimize covariance from emperical
-frequencies (see notes); trying to avoid
-biases, as inspired by footnote 12 in 
-TkaSchBer06</dd>
-<dt>minimizeIndependent (True) <span class="classifier-delimiter">:</span> <span class="classifier">** As of 7.20.2017, minimizeIndependent is </span></dt>
-<dd><blockquote class="first">
-<div>the only mode currently supported **</div></blockquote>
-<p class="last">2.7.2014 Each &lt;xi&gt; and &lt;xi xj&gt; residual is treated
-as independent</p>
-</dd>
-<dt>coocCov (None) <span class="classifier-delimiter">:</span> <span class="classifier">** As of 7.20.2017, not currently supported **</span></dt>
-<dd>2.7.2014 Provide a covariance matrix for
-residuals.  Should typically be 
-coocSampleCovariance(samples).  Only used
-if minimizeCovariance and minimizeIndependent
-are False.</dd>
-<dt>priorLmbda (0.) <span class="classifier-delimiter">:</span> <span class="classifier">** As of 7.20.2017, not currently implemented **</span></dt>
-<dd>Strength of noninteracting prior.</dd>
+<dt>min_covariance <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span></dt>
+<dd>** As of v1.0.3, not currently supported **
+Minimize covariance from emperical frequencies (see notes); trying to avoid biases, as inspired by
+footnote 12 in TkaSchBer06</dd>
+<dt>min_independent <span class="classifier-delimiter">:</span> <span class="classifier">bool,True</span></dt>
+<dd>** As of v1.0.3, min_independent is the only mode currently supported **
+Each &lt;xi&gt; and &lt;xi xj&gt; residual is treated as independent</dd>
+<dt>cooc_cov <span class="classifier-delimiter">:</span> <span class="classifier">ndarray,None</span></dt>
+<dd>** As of v1.0.3, not currently supported **
+Provide a covariance matrix for residuals.  Should typically be coocSampleCovariance(samples).
+Only used if min_covariance and min_independent are False.</dd>
+<dt>priorLmbda <span class="classifier-delimiter">:</span> <span class="classifier">float,0.</span></dt>
+<dd>** As of v1.0.3, not currently implemented **
+Strength of noninteracting prior.</dd>
 </dl>
 </dd></dl>
 
@@ -631,8 +644,7 @@ are False.</dd>
 <dl class="class">
 <dt id="coniii.solvers.Solver">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">Solver</code><span class="sig-paren">(</span><em>n</em>, <em>calc_de=None</em>, <em>calc_observables=None</em>, <em>calc_observables_multipliers=None</em>, <em>adj=None</em>, <em>multipliers=None</em>, <em>constraints=None</em>, <em>sample_size=None</em>, <em>sample_method=None</em>, <em>mch_approximation=None</em>, <em>n_cpus=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for declaring common methods and attributes for inverse maxent algorithms.</p>
+<dd><p>Base class for declaring common methods and attributes for inverse maxent algorithms.</p>
 <p>constraints : ndarray
 calc_e : lambda function</p>
 <blockquote>
@@ -658,7 +670,7 @@ solve</p>
 <dl class="method">
 <dt id="coniii.solvers.Solver.generate_samples">
 <code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters</em>, <em>burnin</em>, <em>multipliers=None</em>, <em>sample_size=None</em>, <em>sample_method=None</em>, <em>initial_sample=None</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.generate_samples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around generate_samples_parallel() methods in samplers.</p>
+<dd><p>Wrapper around generate_samples() generate_samples_parallel() methods in samplers.</p>
 <p>Samples are saved to self.samples.</p>
 <p>n_iters : int
 burnin : int</p>
@@ -673,14 +685,14 @@ generate_kwargs : dict,{}</p>
 
 <dl class="method">
 <dt id="coniii.solvers.Solver.setup_sampler">
-<code class="descname">setup_sampler</code><span class="sig-paren">(</span><em>sample_method=None</em>, <em>sampler_kwargs={}</em>, <em>optimize_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.setup_sampler" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setup_sampler</code><span class="sig-paren">(</span><em>sample_method=None</em>, <em>sampler_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.setup_sampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate sampler class object.</p>
 <dl class="docutils">
 <dt>sample_method <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>‘ising_metropolis’, ‘metropolis’</dd>
+<dd>&#8216;ising_metropolis&#8217;, &#8216;metropolis&#8217;</dd>
+<dt>sampler_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Kwargs that can be passed into the initialization function for the sampler.</dd>
 </dl>
-<p>sampler_kwargs : dict
-optimize_kwargs : dict</p>
 </dd></dl>
 
 <dl class="method">
@@ -699,58 +711,36 @@ optimize_kwargs : dict</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">ConIII</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">coniii.solvers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.samplers.html">coniii.samplers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.utils.html">coniii.utils module</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="coniii.enumerate.html" title="previous chapter">coniii.enumerate module</a></li>
-      <li>Next: <a href="coniii.samplers.html" title="next chapter">coniii.samplers module</a></li>
-  </ul></li>
-</ul>
-</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="coniii.enumerate.html"
+                        title="previous chapter">coniii.enumerate module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coniii.samplers.html"
+                        title="next chapter">coniii.samplers module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/coniii_rst/coniii.solvers.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    </div>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -759,12 +749,12 @@ optimize_kwargs : dict</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
       
       |
-      <a href="../_sources/coniii_rst/coniii.solvers.rst.txt"
-          rel="nofollow">Page source</a>
+      <a href="../_sources/coniii_rst/coniii.solvers.txt"
+          rel="nofollow">Page source</a></li>
     </div>
 
     

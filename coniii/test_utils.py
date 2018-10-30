@@ -70,6 +70,66 @@ def test_convert_params():
     h1, J1 = convert_params(h, J, convert_to='11')
     h2, J2 = ising_convert_params([h,J], convert_to='11')
     assert np.isclose(h1, h2).all() and np.isclose(J1, J2).all()
-   
+  
+def test_define_ising_helper_functions():
+    from scipy.spatial.distance import squareform
+    from .ising_eqn import ising_eqn_3_sym as ising
+    calc_e, calc_observables, mch_approximation = define_ising_helper_functions()
+
+    np.random.seed(0)
+    X = np.random.choice([-1.,1.],size=(10,3))
+    h = np.random.normal(size=3)
+    J = np.random.normal(size=3)
+    hJ = np.concatenate((h, J))
+    
+    # check that calculation of energy is correct
+    assert np.isclose( calc_e(X, hJ),
+                       -X.dot(h)-(X.dot(squareform(J)).dot(X.T)).diagonal()/2 ).all()
+    assert np.isclose( calc_e(X, hJ ),
+                       -calc_observables(X).dot(hJ) ).all()
+    
+    # check that mch_approximation doesn't change anything when dlambda=0
+    sisj = calc_observables(X).mean(0)
+    newsisj = mch_approximation(X, np.zeros(6))
+    assert np.isclose(sisj, newsisj).all()
+
+    # check that jacobian estimated using mch_approximation is close to numerical approximation
+    # first sample states from distribution that will be used to estimate pairwise correlations
+    eps = 1e-6
+    p = ising.p(hJ)
+    X = np.array(bin_states(3, sym=True))[np.random.choice(range(8), size=80000)]
+    # estimate jacobian using known parameters and by using mch approximation method
+    jac = np.zeros((6,6))
+    jacTest = np.zeros((6,6))
+    for i in range(6):
+        hJ_ = hJ.copy()
+        hJ__ = hJ.copy()
+        hJ_[i] -= eps
+        hJ__[i] += eps
+        jac[i] = (mch_approximation(X, hJ__) - mch_approximation(X, hJ_))/2/eps
+        jacTest[i] = (ising.calc_observables(hJ__) - ising.calc_observables(hJ_))/2/eps
+    assert (np.abs(jac-jacTest)<3e-2).all()
+
+def test_adj():
+    s = np.random.randint(2, size=10)
+    neighbors = adj(s)
+    assert neighbors.shape==(10,10)
+    assert ((s!=neighbors).sum(1)==1).all()
+
+    s = 2*s-1
+    neighbors = adj_sym(s)
+    assert neighbors.shape==(10,10)
+    assert ((s!=neighbors).sum(1)==1).all()
+
+def test_calc_de():
+    s = np.random.randint(2, size=10)*2-1
+    for i in range(10):
+        assert calc_de(s[None,:], i)==-s[i]
+    counter = 10
+    for i in range(9):
+        for j in range(i+1,10):
+            assert calc_de(s[None,:], counter)==-s[i]*s[j]
+            counter+=1
+
 if __name__=='__main__':
     test_convert_params()

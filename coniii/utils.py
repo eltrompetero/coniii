@@ -32,7 +32,7 @@ from scipy.spatial.distance import squareform
 
 
 @njit(nogil=True,cache=True)
-def sub_to_ind(n,i,j):
+def sub_to_ind(n, i, j):
     """Convert pair of coordinates of a symmetric square array into consecutive index of flattened
     upper triangle. This is slimmed down so it won't throw errors like if i>n or j>n or if they're
     negative. Only checking for if the returned index is negative which could be problematic with
@@ -45,6 +45,7 @@ def sub_to_ind(n,i,j):
     i,j : int
         coordinates
     """
+
     if i<j:
         k = 0
         for l in range(1,i+2):
@@ -61,7 +62,7 @@ def sub_to_ind(n,i,j):
         raise Exception("Indices cannot be the same.")
 
 @njit(cache=True)
-def ind_to_sub(n,ix):
+def ind_to_sub(n, ix):
     """Convert index from flattened upper triangular matrix to pair subindex.
 
     Parameters
@@ -76,6 +77,7 @@ def ind_to_sub(n,ix):
     subix : tuple
         (i,j)
     """
+
     k = 0
     for i in range(n-1):
         for j in range(i+1,n):
@@ -561,7 +563,7 @@ def define_pseudo_ising_helpers(N):
     """
 
     @njit
-    def get_multipliers_r(r,multipliers):
+    def get_multipliers_r(r, multipliers):
         """
         Return the parameters relevant for calculating the conditional probability of spin r.
 
@@ -589,7 +591,7 @@ def define_pseudo_ising_helpers(N):
         return multipliers[ix]
 
     @njit
-    def calc_observables_r(r,X):
+    def calc_observables_r(r, X):
         """
         Return the observables relevant for calculating the conditional probability of spin r.
 
@@ -767,7 +769,8 @@ def adj(s, n_random_neighbors=0):
         State whose neighbors are found. One-dimensional vector of spins.
     n_random_neighbors : int,0
         If >0, return this many random neighbors. Neighbors are just random states, but they are
-        called "neighbors" because of the terminology in MPF.
+        called "neighbors" because of the terminology in MPF. They can provide coupling from s to
+        states that are very different, increasing the equilibration rate.
 
     Returns
     -------
@@ -807,20 +810,33 @@ def adj_sym(s, n_random_neighbors=False):
             match=True
             while match:
                 newneighbor=(np.random.rand(s.size)<.5)*2.-1
-                if np.sum(newneighbor*s)!=s.size:
+                # Make sure neighbor is not the same as the given state.
+                if (newneighbor!=s).any():
                     match=False
             neighbors[i+s.size]=newneighbor
     return neighbors
 
-def calc_de(s,i):
+def calc_de(s, i):
     """
-    Calculate the derivative of the energy wrt parameters given the state and
-    index of the parameter. In this case, the parameters are the concatenated
-    vector of {h_i,J_ij}.
+    Calculate the derivative of the energy wrt parameters given the state and index of the
+    parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij}.
+
+    Parameters
+    ----------
+    s : ndarray
+         Two-dimensional vector of spins where each row is a state.
+    i : int
+
+    Returns
+    -------
+    dE : float
+        Derivative of hamiltonian with respect to ith parameter, i.e. the corresponding observable.
     """
+    
+    assert s.ndim==2
     if i<s.shape[1]:
         return -s[:,i]
     else:
-        i-=s.shape[1]
-        i,j=sub_to_pair_idx(i,s.shape[1])
-        return -s[:,i]*s[:,j]
+        i -= s.shape[1]
+        i, j = ind_to_sub(s.shape[1], i)
+        return -s[:,i] * s[:,j]

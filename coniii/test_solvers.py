@@ -94,7 +94,7 @@ def test_MPF():
                  adj=adj)
     
     # compare log objective function with non-log version
-    # Convert from {0,1} to {+/-1} asis.
+    # Convert from {0,1} to {+/-1} basis.
     X = sample
     X = (X+1)/2
      

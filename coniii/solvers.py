@@ -165,7 +165,7 @@ class Solver():
                          initial_sample=None,
                          generate_kwargs={}):
         """
-        Wrapper around generate_samples_parallel() methods in samplers.
+        Wrapper around generate_samples() generate_samples_parallel() methods in samplers.
 
         Samples are saved to self.samples.
 
@@ -236,13 +236,11 @@ class Solver():
 # end Solver
 
 
-
 class Enumerate(Solver):
     """
     Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.
     """
-
     def __init__(self, *args, **kwargs):
         """
         Parameters
@@ -304,7 +302,6 @@ class Enumerate(Solver):
             return soln['x'], soln
         return soln['x']
 #end Enumerate
-
 
 
 def unwrap_self_worker_obj(arg, **kwarg):
@@ -575,7 +572,6 @@ class MPF(Solver):
             return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
         return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True)
 #end MPF
-
 
 
 class MCH(Solver):
@@ -1179,7 +1175,6 @@ class MCHIncompleteData(MCH):
 # End MCHIncompleteData
 
 
-
 class Pseudo(Solver):
     """
     Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell and Ekeberg,
@@ -1418,7 +1413,6 @@ class Pseudo(Solver):
 #end Pseudo
 
 
-
 class ClusterExpansion(Solver):
     """
     Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
@@ -1426,7 +1420,6 @@ class ClusterExpansion(Solver):
     
     Specific to pairwise Ising constraints.
     """
-
     def __init__(self, *args, **kwargs):
         super(ClusterExpansion,self).__init__(*args,**kwargs)
         self.setup_sampler(kwargs.get('sample_method','metropolis'))

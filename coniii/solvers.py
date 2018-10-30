@@ -1483,7 +1483,6 @@ class ClusterExpansion(Solver):
 
         return ent, Jfull 
 
-    # 3.24.2014
     def Sindependent(self, cluster, coocMat):
         """
         Entropy approximation assuming that each cluster appears independently of the others.
@@ -1692,7 +1691,7 @@ class ClusterExpansion(Solver):
             deltaJdict  :
         """
 
-        # 7.18.2017 convert input to coocMat
+        # convert input to coocMat
         coocMat = mean_field_ising.cooccurrence_matrix((X+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
@@ -1715,27 +1714,24 @@ class ClusterExpansion(Solver):
             clusters[ size+1 ] = []
             numClusters = len(clusters[size])
             if verbose:
-                print("adaptiveClusterExpansion: Clusters of size", \
-                    size+1)
+                print("adaptiveClusterExpansion: Clusters of size", size+1)
             for i in range(numClusters):
-              for j in range(i+1,numClusters): # some are not unique!
-                gamma1 = clusters[size][i]
-                gamma2 = clusters[size][j]
-                gammaI = np.intersect1d(gamma1,gamma2)
-                gammaU = np.sort( np.union1d(gamma1,gamma2) )
-                gammaU = list(gammaU)
-                if (len(gammaI) == size-1):
-                  deltaSgammaU,deltaJgammaU =                       \
-                    self.deltaS(gammaU,coocMat,deltaSdict,deltaJdict,
-                    verbose=veryVerbose,
-                    meanFieldRef=meanFieldRef,
-                    priorLmbda=priorLmbda,
-                    numSamples=numSamples,
-                    independentRef=independentRef,
-                    meanFieldPriorLmbda=meanFieldPriorLmbda)
-                  if (abs(deltaSgammaU) > T)                        \
-                    and (gammaU not in clusters[size+1]):
-                    clusters[ size+1 ].append(gammaU)
+                for j in range(i+1,numClusters): # some are not unique!
+                    gamma1 = clusters[size][i]
+                    gamma2 = clusters[size][j]
+                    gammaI = np.intersect1d(gamma1,gamma2)
+                    gammaU = np.sort( np.union1d(gamma1,gamma2) )
+                    gammaU = list(gammaU)
+                    if (len(gammaI) == size-1):
+                        deltaSgammaU, deltaJgammaU = self.deltaS(gammaU, coocMat, deltaSdict, deltaJdict,
+                                                                 verbose=veryVerbose,
+                                                                 meanFieldRef=meanFieldRef,
+                                                                 priorLmbda=priorLmbda,
+                                                                 numSamples=numSamples,
+                                                                 independentRef=independentRef,
+                                                                 meanFieldPriorLmbda=meanFieldPriorLmbda)
+                        if (abs(deltaSgammaU) > T) and (gammaU not in clusters[size+1]):
+                            clusters[ size+1 ].append(gammaU)
             size += 1
         
         if independentRef:
@@ -1754,13 +1750,13 @@ class ClusterExpansion(Solver):
                 ent += deltaSdict[cID]
                 J += deltaJdict[cID]
 
-        # 7.18.2017 convert J to {-1,1}
+        # convert J to {-1,1} basis
         h = -J.diagonal()
         J = -mean_field_ising.zeroDiag(J)
-        self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
+        self.multipliers = convert_params( h, squareform(J)*2, '11', concat=True )
 
         if return_all:
-            return ent,self.multipliers,clusters,deltaSdict,deltaJdict
+            return ent, self.multipliers, clusters, deltaSdict, deltaJdict
         else:
             return self.multipliers
 # end ClusterExpansion
@@ -1830,26 +1826,21 @@ class RegularizedMeanField(Solver):
 
         from scipy import transpose
 
-        # 7.18.2017 convert input to coocMat
-        coocMatData = mean_field_ising.cooccurrence_matrix((samples+1)/2)
-        
         numDataSamples = len(samples)
+        # convert input to coocMat
+        coocMatData = mean_field_ising.cooccurrence_matrix((samples+1)/2)
         
         if cooc_cov is None:
             cooc_cov = mean_field_ising.coocSampleCovariance(samples)
-        
-        if nSkip is None:
-            nSkip = 10*self.n
         
         if change_seed: seedIter = mean_field_ising.seedGenerator(seed, 1)
         else: seedIter = mean_field_ising.seedGenerator(seed, 0)
         
         if priorLmbda != 0.:
-            # 11.24.2014 Need to fix prior implementation
-            raise Exception("priorLmbda is not currently supported")
+            raise NotImplementedError("priorLmbda is not currently supported")
             lmbda = priorLmbda / numDataSamples
 
-        # 11.21.2014 stuff defining the error model, taken from findJmatrixBruteForce_CoocMat
+        # stuff defining the error model, taken from findJmatrixBruteForce_CoocMat
         # 3.1.2012 I'm pretty sure the "repeated" line below should have the transpose, but
         # coocJacobianDiagonal is not sensitive to this.  If you use non-diagonal jacobians in the
         # future and get bad behavior you may want to double-check this.
@@ -1865,17 +1856,16 @@ class RegularizedMeanField(Solver):
             covTildeStdevsRepeated = (
                     covTildeStdevs*np.ones((len(covTildeStdevs),len(covTildeStdevs))) ).T
         else:
-            raise Exception("correlated residuals calculation is not currently supported")
-            # 2.7.2014
+            raise NotImplementedError("correlated residuals calculation is not currently supported")
             if cooc_cov is None: raise Exception
             cov = cooc_cov # / numDataSamples (can't do this here due to numerical issues)
                           # instead include numDataSamples in the calculation of coocMatMeanZSq
 
-        # 11.21.2014 for use in gammaPrime <-> priorLmbda
+        # for use in gammaPrime <-> priorLmbda
         freqsList = np.diag(coocMatData)
         pmean = np.mean(freqsList)
         
-        # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
+        # adapted from findJMatrixBruteForce_CoocMat
         def samples(J):
            seed = next(seedIter)
            if min_covariance:
@@ -1888,7 +1878,7 @@ class RegularizedMeanField(Solver):
            isingSamples = self.samples.copy()
            return isingSamples
 
-        # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
+        # adapted from findJMatrixBruteForce_CoocMat
         def func(meanFieldGammaPrime):
             
             # translate gammaPrime prior strength to lambda prior strength
@@ -1903,16 +1893,13 @@ class RegularizedMeanField(Solver):
             isingSamples = samples(J)
             
             # calculate residuals, including prior if necessary
-            if min_independent: # Default as of 4.2.2015
+            if min_independent: # Default
                 dc = mean_field_ising.isingDeltaCooc(isingSamples, coocMatData)/coocStdevs
             elif min_covariance:
                 dc = isingDeltaCovTilde(isingSamples, covTildeMean, empiricalFreqs)/covTildeStdevs
             else:
                 dc = mean_field_ising.isingDeltaCooc(isingSamples, coocMatMean)
                 if priorLmbda != 0.:
-                    # new prior 3.24.2014
-                    # 11.21.2014 oops, I think this should be square-rooted XXX
-                    # 11.21.2014 oops, should also apply in min_independent case XXX
                     freqs = np.diag(coocMatData)
                     factor = np.outer(freqs*(1.-freqs),freqs*(1.-freqs))
                     factorFlat = aboveDiagFlat(factor)
@@ -1941,14 +1928,13 @@ class RegularizedMeanField(Solver):
                                         numSamples=numDataSamples)
         J = J + J.T
 
-        # convert J to {-1,1}
+        # convert J to {-1,1} basis
         h = -J.diagonal()
         J = -mean_field_ising.zeroDiag(J)
-        self.multipliers = convert_params( h,squareform(J)*2,'11',concat=True )
+        self.multipliers = convert_params( h, squareform(J)*2, '11', concat=True )
 
         return self.multipliers
 
-    # 3.18.2016
     def bracket1d(self, xList, funcList):
         """
         Assumes xList is monotonically increasing

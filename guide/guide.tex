@@ -400,9 +400,9 @@ The adaptive cluster expansion method is implemented in the {\tt ClusterExpansio
 The package is divided into three principal modules containing the algorithms for solving the inverse maxent problem ({\tt solvers.py}), the Monte Carlo Markov Chain (MCMC) sampling algorithms ({\tt samplers.py}), and supporting ``utility'' functions for the remaining modules ({\tt utils.py}) as shown in Fig.~\ref{gr:architecture}.
 Besides the {\tt utils.py} module, the package is organized around classes that correspond to different algorithms. This class-based structure ensures that the state of the solver or sampler, including the data it was fit to and the current guess for the parameters, are all contained within the instance of the algorithm class. As a result, the current state of work can be saved and moved between workstations using the Python package {\tt dill}.
 
-For the solvers, the different algorithms available are accessible from the {\tt coniii.solvers} module as listed in Fig.~\ref{gr:architecture}. These algorithm classes are all derived from a base {\tt Solver} class as shown in Fig.~\ref{gr:architecture}. In the accompanying release version of the package, v1.0.3, the method {\tt Solver.solve} serves as the interface for solving the inverse maxent problem. Once a solution has been found, samples can be taken from the model distribution by calling {\tt Solver.generate\_samples()} that wraps calls to the {\tt Solver.sampler} instance of a sampling class. For the Ising model, this is typically an instance of {\tt FastMCIsing} from the {\tt coniii.solvers} module. The only other available class is {\tt Metropolis}, but other sampling algorithms listed in the {\tt samplers.py} box in Fig.~\ref{gr:architecture} will be released with later versions of this package.
+For the solvers, the different algorithms available are accessible from the {\tt coniii.solvers} module as listed in Fig.~\ref{gr:architecture}. These algorithm classes are all derived from a base {\tt Solver} class as shown in Fig.~\ref{gr:architecture}. In the accompanying release version of the package, v1.0.3, the method {\tt Solver.solve} serves as the interface for solving the inverse maxent problem. To keep the solution algorithms generic enough to solve a variety of different maxent problems, they all require that the user define the maxent model upon instantiation through the definition of keyword arguments like {\tt calc\_observables}. The particular methods required to specify the maxent problem differ by algorithm, but for the pairwise maxent problem we have made it easy by defining those functions as part of the package. These helper functions are available as part of the {\tt utils.py} module and their use is demonstrated in the Jupyter notebook usage guide.
 
-To keep the solution algorithms generic, they require definition of the maxent model upon instantiation through the definition of the keyword argument {\tt calc\_observables}.
+The MCMC sampling algorithms are likewise based on a class architecture derived from {\tt Sampler} as shown in Fig.~\ref{gr:architecture}. Each instance of {\tt Solver} automatically instantiates this class under {\tt Solver.sampler} and wraps calls to it. For the Ising model, this is typically an instance of {\tt FastMCIsing}. The only other available class is {\tt Metropolis}, but other sampling algorithms listed in the {\tt samplers.py} box in Fig.~\ref{gr:architecture} will be released with later versions of this package.
 
 \begin{figure}[tb]
 	\includegraphics[width=\linewidth,clip=True,trim=100 360 80 0]{architecture}
@@ -418,7 +418,7 @@ The most direct test of the algorithms is to generate a system where the paramet
 
 More importantly, the user can check if the algorithms match the expected correlations closely or not. How one checks the validity of a particular maxent model for data is beyond the scope of this paper, but we point the reader to the appendix of Ref~\cite{Lee:2015ev} where the methodology is explained in detail for a broad audience.
 
-If there are any issues or bugs in the software, we organize improvements and patches through  the \href{https://github.com/eltrompetero/coniii}{GitHub repository} where pull requests can be made. 
+If there are any issues or bugs in the software, we organize improvements and patches through  the \href{https://github.com/eltrompetero/coniii}{GitHub repository} where both issues can be filed and pull requests made. 
 
 
 \section*{(2) Availability}
@@ -456,8 +456,9 @@ English
 
 
 \section*{(3) Reuse potential}
-To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes described in the base {\tt Solver} and {\tt Sampler} classes. New algorithms should be filed as a pull request to the \href{https://github.com/eltrompetero/coniii}{GitHub repository} along with an example solution that can be included in the usage guide Jupyter notebook.
+To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes described in the base {\tt Solver} and {\tt Sampler} classes. New algorithms should be filed as a pull request to the \href{https://github.com/eltrompetero/coniii}{GitHub repository} along with an example solution that can be included in the usage guide Jupyter notebook and unit tests.
 
+Documentation for the package is included as part of the GitHub repository and also hosted online at \url{https://eddielee.co/coniii/_build/html/index.html}.
 
 \section*{Acknowledgements}
 We thank the anonymous reviewers for helpful feedback on both the manuscript and the accessibility of the software.

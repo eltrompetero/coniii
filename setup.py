@@ -26,7 +26,6 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 from distutils.extension import Extension
-import numpy as np
 
 here = path.abspath(path.dirname(__file__))
 

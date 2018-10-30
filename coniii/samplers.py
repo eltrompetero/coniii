@@ -1252,10 +1252,6 @@ class SimulatedTempering(Sampler):
 #end SimulatedTempering
 
 
-
-# =================== #
-# Metropolis sampler. #
-# =================== #
 class FastMCIsing(Sampler):
     def __init__(self, n, theta,
                  n_cpus=None,
@@ -1287,7 +1283,7 @@ class FastMCIsing(Sampler):
         self.calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
         
         if use_numba:
-            rng=None
+            rng = None
         else:
             if rng is None:
                 self.rng = np.random.RandomState()
@@ -1590,7 +1586,7 @@ class FastMCIsing(Sampler):
         if not systematic_iter:
             def f(args):
                 s, E, seed = args
-                rng=np.random.RandomState(seed)
+                rng = np.random.RandomState(seed)
                 for j in range(n_iters):
                     de = self._sample_metropolis( s, rng=rng )
                     E += de
@@ -1598,16 +1594,16 @@ class FastMCIsing(Sampler):
         else:
             def f(args):
                 s,E,seed = args
-                rng=np.random.RandomState(seed)
+                rng = np.random.RandomState(seed)
                 for j in range(n_iters):
-                    de = self._sample_metropolis( s, rng=rng,flip_site=j%self.n )
+                    de = self._sample_metropolis( s, rng=rng, flip_site=j%self.n )
                     E += de
                 return s, E
         
-        pool=mp.Pool(cpucount)
-        self.samples,self.E = list(zip(*pool.map(f,list(zip(self.samples,
-                                                self.E,
-                                                np.random.randint(2**31-1,size=sampleSize))))))
+        pool = mp.Pool(cpucount)
+        self.samples, self.E = list(zip(*pool.map(f,list(zip(self.samples,
+                                                  self.E,
+                                                  self.rng.randint(2**31-1, size=sampleSize))))))
         pool.close()
 
         self.samples = np.vstack(self.samples)
@@ -1792,7 +1788,7 @@ class Metropolis(Sampler):
         pool = mp.Pool(cpucount)
         self.samples, self.E = list(zip(*pool.map(f,zip(self.samples,
                                                         self.E,
-                                                        np.random.randint(2**31-1,size=sample_size)))))
+                                                        self.rng.randint(2**31-1,size=sample_size)))))
         pool.close()
 
         self.samples = np.vstack(self.samples)

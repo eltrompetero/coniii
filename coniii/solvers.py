@@ -128,8 +128,7 @@ class Solver():
 
     def setup_sampler(self,
                       sample_method=None,
-                      sampler_kwargs={},
-                      optimize_kwargs={}):
+                      sampler_kwargs={}):
         """
         Instantiate sampler class object.
 
@@ -138,21 +137,21 @@ class Solver():
         sample_method : str
             'ising_metropolis', 'metropolis'
         sampler_kwargs : dict
-        optimize_kwargs : dict
+            Kwargs that can be passed into the initialization function for the sampler.
         """
 
         sample_method = sample_method or self.sampleMethod
         
         if sample_method=='metropolis':
             self.sampleMethod=sample_method
-            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e )
+            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e, **sampler_kwargs )
       
         elif sample_method=='ising_metropolis':
             self.sampleMethod=sample_method
             if self.multipliers is None:
-                self.sampler = FastMCIsing( self.n, np.zeros(self.n+self.n*(self.n-1)//2) )
+                self.sampler = FastMCIsing( self.n, np.zeros(self.n+self.n*(self.n-1)//2), **sampler_kwargs )
             else:
-                self.sampler = FastMCIsing( self.n, self.multipliers )
+                self.sampler = FastMCIsing( self.n, self.multipliers, **sampler_kwargs )
 
         else:
            raise NotImplementedError("Unrecognized sampler.")
@@ -1543,7 +1542,6 @@ class ClusterExpansion(Solver):
         deltaJdict : dict,None
         verbose : bool,True
         meanFieldRef : bool,False
-        priorLmda : float,0.
         numSamples : int,None
         independentRef : bool,False
             If True, expand about independent entropy
@@ -1782,61 +1780,54 @@ class RegularizedMeanField(Solver):
         See Solver. Default sample_method is 'ising_metropolis'.
         """
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
-        self.setup_sampler(kwargs.get('sample_method', 'ising_metropolis'))
+        # some case handling to ensure that RMF gets control over the random number generator
+        if kwargs.get('sample_method','ising_metropolis')=='metropolis':
+            self.setup_sampler('metropolis',
+                               sampler_kwargs={'n_cpus':1})
+        else:
+            self.setup_sampler('ising_metropolis',
+                               sampler_kwargs={'use_numba':False,'n_cpus':1})
 
     def solve(self, samples,
-              numSamples=1e5,
-              nSkip=None,
+              sample_size=100_000,
               seed=0,
-              changeSeed=False,
-              numProcs=1,
-              numDataSamples=None,
-              minSize=0,
-              minimizeCovariance=False,
-              minimizeIndependent=True,
-              coocCov=None,
+              change_seed=False,
+              min_size=0,
+              min_covariance=False,
+              min_independent=True,
+              cooc_cov=None,
               priorLmbda=0.,
               bracket=None,
-              numGridPoints=200):
+              n_grid_points=200):
         """
-        Varies the strength of regularization on the mean field J to best fit given cooccurrence
-        data.
+        Varies the strength of regularization on the mean field J to best fit given cooccurrence data.
         
-        numGridPoints (200) : If bracket is given, first test at numGridPoints
-                              points evenly spaced in the bracket interval, then give
-                              the lowest three points to scipy.optimize.minimize_scalar
-        
-        numSamples (1e5)            : 
-        nSkip (None)                :
-        seed (0)                    :
-        changeSeed (False)          :
-        numProcs (1)                :
-        minSize (0)                 : 3.8.2013 Use a modified model in which
-                                      samples with fewer ones than minSize are not
-                                      allowed.
-        gradDesc (False)            : 5.29.2013 Take a naive gradient descent step
-                                      after each LM minimization
-        minimizeCovariance (False)  : ** As of 7.20.2017, not currently supported **
-                                      6.3.2013 Minimize covariance from emperical
-                                      frequencies (see notes); trying to avoid
-                                      biases, as inspired by footnote 12 in 
-                                      TkaSchBer06
-        minimizeIndependent (True)  : ** As of 7.20.2017, minimizeIndependent is 
-                                         the only mode currently supported **
-                                      2.7.2014 Each <xi> and <xi xj> residual is treated
-                                      as independent
-        coocCov (None)              : ** As of 7.20.2017, not currently supported **
-                                      2.7.2014 Provide a covariance matrix for
-                                      residuals.  Should typically be 
-                                      coocSampleCovariance(samples).  Only used
-                                      if minimizeCovariance and minimizeIndependent
-                                      are False.
-        priorLmbda (0.)             : ** As of 7.20.2017, not currently implemented **
-                                      Strength of noninteracting prior.
+        n_grid_points : int,200
+            If bracket is given, first test at n_grid_points points evenly spaced in the bracket interval,
+            then give the lowest three points to scipy.optimize.minimize_scalar
+        sample_size : int,100_000
+        seed : int,0
+            initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if change Seed option
+            is True
+        change_seed : bool,False
+        min_size : int,0
+            Use a modified model in which samples with fewer ones than min_size are not allowed.
+        min_covariance : bool,False
+            ** As of v1.0.3, not currently supported **
+            Minimize covariance from emperical frequencies (see notes); trying to avoid biases, as inspired by
+            footnote 12 in TkaSchBer06
+        min_independent : bool,True
+            ** As of v1.0.3, min_independent is the only mode currently supported **
+            Each <xi> and <xi xj> residual is treated as independent
+        cooc_cov : ndarray,None
+            ** As of v1.0.3, not currently supported **
+            Provide a covariance matrix for residuals.  Should typically be coocSampleCovariance(samples).
+            Only used if min_covariance and min_independent are False.
+        priorLmbda : float,0.
+            ** As of v1.0.3, not currently implemented **
+            Strength of noninteracting prior.
         """
-        # TO DO : Is the random sampling seed actually remaining fixed?
-        # TO DO : Is symmetrizing J (in at least two places) being done correctly?
-        
+
         from scipy import transpose
 
         # 7.18.2017 convert input to coocMat
@@ -1844,14 +1835,14 @@ class RegularizedMeanField(Solver):
         
         numDataSamples = len(samples)
         
-        if coocCov is None:
-            coocCov = mean_field_ising.coocSampleCovariance(samples)
+        if cooc_cov is None:
+            cooc_cov = mean_field_ising.coocSampleCovariance(samples)
         
         if nSkip is None:
             nSkip = 10*self.n
         
-        if changeSeed: seedIter = mean_field_ising.seedGenerator(seed,1)
-        else: seedIter = mean_field_ising.seedGenerator(seed,0)
+        if change_seed: seedIter = mean_field_ising.seedGenerator(seed, 1)
+        else: seedIter = mean_field_ising.seedGenerator(seed, 0)
         
         if priorLmbda != 0.:
             # 11.24.2014 Need to fix prior implementation
@@ -1862,11 +1853,11 @@ class RegularizedMeanField(Solver):
         # 3.1.2012 I'm pretty sure the "repeated" line below should have the transpose, but
         # coocJacobianDiagonal is not sensitive to this.  If you use non-diagonal jacobians in the
         # future and get bad behavior you may want to double-check this.
-        if minimizeIndependent:
+        if min_independent:
             coocStdevs = mean_field_ising.coocStdevsFlat(coocMatData,numDataSamples)
             coocStdevsRepeated = ( coocStdevs*np.ones((len(coocStdevs),len(coocStdevs))) ).T
-        elif minimizeCovariance:
-            raise Exception("minimizeCovariance is not currently supported")
+        elif min_covariance:
+            raise Exception("min_covariance is not currently supported")
             empiricalFreqs = np.diag(coocMatData)
             covTildeMean = covarianceTildeMatBayesianMean(coocMatData,numDataSamples)
             covTildeStdevs = covarianceTildeStdevsFlat(coocMatData,numDataSamples,
@@ -1876,8 +1867,8 @@ class RegularizedMeanField(Solver):
         else:
             raise Exception("correlated residuals calculation is not currently supported")
             # 2.7.2014
-            if coocCov is None: raise Exception
-            cov = coocCov # / numDataSamples (can't do this here due to numerical issues)
+            if cooc_cov is None: raise Exception
+            cov = cooc_cov # / numDataSamples (can't do this here due to numerical issues)
                           # instead include numDataSamples in the calculation of coocMatMeanZSq
 
         # 11.21.2014 for use in gammaPrime <-> priorLmbda
@@ -1887,12 +1878,13 @@ class RegularizedMeanField(Solver):
         # 11.21.2014 adapted from findJMatrixBruteForce_CoocMat
         def samples(J):
            seed = next(seedIter)
-           if minimizeCovariance:
-               J = tildeJ2normalJ(J,empiricalFreqs)
+           if min_covariance:
+               J = tildeJ2normalJ(J, empiricalFreqs)
            burninDefault = 100*self.n
            J = J + J.T
            self.multipliers = np.concatenate([J.diagonal(), squareform(mean_field_ising.zeroDiag(-J))])
-           self.generate_samples(n_iters=nSkip, burnin=burninDefault, sample_size=int(numSamples))
+           self.sampler.rng = np.random.RandomState(seed)
+           self.generate_samples(n_iters=1, burnin=burninDefault, sample_size=int(sample_size))
            isingSamples = self.samples.copy()
            return isingSamples
 
@@ -1911,17 +1903,16 @@ class RegularizedMeanField(Solver):
             isingSamples = samples(J)
             
             # calculate residuals, including prior if necessary
-            if minimizeIndependent: # Default as of 4.2.2015
-                dc = mean_field_ising.isingDeltaCooc(isingSamples,coocMatData)/coocStdevs
-            elif minimizeCovariance:
-                dc = isingDeltaCovTilde(isingSamples,covTildeMean,
-                                          empiricalFreqs)/covTildeStdevs
+            if min_independent: # Default as of 4.2.2015
+                dc = mean_field_ising.isingDeltaCooc(isingSamples, coocMatData)/coocStdevs
+            elif min_covariance:
+                dc = isingDeltaCovTilde(isingSamples, covTildeMean, empiricalFreqs)/covTildeStdevs
             else:
-                dc = mean_field_ising.isingDeltaCooc(isingSamples,coocMatMean)
+                dc = mean_field_ising.isingDeltaCooc(isingSamples, coocMatMean)
                 if priorLmbda != 0.:
                     # new prior 3.24.2014
                     # 11.21.2014 oops, I think this should be square-rooted XXX
-                    # 11.21.2014 oops, should also apply in minimizeIndependent case XXX
+                    # 11.21.2014 oops, should also apply in min_independent case XXX
                     freqs = np.diag(coocMatData)
                     factor = np.outer(freqs*(1.-freqs),freqs*(1.-freqs))
                     factorFlat = aboveDiagFlat(factor)
@@ -1936,7 +1927,7 @@ class RegularizedMeanField(Solver):
             return np.sum(dc**2)
 
         if bracket is not None:
-            gridPoints = np.linspace(bracket[0], bracket[1], numGridPoints)
+            gridPoints = np.linspace(bracket[0], bracket[1], n_grid_points)
             gridResults = [ func(p) for p in gridPoints ]
             gridBracket = self.bracket1d(gridPoints, gridResults)
             solution = minimize_scalar(func, bracket=gridBracket)

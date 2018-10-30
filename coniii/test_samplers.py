@@ -62,7 +62,17 @@ def test_Metropolis():
     print("Running sampler.generate_samples_parallel(n, systematic_iter=True)")
     sampler.generate_samples_parallel(n, systematic_iter=False)
     print("Done.")
-    print()
+
+    # test control over rng
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples(n, systematic_iter=True)
+    X1 = sampler.samples.copy()
+
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples(n, systematic_iter=True)
+    X2 = sampler.samples.copy()
+
+    assert np.array_equal(X1, X2)
 
 def test_FastMCIsing(run_timing=False):
     # Check that everything compiles and runs.
@@ -95,7 +105,25 @@ def test_FastMCIsing(run_timing=False):
     sampler.generate_samples_parallel(n, systematic_iter=False)
     print("Done.")
     print()
-    
+
+    # test that setting rng reproduces same sample
+    sampler=FastMCIsing(n, theta, use_numba=False)
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples(5, n_iters=20, systematic_iter=True)
+    X1 = sampler.samples.copy()
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples(5, n_iters=20, systematic_iter=True)
+    X2 = sampler.samples.copy()
+    assert np.array_equal(X1, X2)
+
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples_parallel(5, n_iters=20, systematic_iter=True)
+    X1 = sampler.samples.copy()
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples_parallel(5, n_iters=20, systematic_iter=True)
+    X2 = sampler.samples.copy()
+    assert np.array_equal(X1, X2)
+
     if run_timing:
         # Some basic timing checks
         print("Timing jit loop")

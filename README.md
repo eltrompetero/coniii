@@ -11,8 +11,8 @@ If you use ConIII for your research, please cite the following:
 
 The link to the arXiv article is here: [https://arxiv.org/abs/1801.08216]. 
 
-Documentation is included in the docs/\_build/html/index.html webpage. Unfortunately, the online
-documentation on readthedocs.org seems to compiling properly but the functions are not displaying!
+Documentation is included in the "docs/\_build/html/index.html". Online documentation is hosted at
+[https://eddielee.co/coniii/_build/html/index.html].
 
 ## Installation
 This package is available on PyPI. It can be installed by running  
@@ -45,20 +45,25 @@ Once inside the install directory, you can run in your bash shell
 $ python enumerate.py [N]
 ```
 
-where `[N]` should be replaced by the size of the system. For more details, see the \_\_main\_\_ block
-at the end of the file enumerate.py.
+where `[N]` should be replaced by the size of the system. This will write the equations for the Ising model in
+the {0,1} basis. On the other hand,
+
+```bash
+$ python enumerate.py [N] 1
+```
+
+specifies that the system should be written for the {-1,1} basis.  For more details, see the `__main__`
+block at the end of the file enumerate.py.
 
 ## Quick guide
 
-A Jupyter notebook with examples for how to use ConIII is available in the ipynb directory on
-the Github repository: [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb].
-There is a brief introduction as well in there.
+A Jupyter notebook with a brief introduction and examples for how to use ConIII is available in the "ipynb"
+directory on the GitHub repository:
+[https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb].  The notebook is installed into
+your package directory if you used pip, or you can download it from the above GitHub link.
 
-The notebook is installed into your coniii package directory if you used pip, or you can download it
-from the above Github link.
-
-First copy the notebook file `usage_guide.ipynb` into a directory outside the ConIII directory.
-Change to this directory and run
+To use the notebook, first copy the notebook file "usage_guide.ipynb" into a directory outside the "coniii"
+directory.  Change to this directory and run
 ```bash
 $ jupyter notebook
 ```
@@ -67,22 +72,18 @@ This should open the notebook in your default web browser.
 
 ## Dependencies
 
-In order to run the usage guide Jupyter notebook, you must have both Jupyter and matplotlib
-installed. These are automatically installed into your Python path when you install ConIII through
-listed dependencies. If you prefer to install them yourself, you can use the Python package
-[pip](https://pypi.org/project/pip/). Open a terminal and run
-```bash
-$ pip install jupyter matplotlib
-```
+In order to open the usage guide Jupyter notebook, you must have both Jupyter installed. To run the examples,
+you need a number of packages listed in "setup.py". These are all automatically installed into your Python
+path when you install ConIII through listed dependencies.
 
-However, we strongly recommend that you use the [Anaconda](https://www.anaconda.com/download/)
-package manager, in which case you can install the packages by running
+If you prefer to install the packages yourself, you can use the Python package
+[pip](https://pypi.org/project/pip/).  Open a terminal and run
 ```bash
-$ conda install jupyter matplotlib
+$ pip install matplotlib 'multiprocess==0.70.5' 'jupyter>=1' matplotlib scipy numpy 'numba>=0.39.0,<1' dill joblib
 ```
 
 ## Troubleshooting
-This package is only maintained for Python 3.6 as of October 2018. Make sure that you are running
+This package is only maintained for Python 3.6 as of v1.0.2. Make sure that you are running
 Python 3.6 which you can check by running in your bash terminal
 ```bash
 $ python --version
@@ -92,8 +93,15 @@ ConIII has been tested on the following systems
 * Debian 9 (Stretch)
 * Mac OS X 10.13 (High Sierra)
 
-Some users may encounter difficulties with the multiprocess module, in which case the `n_cpus` kwarg
-can be set to 0 when the algorithm class instance is declared.  This will disable the parallel computing functionality provided by the multiprocess module.
+Please let us know if your system has problems by filing an issue request on the GitHub page. Please provide a
+stack trace or other information that would be helpful in debugging.
+
+Some users may encounter difficulties with the multiprocess module, in which case the `n_cpus` kwarg can be
+set to 0 when the algorithm class instance is declared.  This will disable the parallel computing
+functionality provided by the multiprocess module.
 
 ### Support
-Please file an issue on the GitHub if you have any problems or feature requests.
+Please file an issue on the GitHub if you have any problems or feature requests. Please provide a
+stack trace or other information that would be helpful in debugging.
+
+Online documentation is hosted at [https://eddielee.co/coniii/_build/html/index.html].

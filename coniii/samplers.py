@@ -1451,7 +1451,7 @@ class FastMCIsing(Sampler):
     def _jit_generate_samples_parallel(self,
                                        sample_size,
                                        n_iters=1000,
-                                       cpucount=None,
+                                       n_cpus=None,
                                        initial_sample=None,
                                        systematic_iter=False):
         """
@@ -1471,7 +1471,7 @@ class FastMCIsing(Sampler):
             receive in equal number of chances to flip.
         """
 
-        cpucount=cpucount or self.nCpus
+        n_cpus=n_cpus or self.nCpus
         sample_metropolis = self._jit_sample_metropolis
         h, J = self.h, self.J
         n = self.n
@@ -1541,7 +1541,7 @@ class FastMCIsing(Sampler):
             args = zip(initial_sample, self.E, np.random.randint(2**31-1, size=sample_size))
         
         # run sampling
-        pool = mp.Pool(cpucount)
+        pool = mp.Pool(n_cpus)
         self.samples, self.E = list(zip(*pool.map(f, args)))
         pool.close()
         
@@ -1552,7 +1552,7 @@ class FastMCIsing(Sampler):
     def _generate_samples_parallel(self,
                                    sampleSize,
                                    n_iters=1000,
-                                   cpucount=None,
+                                   n_cpus=None,
                                    initial_sample=None,
                                    systematic_iter=False):
         """
@@ -1575,7 +1575,7 @@ class FastMCIsing(Sampler):
             receive in equal number of chances to flip.
         """
 
-        cpucount=cpucount or self.nCpus
+        n_cpus=n_cpus or self.nCpus
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
         else:
@@ -1600,7 +1600,7 @@ class FastMCIsing(Sampler):
                     E += de
                 return s, E
         
-        pool = mp.Pool(cpucount)
+        pool = mp.Pool(n_cpus)
         self.samples, self.E = list(zip(*pool.map(f,list(zip(self.samples,
                                                   self.E,
                                                   self.rng.randint(2**31-1, size=sampleSize))))))
@@ -1666,9 +1666,10 @@ class Metropolis(Sampler):
             Vector of parameters in Hamiltonian.
         calc_e : function
             f( states, params )
-        n_cpus : int,0
+        n_cpus : int
             If None, then will use all available CPUs.
-        rng : np.random.RandomState,None
+        rng : np.random.RandomState
+            Random number generator.
         """
 
         self.n = n
@@ -1739,28 +1740,23 @@ class Metropolis(Sampler):
     def generate_samples_parallel(self,
                                   sample_size,
                                   n_iters=1000,
-                                  cpucount=None,
+                                  n_cpus=None,
                                   initial_sample=None,
-                                  systematic_iter=False,
-                                  ):
+                                  systematic_iter=False):
         """
         Generate samples in parallel and save them into self.samples and their energies into self.E.
 
         Parameters
         ----------
         sample_size : int
-        n_iters : int,1000
-        cpucount : int,None
-        initial_sample : ndarray,None
-        systematic_iter : bool,False
+        n_iters : int
+        n_cpus : int
+        initial_sample : ndarray
+        systematic_iter : bool
             Iterate through spins systematically instead of choosing them randomly.
-
-        Returns
-        -------
-        None
         """
 
-        cpucount = cpucount or self.nCpus
+        n_cpus = n_cpus or self.nCpus
         if initial_sample is None:
             self.samples = self.rng.choice([-1.,1.], size=(sample_size,self.n))
         else:
@@ -1785,7 +1781,7 @@ class Metropolis(Sampler):
                     E += de
                 return s, E
         
-        pool = mp.Pool(cpucount)
+        pool = mp.Pool(n_cpus)
         self.samples, self.E = list(zip(*pool.map(f,zip(self.samples,
                                                         self.E,
                                                         self.rng.randint(2**31-1,size=sample_size)))))
@@ -1798,7 +1794,7 @@ class Metropolis(Sampler):
                               sample_size,
                               fixed_subset,
                               burn_in=1000,
-                              cpucount=None,
+                              n_cpus=None,
                               initial_sample=None,
                               systematic_iter=False,
                               parallel=True):
@@ -1815,13 +1811,26 @@ class Metropolis(Sampler):
         fixed_subset : list of duples
             Each duple is the index of the spin and the value to fix it at.  These should be ordered
             by spin index.
-        burn_in : int,1000
-        cpucount : int,None
-        initial_sample : ndarray,None
-        systematic_iter : bool,False
+        burn_in : int
+            Burn in.
+        n_cpus : int
+            Number of cpus to use.
+        initial_sample : ndarray
+            Option to set initial random sample.
+        systematic_iter : bool
             Iterate through spins systematically instead of choosing them randomly.
+        parallel : bool
+            If True, use parallelized routine.
+
+        Returns
+        -------
+        ndarray
+            Samples from distribution.
+        ndarray
+            Energy of each sample.
         """
-        cpucount = cpucount or self.nCpus
+
+        n_cpus = n_cpus or self.nCpus
         nSubset = self.n-len(fixed_subset)
 
         # Initialize sampler.
@@ -1878,7 +1887,7 @@ class Metropolis(Sampler):
                     return s,E
             
             #start = datetime.now()
-            pool=mp.Pool(cpucount)
+            pool=mp.Pool(n_cpus)
             #poolt = datetime.now()
             self.samples,self.E=list(zip(*pool.map(f,list(zip(self.samples,
                                                     self.E,
@@ -1924,13 +1933,31 @@ class Metropolis(Sampler):
             counter += 1
         self.samples = np.reshape(self.samples,(sample_size,self.n))
         self.E = np.concatenate(self.E)
-        return self.samples,self.E
+        return self.samples, self.E
 
     def sample_metropolis(self, sample0, E0,
                           rng=None,
                           flip_site=None,
                           calc_e=None):
         """Metropolis sampling given an arbitrary sampling function.
+
+        Parameters
+        ----------
+        sample0 : ndarray
+            Sample to start with. Passed by ref and changed.
+        E0 : ndarray
+            Initial energy of state.
+        rng : np.random.RandomState
+            Random number generator.
+        flip_site : int
+            Site to flip.
+        calc_e : function
+            If another function to calculate energy should be used
+            
+        Returns
+        -------
+        float
+            delta energy.
         """
 
         rng = rng or self.rng

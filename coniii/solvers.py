@@ -113,7 +113,7 @@ class Solver():
         
         self.calc_observables = calc_observables
         self.calc_observables_multipliers = calc_observables_multipliers
-        self.calc_e = lambda s,multipliers:-self.calc_observables(s).dot(multipliers)
+        self.calc_e = lambda s, multipliers : -self.calc_observables(s).dot(multipliers)
         self.calc_de = calc_de
         self.adj = adj
         
@@ -588,11 +588,17 @@ class MCH(Solver):
             takes in samples as argument
         sample_method : str
             Can be 'ising_metropolis', 'metropolis'.
-        n_cpus : int,0
-            If 0 no parallel processing, other numbers above 0 specify number of cores to use.
+        sample_size : int
+            Number of samples to use MCH sampling step.
+        mch_approximation : function
+            For performing the MCH approximation step. Is specific to the maxent model. For the
+            pairwise Ising model, this can be defined by using
+            `coniii.utils.define_ising_helper_functions()`.
+        n_cpus : int
+            If 1 or less no parallel processing, other numbers above 0 specify number of cores to use.
         """
 
-        super(MCH,self).__init__(*args,**kwargs)
+        super(MCH, self).__init__(*args, **kwargs)
         assert not self.sampleSize is None, "Must specify sample_size."
         assert not self.sampleMethod is None, "Must specify sample_method."
         assert not self.mch_approximation is None, "Must specify mch_approximation."
@@ -623,23 +629,23 @@ class MCH(Solver):
         
         Parameters
         ----------
-        initial_guess : ndarray,None
+        initial_guess : ndarray
             Initial starting point
-        constraints : ndarray,None
-        X : ndarray,None
+        constraints : ndarray
+        X : ndarray
             If instead of constraints, you wish to pass the raw data on which to calculate the
             constraints using self.calc_observables.
-        tol : float,None
+        tol : float
             Maximum error allowed in any observable.
         tolNorm : float
             Norm error allowed in found solution.
-        n_iters : int,30
+        n_iters : int
             Number of iterations to make between samples in MCMC sampling.
-        burnin : int,30
+        burnin : int
             Initial burn in from random sample when MC sampling.
-        max_iter : int,10
+        max_iter : int
             Max number of iterations of MC sampling and MCH approximation.
-        custom_convergence_f : function,None
+        custom_convergence_f : function
             Function for determining convergence criterion. At each iteration, this function should
             return the next set of learn_params_kwargs and optionally the sample size.
 
@@ -657,21 +663,21 @@ class MCH(Solver):
 		    return {'maxdlamda':1,'eta':1}
 		else:
 		    return {'maxdlamda':.05,'eta':.05}
-    
-        disp : bool,False
-        full_output : bool,False
+        disp : bool
+        full_output : bool
             If True, also return the errflag and error history.
         learn_parameters_kwargs : dict,{'maxdlamda':1,'eta':1}
-        generate_kwargs : dict,{}
+        generate_kwargs : dict
 
         Returns
         -------
-        parameters : ndarray
+        ndarray
             Found solution to inverse problem.
-        errflag : int
+        int
+            Error flag.
             0, converged within given criterion
             1, max iterations reached
-        errors : ndarray
+        ndarray
             Log of errors in matching constraints at each step of iteration.
         """
 

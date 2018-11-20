@@ -142,21 +142,22 @@ def pair_corr(X,
     ----------
     X : ndarray
         Dimensions (n_samples,n_dim).
-    weights : np.ndarray,None : 
+    weights : np.ndarray
         Calculate single and pairwise means given fractional weights for each state in
         the data such that a state only appears with some weight, typically less than
         one
-    concat : bool,False
+    concat : bool
         Return means concatenated with the pairwise correlations into one array.
-    exclude_empty : bool,False
+    exclude_empty : bool
         When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
         any pair. If True, the weights option doesn't do anything.
-    subtract_mean : bool,False
+    subtract_mean : bool
         If True, return pairwise correlations with product of individual means subtracted.
 
     Returns
     -------
-    (si,sisj) or np.concatenate((si,sisj))
+    twople
+        (si,sisj) or np.concatenate((si,sisj))
     """
 
     assert frozenset(np.unique(X))<=frozenset([-1,0,1])

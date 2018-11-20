@@ -1835,7 +1835,7 @@ class Metropolis(Sampler):
 
         # Initialize sampler.
         if initial_sample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sample_size,nSubset))
+            self.samples = self.rng.choice([-1.,1.], size=(sample_size,nSubset))
         else:
             self.samples = initial_sample
         
@@ -1905,21 +1905,21 @@ class Metropolis(Sampler):
             
             if not systematic_iter:
                 def f(args):
-                    s,E = args
+                    s, E = args
                     for j in range(burn_in):
                         de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
                         E += de
-                    return s,E
+                    return s, E
             else:
                 def f(args):
-                    s,E=args
+                    s, E=args
                     for j in range(burn_in):
                         de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
                         E += de
-                    return s,E
+                    return s, E
            
             for i in range(len(self.samples)):
-                s,E = f((self.samples[i],self.E[i]))
+                s, E = f((self.samples[i],self.E[i]))
                 self.samples[i] = s
                 self.E[i] = E
 
@@ -1927,11 +1927,11 @@ class Metropolis(Sampler):
         counter = 0
         for i,s in fixed_subset:
             if i==0:
-                self.samples = np.insert(self.samples,list(range(i,self.samples.size,nSubset+counter)),s)
+                self.samples = np.insert(self.samples, list(range(i,self.samples.size,nSubset+counter)), s)
             else:
-                self.samples = np.insert(self.samples,list(range(i,self.samples.size+1,nSubset+counter)),s)
+                self.samples = np.insert(self.samples, list(range(i,self.samples.size+1,nSubset+counter)), s)
             counter += 1
-        self.samples = np.reshape(self.samples,(sample_size,self.n))
+        self.samples = np.reshape(self.samples, (sample_size,self.n))
         self.E = np.concatenate(self.E)
         return self.samples, self.E
 

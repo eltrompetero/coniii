@@ -1886,12 +1886,15 @@ class Metropolis(Sampler):
                         E += de
                     return s,E
             
+            # avoid pickling a copy of self.samples into every thread
+            samples = self.samples
+            self.samples = None
+
             #start = datetime.now()
             pool=mp.Pool(n_cpus)
             #poolt = datetime.now()
-            self.samples,self.E=list(zip(*pool.map(f,list(zip(self.samples,
-                                                    self.E,
-                                                    np.random.randint(0,2**31-1,size=sample_size))))))
+            args = zip(samples, self.E, np.random.randint(0, 2**31-1, size=sample_size))
+            self.samples, self.E=list(zip(*pool.map(f, args)))
             self.samples = np.vstack(self.samples)
             #samplet = datetime.now()
             pool.close()

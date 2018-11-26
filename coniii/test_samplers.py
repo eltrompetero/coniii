@@ -34,11 +34,11 @@ import time
 def test_Metropolis():
     # Check that everything compiles and runs.
     n=5
-    theta=np.random.normal(size=15)
+    theta=np.random.normal(size=15, scale=.1)
     calc_e, _, _ = define_ising_helper_functions()
     print("Running timing suite for Metropolis sampling functions for n=%d..."%n)
 
-    sampler=Metropolis(n, theta, calc_e)
+    sampler=Metropolis(n, theta, calc_e, n_cpus=1)
     print("Running sampler.generate_samples(n)")
     sampler.generate_samples(n)
     print("Done.")
@@ -55,6 +55,20 @@ def test_Metropolis():
     sampler.generate_samples(n, saveHistory=True, systematic_iter=True)
     print("Done.")
 
+     # test control over rng
+    sampler.rng = np.random.RandomState(0)
+    initialSample = np.random.choice([-1.,1], size=(1,n))
+    sampler.generate_samples(n, systematic_iter=True, initial_sample=initialSample)
+    X1 = sampler.samples.copy()
+
+    sampler.rng = np.random.RandomState(0)
+    sampler.generate_samples(n, systematic_iter=True, initial_sample=initialSample)
+    X2 = sampler.samples.copy()
+
+    assert np.array_equal(X1, X2), (X1, X2)
+   
+    # parallelization
+    sampler=Metropolis(n, theta, calc_e)
     print("Running sampler.generate_samples(n, saveHistory=True, systematic_iter=True)")
     sampler.generate_samples_parallel(n, systematic_iter=True)
     print("Done.")
@@ -62,17 +76,6 @@ def test_Metropolis():
     print("Running sampler.generate_samples_parallel(n, systematic_iter=True)")
     sampler.generate_samples_parallel(n, systematic_iter=False)
     print("Done.")
-
-    # test control over rng
-    sampler.rng = np.random.RandomState(0)
-    sampler.generate_samples(n, systematic_iter=True)
-    X1 = sampler.samples.copy()
-
-    sampler.rng = np.random.RandomState(0)
-    sampler.generate_samples(n, systematic_iter=True)
-    X2 = sampler.samples.copy()
-
-    assert np.array_equal(X1, X2)
 
 def test_FastMCIsing(run_timing=False):
     # Check that everything compiles and runs.

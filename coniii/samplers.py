@@ -1675,11 +1675,10 @@ class Metropolis(Sampler):
         self.n = n
         self.theta = theta
         self.nCpus = n_cpus or mp.cpu_count()-1
-        
         self.calc_e = calc_e
-
         if rng is None:
-            self.rng=np.random.RandomState()
+            self.rng = np.random.RandomState()
+        self._samples = self.rng.choice([-1.,1.], size=(max(self.nCpus,1),n))
     
     def generate_samples(self,
                          sample_size,
@@ -1701,100 +1700,130 @@ class Metropolis(Sampler):
         saveHistory : bool, False
             If True, also save the energy of each sample at each sampling step.
         initial_sample : ndarray, None
-            Start with this sample (i.e. to avoid warming up). Otherwise, self.samples is the initial sample.
+            Start with this sample (i.e. to avoid warming up). Otherwise, self._samples is the initial sample.
 
         Returns
         -------
         ndarray, optional
             Saved array of energies at each sampling step.
         """
-
-        if initial_sample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
-        else: self.samples = initial_sample
-        self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
+        
+        assert self.nCpus<=1, "Can only call with Metropolis instance not using parallelization."
+        if not initial_sample is None:
+            assert np.array_equal(self._samples.shape, initial_sample.shape)
+            self._samples = initial_sample.copy()
+        E = self.calc_e( self._samples, self.theta )
+        self.samples = np.zeros((sample_size, self.n), dtype=int)
+        self.E = np.zeros(sample_size)
 
         if saveHistory:
-            history=np.zeros((sample_size,n_iters+1))
-            history[:,0]=self.E.ravel()
+            history = np.zeros(sample_size*n_iters+1)
+            history[0] = E
 
             if systematic_iter:
+                counter = 0
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = self.sample_metropolis( self.samples[i], self.E[i], flip_site=j%self.n )
-                        self.E[i] += de
-                        history[i,j+1]=self.E[i]
+                        de = self.sample_metropolis( self._samples[0], E, flip_site=j%self.n, rng=self.rng )
+                        E += de
+                        history[counter] = E
+                        counter += 1
+                    self.samples[i,:] = self._samples[:]
+                    self.E[i] = E
             else:
+                counter = 0
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = self.sample_metropolis( self.samples[i], self.E[i] )
-                        self.E[i] += de
-                        history[i,j+1]=self.E[i]
+                        de = self.sample_metropolis( self._samples[0], E, rng=self.rng )
+                        E += de
+                        history[counter]=E
+                        counter += 1
+                    self.samples[i,:] = self._samples[:]
+                    self.E[i] = E
             return history
         else:
             if systematic_iter:
+                counter = 0
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = self.sample_metropolis( self.samples[i], self.E[i], flip_site=j%self.n )
-                        self.E[i] += de
+                        de = self.sample_metropolis( self._samples[0], E, flip_site=j%self.n, rng=self.rng )
+                        E += de
+                        counter +=1
+                    self.samples[i,:] = self._samples[:]
+                    self.E[i] = E
             else:
+                counter = 0
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = self.sample_metropolis( self.samples[i], self.E[i] )
-                        self.E[i] += de
+                        de = self.sample_metropolis( self._samples[0], E, rng=self.rng )
+                        E += de
+                        counter += 1
+                    self.samples[i,:] = self._samples[:]
+                    self.E[i] = E
 
     def generate_samples_parallel(self,
                                   sample_size,
                                   n_iters=1000,
-                                  n_cpus=None,
                                   initial_sample=None,
                                   systematic_iter=False):
         """
-        Generate samples in parallel and save them into self.samples and their energies into self.E.
+        Generate samples in parallel. Each replica in self._samples runs on its own thread and a 
+        sample is generated every n_iters.
 
         Parameters
         ----------
         sample_size : int
-        n_iters : int
-        n_cpus : int
-        initial_sample : ndarray
-        systematic_iter : bool
-            Iterate through spins systematically instead of choosing them randomly.
+            Number of samples.
+        n_iters : int, 1000
+            Number of iterations between taking a random sample.
+        initial_sample : ndarray, None
+            Starting set of replicas otherwise self._samples is used.
+        systematic_iter : bool, False
+            If True, iterate through spins systematically instead of choosing them randomly.
         """
-
-        n_cpus = n_cpus or self.nCpus
-        if initial_sample is None:
-            self.samples = self.rng.choice([-1.,1.], size=(sample_size,self.n))
-        else:
-            self.samples = initial_sample
-        self.E = self.calc_e( self.samples, self.theta )
+        
+        n_cpus = self.nCpus
+        assert n_cpus>=2
+        assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
+        if not initial_sample is None:
+            assert np.array_equal(self._samples.shape, initial_sample.shape)
+            self._samples = initial_sample.copy()
+        E = self.calc_e( self._samples, self.theta )
+        self.samples = None  # delete this to speed up pickling for multiprocess
        
-        # Parallel sample.
+        # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
         if not systematic_iter:
             def f(args):
-                s, E, seed = args
+                s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
-                for j in range(n_iters):
-                    de = self.sample_metropolis( s, E, rng=rng )
-                    E += de
-                return s, E
+                samples = np.zeros((nSamples, self.n))
+                for i in range(nSamples):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis( s, E, rng=rng )
+                        E += de
+                    samples[i,:] = s[:]
+                return samples, s, E
         else:
             def f(args):
-                s, E, seed = args
+                s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
-                for j in range(n_iters):
-                    de = self.sample_metropolis( s, E, rng=rng, flip_site=j%self.n )
-                    E += de
-                return s, E
+                samples = np.zeros((nSamples, self.n))
+                for i in range(nSamples):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis( s, E, rng=rng, flip_site=j%self.n )
+                        E += de
+                    samples[i,:] = s[:]
+                return samples, s, E
         
         pool = mp.Pool(n_cpus)
-        self.samples, self.E = list(zip(*pool.map(f,zip(self.samples,
-                                                        self.E,
-                                                        self.rng.randint(2**31-1,size=sample_size)))))
+        self.samples, self._samples, self.E = list(zip(*pool.map(f,zip(self._samples,
+                                                        E,
+                                                        [int(np.ceil(sample_size/n_cpus))]*n_cpus,
+                                                        self.rng.randint(2**31-1,size=n_cpus)))))
         pool.close()
-
-        self.samples = np.vstack(self.samples)
-        self.E = np.concatenate(self.E)
+        
+        self.samples = np.vstack(self.samples)[:sample_size]
+        self._samples = np.vstack(self._samples)
 
     def generate_cond_samples(self,
                               sample_size,

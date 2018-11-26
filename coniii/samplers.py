@@ -1693,14 +1693,20 @@ class Metropolis(Sampler):
         Parameters
         ----------
         sample_size : int
-        n_iters : int,1000
-        systematic_iter : bool,False
-        saveHistory : bool,False
-        initial_sample : ndarray,None
+            Number of samples.
+        n_iters : int, 1000
+            Number of iterations to run the sampler floor.
+        systematic_iter : bool, False
+            If True, iterate through each element of system by increment index by one. 
+        saveHistory : bool, False
+            If True, also save the energy of each sample at each sampling step.
+        initial_sample : ndarray, None
+            Start with this sample (i.e. to avoid warming up). Otherwise, self.samples is the initial sample.
 
         Returns
         -------
-        history : ndarray
+        ndarray, optional
+            Saved array of energies at each sampling step.
         """
 
         if initial_sample is None:

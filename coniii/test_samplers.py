@@ -173,7 +173,7 @@ def compare_samplers():
     
     t0 = time.clock()
     sampler1 = ParallelTempering(n, theta, calc_e, 4, (1,3), replica_burnin=n*100, rep_ex_burnin=n*10)
-    sampler1.generate_samples(nSamples)
+    sampler1.generate_samples(nSamples, save_exchange_trajectory=True)
     print("Sampler 1 took %1.2f s."%(time.clock()-t0))
     
     t0 = time.clock()

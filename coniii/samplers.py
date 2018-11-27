@@ -609,10 +609,6 @@ def spec_cluster(L,exact=True):
 #end SWIsing
 
 
-
-# =========================== #
-# Parallel tempering sampler. #
-# =========================== #
 class ParallelTempering(Sampler):
     def __init__(self, n, theta, calc_e, n_replicas,
                  Tbds=(1.,3.),
@@ -831,7 +827,7 @@ class ParallelTempering(Sampler):
                       tol=.01,
                       max_iter=10):
         """
-        Find suitable temperature range for replicas.
+        Find suitable temperature range for replicas. Sets self.beta.
 
         Parameters
         ----------
@@ -869,11 +865,25 @@ class ParallelTempering(Sampler):
 
         self.beta = beta
             
-    def _acceptance_ratio(self, n_samples, n_iters, beta=None, pairs=None):
+    def _acceptance_ratio(self, n_samples, n_iters, pairs=None):
+        """Estimate acceptance ratio as an average over multiple Metropolis samples.
+        
+        Parameters
+        ----------
+        n_samples : int
+            Number of Metropolis samples to use for averaging the ratio.
+        n_iters : int
+            Number of MC steps between samples. Bigger is better.
+        pairs : list of duples, None
+            Pairs for which to compute the acceptance ratio. If not given, all pairs are compared.
+
+        Returns
+        -------
+        ndarray
+            Estimate of acceptance ratio for each pair.
+        """
         assert all([len(r.samples)==1 for r in self.replicas])
         
-        if beta is None:
-            beta = self.beta
         if pairs is None:
             pairs = [(i,i+1) for i in range(self.nReplicas-1)]
         acceptanceRatio = np.zeros((len(pairs),n_samples))
@@ -885,15 +895,15 @@ class ParallelTempering(Sampler):
                 self.burn_in_replicas(pool=pool, close_pool=False, n_iters=n_iters)
                 
                 for j,p in enumerate(pairs):
-                    # must divide out beta to get energies
-                    dE = self.replicas[p[0]].E/beta[p[0]] - self.replicas[p[1]].E/beta[p[1]]
-                    acceptanceRatio[j,i] = min(1, np.exp( dE * (beta[p[0]]-beta[p[1]]) ))
+                    # must divide out self.beta to get energies
+                    dE = self.replicas[p[0]].E/self.beta[p[0]] - self.replicas[p[1]].E/self.beta[p[1]]
+                    acceptanceRatio[j,i] = min(1, np.exp( dE * (self.beta[p[0]]-self.beta[p[1]]) ))
             pool.close()
         else:
             for j,p in enumerate(pairs):
-                # must divide out beta to get energies
-                dE = self.replicas[p[0]].E/beta[p[0]] - self.replicas[p[1]].E/beta[p[1]]
-                acceptanceRatio[j,0] = min(1, np.exp( dE * (beta[p[0]]-beta[p[1]]) ))
+                # must divide out self.beta to get energies
+                dE = self.replicas[p[0]].E/self.beta[p[0]] - self.replicas[p[1]].E/self.beta[p[1]]
+                acceptanceRatio[j,0] = min(1, np.exp( dE * (self.beta[p[0]]-self.beta[p[1]]) ))
 
         return acceptanceRatio.mean(1) 
 #end ParallelTempering

@@ -25,10 +25,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # =============================================================================================== #
-from .samplers import FastMCIsing,Metropolis
+from .samplers import *
 from .utils import define_ising_helper_functions
 import numpy as np
 import time
+
+n=5
 
 
 def test_Metropolis():
@@ -150,5 +152,37 @@ def test_FastMCIsing(run_timing=False):
         sampler.generate_samples_parallel(10, n_iters=10000, systematic_iter=True)
         print(time.time()-t0)
 
-if __name__=='__main__':
-    test_FastMCIsing(True)
+def test_ParallelTempering():
+    # basic functionality
+    theta = np.random.normal(size=n+n*(n-1)//2, scale=.1)
+    calc_e,_,_ = define_ising_helper_functions()
+    sampler = ParallelTempering(n, theta, calc_e, 4, (1,3))
+    sampler.generate_samples(10)
+
+
+#if __name__=='__main__':
+def compare_samplers():
+    import time
+
+
+    # check for similarity in results between different samplers
+    np.random.seed(0)
+    theta = np.random.normal(size=n+n*(n-1)//2, scale=.1)
+    calc_e,_,_ = define_ising_helper_functions()
+    nSamples = 1_000
+    
+    t0 = time.clock()
+    sampler1 = ParallelTempering(n, theta, calc_e, 4, (1,3), replica_burnin=n*100, rep_ex_burnin=n*10)
+    sampler1.generate_samples(nSamples, save_exchange_trajectory=True)
+    print("Sampler 1 took %1.2f s."%(time.clock()-t0))
+    
+    t0 = time.clock()
+    sampler2 = Metropolis(n, theta, calc_e)
+    sampler2.generate_samples_parallel(nSamples)
+    print("Sampler 2 took %1.2f s."%(time.clock()-t0))
+    
+    from .ising_eqn.ising_eqn_5_sym import calc_observables
+    print(sampler1.samples[-1].mean(0), sampler2.samples.mean(0), calc_observables(theta)[:n]) 
+    print(sampler1.samples[-1].std(axis=0)/np.sqrt(nSamples), sampler2.samples.std(axis=0)/np.sqrt(nSamples)) 
+
+    return sampler1, sampler2

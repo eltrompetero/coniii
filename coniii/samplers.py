@@ -35,6 +35,8 @@ from scipy.spatial.distance import squareform
 import multiprocess as mp
 from .utils import *
 from datetime import datetime
+from multiprocess import Pool, cpu_count
+
 
 # ------------------------------------------------------------------------------- #
 # Define calc_e() and grad_e() functions here if you wish to use jit speedup!     #
@@ -607,649 +609,304 @@ def spec_cluster(L,exact=True):
 #end SWIsing
 
 
-
-# =========================== #
-# Parallel tempering sampler. #
-# =========================== #
 class ParallelTempering(Sampler):
-    def __init__(self,n,theta,calc_e,temps,
+    def __init__(self, n, theta, calc_e, n_replicas,
+                 Tbds=(1.,3.),
                  sample_size=1000,
-                 replica_burnin=100,
+                 replica_burnin=None,
+                 rep_ex_burnin=None,
+                 n_cpus=None,
                  rng=None):
         """
         Run multiple replicas in parallel at different temperatures using Metropolis sampling to
         equilibrate.
 
-        NOTE: This has not been properly tested.
+        Hukushima, K, and K Nemoto. “Exchange Monte Carlo Method and Application to Spin Glass
+        Simulations.” Journal of the Physical Society of Japan 65 (1996): 1604–1608.
 
         Parameters
-        -------------
+        ----------
         n : int
+            Number of elements in system.
         theta : ndarray
-            Mean field and coupling parameters.
-        temps : list-like
-        rng : numpy.RandomState,None
+            Concatenated vector of the field hi and couplings Jij. They should be ordered in
+            ascending order 0<=i<n and for Jij in order of 0<=i<j<n.
+        calc_e : function
+            For calculating energy.
+        n_replicas : int
+            Number of replicas.
+        Tbds : duple, (1,3)
+            Lowest and highest temperatures to start with. Lowest temperature will not change.
+        sample_size : int, 1000
+        replica_burnin : int, n*50
+            Default number of burn in iterations for each replica when first initialising (from completely
+            uniform distribution).
+        rep_ex_burnin : int, n*10
+            Default number of Metropolis steps after exchange.
+        n_cpus : int, 0
+            If None, then will use all available CPUs minus 1.
+        rng : RandomState, None
         """
-
-        raise NotImplementedError
-        assert len(temps)>=2
+        
+        assert Tbds[0]<Tbds[1] and Tbds[0]>0
+        assert n_replicas>1
 
         self.n = n
-        self.theta = [theta/T for T in temps]
+        self.theta = theta
         self.calc_e = calc_e
-        self.temps = temps
+        self.nReplicas = n_replicas
+        self.nCpus = n_cpus or cpu_count()-1
         self.sampleSize = sample_size
-        self.sample = None
-        self.replicaBurnin = replica_burnin
+        self.samples = None
+        self.replicaBurnin = replica_burnin or n*50
+        self.repExBurnin = rep_ex_burnin or n*10
         self.rng = rng or np.random.RandomState()
-        
-        self.setup_replicas(replica_burnin)
+       
+        self.beta = self.initialize_beta(1/Tbds[1], 1/Tbds[0], n_replicas)
+        self.setup_replicas()
+        assert (np.diff(self.beta)>0).all(), self.beta
     
-    def update_parameters(self, theta=None):
+    def update_replica_parameters(self):
         """
-        Update parameters for each replica.
-        """
-
-        if theta is None:
-            theta = self.theta[0]
-
-        self.theta = [theta/T for T in self.temps]
-        for theta,rep in zip(self.theta,self.replicas):
-            rep.theta = theta
-            rep.h,rep.J = theta[:self.n],squareform(theta[self.n:])
-
-    def setup_replicas(self, burnin):
-        """
-        Initialize a set of replicas at different temperatures using the Metropolis algorithm as coded in
-        FastMCIsing.
+        Update parameters for each replica. Remember that the parameters include the factor of beta.
         """
 
-        self.nReps = len(self.temps)
+        for b,rep in zip(self.beta, self.replicas):
+            rep.theta = self.theta*b
+
+    def setup_replicas(self):
+        """
+        Initialise a set of replicas at different temperatures using the Metropolis algorithm and optimize the
+        temperatures. Replicas are burned in and ready to sample.
+        """
 
         self.replicas = []
-        for theta,T in zip(self.theta,self.temps):
-            self.replicas.append( FastMCIsing(self.n,theta,self.calc_e) )
-            # Burn replica in.
-            self.replicas[-1].generate_samples_parallel(self.sampleSize,n_iters=burnin)
-        self.sample = self.replicas[0].samples
+        for i,b in enumerate(self.beta):
+            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, n_cpus=1) )
+            # give each replica an index
+            self.replicas[i].index = i
+        self.burn_in_replicas()
+
+        self.optimize_beta(10, self.n*10)
+        self.burn_in_replicas()
+
+    def burn_in_replicas(self, pool=None, close_pool=True, n_iters=None):
+        """Run each replica separately.
         
-    def one_step(self, pool, burn_factor, exchange=True):
+        Parameters
+        ----------
+        pool : multiprocess.Pool, None
+        close_pool : bool, True
+            If True, call pool.close() at end.
+        n_iters : int, None
+            Default value is self.replicaBurnin.
+        """
+        
+        n_iters = n_iters or self.replicaBurnin
+
+        pool = pool or Pool(self.nCpus)
+        def f(args):
+            rep, nIters = args
+            rep.generate_samples(1, n_iters=nIters, systematic_iter=True)
+            return rep
+        self.replicas = pool.map(f, zip(self.replicas, [n_iters]*len(self.replicas)))
+
+        if close_pool:
+            pool.close()
+
+    def burn_and_exchange(self, pool):
         """
         Parameters
         ----------
         pool : mp.multiprocess.Pool
-        burn_factor : int
-            Number of times to iterate through the system.
-        exchange : bool,True
-            Run exchange sampling. This is typically turned off when you just want to burn in the replicas.
         """
 
-        reps = self.replicas
-        
-        if exchange:
-            E = np.zeros((self.sampleSize,len(self.temps)))
-            for i,r in enumerate(reps):
-                E[:,i] = r.E[:].ravel()*self.temps[i]
-            
-            # Iterate through each pair of systems by adjacent temperature starting from the lowest T.
-            exchangeix = np.zeros((self.sampleSize,len(self.temps)-1),dtype=np.bool)
-            for i in range(1,len(self.temps)):
-                exchangeix[:,i-1] = ( self.rng.rand(self.sampleSize) <
-                            np.exp((E[:,i]-E[:,i-1])*(1/self.temps[i]-1/self.temps[i-1])) )
-                if exchangeix[:,i-1].any():
-                    # Exchange samples and exchange energies.
-                    tempSample = reps[i-1].samples[exchangeix[:,i-1]]
-                    reps[i-1].samples[exchangeix[:,i-1]] = reps[i].samples[exchangeix[:,i-1]]
-                    reps[i].samples[exchangeix[:,i-1]] = tempSample
-                    
-                    tempE = E[exchangeix[:,i-1],i-1]
-                    E[exchangeix[:,i-1],i-1] = E[exchangeix[:,i-1],i]
-                    E[exchangeix[:,i-1],i] = tempE
-                else:
-                    print("No overlap between replica %d and %d"%(i,i-1))
+        self.burn_in_replicas(pool=pool, close_pool=False, n_iters=self.repExBurnin)
+        for i in range(self.nReplicas-1):
+            exchangeProb = self._acceptance_ratio(1, 0, pairs=[(i,i+1)])
+            if self.rng.rand()<exchangeProb:
+                # swap replicas (only need to swap samples)
+                temp = self.replicas[i].samples
+                self.replicas[i].samples = self.replicas[i+1].samples
+                self.replicas[i+1].samples = temp
 
-        # Evolve replicas by self.n*burn_factor iterations.
-        def f(r):
-            r.generate_samples( self.sampleSize,
-                                initialSample=r.samples,
-                                n_iters=self.n*burn_factor,
-                                systematic_iter=True )
-            return r
-        self.replicas = pool.map(f,reps)
+                temp = self.replicas[i]._samples
+                self.replicas[i]._samples = self.replicas[i+1]._samples
+                self.replicas[i+1]._samples = temp
 
-        if exchange:
-            return exchangeix
+                temp = self.replicas[i].index
+                self.replicas[i].index = self.replicas[i+1].index
+                self.replicas[i+1].index = temp
 
-    def generate_samples(self,n_iters=100,
-                         initial_burn_factor=10,
-                         final_burn_factor=10,
-                         burn_factor=1,
-                         save_sample=True):
+                # must recalculate energies with new temperature
+                temp = self.replicas[i].E
+                self.replicas[i].E = self.replicas[i+1].E/self.beta[i+1]*self.beta[i]
+                self.replicas[i+1].E = temp/self.beta[i]*self.beta[i+1]
+
+    def generate_samples(self,
+                         sample_size,
+                         save_exchange_trajectory=False):
         """
-        Burn in, run replica exchange simulation, then burnin.
+        Burn in, run replica exchange simulation, then sample.
 
         Parameters
         ----------
-        n_iters : int,100
-            Number of times to run the RMC. This involves sampling from each replica N*burn_factor  times.
-        initial_burn_factor,final_burn_factor (int=10)
-            Number of time to iterate through system to burn in at the beginning and at the end.
-        burn_factor : int,1
-            Passed into one_step().
-        """
-        if initial_burn_factor>0:
-            self.burn_in(initial_burn_factor)
-        
-        pool = mp.Pool(mp.cpu_count())
-        for i in range(1,n_iters):
-            self.one_step(pool,burn_factor)
-        pool.close()
-        
-        if final_burn_factor>0:
-            self.burn_in(final_burn_factor)
-        if save_sample:
-            self.sample = self.replicas[0].samples
-
-    def generate_trajectory(self,n_iters=10,burn_factor=5):
-        """
-        Run MC and save at each iteration. Note that this will overwrite current samples stored in replicas.
-        Save a sample every exchange and a burn factor step.
-
-        Parameters
-        ----------
-        n_iters : int,10
-        burn_factor : int,5
+        sample_size : int
+            Number of samples to take for each replica.
+        save_exchange_trajectory : bool, False
+            If True, keep track of the location of each replica in beta space and return the history.
 
         Returns
         -------
-        repSamples : list of ndarrays
+        ndarray, optional
+            Trajectory of each replica through beta space. Each row is tells where each index is located in
+            beta space.
         """
-
-        repSamples = [np.zeros((self.sampleSize,self.n,n_iters)) for i in range(self.nReps)]
-        pool = mp.Pool(mp.cpu_count())
-        for i in range(n_iters):
-            self.one_step(pool,burn_factor)
-            for r,rep in zip(repSamples,self.replicas):
-                r[:,:,i] = rep.samples[:,:]
-        pool.close()
-        return repSamples
-
-    def autocorr_spin(self,n_iters,burn_factor):
-        """
-        Calculate spin autocorrelation.
-        E[s(t)s(t+dt)]
-
-        Parameters
-        ----------
-        n_iters
-        burn_factor
-
-        Returns
-        -------
-        autocorr
-        repSamples
-        """
-
-        from misc.stats import acf
-        autocorr = np.zeros((self.nReps,n_iters//2))
-        repSamples = self.generate_trajectory(n_iters,burn_factor)
-        for i,r in enumerate(repSamples):
-            r = np.rollaxis(r,1).reshape(self.n*self.sampleSize,n_iters)
-            # This will be problematic (and return nans) if the state doesn't change at all from Metropolis
-            # updates.
-            autocorr[i,:] = np.nanmean( acf(r,axis=1),axis=0 )
-        return autocorr,repSamples
-
-    def pn(self,n_iters=1,initial_burn_factor=10,burn_factor=1):
-        """
-        Estimate acceptance probabilities of exchange between two adjacent temperatures. The acceptance
-        probability is ordered from exchange between replicas i and i+1 starting from i=0.
-
-        Estimate stay time at any particular replica.
-
-        Parameters
-        ----------
-        n_iters : int,100
-            Number of times to run the RMC. This involves sampling from each replica N*burn_factor times.
-        initial_burn_factor : int,10
-            Burn factor right after setting up random state.
-        burn_factor : int,1
-            Passed into one_step().
-        """ 
-
-        # See how many samples are exchanged.
-        # Save current state of sample while we estimate the acceptance probabilities.
-        oldSample = self.sample.copy()
         
-        # Sample for calculating exchange probabilities.
-        pool = mp.Pool(mp.cpu_count())
-        self.one_step(pool,initial_burn_factor,exchange=False)
-        for i in range(n_iters):
-            if i==0:
-                exchangeix = self.one_step(pool,burn_factor)
-            else:
-                exchangeix = np.vstack((exchangeix,self.one_step(pool,burn_factor)))
-        pool.close()
+        self.samples=[np.zeros((sample_size,self.n)) for i in range(self.nReplicas)]
+        pool = Pool(self.nCpus)
         
-        # Place sample back to original state and save current set of samples.
-        self._samples = [rep.samples for rep in self.replicas]
-        self.sample = oldSample
-        
-        return exchangeix.mean(0),exchangeix
+        if save_exchange_trajectory:
+            replicaIndexHistory = np.zeros((sample_size, self.nReplicas), dtype=int)
 
-    def tn(self, exchangeix):
-        """
-        Estimate stay time at any particular replica given number of exchanges that happened during ReMC steps.
-        Find stay time at replicas. This is the inverse of the probability that you switch out of a
-        particular replica. Remember that replicas on the boundaries can only exchange with one other
-        replica.
+            for i in range(sample_size):
+                self.burn_and_exchange(pool)
 
-        Parameters
-        ----------
-        exchangeix : ndarray
-        """ 
+                # save samples
+                for j in range(self.nReplicas):
+                    self.samples[j][i,:] = self.replicas[j].samples[0,:]
+                    replicaIndexHistory[i,j] = self.replicas[j].index
+            pool.close()
 
-        nReps = len(self.temps)
-        stayTime = np.zeros((nReps))
-        for i in range(nReps):
-            if i==0:
-                stayTime[0] = 1/exchangeix[:,0].mean()
-            elif i==(nReps-1):
-                stayTime[-1] = 1/exchangeix[:,-1].mean()
-            else:
-                stayTime[i] = 1/exchangeix[:,i-1:i].sum(1).mean()
+            return replicaIndexHistory
 
-        return stayTime
+        else:
+            for i in range(sample_size):
+                self.burn_and_exchange(pool)
+
+                # save samples
+                for j in range(self.nReplicas):
+                    self.samples[j][i,:] = self.replicas[j].samples[0,:]
+            pool.close()
     
-    def exchange_measures(self, pn_kwargs={}):
+    @staticmethod
+    def initialize_beta(b0, b1, n_replicas):
+        """Use linear interpolation of temperature range."""
+        return np.linspace(b0, b1, n_replicas)
+    
+    @staticmethod
+    def iterate_beta(beta, acceptance_ratio):
         """
-        Wrapper for computing exchange probabilities and stay times.
-        """
-
-        pn,exchangeix = self.pn(**pn_kwargs)
-        tn = self.tn(exchangeix)
-        return pn,tn
-
-    def iterate_beta(self, tau):
-        """
-        Parameters
-        ----------
-        tau : ndarray
-            Effective time at each temperature.
-        """
-
-        beta = 1/np.array(self.temps)
-        tauEff = tau.copy()
-        tauEff[0] /= 2
-        tauEff[-1] /=2
-        a = (beta[1:]-beta[:-1])/(tauEff[1:]+tauEff[:-1])
-        c = a.sum()
-
-        for i in range(1,self.nReps-1):
-            beta[i] = beta[i-1] + a[i-1]*(beta[-1]-beta[0])/c
-        return beta
-
-    def optimize(self,
-                 pn_kwargs={'n_iters':5},
-                 max_iter=10,
-                 disp=False,
-                 save_history=False):
-        """
-        Apply algorithm from Kerler and Rehberg (1994) for finding fixed point for optimal temperatures.
-        Optimized temperatures rewrite self.temps.
+        Apply algorithm from Hukushima but reversed to maintain one replica at T=1.
 
         Parameters
         ----------
-        pn_kwargs : dict,{'n_iters':5}
-        max_iter : int,10
-            Number of times to iterate algorithm for beta. Each iteration involves sampling from REMC.
-        disp : bool,False
-            Print out updated parameters.
-        save_history : bool,False
-            If true, return history.
+        beta : ndarray
+            Inverse temperature.
+        acceptance_ratio : ndarray
+            Estimate of acceptance ratio.
+
+        Returns
+        -------
+        ndarray
+            New beta.
         """
+        
+        assert (len(acceptance_ratio)+1)==len(beta)
+        assert (acceptance_ratio<=1).all()
+        
+        newBeta = beta.copy()
+        avg = acceptance_ratio.mean()
+        for i in range(len(beta)-1, 0, -1):
+            newBeta[i-1] = newBeta[i] - (beta[i]-beta[i-1]) * acceptance_ratio[i-1]/avg
+        return newBeta
 
-        print("Optimizing REMC parameters...")
-
-        for i in range(max_iter):
-            pn,tn = self.exchange_measures(pn_kwargs=pn_kwargs)
-            if disp:
-                print("Iteration %d"%i)
-                print("P(n): probability of exchange")
-                print(pn)
-                print("T(n): replica steps spent at temperature")
-                print(tn)
-            beta = self.iterate_beta(tn)
-            
-            self.temps = 1/beta
-            self.update_parameters()
-            self._pn = pn
-            self._tn = tn
-
-        print("After optimization:")
-        print("Temperatures:")
-        print(self.temps)
-        print("Exchange probability:")
-        print(pn)
-        print("Suggested replica steps: %d"%(2/np.prod(pn)))  # Calculated from time to diffuse.
-        print("Persistence time:")
-        print(tn)
-
-    def burn_in(self, n_iter):
+    def optimize_beta(self,
+                      n_samples,
+                      n_iters,
+                      tol=.01,
+                      max_iter=10):
         """
-        Wrapper for iterating sampling without exchanging replicas.
+        Find suitable temperature range for replicas. Sets self.beta.
 
         Parameters
         ----------
+        n_samples : int
+            Number of samples to use to estimate acceptance ratio. Acceptance ratio is estimated as the
+            average of these samples.
         n_iters : int
-            Number of times to iterate through system.
+            Number of sampling iterations for each replica.
+        tol : float, .1
+            Average change in beta to reach before stopping.
+        max_iter : int, 10
+            Number of times to iterate algorithm for beta. Each iteration involves sampling from replicas.
         """
+        
+        beta = self.beta
+        oldBeta = np.zeros_like(beta) + np.inf
 
-        pool = mp.Pool(mp.cpu_count())
-        self.one_step(pool,n_iter,exchange=False)
-        self.sample = self.replicas[0].samples
-        pool.close()
+        counter = 0
+        while counter<max_iter and tol<np.abs(oldBeta-beta).mean():
+            acceptanceRatio = self._acceptance_ratio(n_samples, n_iters)
+            oldBeta = beta
+            beta = self.iterate_beta(beta, acceptanceRatio)
+            
+            # change beta in the replicas for sampling with them
+            self.beta = beta
+            self.update_replica_parameters()
+
+            counter += 1
+            #print(beta, acceptanceRatio)
+        
+        if counter==max_iter:
+            print("Optimization for beta did not converge.")
+
+        # TODO: smooth by spline interpolation
+
+        self.beta = beta
+            
+    def _acceptance_ratio(self, n_samples, n_iters, pairs=None):
+        """Estimate acceptance ratio as an average over multiple Metropolis samples.
+        
+        Parameters
+        ----------
+        n_samples : int
+            Number of Metropolis samples to use for averaging the ratio.
+        n_iters : int
+            Number of MC steps between samples. Bigger is better.
+        pairs : list of duples, None
+            Pairs for which to compute the acceptance ratio. If not given, all pairs are compared.
+
+        Returns
+        -------
+        ndarray
+            Estimate of acceptance ratio for each pair.
+        """
+        assert all([len(r.samples)==1 for r in self.replicas])
+        
+        if pairs is None:
+            pairs = [(i,i+1) for i in range(self.nReplicas-1)]
+        acceptanceRatio = np.zeros((len(pairs),n_samples))
+
+        # estimate acceptance probabilities
+        if n_iters>0:
+            pool = Pool(self.nCpus)
+            for i in range(n_samples):
+                self.burn_in_replicas(pool=pool, close_pool=False, n_iters=n_iters)
+                
+                for j,p in enumerate(pairs):
+                    # must divide out self.beta to get energies
+                    dE = self.replicas[p[0]].E/self.beta[p[0]] - self.replicas[p[1]].E/self.beta[p[1]]
+                    acceptanceRatio[j,i] = min(1, np.exp( dE * (self.beta[p[0]]-self.beta[p[1]]) ))
+            pool.close()
+        else:
+            for j,p in enumerate(pairs):
+                # must divide out self.beta to get energies
+                dE = self.replicas[p[0]].E/self.beta[p[0]] - self.replicas[p[1]].E/self.beta[p[1]]
+                acceptanceRatio[j,0] = min(1, np.exp( dE * (self.beta[p[0]]-self.beta[p[1]]) ))
+
+        return acceptanceRatio.mean(1) 
 #end ParallelTempering
-
-
-# ============================ #
-# Simulated tempering sampler. #
-# ============================ #
-class SimulatedTempering(Sampler):
-    def __init__(self, n, theta, calc_e, temps, 
-                 sample_size=1000,
-                 replica_burnin=100,
-                 rng=None,
-                 method='single'):
-        """
-        NOTE: This has not be properly tested.
-
-        Parameters
-        ----------
-        n : int
-        theta : ndarray
-        temps : list-like
-        rng : numpy.RandomState,None
-        method : str,'single'
-            Choose between 'single' and 'multiple'. In the former, a single state is simulated while
-            changing temperatures and in the latter a set of replicas at multiple temperatures are
-            evolved simultaneously.
-        """
-
-        raise NotImplementedError("This is just a copy of the old Replica MC with some code for calculating the weighting function g(beta) that I didn't want to delete.")
-        self.n = n
-        self.theta = [theta/T for T in temps]
-        self.calc_e = calc_e
-        self.temps = temps
-        self.sampleSize = sample_size
-        self.sample = None
-        self.replicaBurnin = replica_burnin
-        self.rng = rng or np.random.RandomState()
-        self.sampler = FastMCIsing(n,theta,calc_e)
-        self.sampler.samples = np.zeros((1,n))
-        self.gn = np.zeros((len(temps)))
-        
-    def update_parameters(self,theta=None):
-        if theta is None:
-            theta = self.theta[0]
-
-        self.theta = [theta/T for T in self.temps]
-        for theta,rep in zip(self.theta,self.replicas):
-            rep.theta = theta
-            rep.h,rep.J = theta[:self.n],squareform(theta[self.n:])
-
-    def one_loop(self,sample,burn_factor,rng=None):
-        """
-        Metropolis sample state til it reaches the highest temperature and returns to T=1. At each new
-        temperature, the sample is iterated burn_factor times.
-        2017-03-17
-
-        Parameters
-        ----------
-        pool (mp.multiprocess.Pool)
-        burn_factor (int)
-            Number of times to iterate through the system.
-        exchange (bool=True)
-            Run exchange sampling. This is typically turned off when you just want to burn in the replicas.
-        """
-        tempix = 0
-        beta = [1/t for t in self.temps]
-        self.sampler.samples[:] = sample
-        self.sampler.rng=rng
-        E = self.calc_e(sample,self.theta[0])
-        
-        reachedEnd = False
-        while not reachedEnd:
-            # Evolve temperature.
-            if self.rng.rand()<np.exp(-E*(beta[tempix]-beta[tempix+1])+self.gn[tempix]-self.gn[tempix+1]):
-                tempix += 1
-            self.sampler.generate_samples(1,n_iters=burn_factor*self.n)
-            E = self.calc_e(self.sampler.samples,self.theta[0])
-            
-            if tempix==(len(beta)-1):
-                reachedEnd = True
-
-        loopedAround = False
-        while not loopedAround:
-            # Evolve temperature.
-            if self.rng.rand()<np.exp(-E*(beta[tempix]-beta[tempix-1])+self.gn[tempix]-self.gn[tempix-1]):
-                tempix -= 1
-            self.sampler.generate_samples(1,n_iters=burn_factor*self.n)
-
-            if tempix==0:
-                loopedAround = True
-        sample = self.sampler.samples
-        return sample
-
-    def generate_samples(self,n_iters=100,
-                         initial_burn_factor=10,
-                         final_burn_factor=10,
-                         burn_factor=1):
-        """
-        Run replica exchange simulation then burnin.
-        2017-03-01
-
-        Parameters
-        ----------
-        n_iters (int=100)
-            Number of times to run the RMC. This involves sampling from each replica N*burn_factor  times.
-        initial_burn_factor,final_burn_factor (int=10)
-            Number of time to iterate through system to burn in at the beginning and at the end.
-        burn_factor (int=1)
-            Passed into one_step().
-        """
-        #self.burn_in(initial_burn_factor)
-        
-        def f(sample):
-            rng = np.random.RandomState()
-            for i in range(n_iters):
-                sample = self.one_loop(sample,burn_factor,rng)
-            return sample
-
-        pool = mp.Pool(mp.cpu_count())
-        self.sample = np.vstack( pool.map(f,self.rng.choice([-1,1],size=(self.sampleSize,1,self.n))) )
-        pool.close()
-        
-        #self.burn_in(final_burn_factor)
-        #self.sample = self.replicas[0].samples
-
-    def pn(self,n_iters=1,initial_burn_factor=10,burn_factor=1):
-        """
-        Estimate acceptance probabilities of exchange between two adjacent temperatures. The acceptance
-        probability is ordered from exchange between replicas i and i+1 starting from i=0.
-
-        Estimate stay time at any particular replica.
-        2017-03-01
-
-        Parameters
-        ----------
-        n_iters (int=100)
-            Number of times to run the RMC. This involves sampling from each replica N*burn_factor times.
-        initial_burn_factor (int=10)
-            Burn factor right after setting up random state.
-        burn_factor (int=1)
-            Passed into one_step().
-        """ 
-        # See how many samples are exchanged.
-        # Save current state of sample while we estimate the acceptance probabilities.
-        oldSample = self.sample.copy()
-        
-        # Sample for calculating exchange probabilities.
-        pool = mp.Pool(mp.cpu_count())
-        self.one_step(pool,initial_burn_factor,exchange=False)
-        for i in range(n_iters):
-            if i==0:
-                exchangeix = self.one_step(pool,burn_factor)
-            else:
-                exchangeix = np.vstack((exchangeix,self.one_step(pool,burn_factor)))
-        pool.close()
-        
-        # Place sample back to original state and save current set of samples.
-        self._samples = [rep.samples for rep in self.replicas]
-        self.sample = oldSample
-        
-        return exchangeix.mean(0),exchangeix
-
-    def tn(self,exchangeix):
-        """
-        Estimate stay time at any particular replica given number of exchanges that happened during ReMC steps.
-        Find stay time at replicas. This is the inverse of the probability that you switch out of a
-        particular replica. Remember that replicas on the boundaries can only exchange with one other
-        replica.
-        2017-03-01
-
-        Parameters
-        ----------
-        exchangeix (ndarray)
-        """ 
-        nReps = len(self.temps)
-        stayTime = np.zeros((nReps))
-        for i in range(nReps):
-            if i==0:
-                stayTime[0] = 1/exchangeix[:,0].mean()
-            elif i==(nReps-1):
-                stayTime[-1] = 1/exchangeix[:,-1].mean()
-            else:
-                stayTime[i] = 1/exchangeix[:,i-1:i].sum(1).mean()
-
-        return stayTime
-    
-    def exchange_measures(self,pn_kwargs={}):
-        """
-        Wrapper for computing exchange probabilities and stay times.
-        """
-        pn,exchangeix = self.pn(**pn_kwargs)
-        tn = self.tn(exchangeix)
-        return pn,tn
-
-    def reweighted_gn(self,listOfSample):
-        """
-        2017-03-01
-        """
-        from scipy.special import logsumexp
-        E = [self.calc_e(s,theta) for s,theta in zip(listOfSample,self.theta)] # assuming that first 
-                                                                              # temperature is 1
-        E = np.vstack(E).T
-        gn = -logsumexp( -E,axis=0 )
-        
-        # Extrapolate what gn should be by using samples from neighboring replicas. Since samples in the
-        # middle have two neighbors, we take the mean of the adjacent extrapolations.
-        # The boundpoints will take the average of their current value and the updated value from the
-        # neighbor, effectively convergence with inertia.
-        extrapgn = np.zeros((self.nReps))
-        extrapgn[:-1] += -logsumexp( -E[:,1:]*self.temps[1:]/self.temps[:-1],axis=0 )
-        extrapgn[1:] += -logsumexp( -E[:,:-1]*self.temps[:-1]/self.temps[1:],axis=0 )
-        extrapgn[-1] += gn[-1]
-        extrapgn[0] += gn[0]
-        return extrapgn/2
-
-    def iterate_beta(self,tau):
-        """
-        2017-03-01
-        Parameters
-        ----------
-        tau (ndarray)
-            Effective time at each temperature.
-        """
-        beta = 1/np.array(self.temps)
-        tauEff = tau.copy()
-        tauEff[0] /= 2
-        tauEff[-1] /=2
-        a = (beta[1:]-beta[:-1])/(tauEff[1:]+tauEff[:-1])
-        c = a.sum()
-
-        for i in range(1,self.nReps-1):
-            beta[i] = beta[i-1] + a[i-1]*(beta[-1]-beta[0])/c
-        return beta
-
-    def optimize(self,
-                 interp_kwargs={'kind':'quadratic'},
-                 pn_kwargs={'n_iters':5},
-                 max_iter=10,
-                 disp=False,
-                 save_history=False,
-                 threshold=1e-2):
-        """
-        Apply algorithm from Kerler and Rehberg (1994) for finding fixed point for optimal temperatures.
-        Optimized temperatures rewrite self.temps.
-        2017-03-01
-
-        Parameters
-        ----------
-        interp_kwargs (dict={'kind':'quadratic'})
-            Interpoloation for gn(bn) = bn to update gn after beta update step.
-        pn_kwargs (dict={'n_iters':5})
-        max_iter (int=10)
-            Number of times to iterate algorithm for beta. Each iteration involves sampling from REMC.
-        disp (bool=False)
-            Print out updated parameters.
-        save_history (bool=False)
-            If true, return history.
-        threshold (float=1e-2)
-        """
-        print("Optimizing REMC parameters...")
-        from scipy.interpolate import interp1d
-
-        for i in range(max_iter):
-            pn,tn = self.exchange_measures(pn_kwargs=pn_kwargs)
-            if disp:
-                print(self.gn,pn,tn)
-            gn = self.reweighted_gn(self._samples)
-            gn_of_beta = interp1d( 1/np.array(self.temps), gn, **interp_kwargs )
-            beta = self.iterate_beta(tn)
-            gnprime = gn_of_beta(beta)
-            gnprime -= gnprime.min()
-            
-            self.temps = 1/beta
-            self.update_parameters()
-            self.gn = gnprime
-            self._pn = pn
-            self._tn = tn
-
-        print("After optimization:")
-        print("Temperatures:")
-        print(self.temps)
-        print("Exchange probability:")
-        print(pn)
-        print("Suggested replica steps: %d"%(2/np.prod(pn)))
-        print("Persistence time:")
-        print(tn)
-
-    def burn_in(self,n_iter):
-        """
-        Wrapper for iterating sampling without exchanging replicas.
-        2017-02-27
-
-        Parameters
-        ----------
-        n_iters (int)
-            Number of times to iterate through system.
-        """
-        pool = mp.Pool(mp.cpu_count())
-        self.one_step(pool,n_iter,exchange=False)
-        self.sample = self.replicas[0].samples
-        pool.close()
-#end SimulatedTempering
 
 
 class FastMCIsing(Sampler):
@@ -1268,10 +925,10 @@ class FastMCIsing(Sampler):
         theta : ndarray
             Concatenated vector of the field hi and couplings Jij. They should be ordered in
             ascending order 0<=i<n and for Jij in order of 0<=i<j<n.
-        n_cpus : int,0
+        n_cpus : int, 0
             If None, then will use all available CPUs minus 1.
-        rng : RandomState,None
-        use_numba : bool,True
+        rng : RandomState, None
+        use_numba : bool, True
             If True, use jit to speed up sampling, but random seed generator cannot be set by the user if this
             is switched on. If having problems with numba, this can be switched off.
         """
@@ -1883,6 +1540,11 @@ class Metropolis(Sampler):
                 Free spins (not fixed).
             theta : ndarray
                 Parameters.
+
+            Returns
+            -------
+            float
+                Energy of state with fixed spins.
             """
 
             fullstate = np.zeros((1,self.n))

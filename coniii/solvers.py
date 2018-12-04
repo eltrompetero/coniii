@@ -37,9 +37,8 @@ class Solver():
     """
     Base class for declaring common methods and attributes for inverse maxent algorithms.
 
-    Members 
-    -------
-    constraints : ndarray
+    Necessary members to define
+    ---------------------------
     calc_e : lambda function
         Takes states and parameters to calculate the energies.
     calc_observables : lambda function
@@ -47,14 +46,9 @@ class Solver():
         lambda X: Y
         where X is of dimensions (n_samples, n_dim)
         and Y is of dimensions (n_samples, n_constraints)
-    multipliers : ndarray
-        Langrangian multipliers
 
-    Methods
-    -------
-    estimate_jac
-    generate_samples
-    setup_sampler
+    Methods to customize
+    --------------------
     solve
     """
     def __init__(self, n,
@@ -73,28 +67,28 @@ class Solver():
         Parameters
         ----------
         n : int
-            System size, number of spins.
-        calc_de : lambda function,None
+            System size given by number of spins.
+        calc_de : function, None
             Function for calculating derivative of energy with respect to the parameters. Takes in 2d
             state array and index of the parameter.
             Defn: lambda state_2d,ix : delta_energy
-        calc_observables : lambda function,None
+        calc_observables : function, None
             Defn: lambda params : observables
-        calc_observables_multipliers : lambda function,None
+        calc_observables_multipliers : function, None
             Calculate predicted observables using the parameters.
             Defn: lambda parameters : pred_observables
-        adj : lambda function,None
+        adj : function, None
             Return adjacency matrix.
-        multipliers : ndarray,None
-            Langrangian multipliers, or parameters.
-        constraints : ndarray,None
+        multipliers : ndarray, None
+            Langrangian multipliers or parameters.
+        constraints : ndarray, None
             Correlations to constrain.
-        sample_size : int,None
-        sample_method : str,None
-        n_cpus : int,None
-            Number of cores to use for parallelized code. If this is set to 0, sequential sampler
+        sample_size : int, None
+        sample_method : str, None
+        n_cpus : int, None
+            Number of cores to use for parallelized code. If this is set to 0,  sequential sampler
             will be used. This should be set if multiprocess module does not work.
-        verbose : bool,False
+        verbose : bool, False
         """
 
         # Basic checks on the inputs.
@@ -117,7 +111,7 @@ class Solver():
         self.calc_de = calc_de
         self.adj = adj
         
-        self.n_cpus = n_cpus or mp.cpu_count()-1
+        self.nCpus = n_cpus or mp.cpu_count()-1
         self.verbose = verbose
 
     def solve(self):
@@ -144,7 +138,7 @@ class Solver():
         
         if sample_method=='metropolis':
             self.sampleMethod=sample_method
-            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e, **sampler_kwargs )
+            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e, n_cpus=self.nCpus, **sampler_kwargs )
       
         elif sample_method=='ising_metropolis':
             self.sampleMethod=sample_method
@@ -190,7 +184,7 @@ class Solver():
             initial_sample = self.samples
         
         # When sequential sampling should be used.
-        if self.n_cpus<=1:
+        if self.nCpus<=1:
             if sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
                 # Burn in.
@@ -218,7 +212,6 @@ class Solver():
                 self.sampler.theta = multipliers.copy()
                 self.sampler.generate_samples_parallel(sample_size,
                                                        n_iters=burnin+n_iters,
-                                                       cpucount=self.n_cpus,
                                                        initial_sample=initial_sample)
                 self.samples = self.sampler.samples
 
@@ -226,7 +219,7 @@ class Solver():
                 self.sampler.update_parameters(multipliers)
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=burnin+n_iters,
-                                                        cpucount=self.n_cpus,
+                                                        n_cpus=self.nCpus,
                                                         initial_sample=initial_sample )
                 self.samples = self.sampler.samples
 
@@ -1143,11 +1136,9 @@ class MCHIncompleteData(MCH):
                 # Burn in.
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=burnin,
-                                                        cpucount=self.n_cpus,
                                                         initial_sample=initial_sample )
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=n_iters,
-                                                        cpucount=self.n_cpus,
                                                         initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
             if run_cond_sampler: 
@@ -1172,7 +1163,7 @@ class MCHIncompleteData(MCH):
                     return sample
 
                 # Parallel sampling of conditional distributions. 
-                pool = mp.Pool(self.n_cpus)
+                pool = mp.Pool(self.nCpus)
                 self.condSamples = pool.map( f,list(zip(list(range(len(uIncompleteStates))),uIncompleteStates)) )
                 pool.close()
         else:

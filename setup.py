@@ -34,7 +34,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='coniii',
-      version='1.0.3',
+      version='1.0.4',
       description='Convenient Interface to Inverse Ising (ConIII)',
       long_description=long_description,
       url='https://github.com/eltrompetero/coniii',
@@ -51,7 +51,7 @@ setup(name='coniii',
       python_requires='>=3.6',
       keywords='inverse Ising maxent maximum entropy inference',
       packages=find_packages(),
-      install_requires=['multiprocess==0.70.5',
+      install_requires=['multiprocess>=0.70.5,<1',
                         'jupyter>=1',
                         'matplotlib',
                         'scipy',

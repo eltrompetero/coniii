@@ -21,7 +21,7 @@ $ pip install coniii
 ```
 
 If you have trouble using `pip` and PyPI, then you can always build this package from source.
-Download the latest release from GitHub. Make sure that you are running Python 3.6 or higher).  Inside
+Download the latest release from GitHub. Make sure that you are running Python 3.6 or higher.  Inside
 "coniii", you must run
 ```bash
 $ ./pypi_compile.sh

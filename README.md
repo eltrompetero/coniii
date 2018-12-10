@@ -21,10 +21,10 @@ $ pip install coniii
 ```
 
 If you have trouble using `pip` and PyPI, then you can always build this package from source.
-Download the latest release from GitHub and move the "coniii" folder to wherever you would like to have
-the module (make sure this folder is in your file path and that you are running Python 3.6).  Inside
+Download the latest release from GitHub. Make sure that you are running Python 3.6 or higher).  Inside
 "coniii", you must run
 ```bash
+$ ./pypi_compile.sh
 $ pip install .
 ```
 
@@ -109,5 +109,9 @@ functionality provided by the multiprocess module.
 ### Support
 Please file an issue on the GitHub if you have any problems or feature requests. Please provide a
 stack trace or other information that would be helpful in debugging.
+
+### Updating
+When updating to new 1.x.x versions please read the RELEASE_NOTES. There may be some modifications to
+the interface including parameter names as we iron out inconsistencies to make it more user friendly.
 
 Online documentation is hosted at [https://eddielee.co/coniii/_build/html/index.html].

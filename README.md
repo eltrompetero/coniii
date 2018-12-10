@@ -79,7 +79,7 @@ path when you install ConIII through listed dependencies.
 If you prefer to install the packages yourself, you can use the Python package
 [pip](https://pypi.org/project/pip/).  Open a terminal and run
 ```bash
-$ pip install matplotlib 'multiprocess==0.70.5' 'jupyter>=1' matplotlib scipy numpy 'numba>=0.39.0,<1' dill joblib
+$ pip install matplotlib 'multiprocess>=0.70.5,<1' 'jupyter>=1' matplotlib scipy numpy 'numba>=0.39.0,<1' dill joblib
 ```
 
 ## Troubleshooting

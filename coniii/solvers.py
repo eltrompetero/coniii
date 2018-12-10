@@ -309,9 +309,6 @@ class MPF(Solver):
         ----------
         n : int
             System size.
-        calc_e :  function, None
-            Function for computing energies of given state and parameters.  Should take in a 2D state array
-            and vector of parameters to compute energies.
         adj : function, None
             function for getting all the neighbors of any given state
         calc_de : function, None
@@ -610,32 +607,34 @@ class MCH(Solver):
               burnin=30,
               maxiter=10,
               custom_convergence_f=None,
-              disp=False,
+              iprint=False,
               full_output=False,
-              learn_params_kwargs={'maxdlamda':1,'eta':1},
-              generate_kwargs={}):
+              learn_params_kwargs={'maxdlamda':1, 'eta':1},
+              generate_kwargs={},
+              **kwargs):
         """
         Solve for maxent model parameters using MCH routine.
         
         Parameters
         ----------
-        initial_guess : ndarray
-            Initial starting point
-        constraints : ndarray
-        X : ndarray
+        initial_guess : ndarray, None
+            Initial starting point.
+        constraints : ndarray, None
+            Vector of correlations to fit.
+        X : ndarray, None
             If instead of constraints, you wish to pass the raw data on which to calculate the
             constraints using self.calc_observables.
-        tol : float
+        tol : float, None
             Maximum error allowed in any observable.
-        tolNorm : float
+        tolNorm : float, None
             Norm error allowed in found solution.
-        n_iters : int
+        n_iters : int, 30
             Number of iterations to make between samples in MCMC sampling.
-        burnin : int
+        burnin : int, 30
             Initial burn in from random sample when MC sampling.
-        max_iter : int
+        max_iter : int, 10
             Max number of iterations of MC sampling and MCH approximation.
-        custom_convergence_f : function
+        custom_convergence_f : function, None
             Function for determining convergence criterion. At each iteration, this function should
             return the next set of learn_params_kwargs and optionally the sample size.
 
@@ -653,11 +652,11 @@ class MCH(Solver):
 		    return {'maxdlamda':1,'eta':1}
 		else:
 		    return {'maxdlamda':.05,'eta':.05}
-        disp : bool
-        full_output : bool
+        iprint : bool, False
+        full_output : bool, False
             If True, also return the errflag and error history.
-        learn_parameters_kwargs : dict,{'maxdlamda':1,'eta':1}
-        generate_kwargs : dict
+        learn_parameters_kwargs : dict, {'maxdlamda':1,'eta':1}
+        generate_kwargs : dict, {}
 
         Returns
         -------
@@ -671,6 +670,9 @@ class MCH(Solver):
             Log of errors in matching constraints at each step of iteration.
         """
 
+
+        if 'disp' in kwargs.keys():
+            raise Exception("disp kwarg has been replaced with iprint.")
         if (self.n*10)>burnin:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
@@ -716,7 +718,7 @@ class MCH(Solver):
                                                                size=(self.sampleSize,self.n)) )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
-        if disp=='detailed': print(self._multipliers)
+        if iprint=='detailed': print(self._multipliers)
 
 
         # MCH iterations.
@@ -725,15 +727,15 @@ class MCH(Solver):
         learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
         while keepLooping:
             # MCH step
-            if disp:
+            if iprint:
                 print("Iterating parameters with MCH...")
             self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
-            if disp=='detailed':
+            if iprint=='detailed':
                 print("After MCH step, the parameters are...")
                 print(self._multipliers)
             
             # MC sampling step
-            if disp:
+            if iprint:
                 print("Sampling...")
             self.generate_samples( n_iters,burnin,
                                    multipliers=self._multipliers,
@@ -744,24 +746,24 @@ class MCH(Solver):
             counter += 1
             
             errors.append( thisConstraints-self.constraints )
-            if disp=='detailed':
+            if iprint=='detailed':
                 print("Error is %1.4f"%np.linalg.norm(errors[-1]))
             # Exit criteria.
             if ( np.linalg.norm(errors[-1])<tolNorm
                  and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
-                if disp: print("Solved.")
+                if iprint: print("Solved.")
                 errflag=0
                 keepLooping=False
             elif counter>maxiter:
-                if disp: print("Over maxiter")
+                if iprint: print("Over maxiter")
                 errflag=1
                 keepLooping=False
             else:
-                learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
+                learn_params_kwargs, self.sampleSize = custom_convergence_f(counter)
         
         self.multipliers = self._multipliers.copy()
         if full_output:
-            return self.multipliers,errflag,np.vstack((errors))
+            return self.multipliers, errflag, np.vstack((errors))
         return self.multipliers
 
     def estimate_jac(self, eps=1e-3):

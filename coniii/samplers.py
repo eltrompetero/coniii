@@ -207,9 +207,6 @@ class Sampler():
 #end Sampler
 
 
-# ============== #
-# Wolff sampler. #
-# ============== #
 class WolffIsing(Sampler):
     def __init__(self, J, h):
         """
@@ -1439,7 +1436,7 @@ class Metropolis(Sampler):
             If True, iterate through spins systematically instead of choosing them randomly.
         """
         
-        n_cpus = self.nCpus
+        n_cpus = self.nCpus  # alias
         assert n_cpus>=2
         assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
         if not initial_sample is None:

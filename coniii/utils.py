@@ -440,8 +440,8 @@ def split_concat_params(p, n):
     
     Returns
     -------
-    splitp : list of list-like
-        Parameters increase in order (h, Jij, Kijk, ... )
+    list of list-like
+        Parameters increasing in order: (h, Jij, Kijk, ... ).
     """
     
     from scipy.special import binom
@@ -454,26 +454,27 @@ def split_concat_params(p, n):
         i += 1
     return splitp
 
-def convert_corr(si,sisj,convertTo='11',concat=False):
+def convert_corr(si, sisj, convertTo='11', concat=False):
     """
     Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.
 
-    Params:
-    -------
-    si (ndarray)
-    sisj (ndarray)
-    convertTo (str,'11')
+    Parameters
+    ----------
+    si : ndarray
+    sisj : ndarray
+    convertTo : str, '11'
         '11' will convert {0,1} formulation to +/-1 and '01' will convert +/-1 formulation to {0,1}
-    concat (bool=False)
+    concat : bool, False
         If True, return concatenation of means and pairwise correlations.
 
-    Returns:
-    --------
-    si
-        Converted to appropriate basis
-    sisj
-        converted to appropriate basis
+    Returns
+    -------
+    ndarray
+        Averages <si>. Converted to appropriate basis.
+    ndarray
+        Pairwise correlations <si*sj>. Converted to appropriate basis.
     """
+
     if convertTo=='11':
         newsisj = np.zeros(sisj.shape)
         k = 0
@@ -492,7 +493,7 @@ def convert_corr(si,sisj,convertTo='11',concat=False):
         newsi = (si+1)/2
     if concat:
         return np.concatenate((newsi,newsisj))
-    return newsi,newsisj
+    return newsi, newsisj
 
 def state_probs(v, allstates=None, weights=None, normalized=True):
     """
@@ -502,17 +503,17 @@ def state_probs(v, allstates=None, weights=None, normalized=True):
     ----------
     states : ndarray
         (n_samples,n_dim)
-    allstates : ndarray,None
-    weights : vector,None
-    normalized : bool=True
+    allstates : ndarray, None
+    weights : vector, None
+    normalized : bool, True
         Return probability distribution instead of frequency count
     
     Returns
     -------
-    freq : ndarray
-        Vector of the probabilities of each state
-    allstates : ndarray
-        All unique states found in the data.
+    ndarray
+        Vector of the probabilities of each state.
+    ndarray
+        All unique states found in the data. Each state is a row.
     """
 
     if v.ndim==1:

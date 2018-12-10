@@ -1,0 +1,12 @@
+Changelog
+
+
+v1.0.4 (Released ??)
+-----------------------
+- Now compatible with multiprocess v0.70.6.
+- Updated sampling method for Metropolis to be more efficient by running fewer systems for longer and taking
+  iterative samples instead of starting with a completely new system for every sample (which takes longer to
+  burn in and requires starting new processes). This is automated such that the number of samples is divided
+  evenly amongst all running processes)..
+- Added working version of ParallelTempering sampler.
+

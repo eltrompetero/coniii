@@ -29,7 +29,7 @@
 from .solvers import *
 from .ising_eqn import ising_eqn_3_sym
 import numpy as np
-
+calc_observables_multipliers = ising_eqn_3_sym.calc_observables
 
 # Generate example data set to use in tests
 n = 3  # system size
@@ -38,7 +38,7 @@ h = np.random.normal(scale=.1, size=n)           # random couplings
 J = np.random.normal(scale=.1, size=n*(n-1)//2)  # random fields
 hJ = np.concatenate((h, J))
 p = ising_eqn_3_sym.p(hJ)  # probability distribution of all states p(s)
-sisjTrue = ising_eqn_3_sym.calc_observables(hJ)  # exact means and pairwise correlations
+sisjTrue = calc_observables_multipliers(hJ)  # exact means and pairwise correlations
 
 allstates = bin_states(n, True)  # all 2^n possible binary states in {-1,1} basis
 sample = allstates[np.random.choice(range(2**n),
@@ -129,8 +129,16 @@ def test_Pseudo():
     # Check that both ways of solving the problem agree
     assert np.isclose(estMultipliers1, estMultipliers2, atol=1e-3).all()
 
+def test_Enumerate():
+    # Enumerate should be able to find exact solution when passed the exact correlations
+    solver = Enumerate(n,
+                       calc_observables_multipliers=calc_observables_multipliers,
+                       calc_observables=calc_observables)
+    soln = solver.solve(sisjTrue)
+    assert np.isclose(hJ, soln).all()
+
 def test_pickling():
-    return
+    pass
 
 if __name__=='__main__':
     test_MPF()

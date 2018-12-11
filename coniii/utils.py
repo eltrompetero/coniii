@@ -134,7 +134,8 @@ def pair_corr(X,
               weights=None,
               concat=False,
               exclude_empty=False,
-              subtract_mean=False):
+              subtract_mean=False,
+              laplace_count=False):
     """
     Calculate averages and pairwise correlations of spins.
 
@@ -155,6 +156,8 @@ def pair_corr(X,
         any pair. If True, the weights option doesn't do anything.
     subtract_mean : bool, False
         If True, return pairwise correlations with product of individual means subtracted.
+    laplace_count : 
+
 
     Returns
     -------
@@ -165,9 +168,12 @@ def pair_corr(X,
     assert frozenset(np.unique(X))<=frozenset([-1,0,1])
     S, N = X.shape
     
-    if exclude_empty:
+    if exclude_empty and not laplace_count:
         # count all nonzero entries for every pair
         weights = 1/(X!=0).sum(0), 1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] )
+    elif exclude_empty and laplace_count:
+        weights = ( 1/((X!=0).sum(0)+2),
+                    1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] + 4 ) )
     elif weights is None:
         # for taking simple average
         weights = np.ones(len(X))/len(X)

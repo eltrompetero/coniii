@@ -46,14 +46,18 @@ def test_pair_corr():
     assert np.isclose(sisj, sisj_).all()
 
     si, sisj = pair_corr(X, weights=np.zeros(len(X))+1/len(X))
-    assert np.isclose(si,si_).all()
+    assert np.isclose(si, si_).all()
     assert np.isclose(sisj, sisj_).all()
     
     # try exclude_empty switch
     X = np.vstack((X, np.zeros(3)))
     si, sisj = pair_corr(X, exclude_empty=True)
-    assert np.isclose(si,si_).all()
+    assert np.isclose(si, si_).all()
     assert np.isclose(sisj, sisj_).all()
+
+    si, sisj = pair_corr(X, exclude_empty=True, laplace_count=True)
+    assert np.isclose(si, si_*5/7).all()
+    assert np.isclose(sisj, sisj_*5/9).all()
 
 def test_sub_to_ind():
     for n in range(2,5):

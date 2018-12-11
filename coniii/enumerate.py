@@ -71,11 +71,11 @@ def write_eqns(n, sym, terms, writeto='matlab', suffix=''):
         for i in range(len(terms)):
             # Get terms corresponding to each of the ith order term.
             if sym==1:
-                expterms[state] += get_terms11(terms[i],abc[i],binstates[state],br,ix0)
+                expterms[state] += get_terms11(terms[i], abc[i], binstates[state], br, ix0)
             elif sym==0:
-                expterms[state] += get_terms01(terms[i],abc[i],binstates[state],br,ix0)
+                expterms[state] += get_terms01(terms[i], abc[i], binstates[state], br, ix0)
             else:
-                expterms[state] += get_terms(terms[i],abc[i],binstates[state],br,ix0)
+                raise Exception("sym must be either 0 or 1.")
             expterms[state] = re.sub('\+0\+','+',expterms[state])
             expterms[state] = re.sub('\)\+0',')',expterms[state])
         expterms[state] += ')'

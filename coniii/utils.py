@@ -393,13 +393,16 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
 
 def unravel_index(ijk, n):
     """
-    Unravel multi-dimensional index to unidimensional index in flattened multi-dimensional analog of
-    an upper triangular array.
+    Unravel multi-dimensional index to flattened index but specifically for
+    multi-dimensional analog of an upper triangular array (lower triangle indices are not
+    counted).
 
     Parameters
     ----------
     ijk : tuple
+        Raveled index to unravel. These must be sorted increasing order.
     n : int
+        System size.
 
     Returns
     -------

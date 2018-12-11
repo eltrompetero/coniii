@@ -29,7 +29,7 @@ import scipy.special as ss
 from itertools import combinations
 
 
-def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
+def write_eqns(n, sym, terms, writeto='matlab', suffix=''):
     """
     Parameters
     ----------
@@ -43,9 +43,10 @@ def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
         specify indices in an array with an extra dimension of N, 
         [Nx1,NxN,NxNxN,...]
         note that the last dimension is the first to be iterated
-    writeto : str,'matlab'
+    writeto : str, 'matlab'
         Filetype to write to, 'matlab' or 'python'.
     """
+
     import re
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
     expterms = [] # 2**N exponential terms
@@ -101,14 +102,15 @@ def write_eqns(n,sym,terms,writeto='matlab',suffix=''):
             extra = '\n\tPout = Pout[::-1]'
         else:
             extra = ''
-        write_py(n,terms,fitterms,expterms,Z,extra=extra,suffix=suffix)
+        write_py(n, terms, fitterms, expterms, Z, extra=extra, suffix=suffix)
     else:
         raise Exception("Must choose between \"matlab\" and \"py\".")
 
-def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
+def write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
     """
     Write out equations to solve for matlab.
     """
+
     import time
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
     vardec = ''
@@ -153,7 +155,7 @@ def write_matlab(n,terms,fitterms,expterms,Z,suffix=''):
 
     g.close()
 
-def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
+def write_py(n, terms, fitterms, expterms, Z, extra='', suffix=''):
     """
     Write out equations to solve for Python.
 
@@ -169,7 +171,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     f = open('ising_eqn/ising_eqn_%d%s.py'%(n,suffix),'w')
     f.write("# Equations of %d-spin Ising model.\n\n"%n)
     f.write("# ")
-    f.write(time.strftime("%d/%m/%Y")+"\n")
+    f.write(time.strftime("Written on %Y/%m/%d.")+"\n")
     f.write("from numpy import zeros, exp\n\n")
 
     # Keep these as string because they need to grow in the loop and then can just be
@@ -201,7 +203,7 @@ def write_py(n,terms,fitterms,expterms,Z,extra='',suffix=''):
     f.write(vardec)
    
     # Output variable decs and put params into explicit parameters.
-    ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))
+    ix = np.hstack(( 0, np.cumsum([len(i) for i in fitterms]) ))
     vardec = ''
     for i in range(len(terms)):
         vardec += '\t'+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
@@ -229,7 +231,7 @@ def _write_Z(f, Z):
             f.write('\t'+Z[i:iend]+'\\\n')
         i=iend
 
-def add_to_fitterm11(fitterm,subix,expterm,binstate):
+def add_to_fitterm11(fitterm, subix, expterm, binstate):
     """
     """
     if len(subix)==0:
@@ -248,7 +250,7 @@ def add_to_fitterm11(fitterm,subix,expterm,binstate):
                 fitterm.append(expterm)
         j+=1
 
-def add_to_fitterm01(fitterm,subix,expterm,binstate):
+def add_to_fitterm01(fitterm, subix, expterm, binstate):
     """
     """
     if len(subix)==0:
@@ -260,7 +262,7 @@ def add_to_fitterm01(fitterm,subix,expterm,binstate):
         if np.all( [binstate[k[i]]=="1" for k in subix] ):
             fitterm[i] += expterm
 
-def get_terms11(subix,prefix,binstate,br,ix0):
+def get_terms11(subix, prefix, binstate, br, ix0):
     """
     Specific to {-1,1}.
     """
@@ -278,7 +280,7 @@ def get_terms11(subix,prefix,binstate,br,ix0):
 
     return s
 
-def get_terms01(subix,prefix,binstate,br,ix0):
+def get_terms01(subix, prefix, binstate, br, ix0):
     """
     Specific to {0,1}.
     """
@@ -296,7 +298,7 @@ def get_terms01(subix,prefix,binstate,br,ix0):
 
     return s
 
-def get_terms(subix,prefix,binstate,br,ix0):
+def get_terms(subix, prefix, binstate, br, ix0):
     """
     Spins are put in explicitly
     """
@@ -316,11 +318,11 @@ def get_terms(subix,prefix,binstate,br,ix0):
     return s
 
 def get_3idx(n):
-    """
-    Get binary 3D matrix with truth values where index values correspond to the index of all possible ijk
+    """Get binary 3D matrix with truth values where index values correspond to the index of all possible ijk
     parameters.  We can do this by recognizing that the pattern along each plane in the third dimension is
     like the upper triangle pattern that just moves up and over by one block each cut lower into the box.
     """
+
     b = np.zeros((n,n,n))
     c = np.triu(np.ones((n-1,n-1))==1,1)
     for i in range(n-1):
@@ -332,7 +334,7 @@ def get_3idx(n):
             b[i,(1+i):,(1+i):] = c[:-i,:-i]
     return b
 
-def get_nidx(k,n):
+def get_nidx(k, n):
     """
     Get the kth order indices corresponding to all the states in which k elements
     are firing up out of n spins. The ordering correspond to that returned by
@@ -344,6 +346,7 @@ def get_nidx(k,n):
     print where(exact.get_nidx(3,4))
     <<<<<
     """
+    
     if k==n:
         return np.reshape(list(range(n)),(n,1))
     elif k<n:

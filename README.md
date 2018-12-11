@@ -24,7 +24,6 @@ If you have trouble using `pip` and PyPI, then you can always build this package
 Download the latest release from GitHub. Make sure that you are running Python 3.6 or higher.  Inside
 "coniii", you must run
 ```bash
-$ ./pypi_compile.sh
 $ pip install .
 ```
 

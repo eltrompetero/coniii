@@ -255,21 +255,31 @@ class Enumerate(Solver):
               full_output=False,
               fsolve_kwargs={'method':'powell'}):
         """
+        Must specify either constraints (the correlations) or samples from which the
+        correlations will be calculated using self.calc_observables.
+
         Parameters
         ----------
-        constraints : ndarray
-        samples : ndarray
+        constraints : ndarray, None
+            Correlations that will be fit to.
+        samples : ndarray, None
             (n_samples, n_dim)
-        initial_guess : ndarray,None
+        initial_guess : ndarray, None
             initial starting point
-        fsolve_kwargs : dict,{'method':'powell'}
+        max_param_value : float, 50
+            Absolute value of max parameter value. Bounds can also be set in the kwargs
+            passed to the minimizer, in which case this should be set to None.
+        full_output : bool, False
+            If True, return output from scipy.optimize.minimize.
+        fsolve_kwargs : dict, {'method':'powell'}
             Powell method is slower but tends to converge better.
 
         Returns
         -------
-        multiplers : ndarray
-        solve_details : dict
-            output from scipy.optimize.minimize
+        ndarray
+            Solved multipliers (parameters).
+        dict, optional
+            Output from scipy.optimize.minimize.
         """
 
         if not constraints is None:
@@ -283,12 +293,16 @@ class Enumerate(Solver):
             self.multipliers = initial_guess.copy()
         else: initial_guess = np.zeros((len(self.constraints)))
         
-        def f(params):
-            if np.any(np.abs(params)>max_param_value):
-                return 1e30
-            return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+        if not max_param_value is None:
+            def f(params):
+                if np.any(np.abs(params)>max_param_value):
+                    return 1e30
+                return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+        else:
+            def f(params):
+                return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
 
-        soln = minimize(f,initial_guess,**fsolve_kwargs)
+        soln = minimize(f, initial_guess, **fsolve_kwargs)
         self.multipliers = soln['x']
         if full_output:
             return soln['x'], soln

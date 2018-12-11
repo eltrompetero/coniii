@@ -30,6 +30,31 @@ version = sys.version_info
 assert version.major>=3 and version.minor>=6
 
 
+def test_pair_corr():
+    from itertools import combinations
+
+    X = np.random.choice([-1,1], size=(5,3))
+    si_ = X.mean(0)
+    sisj_ = np.array([(X[:,i]*X[:,j]).mean(0) for i,j in combinations(range(3),2)])
+
+    si, sisj = pair_corr(X)
+    assert np.isclose(si,si_).all()
+    assert np.isclose(sisj, sisj_).all()
+
+    si, sisj = pair_corr(X, weights=1/len(X))
+    assert np.isclose(si,si_).all()
+    assert np.isclose(sisj, sisj_).all()
+
+    si, sisj = pair_corr(X, weights=np.zeros(len(X))+1/len(X))
+    assert np.isclose(si,si_).all()
+    assert np.isclose(sisj, sisj_).all()
+    
+    # try exclude_empty switch
+    X = np.vstack((X, np.zeros(3)))
+    si, sisj = pair_corr(X, exclude_empty=True)
+    assert np.isclose(si,si_).all()
+    assert np.isclose(sisj, sisj_).all()
+
 def test_sub_to_ind():
     for n in range(2,5):
         counter = 0

@@ -142,16 +142,18 @@ def pair_corr(X,
     ----------
     X : ndarray
         Dimensions (n_samples,n_dim).
-    weights : np.ndarray
-        Calculate single and pairwise means given fractional weights for each state in
-        the data such that a state only appears with some weight, typically less than
-        one
-    concat : bool
+    weights : float or np.ndarray or twople, None
+        If an array is passed, it must be the length of the data and each data point will
+        be given the corresponding weight. Otherwise, the two element tuple should contain
+        the normalization for each mean and each pairwise correlation, in that order. In
+        other words, the first array should be length {s_i} and the second length
+        {si*s_j}.
+    concat : bool, False
         Return means concatenated with the pairwise correlations into one array.
-    exclude_empty : bool
+    exclude_empty : bool, False
         When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
         any pair. If True, the weights option doesn't do anything.
-    subtract_mean : bool
+    subtract_mean : bool, False
         If True, return pairwise correlations with product of individual means subtracted.
 
     Returns
@@ -161,22 +163,30 @@ def pair_corr(X,
     """
 
     assert frozenset(np.unique(X))<=frozenset([-1,0,1])
-    S,N = X.shape
+    S, N = X.shape
     
     if exclude_empty:
-        # Don't include 0's in calculation of averages.
-        weights=1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] )
+        # count all nonzero entries for every pair
+        weights = 1/(X!=0).sum(0), 1./( (X!=0).astype(int).T.dot(X!=0)[np.triu_indices(X.shape[1],k=1)] )
     elif weights is None:
-        weights=np.ones(len(X))/len(X)
+        # for taking simple average
+        weights = np.ones(len(X))/len(X)
+    elif type(weights) is tuple:
+        assert len(weights[0])==X.shape[1]
+        assert len(weights[1])==(X.shape[1]*(X.shape[1]-1)//2)
+    elif type(weights) is np.ndarray:
+        assert len(weights)==len(X)
+    else:
+        weights = np.zeros(len(X))+weights
     
     # Calculate pairwise correlations depending on whether or not exclude_empty was set or not.
-    if len(weights)==len(X):
-        sisj=(X.T.dot(X*weights[:,None]))[np.triu_indices(X.shape[1],k=1)]
-        si=(X*weights[:,None]).sum(0)
+    if type(weights) is tuple:
+        si = X.sum(0) * weights[0]
+        sisj = (X.T.dot(X))[np.triu_indices(X.shape[1],k=1)] * weights[1]
     else:
-        sisj=(X.T.dot(X))[np.triu_indices(X.shape[1],k=1)]*weights
-        si=X.sum(0)/(X!=0).sum(0)
-    
+        si = (X*weights[:,None]).sum(0)
+        sisj = (X.T.dot(X*weights[:,None]))[np.triu_indices(X.shape[1],k=1)]
+
     if subtract_mean:
         sisj = np.array([sisj[i]-si[ix[0]]*si[ix[1]] for i,ix in enumerate(combinations(list(range(N)),2))])
     

@@ -670,7 +670,6 @@ class MCH(Solver):
             Log of errors in matching constraints at each step of iteration.
         """
 
-
         if 'disp' in kwargs.keys():
             raise Exception("disp kwarg has been replaced with iprint.")
         if (self.n*10)>burnin:

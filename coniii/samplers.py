@@ -988,6 +988,8 @@ class FastMCIsing(Sampler):
         if initial_sample is None:
             samples = np.random.choice([-1.,1.],size=(sample_size,self.n))
         else:
+            msg = "Sequential sample generation requires initial sample of dim (sample_size, n)."
+            assert np.array_equal(initial_sample.shape, (sample_size, self.n)), msg
             samples = initial_sample
         E = self.calc_e( samples, self.theta )
         h, J = self.h, self.J
@@ -1041,24 +1043,24 @@ class FastMCIsing(Sampler):
         self.samples = samples
 
     def _generate_samples(self,
-                         sampleSize,
+                         sample_size,
                          n_iters=1000,
                          saveHistory=False,
-                         initialSample=None,
+                         initial_sample=None,
                          systematic_iter=False):
         """
         Generate Metropolis samples using a for loop and save samples in self.samples.
 
         Parameters
         ----------
-        sampleSize : int
+        sample_size : int
             Number of samples to take.
         n_iters : int,1000
             Number of iterations to run Metropolis sampler.
         saveHistory : bool,False
             If True, the energy of the system after each Metropolis sampling step will be recorded.
             This can be useful for making sure that the system has reached equilibrium.
-        initialSample : ndarray,None
+        initial_sample : ndarray,None
             If this is given, then this is used as the starting point for the Markov chain instead
             of a random sample.
         systematic_iter : bool,False
@@ -1066,25 +1068,28 @@ class FastMCIsing(Sampler):
             receive in equal number of chances to flip.
         """
 
-        if initialSample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
-        else: self.samples = initialSample
+        if initial_sample is None:
+            self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
+        else:
+            msg = "Sequential sample generation requires initial sample of dim (sample_size, n)."
+            assert np.array_equal(initial_sample.shape, (sample_size, self.n)), msg
+            self.samples = initial_sample
         self.E = self.calc_e( self.samples, self.theta )
         
         if saveHistory:
             if systematic_iter:
-                history=np.zeros((sampleSize,n_iters+1))
+                history=np.zeros((sample_size,n_iters+1))
                 history[:,0]=self.E.ravel()
-                for i in range(sampleSize):
+                for i in range(sample_size):
                     for j in range(n_iters):
                         de = self._sample_metropolis( self.samples[i], flip_site=j%self.n )
                         self.E[i] += de
                         history[i,j+1]=self.E[i]
                 return history
             else:
-                history=np.zeros((sampleSize,n_iters+1))
+                history=np.zeros((sample_size,n_iters+1))
                 history[:,0]=self.E.ravel()
-                for i in range(sampleSize):
+                for i in range(sample_size):
                     for j in range(n_iters):
                         de = self._sample_metropolis( self.samples[i] )
                         self.E[i] += de
@@ -1092,12 +1097,12 @@ class FastMCIsing(Sampler):
                 return history
         else:
             if systematic_iter:
-                for i in range(sampleSize):
+                for i in range(sample_size):
                     for j in range(n_iters):
                         de = self._sample_metropolis( self.samples[i], flip_site=j%self.n )
                         self.E[i] += de
             else:
-                for i in range(sampleSize):
+                for i in range(sample_size):
                     for j in range(n_iters):
                         de = self._sample_metropolis( self.samples[i], self.rng, self.h, self.J )
                         self.E[i] += de
@@ -1204,7 +1209,7 @@ class FastMCIsing(Sampler):
         self.E = np.array(self.E)
 
     def _generate_samples_parallel(self,
-                                   sampleSize,
+                                   sample_size,
                                    n_iters=1000,
                                    n_cpus=None,
                                    initial_sample=None,
@@ -1214,24 +1219,24 @@ class FastMCIsing(Sampler):
 
         Parameters
         ----------
-        sampleSize : int
+        sample_size : int
             Number of samples to take.
-        n_iters : int,1000
+        n_iters : int, 1000
             Number of iterations to run Metropolis sampler.
-        saveHistory : bool,False
+        saveHistory : bool, False
             If True, the energy of the system after each Metropolis sampling step will be recorded.
             This can be useful for making sure that the system has reached equilibrium.
-        initialSample : ndarray,None
+        initialSample : ndarray, None
             If this is given, then this is used as the starting point for the Markov chain instead
             of a random sample.
-        systematic_iter : bool,False
+        systematic_iter : bool, False
             If True, will iterate through each spin in a fixed sequence. This ensures that all spins
             receive in equal number of chances to flip.
         """
 
-        n_cpus=n_cpus or self.nCpus
+        n_cpus = n_cpus or self.nCpus
         if initial_sample is None:
-            self.samples = self.rng.choice([-1.,1.],size=(sampleSize,self.n))
+            self.samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
         else:
             self.samples = initial_sample
         self.E = np.array([ self.calc_e( s[None,:], self.theta ) for s in self.samples ])
@@ -1257,7 +1262,7 @@ class FastMCIsing(Sampler):
         pool = mp.Pool(n_cpus)
         self.samples, self.E = list(zip(*pool.map(f,list(zip(self.samples,
                                                   self.E,
-                                                  self.rng.randint(2**31-1, size=sampleSize))))))
+                                                  self.rng.randint(2**31-1, size=sample_size))))))
         pool.close()
 
         self.samples = np.vstack(self.samples)

@@ -155,7 +155,6 @@ class Solver():
                          multipliers=None,
                          sample_size=None,
                          sample_method=None,
-                         initial_sample=None,
                          generate_kwargs={}):
         """
         Wrapper around generate_samples() generate_samples_parallel() methods in samplers.
@@ -170,7 +169,6 @@ class Solver():
         multipliers : ndarray,None
         sample_size : int,None
         sample_method : str,None
-        initial_sample : ndarray,None
         generate_kwargs : dict,{}
         """
 
@@ -180,8 +178,6 @@ class Solver():
             multipliers = self.multipliers
         sample_method = sample_method or self.sampleMethod
         sample_size = sample_size or self.sampleSize
-        if initial_sample is None and (not self.samples is None) and len(self.samples)==sample_size:
-            initial_sample = self.samples
         
         # When sequential sampling should be used.
         if self.nCpus<=1:
@@ -189,19 +185,16 @@ class Solver():
                 self.sampler.theta = multipliers.copy()
                 # Burn in.
                 self.sampler.generate_samples(sample_size,
-                                              n_iters=burnin,
-                                              initial_sample=initial_sample)
+                                              n_iters=burnin)
                 self.sampler.generate_samples(sample_size,
-                                              n_iters=n_iters,
-                                              initial_sample=self.sampler.samples)
+                                              n_iters=n_iters)
                 self.samples = self.sampler.samples
 
             elif sample_method=='ising_metropolis':
                 self.sampler.update_parameters(multipliers)
                 # Burn in.
                 self.sampler.generate_samples(sample_size,
-                                              n_iters=burnin+n_iters,
-                                              initial_sample=initial_sample)
+                                              n_iters=burnin+n_iters)
                 self.samples = self.sampler.samples
 
             else:
@@ -211,16 +204,14 @@ class Solver():
             if sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
                 self.sampler.generate_samples_parallel(sample_size,
-                                                       n_iters=burnin+n_iters,
-                                                       initial_sample=initial_sample)
+                                                       n_iters=burnin+n_iters)
                 self.samples = self.sampler.samples
 
             elif sample_method=='ising_metropolis':
                 self.sampler.update_parameters(multipliers)
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=burnin+n_iters,
-                                                        n_cpus=self.nCpus,
-                                                        initial_sample=initial_sample )
+                                                        n_cpus=self.nCpus)
                 self.samples = self.sampler.samples
 
             else:
@@ -726,9 +717,7 @@ class MCH(Solver):
         # Generate initial set of samples.
         self.generate_samples( n_iters,burnin,
                                multipliers=self._multipliers,
-                               generate_kwargs=generate_kwargs,
-                               initial_sample=np.random.choice([-1.,1.],
-                                                               size=(self.nCpus,self.n)) )
+                               generate_kwargs=generate_kwargs )
         thisConstraints = self.calc_observables(self.samples).mean(0)
         errors.append( thisConstraints-self.constraints )
         if iprint=='detailed': print(self._multipliers)
@@ -752,9 +741,7 @@ class MCH(Solver):
                 print("Sampling...")
             self.generate_samples( n_iters,burnin,
                                    multipliers=self._multipliers,
-                                   generate_kwargs=generate_kwargs,
-                                   initial_sample=np.random.choice([-1.,1.],
-                                                                   size=(self.nCpus,self.n)) )
+                                   generate_kwargs=generate_kwargs )
             thisConstraints = self.calc_observables(self.samples).mean(0)
             counter += 1
             

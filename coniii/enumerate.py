@@ -29,45 +29,48 @@ import scipy.special as ss
 from itertools import combinations
 
 
-def write_eqns(n, sym, constraintTermsIx, suffix=''):
+def write_eqns(n, sym, corrTermsIx, suffix=''):
     """
+    Create strings for writing out the equations and then write them to file.
+
     Parameters
     ----------
     n : int
         number of spins
     sym : int
         value of 1 will use {-1,1} formulation, 0 means {0,1}
-    constraintTermsIx : list
-        list of numpy index arrays as would be returned by np.where that 
-        specify which constraintTermsIx to include, each consecutive array should 
-        specify indices in an array with an extra dimension of N, 
-        [Nx1,NxN,NxNxN,...]
-        note that the last dimension is the first to be iterated
+    corrTermsIx : list of ndarrays
+        Allows specification of arbitrary correlations to constrain using an index based
+        structure. These should be index arrays as would be returned by np.where that
+        specify which correlations to write down. Each consecutive array should specify
+        a matrix of sequentially increasing dimension.
+        [Nx1, NxN, NxNxN, ...]
+    suffix : str, ''
     """
 
     import re
     assert sym in [0,1], "sym must be 0 or 1."
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
-    expterms = [] # 2**N exponential constraintTermsIx
+    expterms = [] # 2**N exponential corrTermsIx
     binstates = [] # all binary states as strings
     signs = []  # coefficient for all numerator terms when computing correlations
     br = "[]"
     ix0 = 0
     
-    # Collect all constraintTermsIx in the partition function.
+    # Collect all corrTermsIx in the partition function.
     for state in range(2**n):
         binstates.append("{0:b}".format(state))
         if len(binstates[state])<n:
             binstates[state] = "0"*(n-len(binstates[state])) + binstates[state]
         expterms.append( '' )
 
-        # Get constraintTermsIx corresponding to each of the ith order term.
+        # Get corrTermsIx corresponding to each of the ith order term.
         if sym:
-            for i in range(len(constraintTermsIx)):
-                expterms[state] += get_terms11(constraintTermsIx[i], abc[i], binstates[state], br, ix0)
+            for i in range(len(corrTermsIx)):
+                expterms[state] += get_terms11(corrTermsIx[i], abc[i], binstates[state], br, ix0)
         else:
-            for i in range(len(constraintTermsIx)):
-                expterms[state] += get_terms01(constraintTermsIx[i], abc[i], binstates[state], br, ix0)
+            for i in range(len(corrTermsIx)):
+                expterms[state] += get_terms01(corrTermsIx[i], abc[i], binstates[state], br, ix0)
 
         expterms[state] = re.sub('\+0\+','+',expterms[state])
         expterms[state] = re.sub('\)\+0',')',expterms[state])
@@ -75,15 +78,15 @@ def write_eqns(n, sym, constraintTermsIx, suffix=''):
 
     # Collect all terms with corresponding prefix in the equation to solve.
     for state in range(2**n):
-        for i in range(len(constraintTermsIx)):
+        for i in range(len(corrTermsIx)):
             if state==0:
                 signs.append([])
 
-            # Get constraintTermsIx corresponding to each of the ith order term.
+            # Get corrTermsIx corresponding to each of the ith order term.
             if sym:
-                signs_ = _compute_signs(constraintTermsIx[i], expterms[state], binstates[state])
+                signs_ = _compute_signs(corrTermsIx[i], expterms[state], binstates[state])
             else:
-                signs_ = _compute_signs(constraintTermsIx[i], expterms[state], binstates[state], False)
+                signs_ = _compute_signs(corrTermsIx[i], expterms[state], binstates[state], False)
             # expand the length of signs if we haven't reached those constraints yet before
             if len(signs[i])<signs_.size:
                 for j in range(signs_.size-len(signs[i])):
@@ -98,7 +101,7 @@ def write_eqns(n, sym, constraintTermsIx, suffix=''):
         extra = '\n    Pout = Pout[::-1]'
     else:
         extra = ''
-    write_py(n, constraintTermsIx, signs, expterms, Z, extra=extra, suffix=suffix)
+    write_py(n, corrTermsIx, signs, expterms, Z, extra=extra, suffix=suffix)
 
 def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     """
@@ -155,7 +158,8 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
                          str(signs[i][j]).replace('0 ','0,').replace('1 ','1,')+
                          ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
                 k += 1
-
+    
+    # Write out correlation terms
     f.write(fargs)
     f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
     f.write(vardec)
@@ -179,7 +183,7 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     f.write(vardec)
     _write_energy_terms(f, Z)
     
-    # write out probabilities
+    # each probability equation
     for i in range(len(expterms)):
         f.write('    Pout['+str(i)+'] = exp( '+expterms[i][:-2]+' - logZ )\n')
 
@@ -188,7 +192,16 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     f.close()
 
 def _write_energy_terms(f, Z):
-    """Split expression for Z into multiple lines."""
+    """Split expression for energy terms for each term in Z into multiple lines and write
+    out nicely into file.
+    
+    Parameters
+    ----------
+    f : 
+    Z : list of str
+        Energy terms to write out.
+    """
+
     f.write('    energyTerms = [')
     i=0
     while i<len(Z):
@@ -206,6 +219,13 @@ def _write_energy_terms(f, Z):
 def _compute_signs(subix, expterm, binstate, sym=True):
     """Iterate through terms that belong in the numerator for each constraint and keep
     track of the sign of those terms.
+    
+    Parameters
+    ----------
+    subix : list
+    expterm : list of str
+    binstate : list of str
+    sym : bool, True
 
     Returns
     -------
@@ -288,9 +308,10 @@ def get_terms(subix, prefix, binstate, br, ix0):
     return s
 
 def get_3idx(n):
-    """Get binary 3D matrix with truth values where index values correspond to the index of all possible ijk
-    parameters.  We can do this by recognizing that the pattern along each plane in the third dimension is
-    like the upper triangle pattern that just moves up and over by one block each cut lower into the box.
+    """Get binary 3D matrix with truth values where index values correspond to the index
+    of all possible ijk parameters.  We can do this by recognizing that the pattern along
+    each plane in the third dimension is like the upper triangle pattern that just moves
+    up and over by one block each cut lower into the box.
     """
 
     b = np.zeros((n,n,n))

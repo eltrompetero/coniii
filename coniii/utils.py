@@ -665,7 +665,7 @@ def define_ising_helper_functions():
                     k += 1
         return e
 
-    @njit("float64[:](float64[:,:],float64[:])")
+    @njit("float64[:](int64[:,:],float64[:])")
     def calc_e(s, params):
         """
         Parameters
@@ -708,7 +708,7 @@ def define_ising_helper_functions():
                 obs[:,n+k] = samples[:,i]*samples[:,j]
                 k += 1
         return obs
-    return calc_e,calc_observables,mch_approximation
+    return calc_e, calc_observables, mch_approximation
 
 def define_ising_helper_functions_sym():
     """
@@ -720,7 +720,7 @@ def define_ising_helper_functions_sym():
     calc_observables
     mch_approximation
     """
-    @njit("float64[:](float64[:],float64[:,:])", cache=True)
+    @njit("float64[:](int64[:],float64[:,:])", cache=True)
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
         e = np.zeros((s.shape[0]))
@@ -732,7 +732,7 @@ def define_ising_helper_functions_sym():
                     k += 1
         return e
     
-    @njit("float64[:](float64[:,:],float64[:])")
+    @njit("float64[:](int64[:,:],float64[:])")
     def calc_e(s, params):
         """
         Parameters

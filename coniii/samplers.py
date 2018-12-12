@@ -936,11 +936,7 @@ class FastMCIsing(Sampler):
         
         self.calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
         
-        if use_numba:
-            rng = None
-        else:
-            if rng is None:
-                self.rng = np.random.RandomState()
+        self.rng = rng or np.random.RandomState()
         self.setup_sampling(use_numba)
 
     def update_parameters(self, theta):
@@ -986,7 +982,7 @@ class FastMCIsing(Sampler):
         sample_metropolis = self._jit_sample_metropolis
 
         if initial_sample is None:
-            samples = np.random.choice([-1.,1.],size=(sample_size,self.n))
+            samples = self.rng.choice([-1.,1.],size=(sample_size,self.n))
         else:
             msg = "Sequential sample generation requires initial sample of dim (sample_size, n)."
             assert np.array_equal(initial_sample.shape, (sample_size, self.n)), msg
@@ -1593,7 +1589,7 @@ class Metropolis(Sampler):
             #start = datetime.now()
             pool=mp.Pool(n_cpus)
             #poolt = datetime.now()
-            args = zip(samples, self.E, np.random.randint(0, 2**31-1, size=sample_size))
+            args = zip(samples, self.E, self.rng.randint(0, 2**31-1, size=sample_size))
             self.samples, self.E=list(zip(*pool.map(f, args)))
             self.samples = np.vstack(self.samples)
             #samplet = datetime.now()
@@ -1604,20 +1600,18 @@ class Metropolis(Sampler):
             #                                (samplet-poolt).total_seconds(),
             #                                (poolcloset-samplet).total_seconds())
         else:
-            rng = np.random.RandomState()
-            
             if not systematic_iter:
                 def f(args):
                     s, E = args
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
+                        de = self.sample_metropolis( s,E,rng=self.rng,calc_e=cond_calc_e )
                         E += de
                     return s, E
             else:
                 def f(args):
                     s, E=args
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                        de = self.sample_metropolis( s,E,rng=self.rng,flip_site=j%nSubset,calc_e=cond_calc_e )
                         E += de
                     return s, E
            

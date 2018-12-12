@@ -88,11 +88,6 @@ def test_init():
 def test_Enumerate():
     from .utils import pair_corr
 
-    # make sure probability distribution and correlations agree
-    assert np.isclose(p.sum(), 1)
-    assert (sisjTrue<=1).all()
-    assert np.isclose(pair_corr(allstates, weights=p, concat=True), sisjTrue).all()
-
     # Enumerate should be able to find exact solution when passed the exact correlations
     solver = Enumerate(n,
                        calc_observables_multipliers=calc_observables_multipliers,

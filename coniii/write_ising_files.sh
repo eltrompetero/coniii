@@ -1,7 +1,6 @@
-#!/bin/bash
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee
+# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +19,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+#!/bin/bash
 
 for i in `seq 2 9`;
 do
     python enumerate.py $i
     python enumerate.py $i 1
-done
+done 
+
+# Triplet interaction files
 python enumerate.py 5 0 3
 python enumerate.py 5 1 3

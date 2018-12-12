@@ -161,7 +161,8 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
         k = 0
         for i in range(len(contraintTermsIx)):
             for j in range(len(signs[i])):
-                eqns += ("    num = logsumexp(energyTerms, b="+str(signs[i][j]).replace('1 ','1,')+
+                eqns += ("    num = logsumexp(energyTerms, b="+
+                         str(signs[i][j]).replace('1 ','1,').replace('1\n','1,\n')+
                          ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
                 k += 1
     else:
@@ -169,8 +170,8 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
         for i in range(len(contraintTermsIx)):
             for j in range(len(signs[i])):
                 eqns += ("    num = logsumexp(energyTerms, b="+
-                         str(signs[i][j]).replace('0 ','0,').replace('1 ','1,')+
-                         ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                 str(signs[i][j]).replace('0 ','0,').replace('1 ','1,').replace('0\n','0,\n').replace('1\n','1,\n')+
+                 ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
                 k += 1
     
     # Write out correlation terms

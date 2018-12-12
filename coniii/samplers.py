@@ -1440,7 +1440,8 @@ class Metropolis(Sampler):
         assert n_cpus>=2
         assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
         if not initial_sample is None:
-            assert np.array_equal(self._samples.shape, initial_sample.shape)
+            if not self._samples is None:
+                assert np.array_equal(self._samples.shape, initial_sample.shape)
             self._samples = initial_sample.copy()
         E = self.calc_e( self._samples, self.theta )
         self.samples = None  # delete this to speed up pickling for multiprocess

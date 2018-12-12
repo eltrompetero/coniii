@@ -57,49 +57,49 @@ def calc_observables(params):
     J[0]+J[1]-J[2]+J[3]+J[4]-J[5]+J[6]-J[7]+J[8]-J[9], -H[0]-H[1]-H[2]-H[3]+H[4]+J[0]+J[1]+J[2]-J[3]+J[4]+
             J[5]-J[6]+J[7]-J[8]-J[9], -H[0]-H[1]-H[2]-H[3]-H[4]+J[0]+J[1]+J[2]+J[3]+J[4]+J[5]+J[6]+J[7]+J[8]+J[9],]
     logZ = logsumexp(energyTerms)
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1
+    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,
  -1,-1,-1,-1,-1,-1,-1,-1], return_sign=True)
     Cout[0] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1, 1, 1, 1, 1
+    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1, 1, 1, 1, 1,
  -1,-1,-1,-1,-1,-1,-1,-1], return_sign=True)
     Cout[1] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1
+    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1,
   1, 1, 1, 1,-1,-1,-1,-1], return_sign=True)
     Cout[2] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1
+    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1,
   1, 1,-1,-1, 1, 1,-1,-1], return_sign=True)
     Cout[3] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1
+    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1,
   1,-1, 1,-1, 1,-1, 1,-1], return_sign=True)
     Cout[4] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
   1, 1, 1, 1, 1, 1, 1, 1], return_sign=True)
     Cout[5] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1
+    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1,
  -1,-1,-1,-1, 1, 1, 1, 1], return_sign=True)
     Cout[6] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1,-1,-1, 1, 1,-1,-1, 1, 1
+    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1,-1,-1, 1, 1,-1,-1, 1, 1,
  -1,-1, 1, 1,-1,-1, 1, 1], return_sign=True)
     Cout[7] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1,-1, 1,-1, 1,-1, 1,-1, 1
+    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1,-1, 1,-1, 1,-1, 1,-1, 1,
  -1, 1,-1, 1,-1, 1,-1, 1], return_sign=True)
     Cout[8] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1
+    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,
  -1,-1,-1,-1, 1, 1, 1, 1], return_sign=True)
     Cout[9] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1,-1,-1, 1, 1,-1,-1, 1, 1, 1, 1,-1,-1, 1, 1,-1,-1
+    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1,-1,-1, 1, 1,-1,-1, 1, 1, 1, 1,-1,-1, 1, 1,-1,-1,
  -1,-1, 1, 1,-1,-1, 1, 1], return_sign=True)
     Cout[10] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1,-1, 1,-1, 1,-1, 1,-1, 1, 1,-1, 1,-1, 1,-1, 1,-1
+    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1,-1, 1,-1, 1,-1, 1,-1, 1, 1,-1, 1,-1, 1,-1, 1,-1,
  -1, 1,-1, 1,-1, 1,-1, 1], return_sign=True)
     Cout[11] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1
+    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1,
   1, 1,-1,-1,-1,-1, 1, 1], return_sign=True)
     Cout[12] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1, 1,-1, 1
+    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1, 1,-1, 1,
   1,-1, 1,-1,-1, 1,-1, 1], return_sign=True)
     Cout[13] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1
+    num = logsumexp(energyTerms, b=[ 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1,
   1,-1,-1, 1, 1,-1,-1, 1], return_sign=True)
     Cout[14] = exp( num[0] - logZ ) * num[1]
     Cout[isnan(Cout)] = 0.

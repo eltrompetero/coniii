@@ -49,8 +49,8 @@ def write_eqns(n, sym, constraintTermsIx, suffix=''):
     assert sym in [0,1], "sym must be 0 or 1."
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
     expterms = [] # 2**N exponential constraintTermsIx
-    fitterms = [] # exponential constraintTermsIx with product of spins prefix for calculating correlations
     binstates = [] # all binary states as strings
+    signs = []  # coefficient for all numerator terms when computing correlations
     br = "[]"
     ix0 = 0
     
@@ -74,28 +74,23 @@ def write_eqns(n, sym, constraintTermsIx, suffix=''):
         expterms[state] += ', '
 
     # Collect all terms with corresponding prefix in the equation to solve.
-    if sym:
-        signs = []
-    else:
-        signs = None
     for state in range(2**n):
         for i in range(len(constraintTermsIx)):
             if state==0:
-                fitterms.append([])
-                if sym:
-                    signs.append([])
+                signs.append([])
 
             # Get constraintTermsIx corresponding to each of the ith order term.
             if sym:
-                signs_ = add_to_fitterm11(fitterms[i], constraintTermsIx[i], expterms[state],
-                                           binstates[state])
-                if len(signs[i])<signs_.size:
-                    for j in range(signs_.size-len(signs[i])):
-                        signs[i].append(np.zeros(0, dtype=int))
-                for j in range(signs_.size):
-                    signs[i][j] = np.append(signs[i][j], signs_[j])
+                signs_ = _compute_signs(constraintTermsIx[i], expterms[state], binstates[state])
             else:
-                add_to_fitterm01(fitterms[i], constraintTermsIx[i], expterms[state], binstates[state])
+                signs_ = _compute_signs(constraintTermsIx[i], expterms[state], binstates[state], False)
+            # expand the length of signs if we haven't reached those constraints yet before
+            if len(signs[i])<signs_.size:
+                for j in range(signs_.size-len(signs[i])):
+                    signs[i].append(np.zeros(0, dtype=int))
+            for j in range(signs_.size):
+                signs[i][j] = np.append(signs[i][j], signs_[j])
+
     Z = ''.join(expterms)
 
     # Account for fact that symmetric Python had inverted the order of the states.
@@ -103,9 +98,9 @@ def write_eqns(n, sym, constraintTermsIx, suffix=''):
         extra = '\n    Pout = Pout[::-1]'
     else:
         extra = ''
-    write_py(n, constraintTermsIx, fitterms, signs, expterms, Z, extra=extra, suffix=suffix)
+    write_py(n, constraintTermsIx, signs, expterms, Z, extra=extra, suffix=suffix)
 
-def write_py(n, contraintTermsIx, fitterms, signs, expterms, Z, extra='', suffix=''):
+def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     """
     Write out equations to solve for Python.
 
@@ -114,8 +109,6 @@ def write_py(n, contraintTermsIx, fitterms, signs, expterms, Z, extra='', suffix
     n : int
         System size.
     contraintTermsIx : list of str
-    fitterms : list of str
-        Constraint contraintTermsIx.
     signs : list of ndarray
         Sign for each term in the numerator when computing correlations.
     expterms : list of str
@@ -140,23 +133,33 @@ def write_py(n, contraintTermsIx, fitterms, signs, expterms, Z, extra='', suffix
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
     fargs = "def calc_observables(params):\n"
-    vardec = '    Cout = zeros(('+str(sum([len(i) for i in fitterms]))+'))\n' # string of variable declarations
+    vardec = '    Cout = zeros(('+str(sum([len(i) for i in signs]))+'))\n' # string of variable declarations
     eqns = '' # string of equations to compute
-    ix = np.hstack(( 0, np.cumsum([len(i) for i in fitterms]) ))
+    ix = np.hstack(( 0, np.cumsum([len(i) for i in signs]) ))
 
     for i in range(len(contraintTermsIx)):
         vardec += '    '+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
-    k = 0
-    for i in range(len(contraintTermsIx)):
-        for j in range(len(fitterms[i])):
-            eqns += ("    num = logsumexp(energyTerms, b="+str(signs[i][j]).replace('1 ','1,')+
-                     ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
-            k += 1
+
+    if sym:
+        k = 0
+        for i in range(len(contraintTermsIx)):
+            for j in range(len(signs[i])):
+                eqns += ("    num = logsumexp(energyTerms, b="+str(signs[i][j]).replace('1 ','1,')+
+                         ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                k += 1
+    else:
+        k = 0
+        for i in range(len(contraintTermsIx)):
+            for j in range(len(signs[i])):
+                eqns += ("    num = logsumexp(energyTerms, b="+
+                         str(signs[i][j]).replace('0 ','0,').replace('1 ','1,')+
+                         ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                k += 1
 
     f.write(fargs)
-    f.write("    \"\"\"\n        Give each set of parameters concatenated into one array.\n        \"\"\"\n")
+    f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
     f.write(vardec)
-    _write_Z(f, Z)
+    _write_energy_terms(f, Z)
     f.write(eqns)
     f.write("    Cout[isnan(Cout)] = 0.\n")
     f.write("    return(Cout)\n\n")
@@ -164,11 +167,11 @@ def write_py(n, contraintTermsIx, fitterms, signs, expterms, Z, extra='', suffix
     # Write equations for probabilities of all states.
     #f.write("def p("+string.join([i+"," for i in abc[:len(contraintTermsIx)]])+"):\n")
     f.write("def p(params):\n")
-    f.write("    \"\"\"\n        Give each set of parameters concatenated into one array.\n        \"\"\"\n")
+    f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
     f.write(vardec)
    
     # Output variable decs and put params into explicit parameters.
-    ix = np.hstack(( 0, np.cumsum([len(i) for i in fitterms]) ))
+    ix = np.hstack(( 0, np.cumsum([len(i) for i in signs]) ))
     vardec = ''
     for i in range(len(contraintTermsIx)):
         vardec += '    '+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
@@ -200,7 +203,7 @@ def _write_energy_terms(f, Z):
             f.write('    '+Z[i:iend]+'\n')
         i=iend
 
-def add_to_fitterm11(fitterm, subix, expterm, binstate):
+def _compute_signs(subix, expterm, binstate, sym=True):
     """Iterate through terms that belong in the numerator for each constraint and keep
     track of the sign of those terms.
 
@@ -212,35 +215,18 @@ def add_to_fitterm11(fitterm, subix, expterm, binstate):
 
     if len(subix)==0:
         return
-
-    signs = np.ones(len(subix[0]), dtype=int)
+    
+    if sym:
+        downSpin = -1
+        signs = np.ones(len(subix[0]), dtype=int)
+    else:
+        downSpin = 1
+        signs = np.zeros(len(subix[0]), dtype=int)
+    
     for i in range(len(subix[0])):
-        if len(fitterm)>i:
-            if np.mod( sum([binstate[k[i]]=="1" for k in subix]),2 ):
-                fitterm[i] += expterm
-                signs[i] = -1
-            else:
-                fitterm[i] += expterm
-        # if we haven't started adding to that term yet
-        else:
-            if np.mod( sum([binstate[k[i]]=="1" for k in subix]),2 ):
-                fitterm.append(expterm)
-                signs[i] = -1
-            else:
-                fitterm.append(expterm)
+        if np.mod( sum([binstate[k[i]]=="1" for k in subix]),2 ):
+            signs[i] = downSpin
     return signs
-
-def add_to_fitterm01(fitterm, subix, expterm, binstate):
-    """
-    """
-    if len(subix)==0:
-        return
-    for i in range(len(subix[0])):
-        if len(fitterm)<len(subix[0]):
-            fitterm.append('')
-        # If all members of the relevant tuple are ==1, include term.
-        if np.all( [binstate[k[i]]=="1" for k in subix] ):
-            fitterm[i] += expterm
 
 def get_terms11(subix, prefix, binstate, br, ix0):
     """

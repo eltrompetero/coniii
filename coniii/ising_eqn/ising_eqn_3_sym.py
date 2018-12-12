@@ -6,8 +6,8 @@ from scipy.special import logsumexp
 
 def calc_observables(params):
     """
-        Give each set of parameters concatenated into one array.
-        """
+    Give each set of parameters concatenated into one array.
+    """
     Cout = zeros((6))
     H = params[0:3]
     J = params[3:6]
@@ -32,8 +32,8 @@ def calc_observables(params):
 
 def p(params):
     """
-        Give each set of parameters concatenated into one array.
-        """
+    Give each set of parameters concatenated into one array.
+    """
     Cout = zeros((6))
     H = params[0:3]
     J = params[3:6]

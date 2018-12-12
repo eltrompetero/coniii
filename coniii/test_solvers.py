@@ -85,6 +85,21 @@ def test_init():
                  n_cpus=1)
     solver = RegularizedMeanField(n, calc_observables=calc_observables)
 
+def test_Enumerate():
+    from .utils import pair_corr
+
+    # make sure probability distribution and correlations agree
+    assert np.isclose(p.sum(), 1)
+    assert (sisjTrue<=1).all()
+    assert np.isclose(pair_corr(allstates, weights=p, concat=True), sisjTrue).all()
+
+    # Enumerate should be able to find exact solution when passed the exact correlations
+    solver = Enumerate(n,
+                       calc_observables_multipliers=calc_observables_multipliers,
+                       calc_observables=calc_observables)
+    soln = solver.solve(sisjTrue, initial_guess=hJ/2)
+    assert np.isclose(hJ, soln).all()
+
 def test_MPF():
     """Check MPF."""
     from .utils import adj
@@ -128,25 +143,6 @@ def test_Pseudo():
     
     # Check that both ways of solving the problem agree
     assert np.isclose(estMultipliers1, estMultipliers2, atol=1e-3).all()
-
-def test_Enumerate():
-    from .utils import pair_corr
-
-    # make sure probability distribution and correlations agree
-    print(pair_corr(allstates, weights=p, concat=True), sisjTrue, sisj)
-    assert np.isclose(pair_corr(allstates, weights=p, concat=True), sisjTrue).all()
-
-    # Enumerate should be able to find exact solution when passed the exact correlations
-    solver = Enumerate(n,
-                       calc_observables_multipliers=calc_observables_multipliers,
-                       calc_observables=calc_observables)
-    soln = solver.solve(sisjTrue, initial_guess=hJ/2)
-    print(p, ising.p(soln))
-    from .utils import pair_corr,bin_states
-    print(pair_corr(bin_states(3,True),weights=ising.p(soln)))
-    print(sisjTrue, calc_observables_multipliers(hJ), calc_observables_multipliers(soln))
-    print(hJ,soln)
-    assert np.isclose(hJ, soln).all()
 
 def test_pickling():
     pass

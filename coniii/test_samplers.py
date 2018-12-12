@@ -171,15 +171,15 @@ def compare_samplers():
     calc_e,_,_ = define_ising_helper_functions()
     nSamples = 1_000
     
-    t0 = time.clock()
+    t0 = time.perf_counter()
     sampler1 = ParallelTempering(n, theta, calc_e, 4, (1,3), replica_burnin=n*100, rep_ex_burnin=n*10)
     sampler1.generate_samples(nSamples, save_exchange_trajectory=True)
-    print("Sampler 1 took %1.2f s."%(time.clock()-t0))
+    print("Sampler 1 took %1.2f s."%(time.perf_counter()-t0))
     
-    t0 = time.clock()
+    t0 = time.perf_counter()
     sampler2 = Metropolis(n, theta, calc_e)
     sampler2.generate_samples_parallel(nSamples)
-    print("Sampler 2 took %1.2f s."%(time.clock()-t0))
+    print("Sampler 2 took %1.2f s."%(time.perf_counter()-t0))
     
     from .ising_eqn.ising_eqn_5_sym import calc_observables
     print(sampler1.samples[-1].mean(0), sampler2.samples.mean(0), calc_observables(theta)[:n]) 

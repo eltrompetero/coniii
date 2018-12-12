@@ -20,11 +20,11 @@ def calc_observables(params):
     Cout[1] = exp( num[0] - logZ ) * num[1]
     num = logsumexp(energyTerms, b=[0,1,0,1,0,1,0,1], return_sign=True)
     Cout[2] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,1,1,1,1,0,0], return_sign=True)
+    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,1,1], return_sign=True)
     Cout[3] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,1,0,1,1,0,1,0], return_sign=True)
+    num = logsumexp(energyTerms, b=[0,0,0,0,0,1,0,1], return_sign=True)
     Cout[4] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,1,1,0,0,1,1,0], return_sign=True)
+    num = logsumexp(energyTerms, b=[0,0,0,1,0,0,0,1], return_sign=True)
     Cout[5] = exp( num[0] - logZ ) * num[1]
     Cout[isnan(Cout)] = 0.
     return(Cout)

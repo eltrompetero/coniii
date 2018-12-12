@@ -219,13 +219,17 @@ def _compute_signs(subix, expterm, binstate, sym=True):
     if sym:
         downSpin = -1
         signs = np.ones(len(subix[0]), dtype=int)
+
+        for i in range(len(subix[0])):
+            if np.mod( sum([binstate[k[i]]=="1" for k in subix]),2 ):
+                signs[i] = downSpin
     else:
-        downSpin = 1
-        signs = np.zeros(len(subix[0]), dtype=int)
-    
-    for i in range(len(subix[0])):
-        if np.mod( sum([binstate[k[i]]=="1" for k in subix]),2 ):
-            signs[i] = downSpin
+        downSpin = 0
+        signs = np.ones(len(subix[0]), dtype=int)
+
+        for i in range(len(subix[0])):
+            if np.mod( any([binstate[k[i]]=="0" for k in subix]),2 ):
+                signs[i] = downSpin
     return signs
 
 def get_terms11(subix, prefix, binstate, br, ix0):

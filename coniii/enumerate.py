@@ -29,196 +29,194 @@ import scipy.special as ss
 from itertools import combinations
 
 
-def write_eqns(n, sym, terms, writeto='matlab', suffix=''):
+def write_eqns(n, sym, corrTermsIx, suffix=''):
     """
+    Create strings for writing out the equations and then write them to file.
+
     Parameters
     ----------
     n : int
         number of spins
     sym : int
         value of 1 will use {-1,1} formulation, 0 means {0,1}
-    terms : list
-        list of numpy index arrays as would be returned by np.where that 
-        specify which terms to include, each consecutive array should 
-        specify indices in an array with an extra dimension of N, 
-        [Nx1,NxN,NxNxN,...]
-        note that the last dimension is the first to be iterated
-    writeto : str, 'matlab'
-        Filetype to write to, 'matlab' or 'python'.
+    corrTermsIx : list of ndarrays
+        Allows specification of arbitrary correlations to constrain using an index based
+        structure. These should be index arrays as would be returned by np.where that
+        specify which correlations to write down. Each consecutive array should specify
+        a matrix of sequentially increasing dimension.
+        [Nx1, NxN, NxNxN, ...]
+    suffix : str, ''
     """
 
     import re
+    assert sym in [0,1], "sym must be 0 or 1."
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
-    expterms = [] # 2**N exponential terms
-    fitterms = [] # exponential terms with product of spins prefix for calculating
-                  # correlations
+    expterms = [] # 2**N exponential corrTermsIx
     binstates = [] # all binary states as strings
-    if writeto=="matlab" or writeto=='m':
-        br = "()" # brackets for referring to elements of arrays
-        ix0 = 1 # starting index for arrays
-    elif writeto=='python' or writeto=='py':
-        br = "[]"
-        ix0 = 0
-    else:
-        raise Exception("Invalid option for output file type.")
+    signs = []  # coefficient for all numerator terms when computing correlations
+    br = "[]"
+    ix0 = 0
     
-    # Collect all terms in the partition function.
+    # Collect all corrTermsIx in the partition function.
     for state in range(2**n):
         binstates.append("{0:b}".format(state))
         if len(binstates[state])<n:
             binstates[state] = "0"*(n-len(binstates[state])) + binstates[state]
-        expterms.append( '+exp(' )
-        for i in range(len(terms)):
-            # Get terms corresponding to each of the ith order term.
-            if sym==1:
-                expterms[state] += get_terms11(terms[i], abc[i], binstates[state], br, ix0)
-            elif sym==0:
-                expterms[state] += get_terms01(terms[i], abc[i], binstates[state], br, ix0)
-            else:
-                raise Exception("sym must be either 0 or 1.")
-            expterms[state] = re.sub('\+0\+','+',expterms[state])
-            expterms[state] = re.sub('\)\+0',')',expterms[state])
-        expterms[state] += ')'
+        expterms.append( '' )
+
+        # Get corrTermsIx corresponding to each of the ith order term.
+        if sym:
+            for i in range(len(corrTermsIx)):
+                expterms[state] += get_terms11(corrTermsIx[i], abc[i], binstates[state], br, ix0)
+        else:
+            for i in range(len(corrTermsIx)):
+                expterms[state] += get_terms01(corrTermsIx[i], abc[i], binstates[state], br, ix0)
+
+        expterms[state] = re.sub('\+0\+','+',expterms[state])
+        expterms[state] = re.sub('\)\+0',')',expterms[state])
+        expterms[state] += ', '
 
     # Collect all terms with corresponding prefix in the equation to solve.
     for state in range(2**n):
-        for i in range(len(terms)):
+        for i in range(len(corrTermsIx)):
             if state==0:
-                fitterms.append([])
-            # Get terms corresponding to each of the ith order term.
-            if sym==1:
-                add_to_fitterm11(fitterms[i],terms[i],expterms[state],binstates[state])
-            elif sym==0:
-                add_to_fitterm01(fitterms[i],terms[i],expterms[state],binstates[state])
+                signs.append([])
+
+            # Get corrTermsIx corresponding to each of the ith order term.
+            if sym:
+                signs_ = _compute_signs(corrTermsIx[i], expterms[state], binstates[state])
             else:
-                pass
+                signs_ = _compute_signs(corrTermsIx[i], expterms[state], binstates[state], False)
+            # expand the length of signs if we haven't reached those constraints yet before
+            if len(signs[i])<signs_.size:
+                for j in range(signs_.size-len(signs[i])):
+                    signs[i].append(np.zeros(0, dtype=int))
+            for j in range(signs_.size):
+                signs[i][j] = np.append(signs[i][j], signs_[j])
+
     Z = ''.join(expterms)
 
-    if writeto=="matlab":
-        write_matlab(n,terms,fitterms,expterms,Z,suffix=suffix)
-    elif writeto=="py":
-        # Account for fact that symmetric Python had inverted the order of the states.
-        if sym==1:
-            extra = '\n\tPout = Pout[::-1]'
-        else:
-            extra = ''
-        write_py(n, terms, fitterms, expterms, Z, extra=extra, suffix=suffix)
+    # Account for fact that symmetric Python had inverted the order of the states.
+    if sym:
+        extra = '\n    Pout = Pout[::-1]'
     else:
-        raise Exception("Must choose between \"matlab\" and \"py\".")
+        extra = ''
+    write_py(n, corrTermsIx, signs, expterms, Z, extra=extra, suffix=suffix)
 
-def write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
+def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     """
-    Write out equations to solve for matlab.
-    """
-
-    import time
-    abc = 'HJKLMNOPQRSTUVWXYZABCDE'
-    vardec = ''
-
-    # Write function to solve to file.
-    f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
-    f.write("% Equations of %d-spin Ising model.\n\n"%n)
-    f.write(time.strftime("%Y/%m/%d")+"\n")
-    f.write("% Give each set of parameters concatenated into one array.\n\n")
-
-    # Keep these as string because they need to grow in the loop and then can just be
-    # added all at once at the end.
-    f.write("function Cout = calc_observables(params)\n")
-    f.write('\tCout = zeros('+str(sum([len(i) for i in fitterms]))+',1);\n') # string of variable declarations
-    eqns = '' # string of equations to compute
-    ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))+1
-
-    for i in range(len(terms)):
-        vardec += '\t'+abc[i]+' = params('+str(ix[i])+':'+str(ix[i+1]-1)+');\n'
-    k = 0
-    for i in range(len(terms)):
-        for j in range(len(fitterms[i])):
-            eqns += "\tCout("+str(k+1)+") = ("+fitterms[i][j]+")/Z;\n"
-            k += 1
-
-    f.write(vardec)
-    f.write("\tZ = "+Z+";\n")
-    f.write(eqns)
-    f.close()
-
-    g = open('probs'+str(n)+'.m','w')
-    g.write("% File for getting the probabilities of Ising model.\n% ")
-    g.write(time.strftime("%Y/%m/%d")+"\n")
-    # Write equations for probabilities of all states.
-    g.write("function Pout = p(params)\n")
-    g.write(vardec)
-    g.write('\tPout = zeros('+str(2**n)+',1);\n') # string of variable declarations
-
-    g.write('\tZ = '+Z+';\n')
-    for i in range(len(expterms)):
-        g.write('\tPout('+str(i+1)+') = '+expterms[i]+'/Z;\n')
-
-    g.close()
-
-def write_py(n, terms, fitterms, expterms, Z, extra='', suffix=''):
-    """
-    Write out equations to solve for Python.
+    Write out Ising equations for Python.
 
     Parameters
     ----------
+    n : int
+        System size.
+    contraintTermsIx : list of str
+    signs : list of ndarray
+        Sign for each term in the numerator when computing correlations.
+    expterms : list of str
+        Every single energy term.
+    Z : str
+        Energies for all states that will be put into partition function.
+    extra : str, ''
+    suffix : str, ''
     extra (str,'') : any extra lines to add at the end
     """
 
     import time
+    import os
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
 
-    # Write function to solve to file.
-    f = open('ising_eqn/ising_eqn_%d%s.py'%(n,suffix),'w')
-    f.write("# Equations of %d-spin Ising model.\n\n"%n)
+    fname = 'ising_eqn/ising_eqn_%d%s.py'%(n,suffix)
+    print("Generating file ./%s"%fname)
+    if not os.path.isdir('./ising_eqn'):
+        os.makedirs('./ising_eqn')
+    f = open(fname,'w')
+    # insert license
+    try:
+        license = open('../LICENSE.txt','r').readlines()
+        for el in license:
+            el = '# '+el
+            f.write(el)
+        f.write('\n')
+    except FileNotFoundError:
+        print("License file not found...")
+
+    f.write("# Equations for %d-spin Ising model.\n\n"%n)
     f.write("# ")
     f.write(time.strftime("Written on %Y/%m/%d.")+"\n")
-    f.write("from numpy import zeros, exp\n\n")
+    f.write("from numpy import zeros, exp, array, prod, isnan\nfrom scipy.special import logsumexp\n\n")
 
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
     fargs = "def calc_observables(params):\n"
-    vardec = '\tCout = zeros(('+str(sum([len(i) for i in fitterms]))+'))\n' # string of variable declarations
+    vardec = '    Cout = zeros(('+str(sum([len(i) for i in signs]))+'))\n' # string of variable declarations
     eqns = '' # string of equations to compute
-    ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))
+    ix = np.hstack(( 0, np.cumsum([len(i) for i in signs]) ))
 
-    for i in range(len(terms)):
-        vardec += '\t'+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
-    k = 0
-    for i in range(len(terms)):
-        for j in range(len(fitterms[i])):
-            eqns += "\tCout["+str(k)+"] = ("+fitterms[i][j]+")/Z\n"
-            k += 1
+    for i in range(len(contraintTermsIx)):
+        vardec += '    '+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
 
+    if sym:
+        k = 0
+        for i in range(len(contraintTermsIx)):
+            for j in range(len(signs[i])):
+                eqns += ("    num = logsumexp(energyTerms, b="+str(signs[i][j]).replace('1 ','1,')+
+                         ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                k += 1
+    else:
+        k = 0
+        for i in range(len(contraintTermsIx)):
+            for j in range(len(signs[i])):
+                eqns += ("    num = logsumexp(energyTerms, b="+
+                         str(signs[i][j]).replace('0 ','0,').replace('1 ','1,')+
+                         ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                k += 1
+    
+    # Write out correlation terms
     f.write(fargs)
-    f.write("\t\"\"\"\n\tGive each set of parameters concatenated into one array.\n\t\"\"\"\n")
+    f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
     f.write(vardec)
-    _write_Z(f, Z)
+    _write_energy_terms(f, Z)
     f.write(eqns)
-    f.write("\n\treturn(Cout)\n\n")
+    f.write("    Cout[isnan(Cout)] = 0.\n")
+    f.write("    return(Cout)\n\n")
 
     # Write equations for probabilities of all states.
-    #f.write("def p("+string.join([i+"," for i in abc[:len(terms)]])+"):\n")
+    #f.write("def p("+string.join([i+"," for i in abc[:len(contraintTermsIx)]])+"):\n")
     f.write("def p(params):\n")
-    f.write("\t\"\"\"\n\tGive each set of parameters concatenated into one array.\n\t\"\"\"\n")
+    f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
     f.write(vardec)
    
     # Output variable decs and put params into explicit parameters.
-    ix = np.hstack(( 0, np.cumsum([len(i) for i in fitterms]) ))
+    ix = np.hstack(( 0, np.cumsum([len(i) for i in signs]) ))
     vardec = ''
-    for i in range(len(terms)):
-        vardec += '\t'+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
-    vardec += '\tPout = zeros(('+str(2**n)+'))\n' # string of variable declarations
+    for i in range(len(contraintTermsIx)):
+        vardec += '    '+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
+    vardec += '    Pout = zeros(('+str(2**n)+'))\n' # string of variable declarations
     f.write(vardec)
-    _write_Z(f, Z)
+    _write_energy_terms(f, Z)
+    
+    # each probability equation
     for i in range(len(expterms)):
-        f.write('\tPout['+str(i)+'] = '+expterms[i]+'/Z\n')
+        f.write('    Pout['+str(i)+'] = exp( '+expterms[i][:-2]+' - logZ )\n')
 
     f.write(extra)
-    f.write("\n\treturn(Pout)\n")
+    f.write("\n    return(Pout)\n")
     f.close()
 
-def _write_Z(f, Z):
-    f.write('\tZ = ')
+def _write_energy_terms(f, Z):
+    """Split expression for energy terms for each term in Z into multiple lines and write
+    out nicely into file.
+    
+    Parameters
+    ----------
+    f : file
+    Z : list of str
+        Energy terms to write out.
+    """
+
+    f.write('    energyTerms = [')
     i=0
     while i<len(Z):
         iend=i+100
@@ -226,41 +224,47 @@ def _write_Z(f, Z):
         while iend<len(Z) and Z[iend-1]!='+':
             iend+=1
         if iend>=len(Z):
-            f.write(Z[i:]+'\n')
+            # ignore comma at end of line
+            f.write('            '+Z[i:-1]+']\n    logZ = logsumexp(energyTerms)\n')
         else:
-            f.write('\t'+Z[i:iend]+'\\\n')
+            f.write('    '+Z[i:iend]+'\n')
         i=iend
 
-def add_to_fitterm11(fitterm, subix, expterm, binstate):
-    """
-    """
-    if len(subix)==0:
-        return
-    j = 0
-    for i in range(len(subix[0])):
-        if len(fitterm)>j:
-            if np.mod( sum([binstate[k[j]]=="1" for k in subix]),2 ):
-                fitterm[j] += expterm+'*-1'
-            else:
-                fitterm[j] += expterm
-        else:
-            if np.mod( sum([binstate[k[j]]=="1" for k in subix]),2 ):
-                fitterm.append(expterm+'*-1')
-            else:
-                fitterm.append(expterm)
-        j+=1
+def _compute_signs(subix, expterm, binstate, sym=True):
+    """Iterate through terms that belong in the numerator for each constraint and keep
+    track of the sign of those terms.
+    
+    Parameters
+    ----------
+    subix : list
+    expterm : list of str
+    binstate : list of str
+    sym : bool, True
 
-def add_to_fitterm01(fitterm, subix, expterm, binstate):
+    Returns
+    -------
+    ndarray
+        Sign of each exponential term in numerator.
     """
-    """
+
     if len(subix)==0:
         return
-    for i in range(len(subix[0])):
-        if len(fitterm)<len(subix[0]):
-            fitterm.append('')
-        # If all members of the relevant tuple are ==1, include term.
-        if np.all( [binstate[k[i]]=="1" for k in subix] ):
-            fitterm[i] += expterm
+    
+    if sym:
+        downSpin = -1
+        signs = np.ones(len(subix[0]), dtype=int)
+
+        for i in range(len(subix[0])):
+            if np.mod( sum([binstate[k[i]]=="1" for k in subix]),2 ):
+                signs[i] = downSpin
+    else:
+        downSpin = 0
+        signs = np.ones(len(subix[0]), dtype=int)
+
+        for i in range(len(subix[0])):
+            if np.mod( any([binstate[k[i]]=="0" for k in subix]),2 ):
+                signs[i] = downSpin
+    return signs
 
 def get_terms11(subix, prefix, binstate, br, ix0):
     """
@@ -318,9 +322,10 @@ def get_terms(subix, prefix, binstate, br, ix0):
     return s
 
 def get_3idx(n):
-    """Get binary 3D matrix with truth values where index values correspond to the index of all possible ijk
-    parameters.  We can do this by recognizing that the pattern along each plane in the third dimension is
-    like the upper triangle pattern that just moves up and over by one block each cut lower into the box.
+    """Get binary 3D matrix with truth values where index values correspond to the index
+    of all possible ijk parameters.  We can do this by recognizing that the pattern along
+    each plane in the third dimension is like the upper triangle pattern that just moves
+    up and over by one block each cut lower into the box.
     """
 
     b = np.zeros((n,n,n))
@@ -367,13 +372,12 @@ def pairwise(n, sym=0):
 
     print("Writing equations for pairwise Ising model with %d spins."%n)
     if sym:
-        write_eqns(n,sym,[np.where(np.ones((n))==1),
-                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
-                   writeto="py",suffix='_sym')
+        write_eqns(n, sym, [np.where(np.ones((n))==1),
+                            np.where(np.triu(np.ones((n,n)),k=1)==1)],
+                   suffix='_sym')
     else:
-        write_eqns(n,sym,[np.where(np.ones((n))==1),
-                          np.where(np.triu(np.ones((n,n)),k=1)==1)],
-                   writeto="py")
+        write_eqns(n, sym, [np.where(np.ones((n))==1),
+                            np.where(np.triu(np.ones((n,n)),k=1)==1)])
 
 def triplet(n, sym=0):
     assert sym==0 or sym==1
@@ -382,13 +386,62 @@ def triplet(n, sym=0):
     if sym:
         write_eqns(n,sym,[(range(n),),
                           list(zip(*list(combinations(range(n),2)))),
-                          list(zip(*list(combinations(range(n),3))))],
-                   writeto="py", suffix='_sym_triplet')
+                          list(zip(*list(combinations(range(n),3))))], suffix='_sym_triplet')
     else:
         write_eqns(n,sym,[(range(n),),
                           list(zip(*list(combinations(range(n),2)))),
-                          list(zip(*list(combinations(range(n),3))))],
-                   writeto="py", suffix='_triplet')
+                          list(zip(*list(combinations(range(n),3))))], suffix='_triplet')
+
+def _write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
+    """
+    DEPRECATED: code here for future referencing
+    Write out equations to solve for matlab.
+    """
+
+    import time
+    abc = 'HJKLMNOPQRSTUVWXYZABCDE'
+    vardec = ''
+
+    # Write function to solve to file.
+    f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
+    f.write("% Equations of %d-spin Ising model.\n\n"%n)
+    f.write(time.strftime("%Y/%m/%d")+"\n")
+    f.write("% Give each set of parameters concatenated into one array.\n\n")
+
+    # Keep these as string because they need to grow in the loop and then can just be
+    # added all at once at the end.
+    f.write("function Cout = calc_observables(params)\n")
+    f.write('\tCout = zeros('+str(sum([len(i) for i in fitterms]))+',1);\n') # string of variable declarations
+    eqns = '' # string of equations to compute
+    ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))+1
+
+    for i in range(len(terms)):
+        vardec += '\t'+abc[i]+' = params('+str(ix[i])+':'+str(ix[i+1]-1)+');\n'
+    k = 0
+    for i in range(len(terms)):
+        for j in range(len(fitterms[i])):
+            eqns += "\tCout("+str(k+1)+") = ("+fitterms[i][j]+")/Z;\n"
+            k += 1
+
+    f.write(vardec)
+    f.write("\tZ = "+Z+";\n")
+    f.write(eqns)
+    f.close()
+
+    g = open('probs'+str(n)+'.m','w')
+    g.write("% File for getting the probabilities of Ising model.\n% ")
+    g.write(time.strftime("%Y/%m/%d")+"\n")
+    # Write equations for probabilities of all states.
+    g.write("function Pout = p(params)\n")
+    g.write(vardec)
+    g.write('    Pout = zeros('+str(2**n)+',1);\n') # string of variable declarations
+
+    g.write('    Z = '+Z+';\n')
+    for i in range(len(expterms)):
+        g.write('    Pout('+str(i+1)+') = '+expterms[i]+'/Z;\n')
+
+    g.close()
+
 
 if __name__=='__main__':
     """

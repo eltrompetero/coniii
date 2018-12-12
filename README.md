@@ -61,7 +61,17 @@ directory on the GitHub repository:
 [https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb].  The notebook is installed into
 your package directory if you used pip, or you can download it from the above GitHub link.
 
-To use the notebook, first copy the notebook file "usage_guide.ipynb" into a directory outside the "coniii"
+To use the notebook, install jupyter.
+```bash
+$ pip install jupyter
+```
+or
+```bash
+$ conda install jupyter
+```
+if you are using the Conda package manager.
+
+Then, first copy the notebook file "usage_guide.ipynb" into a directory outside the "coniii"
 directory.  Change to this directory and run
 ```bash
 $ jupyter notebook
@@ -78,7 +88,7 @@ path when you install ConIII through listed dependencies.
 If you prefer to install the packages yourself, you can use the Python package
 [pip](https://pypi.org/project/pip/).  Open a terminal and run
 ```bash
-$ pip install matplotlib 'multiprocess>=0.70.5,<1' 'jupyter>=1' matplotlib scipy numpy 'numba>=0.39.0,<1' dill joblib
+$ pip install matplotlib 'multiprocess>=0.70.5,<1' matplotlib scipy numpy 'numba>=0.39.0,<1' dill joblib
 ```
 
 ## Troubleshooting

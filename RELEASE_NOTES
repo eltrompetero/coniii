@@ -13,7 +13,8 @@ v1.1.0 (Released ??)
 - n_cpus and nCpus are now used to refer to number of allowed processes to spawn and got
   rid of cpu_count which can be confused in `multiprocess.cpu_count`.
 - Improvements to enumerate.py: More compact Ising equation files and better precision by
-  using scipy.special.logsumexp
+  using scipy.special.logsumexp.
+- Jupyter is no longer required for installation of ConIII by default.
 
 v1.0.3 (Released 2018/11)
 -----------------------

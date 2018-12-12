@@ -105,7 +105,7 @@ def write_eqns(n, sym, corrTermsIx, suffix=''):
 
 def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     """
-    Write out equations to solve for Python.
+    Write out Ising equations for Python.
 
     Parameters
     ----------
@@ -124,10 +124,24 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     """
 
     import time
+    import os
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
 
-    # Write function to solve to file.
-    f = open('ising_eqn/ising_eqn_%d%s.py'%(n,suffix),'w')
+    fname = 'ising_eqn/ising_eqn_%d%s.py'%(n,suffix)
+    print("Generating file ./%s"%fname)
+    if not os.path.isdir('./ising_eqn'):
+        os.makedirs('./ising_eqn')
+    f = open(fname,'w')
+    # insert license
+    try:
+        license = open('../LICENSE.txt','r').readlines()
+        for el in license:
+            el = '# '+el
+            f.write(el)
+        f.write('\n')
+    except FileNotFoundError:
+        print("License file not found...")
+
     f.write("# Equations for %d-spin Ising model.\n\n"%n)
     f.write("# ")
     f.write(time.strftime("Written on %Y/%m/%d.")+"\n")
@@ -197,7 +211,7 @@ def _write_energy_terms(f, Z):
     
     Parameters
     ----------
-    f : 
+    f : file
     Z : list of str
         Energy terms to write out.
     """

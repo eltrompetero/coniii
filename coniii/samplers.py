@@ -931,26 +931,20 @@ class FastMCIsing(Sampler):
         self.nCpus = n_cpus or mp.cpu_count()-1
         
         self.calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
-        
+        self.sample_metropolis = _jit_sample_metropolis
         self.rng = rng or np.random.RandomState()
-        self.setup_sampling()
         self._samples = None
 
     def update_parameters(self, theta):
         self.theta = theta
         self.h, self.J = theta[:self.n], squareform(theta[self.n:])
 
-    def setup_sampling(self):
-        self.sample_metropolis = _jit_sample_metropolis
-        self.generate_samples = self._jit_generate_samples
-        self.generate_samples_parallel = self._jit_generate_samples_parallel
-
-    def _jit_generate_samples(self,
-                              sample_size,
-                              n_iters=1000,
-                              saveHistory=False,
-                              initial_sample=None,
-                              systematic_iter=False):
+    def generate_samples(self,
+                         sample_size,
+                         n_iters=1000,
+                         saveHistory=False,
+                         initial_sample=None,
+                         systematic_iter=False):
         """
         Generate Metropolis samples using a for loop and save samples in self.samples.
 
@@ -1024,12 +1018,12 @@ class FastMCIsing(Sampler):
                     self.samples[i,:] = self._samples[:]
         return sample()
     
-    def _jit_generate_samples_parallel(self,
-                                       sample_size,
-                                       n_iters=1000,
-                                       n_cpus=None,
-                                       initial_sample=None,
-                                       systematic_iter=False):
+    def generate_samples_parallel(self,
+                                  sample_size,
+                                  n_iters=1000,
+                                  n_cpus=None,
+                                  initial_sample=None,
+                                  systematic_iter=False):
         """
         Metropolis sample multiple states in parallel and save them into self.samples.
 

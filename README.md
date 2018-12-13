@@ -13,7 +13,7 @@ If you use ConIII for your research, please cite the following:
 
 The link to the arXiv article is here: [https://arxiv.org/abs/1801.08216]. 
 
-Documentation is included in the "docs/\_build/html/index.html". Online documentation is
+Documentation is included at "docs/\_build/html/index.html". Online documentation is
 hosted at [https://eddielee.co/coniii/_build/html/index.html].
 
 ## Installation

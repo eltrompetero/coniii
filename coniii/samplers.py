@@ -977,31 +977,31 @@ class FastMCIsing(Sampler):
 
         E = self.calc_e( self._samples, self.theta )
         self.E = np.zeros(sample_size)
-        self.samples = np.zeros((sample_size, self.n))
+        self.samples = np.zeros((sample_size, self.n), dtype=int)
         h, J = self.h, self.J
         n = self.n
         
         if systematic_iter:
             @jit
-            def get_ix(j):
+            def get_ix(j, rng):
                 return j%n
         else:
             @jit
-            def get_ix(j):
-                return np.random.randint(n)
-
+            def get_ix(j, rng):
+                return rng.randint(n)
+        
         if saveHistory:
             @jit('float64[:,:]()', locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
             def sample(seed, E=E, _samples=self._samples):
                 # set rng for jit environment
                 np.random.seed(seed)
-                
+
                 history = np.zeros(sample_size*n_iters+1)
                 history[0] = E
                 counter = 1
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = sample_metropolis( _samples[0], h, J, get_ix(j) )
+                        de = sample_metropolis( _samples[0], h, J, get_ix(j, np.random), np.random )
                         E += de
                         history[counter] = E
                         counter += 1
@@ -1011,9 +1011,12 @@ class FastMCIsing(Sampler):
         else:
             @jit(locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
             def sample(seed, E=E, _samples=self._samples):
+                # set rng for jit environment
+                np.random.seed(seed)
+                
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = sample_metropolis( _samples[0], h, J, get_ix(j) )
+                        de = sample_metropolis( _samples[0], h, J, get_ix(j, np.random), np.random )
                         E += de
                     self.E[i] = E
                     self.samples[i,:] = _samples[:]
@@ -1042,55 +1045,45 @@ class FastMCIsing(Sampler):
             receive in equal number of chances to flip.
         """
 
+        n_cpus = self.nCpus  # alias
+        assert n_cpus>=2
+        assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
+        if (initial_sample is None and
+            (self._samples is None or len(self._samples)!=n_cpus)):
+            self._samples = self.rng.choice([-1,1], size=(n_cpus, self.n))
+        elif not initial_sample is None:
+            assert np.array_equal((n_cpus,self.n), initial_sample.shape), "initial_sample wrong  size"
+            self._samples = initial_sample.astype(int)
+
         n_cpus = n_cpus or self.nCpus
         sample_metropolis = _jit_sample_metropolis
         h, J = self.h, self.J
         n = self.n
+        calc_e = self.calc_e
+        theta = self.theta
         
-        if not systematic_iter:
-            @njit
-            def get_ix(j):
-                return np.random.randint(n)
-        else:
-            @njit
-            def get_ix(j):
+        if systematic_iter:
+            @jit
+            def get_ix(j, rng):
                 return j%n
-        
-        # setup case where initial_sample is not given
-        if initial_sample is None:
-            calc_e = self.calc_e
-            theta = self.theta
-                
-            @njit(locals={'seed':int64, 'theta':float64[:], 's':int64[:,:], 'E':float64[:]})
-            def f(args):
-                seed, theta = args
-                np.random.seed(seed)
-
-                s = np.array([[np.random.randint(2)*2-1 for i in range(n)]])
-                E = calc_e(s, theta)
-
-                for j in range(n_iters):
-                    de = sample_metropolis( s[0], h, J, get_ix(j) )
-                    E += de
-                return s, E
-            
-            args=((i,theta) for i in np.random.randint(2**31-1, size=sample_size))
-
-        # setup case where initial_sample is given
         else:
-            assert len(initial_sample)==sample_size, "Given sample is of wrong length."
-            assert initial_sample.shape[1]==self.n, "Given sample is wrong dimension."
-            self.E = self.calc_e( initial_sample, self.theta )
+            @jit
+            def get_ix(j, rng):
+                return rng.randint(n)
 
-            @njit
-            def f(args):
-                s, E, seed = args
-                np.random.seed(seed)
-                for j in range(n_iters):
-                    de = sample_metropolis( s, h, J, get_ix(j) )
-                    E += de
-                return s, E
-            args = zip(initial_sample, self.E, np.random.randint(2**31-1, size=sample_size))
+        @njit(locals={'seed':int64, 'theta':float64[:], 's':int64[:,:], 'E':float64[:]})
+        def f(args):
+            seed, theta, s = args
+            np.random.seed(seed)
+
+            E = calc_e(s, theta)
+
+            for j in range(n_iters):
+                de = sample_metropolis( s[0], h, J, get_ix(j, np.random), np.random )
+                E += de
+            return s, E
+
+        args=((self.rng.randint(2**32-1),theta,self._samples[i][None,:]) for i in range(n_cpus))
         
         # run sampling
         pool = mp.Pool(n_cpus)
@@ -1122,8 +1115,8 @@ class FastMCIsing(Sampler):
             return de
 #end FastMCIsing
 
-@njit
-def _jit_sample_metropolis(sample0, h, J, flip_site):
+@jit
+def _jit_sample_metropolis(sample0, h, J, flip_site, rng):
     """
     Metropolis sampling.
     """
@@ -1135,7 +1128,7 @@ def _jit_sample_metropolis(sample0, h, J, flip_site):
     # Thus reject flip if dE>0 and with probability (1-exp(-dE))
     if de < 0:
         return de
-    elif np.random.rand() > np.exp(-de):
+    elif rng.rand() > np.exp(-de):
         sample0[flip_site] *= -1
         return 0.
     else:

@@ -62,6 +62,7 @@ class Solver():
                  sample_method=None,
                  mch_approximation=None,
                  n_cpus=None,
+                 rng=None,
                  verbose=False):
         """
         Parameters
@@ -111,6 +112,7 @@ class Solver():
         self.calc_de = calc_de
         self.adj = adj
         
+        self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
         self.nCpus = n_cpus or mp.cpu_count()-1
         self.verbose = verbose
 
@@ -124,7 +126,7 @@ class Solver():
                       sample_method=None,
                       sampler_kwargs={}):
         """
-        Instantiate sampler class object.
+        Instantiate sampler class object. Uses self.rng as the random number generator.
 
         Parameters
         ----------
@@ -138,7 +140,10 @@ class Solver():
         
         if sample_method=='metropolis':
             self.sampleMethod=sample_method
-            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e, n_cpus=self.nCpus, **sampler_kwargs )
+            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e,
+                                       n_cpus=self.nCpus,
+                                       rng=self.rng,
+                                       **sampler_kwargs )
       
         elif sample_method=='ising_metropolis':
             raise NotImplementedError("FastMCIsing is no longer available.")

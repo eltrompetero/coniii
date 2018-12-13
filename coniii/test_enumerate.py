@@ -32,7 +32,9 @@ np.random.seed(0)
 def test_basic():
     hJ = np.random.normal(size=6,scale=.2)
     
-    # make sure probability distribution is normalized, p and correlations agree
+    # make sure probability distribution is normalized, p and correlations agree for both symmetrized and
+    # unsymmetrized bases
+    # n=3
     from .ising_eqn import ising_eqn_3_sym as ising
     p = ising.p(hJ)
     assert np.isclose(p.sum(), 1)

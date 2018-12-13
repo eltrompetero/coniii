@@ -1,79 +1,47 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>coniii.enumerate module &mdash; ConIII 1.0.2 documentation</title>
-    
+    <title>coniii.enumerate module &#8212; ConIII 1.0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="ConIII 1.0.2 documentation" href="../index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="coniii.solvers module" href="coniii.solvers.html" />
     <link rel="prev" title="Welcome to ConIII’s documentation!" href="../index.html" />
    
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="coniii.solvers.html" title="coniii.solvers module"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="../index.html" title="Welcome to ConIII’s documentation!"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">ConIII 1.0.2 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+  </head><body>
+  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="module-coniii.enumerate">
 <span id="coniii-enumerate-module"></span><h1>coniii.enumerate module<a class="headerlink" href="#module-coniii.enumerate" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="coniii.enumerate.add_to_fitterm01">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">add_to_fitterm01</code><span class="sig-paren">(</span><em>fitterm</em>, <em>subix</em>, <em>expterm</em>, <em>binstate</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.add_to_fitterm01" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="coniii.enumerate.add_to_fitterm11">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">add_to_fitterm11</code><span class="sig-paren">(</span><em>fitterm</em>, <em>subix</em>, <em>expterm</em>, <em>binstate</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.add_to_fitterm11" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="coniii.enumerate.get_3idx">
 <code class="descclassname">coniii.enumerate.</code><code class="descname">get_3idx</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_3idx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get binary 3D matrix with truth values where index values correspond to the index of all possible ijk
-parameters.  We can do this by recognizing that the pattern along each plane in the third dimension is
-like the upper triangle pattern that just moves up and over by one block each cut lower into the box.</p>
+<dd><p>Get binary 3D matrix with truth values where index values correspond to the index
+of all possible ijk parameters.  We can do this by recognizing that the pattern along
+each plane in the third dimension is like the upper triangle pattern that just moves
+up and over by one block each cut lower into the box.</p>
 </dd></dl>
 
 <dl class="function">
@@ -117,68 +85,92 @@ print where(exact.get_nidx(3,4))
 
 <dl class="function">
 <dt id="coniii.enumerate.write_eqns">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_eqns</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>terms</em>, <em>writeto='matlab'</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_eqns" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
+<code class="descclassname">coniii.enumerate.</code><code class="descname">write_eqns</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>corrTermsIx</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_eqns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create strings for writing out the equations and then write them to file.</p>
+<dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>number of spins</dd>
 <dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>value of 1 will use {-1,1} formulation, 0 means {0,1}</dd>
-<dt>terms <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>list of numpy index arrays as would be returned by np.where that 
-specify which terms to include, each consecutive array should 
-specify indices in an array with an extra dimension of N, 
-[Nx1,NxN,NxNxN,...]
-note that the last dimension is the first to be iterated</dd>
-<dt>writeto <span class="classifier-delimiter">:</span> <span class="classifier">str,&#8217;matlab&#8217;</span></dt>
-<dd>Filetype to write to, &#8216;matlab&#8217; or &#8216;python&#8217;.</dd>
+<dt>corrTermsIx <span class="classifier-delimiter">:</span> <span class="classifier">list of ndarrays</span></dt>
+<dd>Allows specification of arbitrary correlations to constrain using an index based
+structure. These should be index arrays as would be returned by np.where that
+specify which correlations to write down. Each consecutive array should specify
+a matrix of sequentially increasing dimension.
+[Nx1, NxN, NxNxN, …]</dd>
 </dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="coniii.enumerate.write_matlab">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_matlab</code><span class="sig-paren">(</span><em>n</em>, <em>terms</em>, <em>fitterms</em>, <em>expterms</em>, <em>Z</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_matlab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write out equations to solve for matlab.</p>
+<p>suffix : str, ‘’</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.write_py">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_py</code><span class="sig-paren">(</span><em>n</em>, <em>terms</em>, <em>fitterms</em>, <em>expterms</em>, <em>Z</em>, <em>extra=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_py" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write out equations to solve for Python.</p>
-<p>extra (str,&#8217;&#8216;) : any extra lines to add at the end</p>
+<code class="descclassname">coniii.enumerate.</code><code class="descname">write_py</code><span class="sig-paren">(</span><em>n</em>, <em>contraintTermsIx</em>, <em>signs</em>, <em>expterms</em>, <em>Z</em>, <em>extra=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out Ising equations for Python.</p>
+<dl class="docutils">
+<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>System size.</dd>
+</dl>
+<p>contraintTermsIx : list of str
+signs : list of ndarray</p>
+<blockquote>
+<div>Sign for each term in the numerator when computing correlations.</div></blockquote>
+<dl class="docutils">
+<dt>expterms <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>Every single energy term.</dd>
+<dt>Z <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Energies for all states that will be put into partition function.</dd>
+</dl>
+<p>extra : str, ‘’
+suffix : str, ‘’
+extra (str,’‘) : any extra lines to add at the end</p>
 </dd></dl>
 
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../index.html"
-                        title="previous chapter">Welcome to ConIII&#8217;s documentation!</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="coniii.solvers.html"
-                        title="next chapter">coniii.solvers module</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/coniii_rst/coniii.enumerate.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+<h1 class="logo"><a href="../index.html">ConIII</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">coniii.enumerate module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.solvers.html">coniii.solvers module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.samplers.html">coniii.samplers module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.utils.html">coniii.utils module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to ConIII’s documentation!</a></li>
+      <li>Next: <a href="coniii.solvers.html" title="next chapter">coniii.solvers module</a></li>
+  </ul></li>
+</ul>
+</div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -189,12 +181,12 @@ note that the last dimension is the first to be iterated</dd>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
-      <a href="../_sources/coniii_rst/coniii.enumerate.txt"
-          rel="nofollow">Page source</a></li>
+      <a href="../_sources/coniii_rst/coniii.enumerate.rst.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     

@@ -14,7 +14,7 @@ If you use ConIII for your research, please cite the following:
 The link to the arXiv article is here: [https://arxiv.org/abs/1801.08216]. 
 
 Documentation is included at "docs/\_build/html/index.html". Online documentation is
-hosted at [https://eddielee.co/coniii/_build/html/index.html].
+hosted at [https://eddielee.co/coniii/index.html].
 
 ## Installation
 
@@ -134,4 +134,4 @@ When updating to new 1.x.x versions please read the RELEASE_NOTES. There may
 be some modifications to the interface including parameter names as we iron out
 inconsistencies to make it more user friendly.
 
-Online documentation is hosted at [https://eddielee.co/coniii/_build/html/index.html].
+Online documentation is hosted at [https://eddielee.co/coniii/index.html].

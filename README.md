@@ -38,13 +38,13 @@ run enumerate.py to write those files yourself. This can be run from the install
 directory.  If you do not know where the installation directory is, you can find it by
 starting a Python terminal and running
 ```bash
-$ import coniii $ coniii.__path__
+$ import coniii
+$ coniii.__path__
 ```
 
 Once inside the install directory, you can run in your bash shell
 ```bash
-$ python
-enumerate.py [N]
+$ python enumerate.py [N]
 ```
 
 where `[N]` should be replaced by the size of the system. This will write the equations

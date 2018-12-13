@@ -403,11 +403,11 @@ Besides the {\tt utils.py} module, the package is organized around classes that 
 
 For the solvers, the different algorithms available are accessible from the {\tt coniii.solvers} module as listed in Fig.~\ref{gr:architecture}. These algorithm classes are all derived from a base {\tt Solver} class as shown in Fig.~\ref{gr:architecture}. In the accompanying release version of the package, v1.0.3, the method {\tt Solver.solve} serves as the interface for solving the inverse maxent problem. To keep the solution algorithms generic enough to solve a variety of different maxent problems, they all require that the user define the maxent model upon instantiation through the definition of keyword arguments like {\tt calc\_observables}. The particular methods required to specify the maxent problem differ by algorithm, but for the pairwise maxent problem we have made it easy by defining those functions as part of the package. These helper functions are available as part of the {\tt utils.py} module and their use is demonstrated in the Jupyter notebook usage guide.
 
-The MCMC sampling algorithms are likewise based on a class architecture derived from {\tt Sampler} as shown in Fig.~\ref{gr:architecture}. Each instance of {\tt Solver} automatically instantiates this class under {\tt Solver.sampler} and wraps calls to it. For the Ising model, this is typically an instance of {\tt FastMCIsing}. The only other available class is {\tt Metropolis}, but other sampling algorithms listed in the {\tt samplers.py} box in Fig.~\ref{gr:architecture} will be released with later versions of this package.
+The MCMC sampling algorithms are likewise based on a class architecture derived from {\tt Sampler} as shown in Fig.~\ref{gr:architecture}. Each instance of {\tt Solver} automatically instantiates this class under {\tt Solver.sampler} and wraps calls to it. For the Ising model, this is an instance of {\tt Metropolis}. Other sampling algorithms listed in the {\tt samplers.py} box in Fig.~\ref{gr:architecture} will be released with later versions of this package.
 
 \begin{figure}[tb]
-	\includegraphics[width=\linewidth,clip=True,trim=100 360 80 0]{architecture}
-	\caption{ConIII architecture. The principal modules are {\tt solvers.py}, {\tt samplers.py}, and {\tt utils.py}. The module {\tt solvers.py} contains classes based on {\tt Solver} that each implement a different algorithm for solving the relevant inverse maxent problem accessible through the method {\tt Solver.solve()}. The {\tt samplers.py} module contains two algorithms for Monte Carlo Markov Chain sampling and will support other samplers in future versions (gray font) including Wolff sampling, Swendsen-Wang sampling, and parallel tempering. The {\tt utils.py} module contains supporting functions for the other modules such as the few examples listed. ConIII's modularized structure ensures that contributed algorithms can be appended independently of existing code.}
+	\includegraphics[width=\linewidth,clip=True,trim=70 450 60 0]{architecture}
+	\caption{ConIII architecture. The principal modules are {\tt solvers.py}, {\tt samplers.py}, and {\tt utils.py}. The module {\tt solvers.py} contains classes based on {\tt Solver} that each implement a different algorithm for solving the relevant inverse maxent problem accessible through the method {\tt Solver.solve()}. The {\tt samplers.py} module contains the Metropolis algorithm for Monte Carlo Markov Chain sampling and will support other samplers in future versions (gray font) including Wolff sampling, Swendsen-Wang sampling, and parallel tempering. The {\tt utils.py} module contains supporting functions for the other modules such as the few examples listed. ConIII's modularized structure ensures that contributed algorithms can be appended independently of existing code.}
 	\label{gr:architecture}
 \end{figure}
 
@@ -428,10 +428,10 @@ If there are any issues or bugs in the software, we organize improvements and pa
 Linux, MacOS, Windows
 
 \section*{Programming language}
-Python 3.6
+Python 3.6, 3.7
 
 \section*{Dependencies}
-Python packages jupyter $\geq$ v1.0.0, multiprocess v0.70.5, numpy, scipy, joblib, matplotlib, numba $\geq$ v0.39.0, dill.
+Python packages multiprocess $\geq$v0.70.5 and $<$v1, numpy, scipy, joblib, matplotlib, numba $\geq$ v0.39.0, dill.
 
 \section*{Software location:}
 \begin{description}[noitemsep,topsep=0pt]
@@ -439,18 +439,26 @@ Python packages jupyter $\geq$ v1.0.0, multiprocess v0.70.5, numpy, scipy, jobli
 	\item[Persistent identifier:] \url{https://pypi.org/project/coniii/}
 	\item[Licence:] MIT License
 	\item[Publisher:]  Edward D. Lee
-	\item[Version published:] v1.0.3
-	\item[Date published:] 30/10/18
+	\item[Version published:] v1.1.1
+	\item[Date published:] 13/10/18
 \end{description}
 
 {\bf Code repository}
 
 \begin{description}[noitemsep,topsep=0pt]
-	\item[Name:] Github
+	\item[Name:] GitHub
 	\item[Persistent identifier:] \url{https://github.com/eltrompetero/coniii}
 	\item[Licence:] MIT License
-	\item[Version published:] v1.0.3
+	\item[Version published:] v1.1.1
 \end{description}
+
+\begin{description}[noitemsep,topsep=0pt]
+	\item[Name:] Zenodo
+	\item[Persistent identifier:] \url{https://doi.org/10.5281/zenodo.2236632}
+	\item[Licence:] MIT License
+	\item[Version published:] v1.1.1
+\end{description}
+
 
 \section*{Language}
 English
@@ -459,7 +467,7 @@ English
 \section*{(3) Reuse potential}
 To contribute either an algorithm for the inverse maxent problem or a sampling technique, we suggest following the template for the classes described in the base {\tt Solver} and {\tt Sampler} classes. New algorithms should be filed as a pull request to the \href{https://github.com/eltrompetero/coniii}{GitHub repository} along with an example solution that can be included in the usage guide Jupyter notebook and unit tests.
 
-Documentation for the package is included as part of the GitHub repository and also hosted online at \url{https://eddielee.co/coniii/_build/html/index.html}.
+Documentation for the package is included as part of the GitHub repository and also hosted online at \url{https://eddielee.co/coniii/index.html}.
 
 \section*{Acknowledgements}
 We thank the anonymous reviewers for helpful feedback on both the manuscript and the accessibility of the software.

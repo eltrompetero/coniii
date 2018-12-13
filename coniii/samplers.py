@@ -1191,7 +1191,7 @@ class Metropolis(Sampler):
             Saved array of energies at each sampling step.
         """
         
-        assert self.nCpus<=1, "Can only call with Metropolis instance not using parallelization."
+        assert self.nCpus<=1, "Instantiate another instance for sequential sampling."
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=sample_size)):
             self._samples = self.rng.choice([-1,1], size=(1, self.n))
@@ -1270,7 +1270,7 @@ class Metropolis(Sampler):
         """
         
         n_cpus = self.nCpus  # alias
-        assert n_cpus>=2
+        assert n_cpus>=2, "Instantiate another instance for parallel sampling."
         assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=n_cpus)):

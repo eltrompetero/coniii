@@ -129,7 +129,7 @@ class Solver():
         Parameters
         ----------
         sample_method : str
-            'ising_metropolis', 'metropolis'
+            'metropolis'
         sampler_kwargs : dict
             Kwargs that can be passed into the initialization function for the sampler.
         """
@@ -141,12 +141,7 @@ class Solver():
             self.sampler = Metropolis( self.n, self.multipliers, self.calc_e, n_cpus=self.nCpus, **sampler_kwargs )
       
         elif sample_method=='ising_metropolis':
-            self.sampleMethod=sample_method
-            if self.multipliers is None:
-                self.sampler = FastMCIsing( self.n, np.zeros(self.n+self.n*(self.n-1)//2), **sampler_kwargs )
-            else:
-                self.sampler = FastMCIsing( self.n, self.multipliers, **sampler_kwargs )
-
+            raise NotImplementedError("FastMCIsing is no longer available.")
         else:
            raise NotImplementedError("Unrecognized sampler.")
         self.samples=None

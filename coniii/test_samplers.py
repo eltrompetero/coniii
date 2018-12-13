@@ -93,73 +93,73 @@ def test_Metropolis(run_timing=False):
         sampler.generate_samples_parallel(10, n_iters=10000, systematic_iter=True)
         print(time.perf_counter()-t0)
 
-def test_FastMCIsing(run_timing=False):
-    # Check that everything compiles and runs.
-    n=5
-    print("Running timing suite for Ising sampling functions for n=%d..."%n)
-    theta=np.random.normal(size=15, scale=.2)
-    
-    sampler=FastMCIsing(n, theta)
-    print("Running sampler.generate_samples(n)")
-    sampler.generate_samples(n)
-    print("Done.")
-
-    print("Running sampler.generate_samples(n, systematic_iter=True)")
-    sampler.generate_samples(n, systematic_iter=True)
-    print("Done.")
-
-    print("Running sampler.generate_samples(n, saveHistory=True)")
-    sampler.generate_samples(n, saveHistory=True)
-    print("Done.")
-
-    print("Running sampler.generate_samples(n, saveHistory=True, systematic_iter=True)")
-    sampler.generate_samples(n, saveHistory=True, systematic_iter=True)
-    print("Done.")
-
-    print("Running sampler.generate_samples(n, saveHistory=True, systematic_iter=True)")
-    sampler.generate_samples_parallel(n, systematic_iter=True)
-    print("Done.")
-
-    print("Running sampler.generate_samples_parallel(n, systematic_iter=True)")
-    sampler.generate_samples_parallel(n, systematic_iter=False)
-    print("Done.")
-    print()
-
-    # test that setting rng reproduces same sample
-    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
-    sampler.rng = np.random.RandomState(0)
-    sampler.generate_samples(5, n_iters=2, systematic_iter=False)
-    X1 = sampler.samples.copy()
-
-    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
-    sampler.rng = np.random.RandomState(0)
-    sampler.generate_samples(5, n_iters=2, systematic_iter=False)
-    X2 = sampler.samples.copy()
-    assert np.array_equal(X1, X2)
-
-    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
-    sampler.rng = np.random.RandomState(0)
-    sampler.generate_samples_parallel(5, n_iters=2, systematic_iter=True)
-    X1 = sampler.samples.copy()
-    
-    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
-    sampler.generate_samples_parallel(5, n_iters=2, systematic_iter=True)
-    X2 = sampler.samples.copy()
-    assert np.array_equal(X1, X2)
-
-    if run_timing:
-        # Some basic timing checks
-        print("Timing sequential sampling")
-        sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0), n_cpus=1)
-        t0=time.perf_counter()
-        sampler.generate_samples(10, n_iters=10000, systematic_iter=True)
-        print(time.perf_counter()-t0)
-
-        print("Timing parallel sampling")
-        sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
-        t0=time.perf_counter()
-        sampler.generate_samples_parallel(10, n_iters=10000, systematic_iter=True)
-        print(time.perf_counter()-t0)
+#def test_FastMCIsing(run_timing=False):
+#    # Check that everything compiles and runs.
+#    n=5
+#    print("Running timing suite for Ising sampling functions for n=%d..."%n)
+#    theta=np.random.normal(size=15, scale=.2)
+#    
+#    sampler=FastMCIsing(n, theta)
+#    print("Running sampler.generate_samples(n)")
+#    sampler.generate_samples(n)
+#    print("Done.")
+#
+#    print("Running sampler.generate_samples(n, systematic_iter=True)")
+#    sampler.generate_samples(n, systematic_iter=True)
+#    print("Done.")
+#
+#    print("Running sampler.generate_samples(n, saveHistory=True)")
+#    sampler.generate_samples(n, saveHistory=True)
+#    print("Done.")
+#
+#    print("Running sampler.generate_samples(n, saveHistory=True, systematic_iter=True)")
+#    sampler.generate_samples(n, saveHistory=True, systematic_iter=True)
+#    print("Done.")
+#
+#    print("Running sampler.generate_samples(n, saveHistory=True, systematic_iter=True)")
+#    sampler.generate_samples_parallel(n, systematic_iter=True)
+#    print("Done.")
+#
+#    print("Running sampler.generate_samples_parallel(n, systematic_iter=True)")
+#    sampler.generate_samples_parallel(n, systematic_iter=False)
+#    print("Done.")
+#    print()
+#
+#    # test that setting rng reproduces same sample
+#    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
+#    sampler.rng = np.random.RandomState(0)
+#    sampler.generate_samples(5, n_iters=2, systematic_iter=False)
+#    X1 = sampler.samples.copy()
+#
+#    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
+#    sampler.rng = np.random.RandomState(0)
+#    sampler.generate_samples(5, n_iters=2, systematic_iter=False)
+#    X2 = sampler.samples.copy()
+#    assert np.array_equal(X1, X2)
+#
+#    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
+#    sampler.rng = np.random.RandomState(0)
+#    sampler.generate_samples_parallel(5, n_iters=2, systematic_iter=True)
+#    X1 = sampler.samples.copy()
+#    
+#    sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
+#    sampler.generate_samples_parallel(5, n_iters=2, systematic_iter=True)
+#    X2 = sampler.samples.copy()
+#    assert np.array_equal(X1, X2)
+#
+#    if run_timing:
+#        # Some basic timing checks
+#        print("Timing sequential sampling")
+#        sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0), n_cpus=1)
+#        t0=time.perf_counter()
+#        sampler.generate_samples(10, n_iters=10000, systematic_iter=True)
+#        print(time.perf_counter()-t0)
+#
+#        print("Timing parallel sampling")
+#        sampler = FastMCIsing(n, theta, rng=np.random.RandomState(0))
+#        t0=time.perf_counter()
+#        sampler.generate_samples_parallel(10, n_iters=10000, systematic_iter=True)
+#        print(time.perf_counter()-t0)
 
 def test_ParallelTempering():
     # basic functionality

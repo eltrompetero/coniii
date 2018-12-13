@@ -984,11 +984,11 @@ class FastMCIsing(Sampler):
         n = self.n
         
         if systematic_iter:
-            @jit
+            @jit(forceobj=True)
             def get_ix(j, rng):
                 return j%n
         else:
-            @jit
+            @jit(forceobj=True)
             def get_ix(j, rng):
                 return rng.randint(n)
         
@@ -1065,11 +1065,11 @@ class FastMCIsing(Sampler):
         theta = self.theta
         
         if systematic_iter:
-            @jit
+            @jit(forceobj=True)
             def get_ix(j, rng):
                 return j%n
         else:
-            @jit
+            @jit(forceobj=True)
             def get_ix(j, rng):
                 return rng.randint(n)
 
@@ -1117,7 +1117,7 @@ class FastMCIsing(Sampler):
             return de
 #end FastMCIsing
 
-@jit
+@jit(forceobj=True)
 def _jit_sample_metropolis(sample0, h, J, flip_site, rng):
     """
     Metropolis sampling.

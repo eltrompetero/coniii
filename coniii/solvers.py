@@ -1778,7 +1778,7 @@ class RegularizedMeanField(Solver):
                                sampler_kwargs={'n_cpus':1})
         else:
             self.setup_sampler('ising_metropolis',
-                               sampler_kwargs={'use_numba':False,'n_cpus':1})
+                               sampler_kwargs={'n_cpus':1})
 
     def solve(self, samples,
               sample_size=100000,

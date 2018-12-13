@@ -1,7 +1,7 @@
 Log for major changes
 
 
-v1.1.0 (Released ??)
+v1.1.0 (Released 2018/12/13)
 ----------------------
 - Now compatible with multiprocess v0.70.6
 - Updated sampling method for Metropolis to be more efficient by running fewer systems for
@@ -19,6 +19,7 @@ v1.1.0 (Released ??)
   types. TypeError in jit is thrown if not. Updates to other functions for compatibility
   (e.g. utils.bin_states() return integer types).
 - Removed use_numba switch for samplers.
+- Removed FastMCIsing sampler.
 
 
 v1.0.3 (Released 2018/11)

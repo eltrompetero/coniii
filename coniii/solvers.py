@@ -185,13 +185,6 @@ class Solver():
                                               n_iters=n_iters)
                 self.samples = self.sampler.samples
 
-            elif sample_method=='ising_metropolis':
-                self.sampler.update_parameters(multipliers)
-                # Burn in.
-                self.sampler.generate_samples(sample_size,
-                                              n_iters=burnin+n_iters)
-                self.samples = self.sampler.samples
-
             else:
                raise NotImplementedError("Unrecognized sampler.")
         # When parallel sampling using the multiprocess module.
@@ -200,13 +193,6 @@ class Solver():
                 self.sampler.theta = multipliers.copy()
                 self.sampler.generate_samples_parallel(sample_size,
                                                        n_iters=burnin+n_iters)
-                self.samples = self.sampler.samples
-
-            elif sample_method=='ising_metropolis':
-                self.sampler.update_parameters(multipliers)
-                self.sampler.generate_samples_parallel( sample_size,
-                                                        n_iters=burnin+n_iters,
-                                                        n_cpus=self.nCpus)
                 self.samples = self.sampler.samples
 
             else:
@@ -574,7 +560,7 @@ class MCH(Solver):
         calc_observables : function
             takes in samples as argument
         sample_method : str
-            Can be 'ising_metropolis', 'metropolis'.
+            Can be 'metropolis'.
         sample_size : int
             Number of samples to use MCH sampling step.
         mch_approximation : function
@@ -1764,16 +1750,11 @@ class RegularizedMeanField(Solver):
     """
     def __init__(self, *args, **kwargs):
         """
-        See Solver. Default sample_method is 'ising_metropolis'.
+        See Solver. Default sample_method is '_metropolis'.
         """
         super(RegularizedMeanField,self).__init__(*args,**kwargs)
         # some case handling to ensure that RMF gets control over the random number generator
-        if kwargs.get('sample_method','ising_metropolis')=='metropolis':
-            self.setup_sampler('metropolis',
-                               sampler_kwargs={'n_cpus':1})
-        else:
-            self.setup_sampler('ising_metropolis',
-                               sampler_kwargs={'n_cpus':1})
+        self.setup_sampler(kwargs.get('sample_method','metropolis'))
 
     def solve(self, samples,
               sample_size=100000,

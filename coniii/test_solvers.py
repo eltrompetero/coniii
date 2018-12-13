@@ -80,7 +80,7 @@ def test_init():
     solver = MCH(n,
                  calc_observables=calc_observables,
                  sample_size=100,
-                 sample_method='ising_metropolis',
+                 sample_method='metropolis',
                  mch_approximation=mchApproximation,
                  n_cpus=1)
     solver = RegularizedMeanField(n, calc_observables=calc_observables)

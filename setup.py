@@ -34,7 +34,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='coniii',
-      version='1.1.1',
+      version=open('coniii/VERSION', 'r').readline(),
       description='Convenient Interface to Inverse Ising (ConIII)',
       long_description=long_description,
       url='https://github.com/eltrompetero/coniii',

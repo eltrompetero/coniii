@@ -109,7 +109,7 @@ def test_define_ising_helper_functions():
     calc_e, calc_observables, mch_approximation = define_ising_helper_functions()
 
     np.random.seed(0)
-    X = np.random.choice([-1.,1.],size=(10,3))
+    X = np.random.choice([-1,1],size=(10,3))
     h = np.random.normal(size=3)
     J = np.random.normal(size=3)
     hJ = np.concatenate((h, J))

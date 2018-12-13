@@ -15,6 +15,11 @@ v1.1.0 (Released ??)
 - Improvements to enumerate.py: More compact Ising equation files and better precision by
   using scipy.special.logsumexp.
 - Jupyter is no longer required for installation of ConIII by default.
+- Ising functions (calc_e and functions that use it) assume that spins are now integer
+  types. TypeError in jit is thrown if not. Updates to other functions for compatibility
+  (e.g. utils.bin_states() return integer types).
+- Removed use_numba switch for samplers.
+
 
 v1.0.3 (Released 2018/11)
 -----------------------

@@ -200,7 +200,7 @@ def pair_corr(X,
         return np.concatenate((si,sisj))
     return si, sisj
 
-def bin_states(n,sym=False):
+def bin_states(n, sym=False):
     """
     Generate all possible binary spin states. 
     
@@ -215,17 +215,17 @@ def bin_states(n,sym=False):
     -------
     v : ndarray
     """
+
     if n<0:
         raise Exception("n cannot be <0")
     if n>30:
         raise Exception("n is too large to enumerate all states.")
     
-    v = np.array([list(np.binary_repr(i,width=n)) for i in range(2**n)]).astype('uint8')
+    v = np.array([list(np.binary_repr(i,width=n)) for i in range(2**n)]).astype(int)
 
     if sym is False:
         return v
-    else:
-        return v*2.-1
+    return v*2-1
 
 def k_corr(X, k,
            weights=None,
@@ -286,7 +286,7 @@ def xbin_states(n,sym=False):
             if sym is False:
                 yield np.array(list(np.binary_repr(i,width=n))).astype('int')
             else:
-                yield np.array(list(np.binary_repr(i,width=n))).astype('int')*2.-1
+                yield np.array(list(np.binary_repr(i,width=n))).astype('int')*2-1
 
     return v()
 
@@ -680,7 +680,7 @@ def define_ising_helper_functions():
         E : ndarray
             Energies of all given states.
         """
-
+        
         e = -fast_sum(params[s.shape[1]:],s)
         e -= np.sum(s*params[:s.shape[1]],1)
         return e

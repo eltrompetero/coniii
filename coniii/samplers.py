@@ -992,7 +992,10 @@ class FastMCIsing(Sampler):
 
         if saveHistory:
             @jit('float64[:,:]()', locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
-            def sample(E=E,_samples=self._samples):
+            def sample(seed, E=E, _samples=self._samples):
+                # set rng for jit environment
+                np.random.seed(seed)
+                
                 history = np.zeros(sample_size*n_iters+1)
                 history[0] = E
                 counter = 1
@@ -1005,18 +1008,16 @@ class FastMCIsing(Sampler):
                     self.E[i] = E
                     self.samples[i,:] = _samples[:]
                 return history
-
-            history = sample()
-            return history
         else:
-            def sample(E=E):
+            @jit(locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
+            def sample(seed, E=E, _samples=self._samples):
                 for i in range(sample_size):
                     for j in range(n_iters):
-                        de = sample_metropolis( self._samples[0], h, J, get_ix(j) )
+                        de = sample_metropolis( _samples[0], h, J, get_ix(j) )
                         E += de
                     self.E[i] = E
-                    self.samples[i,:] = self._samples[:]
-        return sample()
+                    self.samples[i,:] = _samples[:]
+        return sample(self.rng.randint(2**32-1))
     
     def generate_samples_parallel(self,
                                   sample_size,
@@ -1041,7 +1042,7 @@ class FastMCIsing(Sampler):
             receive in equal number of chances to flip.
         """
 
-        n_cpus=n_cpus or self.nCpus
+        n_cpus = n_cpus or self.nCpus
         sample_metropolis = _jit_sample_metropolis
         h, J = self.h, self.J
         n = self.n

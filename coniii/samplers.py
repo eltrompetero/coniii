@@ -36,6 +36,7 @@ import multiprocess as mp
 from .utils import *
 from datetime import datetime
 from multiprocess import Pool, cpu_count
+from warnings import warn
 
 
 # ------------------------------------------------------------------------------- #
@@ -926,6 +927,7 @@ class FastMCIsing(Sampler):
         rng : RandomState, None
         """
         
+        warn("At the moment, Metropolis is much faster for sampling.")
         self.n = n
         self.update_parameters(theta)
         self.nCpus = n_cpus or mp.cpu_count()-1

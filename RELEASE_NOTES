@@ -1,5 +1,9 @@
 Log for major changes
 
+v1.1.2 (Release ????/??/??)
+----------------------
+- convertTo kwarg for utils.convert_corr has been changed to convert_to to make it uniform
+  with other functions.
 
 v1.1.0 (Released 2018/12/13)
 ----------------------

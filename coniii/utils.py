@@ -290,7 +290,7 @@ def xbin_states(n,sym=False):
 
     return v()
 
-def convert_params(h, J, convert_to='01', concat=False):
+def convert_params(h, J, convert_to, concat=False):
     """
     Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.
 
@@ -300,13 +300,15 @@ def convert_params(h, J, convert_to='01', concat=False):
     J : ndarray
     convert_to : str
         '01' or '11'
-    concat : bool,False
+    concat : bool, False
         If True, return a vector concatenating fields and couplings.
     
     Returns
     -------
-    h : ndarray
-    J : ndarray
+    ndarray
+        Mean bias h vector. Concatenated vector of h and J if concat is True.
+    ndarray, optional
+        Vector of J.
     """
 
     if len(J.shape)!=2:
@@ -323,6 +325,8 @@ def convert_params(h, J, convert_to='01', concat=False):
         # Convert from -/+1 to 0,1
         hp = 2.*(h - np.sum(Jmat,1))
         Jp = J*4.
+    else:
+        raise Exception("Invalid choice for convert_to. Must be '01' or '11'.")
 
     if concat:
         return np.concatenate((hp, Jp))
@@ -330,6 +334,8 @@ def convert_params(h, J, convert_to='01', concat=False):
 
 def ising_convert_params(oparams, convert_to='01', concat=False):
     """
+    General conversion of parameters from 01 to 11 basis.
+
     Take set of Ising model parameters up to nth order interactions in either {0,1} or {-1,1} basis
     and convert to other basis.
 
@@ -473,7 +479,7 @@ def split_concat_params(p, n):
         i += 1
     return splitp
 
-def convert_corr(si, sisj, convertTo='11', concat=False):
+def convert_corr(si, sisj, convert_to='11', concat=False, **kwargs):
     """
     Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.
 
@@ -481,7 +487,7 @@ def convert_corr(si, sisj, convertTo='11', concat=False):
     ----------
     si : ndarray
     sisj : ndarray
-    convertTo : str, '11'
+    convert_to : str, '11'
         '11' will convert {0,1} formulation to +/-1 and '01' will convert +/-1 formulation to {0,1}
     concat : bool, False
         If True, return concatenation of means and pairwise correlations.
@@ -494,7 +500,13 @@ def convert_corr(si, sisj, convertTo='11', concat=False):
         Pairwise correlations <si*sj>. Converted to appropriate basis.
     """
 
-    if convertTo=='11':
+    if 'convertTo' in kwargs.keys():
+        from warnings import warn
+        warn("convertTo kwarg is deprecated as of v1.1.2. Use convert_to instead.")
+    elif len(kwargs.keys())>0:
+        raise TypeError("Unexpected keyword argument.")
+
+    if convert_to=='11':
         newsisj = np.zeros(sisj.shape)
         k = 0
         for i in range(len(si)-1):

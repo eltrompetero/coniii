@@ -1,7 +1,7 @@
 Log for major changes
 
-v1.1.2 (Release ????/??/??)
-----------------------
+v1.1.2 (Released 2018/12/16)
+----------------------------------------------------
 - Bug fix in type casting in Metropolis.generate_samples_parallel().
 - convertTo kwarg for utils.convert_corr has been changed to convert_to to make it uniform
   with other functions.
@@ -9,7 +9,8 @@ v1.1.2 (Release ????/??/??)
   specified as a string.
 
 v1.1.0 (Released 2018/12/13)
-----------------------
+----------------------------------------------------
+- Bug fix in type casting in Metropolis.generate_samples_parallel().
 - Now compatible with multiprocess v0.70.6
 - Updated sampling method for Metropolis to be more efficient by running fewer systems for
   longer and taking iterative samples instead of starting with a completely new system for
@@ -30,5 +31,5 @@ v1.1.0 (Released 2018/12/13)
 
 
 v1.0.3 (Released 2018/11)
------------------------
+----------------------------------------------------
 - First official release.

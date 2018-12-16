@@ -213,22 +213,27 @@ single parameter.</dd>
 <dl class="method">
 <dt id="coniii.solvers.MCH.learn_parameters_mch">
 <code class="descname">learn_parameters_mch</code><span class="sig-paren">(</span><em>estConstraints</em>, <em>maxdlamda=1</em>, <em>maxdlamdaNorm=1</em>, <em>maxLearningSteps=50</em>, <em>eta=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.learn_parameters_mch" title="Permalink to this definition">¶</a></dt>
-<dd><p>estConstraints : ndarray
-maxdlamda : float,1
-maxdlamdaNorm : float,1
-maxLearningSteps : int</p>
-<blockquote>
-<div>max learning steps before ending MCH</div></blockquote>
-<dl class="docutils">
-<dt>eta <span class="classifier-delimiter">:</span> <span class="classifier">float,1</span></dt>
+<dd><dl class="docutils">
+<dt>estConstraints <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Constraints estimated from MCH approximation.</dd>
+<dt>maxdlamda <span class="classifier-delimiter">:</span> <span class="classifier">float, 1</span></dt>
+<dd>Max allowed magnitude for any element of dlamda vector before exiting.</dd>
+<dt>maxdlamdaNorm <span class="classifier-delimiter">:</span> <span class="classifier">float, 1</span></dt>
+<dd>Max allowed norm of dlamda vector before exiting.</dd>
+<dt>maxLearningSteps <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>max learning steps before ending MCH</dd>
+<dt>eta <span class="classifier-delimiter">:</span> <span class="classifier">float, 1</span></dt>
 <dd>factor for changing dlamda</dd>
 </dl>
-<p>estimatedConstraints : ndarray</p>
+<dl class="docutils">
+<dt>ndarray</dt>
+<dd>MCH estimate for constraints from parameters lamda+dlamda.</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="coniii.solvers.MCH.solve">
-<code class="descname">solve</code><span class="sig-paren">(</span><em>initial_guess=None</em>, <em>constraints=None</em>, <em>X=None</em>, <em>tol=None</em>, <em>tolNorm=None</em>, <em>n_iters=30</em>, <em>burnin=30</em>, <em>maxiter=10</em>, <em>custom_convergence_f=None</em>, <em>iprint=False</em>, <em>full_output=False</em>, <em>learn_params_kwargs={'eta': 1</em>, <em>'maxdlamda': 1}</em>, <em>generate_kwargs={}</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><em>initial_guess=None</em>, <em>constraints=None</em>, <em>X=None</em>, <em>tol=None</em>, <em>tolNorm=None</em>, <em>n_iters=30</em>, <em>burn_in=30</em>, <em>maxiter=10</em>, <em>custom_convergence_f=None</em>, <em>iprint=False</em>, <em>full_output=False</em>, <em>learn_params_kwargs={'eta': 1</em>, <em>'maxdlamda': 1}</em>, <em>generate_kwargs={}</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve for maxent model parameters using MCH routine.</p>
 <dl class="docutils">
 <dt>initial_guess <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
@@ -454,7 +459,7 @@ unique states that appear in the data</dd>
 
 <dl class="method">
 <dt id="coniii.solvers.MPF.solve">
-<code class="descname">solve</code><span class="sig-paren">(</span><em>X=None</em>, <em>initial_guess=None</em>, <em>method='L-BFGS-B'</em>, <em>full_output=False</em>, <em>all_connected=True</em>, <em>parameter_limits=100</em>, <em>solver_kwargs={'disp': True</em>, <em>'ftol': 1e-15</em>, <em>'maxiter': 100}</em>, <em>uselog=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><em>X=None</em>, <em>initial_guess=None</em>, <em>method='L-BFGS-B'</em>, <em>full_output=False</em>, <em>all_connected=True</em>, <em>parameter_limits=100</em>, <em>solver_kwargs={'disp': False</em>, <em>'ftol': 1e-15</em>, <em>'maxiter': 100}</em>, <em>uselog=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimize MPF objective function using scipy.optimize.minimize.</p>
 <dl class="docutils">
 <dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
@@ -663,12 +668,12 @@ generate_kwargs : dict,{}</p>
 
 <dl class="method">
 <dt id="coniii.solvers.Solver.setup_sampler">
-<code class="descname">setup_sampler</code><span class="sig-paren">(</span><em>sample_method=None</em>, <em>sampler_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.setup_sampler" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setup_sampler</code><span class="sig-paren">(</span><em>sample_method='metropolis'</em>, <em>sampler_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.setup_sampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate sampler class object. Uses self.rng as the random number generator.</p>
 <dl class="docutils">
-<dt>sample_method <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dt>sample_method <span class="classifier-delimiter">:</span> <span class="classifier">str, ‘metropolis’</span></dt>
 <dd>‘metropolis’</dd>
-<dt>sampler_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dt>sampler_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict, {}</span></dt>
 <dd>Kwargs that can be passed into the initialization function for the sampler.</dd>
 </dl>
 </dd></dl>

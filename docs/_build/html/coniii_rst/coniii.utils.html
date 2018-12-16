@@ -37,17 +37,18 @@
 <dl class="attribute">
 <dt id="coniii.utils.adj">
 <code class="descclassname">coniii.utils.</code><code class="descname">adj</code><a class="headerlink" href="#coniii.utils.adj" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return one-flip neighbors and a set of random neighbors. This is written to be used with
-the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.</p>
-<p>NOTE: For random neighbors, there is no check to make sure neighbors don’t repeat but this
-shouldn’t be a problem as long as state space is large enough.</p>
+<dd><p>Return one-flip neighbors and a set of random neighbors. This is written to be used
+with the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.</p>
+<p>NOTE: For random neighbors, there is no check to make sure neighbors don’t repeat but
+this shouldn’t be a problem as long as state space is large enough.</p>
 <dl class="docutils">
 <dt>s <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
 <dd>State whose neighbors are found. One-dimensional vector of spins.</dd>
 <dt>n_random_neighbors <span class="classifier-delimiter">:</span> <span class="classifier">int,0</span></dt>
-<dd>If &gt;0, return this many random neighbors. Neighbors are just random states, but they are
-called “neighbors” because of the terminology in MPF. They can provide coupling from s to
-states that are very different, increasing the equilibration rate.</dd>
+<dd>If &gt;0, return this many random neighbors. Neighbors are just random states, but
+they are called “neighbors” because of the terminology in MPF. They can provide
+coupling from s to states that are very different, increasing the equilibration
+rate.</dd>
 </dl>
 <dl class="docutils">
 <dt>neighbors <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
@@ -77,8 +78,8 @@ states that are very different, increasing the equilibration rate.</dd>
 <dl class="function">
 <dt id="coniii.utils.calc_de">
 <code class="descclassname">coniii.utils.</code><code class="descname">calc_de</code><span class="sig-paren">(</span><em>s</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_de" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the derivative of the energy wrt parameters given the state and index of the
-parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij}.</p>
+<dd><p>Calculate the derivative of the energy wrt parameters given the state and index of
+the parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij}.</p>
 <dl class="docutils">
 <dt>s <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
 <dd>Two-dimensional vector of spins where each row is a state.</dd>
@@ -86,7 +87,8 @@ parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij
 <p>i : int</p>
 <dl class="docutils">
 <dt>dE <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Derivative of hamiltonian with respect to ith parameter, i.e. the corresponding observable.</dd>
+<dd>Derivative of hamiltonian with respect to ith parameter, i.e. the corresponding
+observable.</dd>
 </dl>
 </dd></dl>
 
@@ -97,33 +99,38 @@ parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij
 <p>sample
 ignore_zeros (bool=False)</p>
 <blockquote>
-<div>Instead of normalizing by the number of spins, normalize by the minimum number of nonzero spins.</div></blockquote>
+<div>Instead of normalizing by the number of spins, normalize by the minimum number of
+nonzero spins.</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.utils.convert_corr">
-<code class="descclassname">coniii.utils.</code><code class="descname">convert_corr</code><span class="sig-paren">(</span><em>si</em>, <em>sisj</em>, <em>convertTo='11'</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_corr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.</p>
-<p>si : ndarray
-sisj : ndarray
-convertTo : str, ‘11’</p>
-<blockquote>
-<div>‘11’ will convert {0,1} formulation to +/-1 and ‘01’ will convert +/-1 formulation to {0,1}</div></blockquote>
+<code class="descclassname">coniii.utils.</code><code class="descname">convert_corr</code><span class="sig-paren">(</span><em>si</em>, <em>sisj</em>, <em>convert_to</em>, <em>concat=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert single spin means and pairwise correlations between {0,1} and {-1,1}
+formulations.</p>
 <dl class="docutils">
+<dt>si <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Individual means.</dd>
+<dt>sisj <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Pairwise correlations.</dd>
+<dt>convert_to <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>‘11’ will convert {0,1} formulation to +/-1 and ‘01’ will convert +/-1 formulation
+to {0,1}</dd>
 <dt>concat <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>If True, return concatenation of means and pairwise correlations.</dd>
 </dl>
 <dl class="docutils">
 <dt>ndarray</dt>
-<dd>Averages &lt;si&gt;. Converted to appropriate basis.</dd>
-<dt>ndarray</dt>
+<dd>Averages &lt;si&gt;. Converted to appropriate basis. Returns concatenated vector &lt;si&gt;
+and &lt;sisj&gt; if concat is True.</dd>
+<dt>ndarray, optional</dt>
 <dd>Pairwise correlations &lt;si*sj&gt;. Converted to appropriate basis.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.utils.convert_params">
-<code class="descclassname">coniii.utils.</code><code class="descname">convert_params</code><span class="sig-paren">(</span><em>h</em>, <em>J</em>, <em>convert_to='01'</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_params" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">coniii.utils.</code><code class="descname">convert_params</code><span class="sig-paren">(</span><em>h</em>, <em>J</em>, <em>convert_to</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.</p>
 <p>h : ndarray
 J : ndarray
@@ -131,26 +138,37 @@ convert_to : str</p>
 <blockquote>
 <div>‘01’ or ‘11’</div></blockquote>
 <dl class="docutils">
-<dt>concat <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span></dt>
+<dt>concat <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>If True, return a vector concatenating fields and couplings.</dd>
 </dl>
-<p>h : ndarray
-J : ndarray</p>
+<dl class="docutils">
+<dt>ndarray</dt>
+<dd>Mean bias h vector. Concatenated vector of h and J if concat is True.</dd>
+<dt>ndarray, optional</dt>
+<dd>Vector of J.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.utils.define_ising_helper_functions">
 <code class="descclassname">coniii.utils.</code><code class="descname">define_ising_helper_functions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Functions for plugging into solvers for +/-1 Ising model with fields h_i and couplings J_ij.</p>
-<p>calc_e
-calc_observables
-mch_approximation</p>
+<dd><p>Functions for plugging into solvers for +/-1 Ising model with fields h_i and
+couplings J_ij.</p>
+<dl class="docutils">
+<dt>function</dt>
+<dd>calc_e</dd>
+<dt>function</dt>
+<dd>calc_observables</dd>
+<dt>function</dt>
+<dd>mch_approximation</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.utils.define_ising_helper_functions_sym">
 <code class="descclassname">coniii.utils.</code><code class="descname">define_ising_helper_functions_sym</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions_sym" title="Permalink to this definition">¶</a></dt>
-<dd><p>Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no fields.</p>
+<dd><p>Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no
+fields.</p>
 <p>calc_e
 calc_observables
 mch_approximation</p>
@@ -185,21 +203,22 @@ mch_approximation</p>
 
 <dl class="function">
 <dt id="coniii.utils.ising_convert_params">
-<code class="descclassname">coniii.utils.</code><code class="descname">ising_convert_params</code><span class="sig-paren">(</span><em>oparams</em>, <em>convert_to='01'</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ising_convert_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Take set of Ising model parameters up to nth order interactions in either {0,1} or {-1,1} basis
-and convert to other basis.</p>
+<code class="descclassname">coniii.utils.</code><code class="descname">ising_convert_params</code><span class="sig-paren">(</span><em>oparams</em>, <em>convert_to</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ising_convert_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>General conversion of parameters from 01 to 11 basis.</p>
+<p>Take set of Ising model parameters up to nth order interactions in either {0,1} or
+{-1,1} basis and convert to other basis.</p>
 <dl class="docutils">
 <dt>oparams <span class="classifier-delimiter">:</span> <span class="classifier">tuple of lists</span></dt>
-<dd>Tuple of lists of interactions between spins starting with the lowest order interactions. Each list
-should consist of all interactions of that order such that the length of each list should be
-binomial(n,i) for all i starting with i&gt;=1.</dd>
+<dd>Tuple of lists of interactions between spins starting with the lowest order
+interactions. Each list should consist of all interactions of that order such that
+the length of each list should be binomial(n,i) for all i starting with i&gt;=1.</dd>
 </dl>
-<p>convert_to : str,‘01’
+<p>convert_to : str
 concat : bool,False</p>
 <dl class="docutils">
 <dt>params <span class="classifier-delimiter">:</span> <span class="classifier">tuple of lists or list</span></dt>
-<dd>New parameters in order of lowest to highest order interactions to mean biases. Can all be
-concatenated together if concat switch is True.</dd>
+<dd>New parameters in order of lowest to highest order interactions to mean biases.
+Can all be concatenated together if concat switch is True.</dd>
 </dl>
 </dd></dl>
 
@@ -217,8 +236,8 @@ concatenated together if concat switch is True.</dd>
 the data such that a state only appears with some weight, typically less than
 one</dd>
 <dt>exclude_empty <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span></dt>
-<dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
-any pair. If True, the weights option doesn’t do anything.</dd>
+<dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be
+counted for any pair. If True, the weights option doesn’t do anything.</dd>
 </dl>
 <dl class="docutils">
 <dt>kcorr <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
@@ -247,8 +266,8 @@ other words, the first array should be length {s_i} and the second length
 <dt>concat <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>Return means concatenated with the pairwise correlations into one array.</dd>
 <dt>exclude_empty <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
-<dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
-any pair. If True, the weights option doesn’t do anything.</dd>
+<dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be
+counted for any pair. If True, the weights option doesn’t do anything.</dd>
 <dt>subtract_mean <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>If True, return pairwise correlations with product of individual means subtracted.</dd>
 </dl>
@@ -262,9 +281,9 @@ any pair. If True, the weights option doesn’t do anything.</dd>
 <dl class="function">
 <dt id="coniii.utils.split_concat_params">
 <code class="descclassname">coniii.utils.</code><code class="descname">split_concat_params</code><span class="sig-paren">(</span><em>p</em>, <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.split_concat_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Split parameters for Ising model that have all been concatenated together into a single list into
-separate lists. Assumes that the parameters are increasing in order of interaction and that all parameters
-are present.</p>
+<dd><p>Split parameters for Ising model that have all been concatenated together into a
+single list into separate lists. Assumes that the parameters are increasing in order
+of interaction and that all parameters are present.</p>
 <p>p : list-like</p>
 <dl class="docutils">
 <dt>list of list-like</dt>
@@ -275,7 +294,8 @@ are present.</p>
 <dl class="function">
 <dt id="coniii.utils.state_probs">
 <code class="descclassname">coniii.utils.</code><code class="descname">state_probs</code><span class="sig-paren">(</span><em>v</em>, <em>allstates=None</em>, <em>weights=None</em>, <em>normalized=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.state_probs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get probability of unique states. There is an option to allow for weights counting of the words.</p>
+<dd><p>Get probability of unique states. There is an option to allow for weights counting
+of the words.</p>
 <dl class="docutils">
 <dt>states <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
 <dd>(n_samples,n_dim)</dd>
@@ -296,10 +316,10 @@ normalized : bool, True</p>
 <dl class="attribute">
 <dt id="coniii.utils.sub_to_ind">
 <code class="descclassname">coniii.utils.</code><code class="descname">sub_to_ind</code><a class="headerlink" href="#coniii.utils.sub_to_ind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert pair of coordinates of a symmetric square array into consecutive index of flattened
-upper triangle. This is slimmed down so it won’t throw errors like if i&gt;n or j&gt;n or if they’re
-negative. Only checking for if the returned index is negative which could be problematic with
-wrapped indices.</p>
+<dd><p>Convert pair of coordinates of a symmetric square array into consecutive index of
+flattened upper triangle. This is slimmed down so it won’t throw errors like if i&gt;n or
+j&gt;n or if they’re negative. Only checking for if the returned index is negative which
+could be problematic with wrapped indices.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>Dimension of square array</dd>
@@ -315,8 +335,8 @@ wrapped indices.</p>
 <p>mat : ndarray
 return_inverse : bool</p>
 <blockquote>
-<div>If True, return inverse that returns back indices of unique array that would return the
-original array</div></blockquote>
+<div>If True, return inverse that returns back indices of unique array that would
+return the original array</div></blockquote>
 <dl class="docutils">
 <dt>u <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
 <dd>Unique elements of matrix.</dd>

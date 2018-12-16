@@ -33,10 +33,10 @@ from scipy.spatial.distance import squareform
 
 @njit(nogil=True,cache=True)
 def sub_to_ind(n, i, j):
-    """Convert pair of coordinates of a symmetric square array into consecutive index of flattened
-    upper triangle. This is slimmed down so it won't throw errors like if i>n or j>n or if they're
-    negative. Only checking for if the returned index is negative which could be problematic with
-    wrapped indices.
+    """Convert pair of coordinates of a symmetric square array into consecutive index of
+    flattened upper triangle. This is slimmed down so it won't throw errors like if i>n or
+    j>n or if they're negative. Only checking for if the returned index is negative which
+    could be problematic with wrapped indices.
     
     Parameters
     ----------
@@ -86,15 +86,14 @@ def ind_to_sub(n, ix):
             k += 1
  
 def unique_rows(mat, return_inverse=False):
-    """
-    Return unique rows indices of a numeric numpy array.
+    """Return unique rows indices of a numeric numpy array.
 
     Parameters
     ----------
     mat : ndarray
     return_inverse : bool
-        If True, return inverse that returns back indices of unique array that would return the
-        original array 
+        If True, return inverse that returns back indices of unique array that would
+        return the original array 
 
     Returns
     -------
@@ -113,14 +112,14 @@ def unique_rows(mat, return_inverse=False):
     return idx
 
 def calc_overlap(sample,ignore_zeros=False):
-    """
-    <si_a si_b> between all pairs of replicas a and b
+    """<si_a si_b> between all pairs of replicas a and b
 
     Params:
     -------
     sample
     ignore_zeros (bool=False)
-        Instead of normalizing by the number of spins, normalize by the minimum number of nonzero spins.
+        Instead of normalizing by the number of spins, normalize by the minimum number of
+        nonzero spins.
     """
     overlap = sample.dot(sample.T)
     if ignore_zeros:
@@ -136,8 +135,7 @@ def pair_corr(X,
               exclude_empty=False,
               subtract_mean=False,
               laplace_count=False):
-    """
-    Calculate averages and pairwise correlations of spins.
+    """Calculate averages and pairwise correlations of spins.
 
     Parameters
     ----------
@@ -152,8 +150,8 @@ def pair_corr(X,
     concat : bool, False
         Return means concatenated with the pairwise correlations into one array.
     exclude_empty : bool, False
-        When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
-        any pair. If True, the weights option doesn't do anything.
+        When using with {-1,1} basis, you can leave entries with 0 and those will not be
+        counted for any pair. If True, the weights option doesn't do anything.
     subtract_mean : bool, False
         If True, return pairwise correlations with product of individual means subtracted.
     laplace_count : 
@@ -201,8 +199,7 @@ def pair_corr(X,
     return si, sisj
 
 def bin_states(n, sym=False):
-    """
-    Generate all possible binary spin states. 
+    """Generate all possible binary spin states. 
     
     Parameters
     ----------
@@ -230,8 +227,7 @@ def bin_states(n, sym=False):
 def k_corr(X, k,
            weights=None,
            exclude_empty=False):
-    """
-    Calculate kth order correlations of spins.
+    """Calculate kth order correlations of spins.
 
     Parameters
     ----------
@@ -244,8 +240,8 @@ def k_corr(X, k,
         the data such that a state only appears with some weight, typically less than
         one
     exclude_empty : bool,False
-        When using with {-1,1} basis, you can leave entries with 0 and those will not be counted for
-        any pair. If True, the weights option doesn't do anything.
+        When using with {-1,1} basis, you can leave entries with 0 and those will not be
+        counted for any pair. If True, the weights option doesn't do anything.
 
     Returns
     -------
@@ -291,8 +287,7 @@ def xbin_states(n,sym=False):
     return v()
 
 def convert_params(h, J, convert_to, concat=False):
-    """
-    Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.
+    """Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.
 
     Parameters
     ----------
@@ -333,26 +328,25 @@ def convert_params(h, J, convert_to, concat=False):
     return hp, Jp
 
 def ising_convert_params(oparams, convert_to, concat=False):
-    """
-    General conversion of parameters from 01 to 11 basis.
+    """General conversion of parameters from 01 to 11 basis.
 
-    Take set of Ising model parameters up to nth order interactions in either {0,1} or {-1,1} basis
-    and convert to other basis.
+    Take set of Ising model parameters up to nth order interactions in either {0,1} or
+    {-1,1} basis and convert to other basis.
 
     Parameters
     ----------
     oparams : tuple of lists
-        Tuple of lists of interactions between spins starting with the lowest order interactions. Each list
-        should consist of all interactions of that order such that the length of each list should be
-        binomial(n,i) for all i starting with i>=1.
+        Tuple of lists of interactions between spins starting with the lowest order
+        interactions. Each list should consist of all interactions of that order such that
+        the length of each list should be binomial(n,i) for all i starting with i>=1.
     convert_to : str
     concat : bool,False
 
     Returns
     -------
     params : tuple of lists or list
-        New parameters in order of lowest to highest order interactions to mean biases. Can all be
-        concatenated together if concat switch is True.
+        New parameters in order of lowest to highest order interactions to mean biases.
+        Can all be concatenated together if concat switch is True.
     """
     
     from scipy.special import binom
@@ -398,8 +392,7 @@ def ising_convert_params(oparams, convert_to, concat=False):
     return params[::-1]
 
 def unravel_index(ijk, n):
-    """
-    Unravel multi-dimensional index to flattened index but specifically for
+    """Unravel multi-dimensional index to flattened index but specifically for
     multi-dimensional analog of an upper triangular array (lower triangle indices are not
     counted).
 
@@ -455,9 +448,9 @@ def _expand_binomial(a, b, n=2):
     return coeffs
 
 def split_concat_params(p, n):
-    """Split parameters for Ising model that have all been concatenated together into a single list into
-    separate lists. Assumes that the parameters are increasing in order of interaction and that all parameters
-    are present.
+    """Split parameters for Ising model that have all been concatenated together into a
+    single list into separate lists. Assumes that the parameters are increasing in order
+    of interaction and that all parameters are present.
     
     Parameters
     ----------
@@ -480,8 +473,8 @@ def split_concat_params(p, n):
     return splitp
 
 def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
-    """
-    Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.
+    """Convert single spin means and pairwise correlations between {0,1} and {-1,1}
+    formulations.
 
     Parameters
     ----------
@@ -535,8 +528,8 @@ def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
     return newsi, newsisj
 
 def state_probs(v, allstates=None, weights=None, normalized=True):
-    """
-    Get probability of unique states. There is an option to allow for weights counting of the words.
+    """Get probability of unique states. There is an option to allow for weights counting
+    of the words.
     
     Parameters
     ----------
@@ -590,8 +583,7 @@ def state_probs(v, allstates=None, weights=None, normalized=True):
 # Helper functions for solving Ising model. # 
 # ========================================= #
 def define_pseudo_ising_helpers(N):
-    """
-    Define helper functions for using Pseudo method on fully connected Ising model.
+    """Define helper functions for using Pseudo method on fully connected Ising model.
 
     Parameters
     ----------
@@ -605,8 +597,8 @@ def define_pseudo_ising_helpers(N):
 
     @njit
     def get_multipliers_r(r, multipliers):
-        """
-        Return the parameters relevant for calculating the conditional probability of spin r.
+        """Return the parameters relevant for calculating the conditional probability of
+        spin r.
 
         Parameters
         ----------
@@ -633,8 +625,8 @@ def define_pseudo_ising_helpers(N):
 
     @njit
     def calc_observables_r(r, X):
-        """
-        Return the observables relevant for calculating the conditional probability of spin r.
+        """Return the observables relevant for calculating the conditional probability of
+        spin r.
 
         Parameters
         ----------
@@ -663,14 +655,17 @@ def define_pseudo_ising_helpers(N):
     return get_multipliers_r,calc_observables_r 
 
 def define_ising_helper_functions():
-    """
-    Functions for plugging into solvers for +/-1 Ising model with fields h_i and couplings J_ij.
+    """Functions for plugging into solvers for +/-1 Ising model with fields h_i and
+    couplings J_ij.
 
     Returns
     -------
-    calc_e
-    calc_observables
-    mch_approximation
+    function
+        calc_e
+    function
+        calc_observables
+    function
+        mch_approximation
     """
 
     @njit(cache=True)
@@ -731,8 +726,8 @@ def define_ising_helper_functions():
     return calc_e, calc_observables, mch_approximation
 
 def define_ising_helper_functions_sym():
-    """
-    Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no fields.
+    """Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no
+    fields.
 
     Returns
     -------
@@ -797,21 +792,21 @@ def define_ising_helper_functions_sym():
 
 @njit
 def adj(s, n_random_neighbors=0):
-    """
-    Return one-flip neighbors and a set of random neighbors. This is written to be used with
-    the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.
+    """Return one-flip neighbors and a set of random neighbors. This is written to be used
+    with the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.
     
-    NOTE: For random neighbors, there is no check to make sure neighbors don't repeat but this
-    shouldn't be a problem as long as state space is large enough.
+    NOTE: For random neighbors, there is no check to make sure neighbors don't repeat but
+    this shouldn't be a problem as long as state space is large enough.
 
     Parameters
     ----------
     s : ndarray
         State whose neighbors are found. One-dimensional vector of spins.
     n_random_neighbors : int,0
-        If >0, return this many random neighbors. Neighbors are just random states, but they are
-        called "neighbors" because of the terminology in MPF. They can provide coupling from s to
-        states that are very different, increasing the equilibration rate.
+        If >0, return this many random neighbors. Neighbors are just random states, but
+        they are called "neighbors" because of the terminology in MPF. They can provide
+        coupling from s to states that are very different, increasing the equilibration
+        rate.
 
     Returns
     -------
@@ -837,8 +832,7 @@ def adj(s, n_random_neighbors=0):
 
 @njit
 def adj_sym(s, n_random_neighbors=False):
-    """
-    Symmetric version of adj() where spins are in {-1,1}.
+    """Symmetric version of adj() where spins are in {-1,1}.
     """
 
     neighbors = np.zeros((s.size+n_random_neighbors,s.size))
@@ -858,9 +852,8 @@ def adj_sym(s, n_random_neighbors=False):
     return neighbors
 
 def calc_de(s, i):
-    """
-    Calculate the derivative of the energy wrt parameters given the state and index of the
-    parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij}.
+    """Calculate the derivative of the energy wrt parameters given the state and index of
+    the parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij}.
 
     Parameters
     ----------
@@ -871,7 +864,8 @@ def calc_de(s, i):
     Returns
     -------
     dE : float
-        Derivative of hamiltonian with respect to ith parameter, i.e. the corresponding observable.
+        Derivative of hamiltonian with respect to ith parameter, i.e. the corresponding
+        observable.
     """
     
     assert s.ndim==2

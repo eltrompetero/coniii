@@ -139,7 +139,7 @@ class Solver():
         sample_method = sample_method or self.sampleMethod
         
         if sample_method=='metropolis':
-            self.sampleMethod=sample_method
+            self.sampleMethod = sample_method
             self.sampler = Metropolis( self.n, self.multipliers, self.calc_e,
                                        n_cpus=self.nCpus,
                                        rng=self.rng,
@@ -148,8 +148,8 @@ class Solver():
         elif sample_method=='ising_metropolis':
             raise NotImplementedError("FastMCIsing is no longer available.")
         else:
-           raise NotImplementedError("Unrecognized sampler.")
-        self.samples=None
+           raise NotImplementedError("Unrecognized sampler %s."%sample_method)
+        self.samples = None
 
     def generate_samples(self, n_iters, burnin,
                          multipliers=None,
@@ -552,8 +552,7 @@ class MPF(Solver):
 
 
 class MCH(Solver):
-    """
-    Class for solving maxent problems using the Monte Carlo Histogram method.
+    """Class for solving maxent problems using the Monte Carlo Histogram method.
 
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the
     inverse pairwise Ising problem. arXiv 1-8 (2007).
@@ -585,7 +584,7 @@ class MCH(Solver):
         self.sampler = None
         self.samples = None
         
-        self.setup_sampler(self.sampleMethod)
+        self.setup_sampler()
     
     def solve(self,
               initial_guess=None,

@@ -512,7 +512,7 @@ def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
                 newsisj[k] = 4*sisj[k] - 2*si[i] - 2*si[j] + 1
                 k += 1
         newsi = si*2-1
-    elif convert_to='01'
+    elif convert_to=='01':
         newsisj = np.zeros(sisj.shape)
         k = 0
         for i in range(len(si)-1):

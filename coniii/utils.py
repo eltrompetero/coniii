@@ -332,7 +332,7 @@ def convert_params(h, J, convert_to, concat=False):
         return np.concatenate((hp, Jp))
     return hp, Jp
 
-def ising_convert_params(oparams, convert_to='01', concat=False):
+def ising_convert_params(oparams, convert_to, concat=False):
     """
     General conversion of parameters from 01 to 11 basis.
 
@@ -345,7 +345,7 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
         Tuple of lists of interactions between spins starting with the lowest order interactions. Each list
         should consist of all interactions of that order such that the length of each list should be
         binomial(n,i) for all i starting with i>=1.
-    convert_to : str,'01'
+    convert_to : str
     concat : bool,False
 
     Returns
@@ -375,24 +375,24 @@ def ising_convert_params(oparams, convert_to='01', concat=False):
                     for subijk in combinations(ijk, suborder):
                         ix = unravel_index(subijk, n)
                         params[subcounter+counter+1][ix] += ijkcoeff * 2**suborder * (-1)**(order-suborder)
-        if concat:
-            return np.concatenate(params[::-1])
-        return params[::-1]
+    elif convert_to=='11':
+        # basically need to expand polynomials to all lower order terms
+        # start at the highest order terms
+        for counter,order in enumerate(range(len(oparams),0,-1)):
+            # iterate through all combinations of indices of order
+            for ijkcounter,ijk in enumerate(combinations(range(n), order)):
+                ijkcoeff = oparams[counter][ijkcounter]
 
-    # basically need to expand polynomials to all lower order terms
-    # start at the highest order terms
-    for counter,order in enumerate(range(len(oparams),0,-1)):
-        # iterate through all combinations of indices of order
-        for ijkcounter,ijk in enumerate(combinations(range(n), order)):
-            ijkcoeff = oparams[counter][ijkcounter]
+                # same order term is only multiplied by powers of two
+                params[counter][ijkcounter] += 2**-order * ijkcoeff
+                # break this term down to lower order terms in the new basis
+                for subcounter,suborder in enumerate(range(order-1,0,-1)):
+                    for subijk in combinations(ijk, suborder):
+                        ix = unravel_index(subijk, n)
+                        params[subcounter+counter+1][ix] += ijkcoeff * 2**-order
+    else:
+        raise Exception("Invalid choice for convert_to. Must be either '01' or '11'.")
 
-            # same order term is only multiplied by powers of two
-            params[counter][ijkcounter] += 2**-order * ijkcoeff
-            # break this term down to lower order terms in the new basis
-            for subcounter,suborder in enumerate(range(order-1,0,-1)):
-                for subijk in combinations(ijk, suborder):
-                    ix = unravel_index(subijk, n)
-                    params[subcounter+counter+1][ix] += ijkcoeff * 2**-order
     if concat:
         return np.concatenate(params[::-1])
     return params[::-1]
@@ -479,30 +479,35 @@ def split_concat_params(p, n):
         i += 1
     return splitp
 
-def convert_corr(si, sisj, convert_to='11', concat=False, **kwargs):
+def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
     """
     Convert single spin means and pairwise correlations between {0,1} and {-1,1} formulations.
 
     Parameters
     ----------
     si : ndarray
+        Individual means.
     sisj : ndarray
-    convert_to : str, '11'
-        '11' will convert {0,1} formulation to +/-1 and '01' will convert +/-1 formulation to {0,1}
+        Pairwise correlations.
+    convert_to : str
+        '11' will convert {0,1} formulation to +/-1 and '01' will convert +/-1 formulation
+        to {0,1}
     concat : bool, False
         If True, return concatenation of means and pairwise correlations.
 
     Returns
     -------
     ndarray
-        Averages <si>. Converted to appropriate basis.
-    ndarray
+        Averages <si>. Converted to appropriate basis. Returns concatenated vector <si>
+        and <sisj> if concat is True.
+    ndarray, optional
         Pairwise correlations <si*sj>. Converted to appropriate basis.
     """
 
     if 'convertTo' in kwargs.keys():
         from warnings import warn
         warn("convertTo kwarg is deprecated as of v1.1.2. Use convert_to instead.")
+        convert_to = convertTo
     elif len(kwargs.keys())>0:
         raise TypeError("Unexpected keyword argument.")
 
@@ -514,7 +519,7 @@ def convert_corr(si, sisj, convert_to='11', concat=False, **kwargs):
                 newsisj[k] = 4*sisj[k] - 2*si[i] - 2*si[j] + 1
                 k += 1
         newsi = si*2-1
-    else:
+    elif convert_to='01'
         newsisj = np.zeros(sisj.shape)
         k = 0
         for i in range(len(si)-1):
@@ -522,6 +527,9 @@ def convert_corr(si, sisj, convert_to='11', concat=False, **kwargs):
                 newsisj[k] = ( sisj[k] + si[i] + si[j] + 1 )/4.
                 k += 1
         newsi = (si+1)/2
+    else:
+        raise Exception("Invalid value for convert_to. Must be either '01' or '11'.")
+
     if concat:
         return np.concatenate((newsi,newsisj))
     return newsi, newsisj

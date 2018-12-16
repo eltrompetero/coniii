@@ -1289,7 +1289,7 @@ class Metropolis(Sampler):
             def f(args):
                 s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
-                samples = np.zeros((nSamples, self.n))
+                samples = np.zeros((nSamples, self.n), dtype=int)
                 for i in range(nSamples):
                     for j in range(n_iters):
                         de = self.sample_metropolis( s, E, rng=rng )
@@ -1300,7 +1300,7 @@ class Metropolis(Sampler):
             def f(args):
                 s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
-                samples = np.zeros((nSamples, self.n))
+                samples = np.zeros((nSamples, self.n), dtype=int)
                 for i in range(nSamples):
                     for j in range(n_iters):
                         de = self.sample_metropolis( s, E, rng=rng, flip_site=j%self.n )

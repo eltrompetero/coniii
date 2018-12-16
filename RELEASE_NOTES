@@ -4,6 +4,8 @@ v1.1.2 (Release ????/??/??)
 ----------------------
 - convertTo kwarg for utils.convert_corr has been changed to convert_to to make it uniform
   with other functions.
+- convert_to is no longer a keyword argument and is now a regular argument that must be
+  specified as a string.
 
 v1.1.0 (Released 2018/12/13)
 ----------------------

@@ -595,7 +595,7 @@ class MCH(Solver):
               tol=None,
               tolNorm=None,
               n_iters=30,
-              burnin=30,
+              burn_in=30,
               maxiter=10,
               custom_convergence_f=None,
               iprint=False,
@@ -663,7 +663,10 @@ class MCH(Solver):
 
         if 'disp' in kwargs.keys():
             raise Exception("disp kwarg has been replaced with iprint.")
-        if (self.n*10)>burnin:
+        if 'burnin' in kwargs.keys():
+            warn("burnin kwarg has been replaced with burn_in.")
+            burn_in = kwargs['burnin']
+        if (self.n*10)>burn_in:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
         if (self.n*10)>n_iters:
@@ -701,7 +704,7 @@ class MCH(Solver):
         
         
         # Generate initial set of samples.
-        self.generate_samples( n_iters,burnin,
+        self.generate_samples( n_iters,burn_in,
                                multipliers=self._multipliers,
                                generate_kwargs=generate_kwargs )
         thisConstraints = self.calc_observables(self.samples).mean(0)
@@ -725,7 +728,7 @@ class MCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.generate_samples( n_iters,burnin,
+            self.generate_samples( n_iters,burn_in,
                                    multipliers=self._multipliers,
                                    generate_kwargs=generate_kwargs )
             thisConstraints = self.calc_observables(self.samples).mean(0)

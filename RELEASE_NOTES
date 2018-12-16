@@ -2,6 +2,7 @@ Log for major changes
 
 v1.1.2 (Release ????/??/??)
 ----------------------
+- Bug fix in type casting in Metropolis.generate_samples_parallel().
 - convertTo kwarg for utils.convert_corr has been changed to convert_to to make it uniform
   with other functions.
 - convert_to is no longer a keyword argument and is now a regular argument that must be

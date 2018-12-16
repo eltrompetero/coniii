@@ -32,6 +32,7 @@ assert version.major>=3 and version.minor>=6
 
 def test_pair_corr():
     from itertools import combinations
+    np.random.seed(0)
 
     X = np.random.choice([-1,1], size=(5,3))
     si_ = X.mean(0)
@@ -83,6 +84,8 @@ def test_state_gen_and_count():
 
 def test_convert_params():
     from .utils import _expand_binomial
+    np.random.seed(0)
+
     terms = _expand_binomial(np.exp(1), np.pi, 2)
     assert len(terms)==4
     assert terms[0]==np.exp(1)**2 and terms[1]==np.exp(1)*np.pi and terms[3]==np.pi**2
@@ -143,6 +146,7 @@ def test_define_ising_helper_functions():
     assert (np.abs(jac-jacTest)<3e-2).all()
 
 def test_adj():
+    np.random.seed(0)
     s = np.random.randint(2, size=10)
     neighbors = adj(s)
     assert neighbors.shape==(10,10)
@@ -154,6 +158,7 @@ def test_adj():
     assert ((s!=neighbors).sum(1)==1).all()
 
 def test_calc_de():
+    np.random.seed(0)
     s = np.random.randint(2, size=10)*2-1
     for i in range(10):
         assert calc_de(s[None,:], i)==-s[i]

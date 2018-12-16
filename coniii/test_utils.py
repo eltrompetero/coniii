@@ -82,6 +82,20 @@ def test_state_gen_and_count():
     assert np.isclose(p, 1/32).all()
     assert np.array_equal(s[::-1], states)
 
+def test_convert_corr():
+    np.random.seed(0)
+    X = np.random.choice([-1,1], size=(100,3))
+    
+    # test conversion from 11 to 01 basis
+    sisj11to01 = convert_corr(*pair_corr(X), convertTo='01', concat=True)
+    sisj01 = pair_corr((X+1)/2, concat=True)
+    assert np.isclose(sisj11to01, sisj01).all()
+    
+    # test conversion from 01 to 11 basis
+    sisj01to11 = convert_corr(sisj01[:3], sisj01[3:], convertTo='11', concat=True)
+    sisj11 = pair_corr(X, concat=True)
+    assert np.isclose(sisj01to11, sisj11).all()
+
 def test_convert_params():
     from .utils import _expand_binomial
     np.random.seed(0)

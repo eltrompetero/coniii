@@ -476,7 +476,7 @@ class MPF(Solver):
               full_output=False,
               all_connected=True,
               parameter_limits=100,
-              solver_kwargs={'maxiter':100,'disp':True,'ftol':1e-15},
+              solver_kwargs={'maxiter':100,'disp':False,'ftol':1e-15},
               uselog=True):
         """
         Minimize MPF objective function using scipy.optimize.minimize.

@@ -782,7 +782,8 @@ class MCH(Solver):
             dlamda[i] += eps
         return jac
 
-    def learn_parameters_mch(self, estConstraints,
+    def learn_parameters_mch(self,
+                             estConstraints,
                              maxdlamda=1,
                              maxdlamdaNorm=1, 
                              maxLearningSteps=50,
@@ -791,16 +792,20 @@ class MCH(Solver):
         Parameters
         ----------
         estConstraints : ndarray
-        maxdlamda : float,1
-        maxdlamdaNorm : float,1
+            Constraints estimated from MCH approximation.
+        maxdlamda : float, 1
+            Max allowed magnitude for any element of dlamda vector before exiting.
+        maxdlamdaNorm : float, 1
+            Max allowed norm of dlamda vector before exiting.
         maxLearningSteps : int
             max learning steps before ending MCH
-        eta : float,1
+        eta : float, 1
             factor for changing dlamda
 
         Returns
         -------
-        estimatedConstraints : ndarray
+        ndarray
+            MCH estimate for constraints from parameters lamda+dlamda.
         """
 
         keepLearning = True

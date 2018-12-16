@@ -22,4 +22,4 @@
 
 from .solvers import MCH,MPF,Pseudo,ClusterExpansion,Enumerate,RegularizedMeanField
 from .utils import *
-__version__ = open('VERSION', 'r').readline()
+from .version import version as __version__

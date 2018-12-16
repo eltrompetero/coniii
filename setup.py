@@ -26,6 +26,7 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 from distutils.extension import Extension
+from coniii.version import version as __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -34,7 +35,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='coniii',
-      version=open('coniii/VERSION', 'r').readline(),
+      version=__version__,
       description='Convenient Interface to Inverse Ising (ConIII)',
       long_description=long_description,
       url='https://github.com/eltrompetero/coniii',
@@ -59,7 +60,7 @@ setup(name='coniii',
                         'dill',
                         'joblib'],
       include_package_data=True,
-      package_data={'coniii':['setup_module.py','usage_guide.ipynb']},  # files to include in coniii directory
+      package_data={'coniii':['setup_module.py','usage_guide.ipynb','VERSION']},  # files to include in coniii directory
       py_modules=['coniii.enumerate',
                   'coniii.general_model_rmc',
                   'coniii.ising',

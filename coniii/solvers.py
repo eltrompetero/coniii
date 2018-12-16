@@ -123,16 +123,16 @@ class Solver():
         return 
 
     def setup_sampler(self,
-                      sample_method=None,
+                      sample_method='metropolis',
                       sampler_kwargs={}):
         """
         Instantiate sampler class object. Uses self.rng as the random number generator.
 
         Parameters
         ----------
-        sample_method : str
+        sample_method : str, 'metropolis'
             'metropolis'
-        sampler_kwargs : dict
+        sampler_kwargs : dict, {}
             Kwargs that can be passed into the initialization function for the sampler.
         """
 
@@ -578,7 +578,6 @@ class MCH(Solver):
 
         super(MCH, self).__init__(*args, **kwargs)
         assert not self.sampleSize is None, "Must specify sample_size."
-        assert not self.sampleMethod is None, "Must specify sample_method."
         assert not self.mch_approximation is None, "Must specify mch_approximation."
         assert not self.calc_observables is None, "Must specify calc_observables."
         

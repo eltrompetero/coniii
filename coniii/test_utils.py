@@ -87,12 +87,12 @@ def test_convert_corr():
     X = np.random.choice([-1,1], size=(100,3))
     
     # test conversion from 11 to 01 basis
-    sisj11to01 = convert_corr(*pair_corr(X), convertTo='01', concat=True)
+    sisj11to01 = convert_corr(*pair_corr(X), '01', concat=True)
     sisj01 = pair_corr((X+1)/2, concat=True)
     assert np.isclose(sisj11to01, sisj01).all()
     
     # test conversion from 01 to 11 basis
-    sisj01to11 = convert_corr(sisj01[:3], sisj01[3:], convertTo='11', concat=True)
+    sisj01to11 = convert_corr(sisj01[:3], sisj01[3:], '11', concat=True)
     sisj11 = pair_corr(X, concat=True)
     assert np.isclose(sisj01to11, sisj11).all()
 

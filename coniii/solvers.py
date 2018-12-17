@@ -1191,14 +1191,15 @@ class Pseudo(Solver):
 
         Parameters
         ----------
-        general_case : bool,True
+        general_case : bool, True
             If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the resulting
             pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
             implemented (self._solve_ising).
 
         Returns
         -------
-        multipliers : ndarray
+        ndarray
+            multipliers
         """
 
         if kwargs.get('general_case',False):
@@ -1214,17 +1215,18 @@ class Pseudo(Solver):
         ----------
         X : ndarray
             Data set if dimensions (n_samples, n_dim).
-        initial_guess : ndarray
+        initial_guess : ndarray, None
             Initial guess for the parameter values.
-        return_all : bool,False
+        return_all : bool, False
             If True, return output from scipy.minimize() routine.
-        solver_kwargs : dict,{}
+        solver_kwargs : dict, {}
             kwargs for scipy.minimize().
 
         Returns
         -------
-        multipliers : ndarray
-        minimize_output : dict
+        ndarray
+            multipliers
+        dict
             Output from scipy.minimize.
         """
 
@@ -1254,7 +1256,8 @@ class Pseudo(Solver):
 
         Returns
         -------
-        multipliers : ndarray
+        ndarray
+            multipliers
         """
 
         X = (X + 1)/2  # change from {-1,1} to {0,1}
@@ -1301,6 +1304,10 @@ class Pseudo(Solver):
             binary matrix, (# X) x (dimension of system)
         Jr : ndarray
             (dimension of system) x (1)
+
+        Returns
+        -------
+        float
         """
 
         X,Jr = np.array(X),np.array(Jr)
@@ -1335,8 +1342,7 @@ class Pseudo(Solver):
         return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
 
     def cond_hess(self, r, X, Jr, pairCoocRhat=None):
-        """
-        Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
+        """Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
         (dimension of system)x(dimension of system)
 
         Current implementation uses more memory for speed.
@@ -1345,7 +1351,7 @@ class Pseudo(Solver):
 
         Parameters
         ----------
-        pairCooc : ndarray,None
+        pairCooc : ndarray, None
             Pass pair_cooc_mat(X) to speed calculation.
         """
 
@@ -1776,21 +1782,21 @@ class RegularizedMeanField(Solver):
         """
         Varies the strength of regularization on the mean field J to best fit given cooccurrence data.
         
-        n_grid_points : int,200
+        n_grid_points : int, 200
             If bracket is given, first test at n_grid_points points evenly spaced in the bracket interval,
             then give the lowest three points to scipy.optimize.minimize_scalar
-        sample_size : int,100_000
-        seed : int,0
+        sample_size : int, 100_000
+        seed : int, 0
             initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if change Seed option
             is True
-        change_seed : bool,False
-        min_size : int,0
+        change_seed : bool, False
+        min_size : int, 0
             Use a modified model in which samples with fewer ones than min_size are not allowed.
-        min_covariance : bool,False
+        min_covariance : bool, False
             ** As of v1.0.3, not currently supported **
             Minimize covariance from emperical frequencies (see notes); trying to avoid biases, as inspired by
             footnote 12 in TkaSchBer06
-        min_independent : bool,True
+        min_independent : bool, True
             ** As of v1.0.3, min_independent is the only mode currently supported **
             Each <xi> and <xi xj> residual is treated as independent
         cooc_cov : ndarray,None

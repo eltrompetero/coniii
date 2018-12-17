@@ -28,7 +28,8 @@ from ..enumerate import fast_logsumexp
 
 def calc_observables(params):
     """
-    Give each set of parameters concatenated into one array.
+    Give all parameters concatenated into one array from lowest to highest order.
+    Returns all correlations.
     """
     Cout = zeros((28))
     H = params[0:7]
@@ -240,7 +241,8 @@ def calc_observables(params):
 
 def p(params):
     """
-    Give each set of parameters concatenated into one array.
+    Give all parameters concatenated into one array from lowest to highest order.
+    Returns probabilities of all configurations.
     """
     Cout = zeros((28))
     H = params[0:7]

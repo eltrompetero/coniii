@@ -176,7 +176,8 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     
     # Write out correlation terms
     f.write(fargs)
-    f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
+    f.write(("    \"\"\"\n    Give all parameters concatenated into one array from lowest to highest order.\n"+
+             "    Returns all correlations.\n    \"\"\"\n"))
     f.write(vardec)
     _write_energy_terms(f, Z)
     f.write(eqns)
@@ -186,7 +187,8 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     # Write equations for probabilities of all states.
     #f.write("def p("+string.join([i+"," for i in abc[:len(contraintTermsIx)]])+"):\n")
     f.write("def p(params):\n")
-    f.write("    \"\"\"\n    Give each set of parameters concatenated into one array.\n    \"\"\"\n")
+    f.write(("    \"\"\"\n    Give all parameters concatenated into one array from lowest to highest order.\n"+
+             "    Returns probabilities of all configurations.\n    \"\"\"\n"))
     f.write(vardec)
    
     # Output variable decs and put params into explicit parameters.

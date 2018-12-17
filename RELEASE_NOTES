@@ -1,5 +1,12 @@
 Log for major changes
 
+
+v1.1.3 (Released 2018/12/??)
+----------------------------------------------------
+- Update to Ising equation files in v1.1.0 to make them much smaller used Scipy's
+  logsumexp function which is slow! With own simple implementation, code is at least
+  several times faster to evaluate.
+
 v1.1.2 (Released 2018/12/16)
 ----------------------------------------------------
 - Bug fix in type casting in Metropolis.generate_samples_parallel().

@@ -151,7 +151,7 @@ class Solver():
            raise NotImplementedError("Unrecognized sampler %s."%sample_method)
         self.samples = None
 
-    def generate_samples(self, n_iters, burnin,
+    def generate_samples(self, n_iters, burn_in,
                          multipliers=None,
                          sample_size=None,
                          sample_method=None,
@@ -164,7 +164,7 @@ class Solver():
         Parameters
         ----------
         n_iters : int
-        burnin : int 
+        burn_in : int 
             Burn in is handled automatically in REMC.
         multipliers : ndarray,None
         sample_size : int,None
@@ -185,7 +185,7 @@ class Solver():
                 self.sampler.theta = multipliers.copy()
                 # Burn in.
                 self.sampler.generate_samples(sample_size,
-                                              n_iters=burnin)
+                                              n_iters=burn_in)
                 self.sampler.generate_samples(sample_size,
                                               n_iters=n_iters)
                 self.samples = self.sampler.samples
@@ -197,7 +197,7 @@ class Solver():
             if sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
                 self.sampler.generate_samples_parallel(sample_size,
-                                                       n_iters=burnin+n_iters)
+                                                       n_iters=burn_in+n_iters)
                 self.samples = self.sampler.samples
 
             else:
@@ -619,7 +619,7 @@ class MCH(Solver):
             Norm error allowed in found solution.
         n_iters : int, 30
             Number of iterations to make between samples in MCMC sampling.
-        burnin : int, 30
+        burn_in : int, 30
             Initial burn in from random sample when MC sampling.
         max_iter : int, 10
             Max number of iterations of MC sampling and MCH approximation.
@@ -867,7 +867,7 @@ class MCHIncompleteData(MCH):
               tol=None,
               tolNorm=None,
               n_iters=30,
-              burnin=30,
+              burn_in=30,
               maxiter=10,
               disp=False,
               full_output=False,
@@ -894,7 +894,7 @@ class MCHIncompleteData(MCH):
             norm error allowed in found solution
         n_iters                 : int=30
             Number of iterations to make between samples in MCMC sampling.
-        burnin (int=30)
+        burn_in (int=30)
         disp                    : int=0
             0, no output
             1, some detail
@@ -949,7 +949,7 @@ class MCHIncompleteData(MCH):
         # Sample.
         if disp:
             print("Sampling...")
-        self.generate_samples(n_iters,burnin,
+        self.generate_samples(n_iters,burn_in,
                               uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                               generate_kwargs=generate_kwargs,disp=disp)
         thisConstraints = self.calc_observables(self.samples).mean(0)
@@ -974,7 +974,7 @@ class MCHIncompleteData(MCH):
             # Sample.
             if disp:
                 print("Sampling...")
-            self.generate_samples(n_iters,burnin,
+            self.generate_samples(n_iters,burn_in,
                                   uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                                   generate_kwargs=generate_kwargs,disp=disp)
 
@@ -1077,7 +1077,7 @@ class MCHIncompleteData(MCH):
         self._multipliers += dlamda
         return estConstraints
 
-    def generate_samples(self,n_iters,burnin,
+    def generate_samples(self, n_iters, burn_in, 
                          uIncompleteStates=None,
                          f_cond_sample_size=None,
                          f_cond_sample_iters=None,
@@ -1088,13 +1088,12 @@ class MCHIncompleteData(MCH):
                          run_cond_sampler=True,
                          disp=0,
                          generate_kwargs={}):
-        """
-        Wrapper around generate_samples_parallel() from available samplers.
+        """Wrapper around generate_samples_parallel() from available samplers.
 
         Parameters
         ----------
         n_iters : int
-        burnin : int 
+        burn_in : int 
             I think burn in is handled automatically in REMC.
         uIncompleteStates : list of unique states
         f_cond_sample_size : lambda function
@@ -1105,10 +1104,6 @@ class MCHIncompleteData(MCH):
         sample_method : str
         initial_sample : ndarray
         generate_kwargs : dict
-
-        Returns
-        -------
-        None
         """
 
         from datetime import datetime  # for debugging
@@ -1126,7 +1121,7 @@ class MCHIncompleteData(MCH):
             if run_regular_sampler:
                 # Burn in.
                 self.sampler.generate_samples_parallel( sample_size,
-                                                        n_iters=burnin,
+                                                        n_iters=burn_in,
                                                         initial_sample=initial_sample )
                 self.sampler.generate_samples_parallel( sample_size,
                                                         n_iters=n_iters,
@@ -1857,7 +1852,7 @@ class RegularizedMeanField(Solver):
            J = J + J.T
            self.multipliers = np.concatenate([J.diagonal(), squareform(mean_field_ising.zeroDiag(-J))])
            self.sampler.rng = np.random.RandomState(seed)
-           self.generate_samples(n_iters=1, burnin=burninDefault, sample_size=int(sample_size))
+           self.generate_samples(1, burninDefault, sample_size=int(sample_size))
            isingSamples = self.samples.copy()
            return isingSamples
 

@@ -11,10 +11,7 @@ If you use ConIII for your research, please cite the following:
 > Lee, Edward D. and Daniels, Bryan C.  Convenient Interface to Inverse Ising (ConIII): A
 > Python package for solving maximum entropy models.  arXiv preprint:1801.08216 (2018).
 
-The link to the arXiv article is here: [https://arxiv.org/abs/1801.08216]. 
-
-Documentation is included at "docs/\_build/html/index.html". Online documentation is
-hosted at [https://eddielee.co/coniii/index.html].
+[Documentation](https://eddielee.co/coniii/index.html "Documentation").
 
 ## Installation
 
@@ -109,29 +106,36 @@ ConIII has been tested on the following systems
 * Mac OS X 10.12 (Sierra)
 * Mac OS X 10.13 (High Sierra)
 
-Please let us know if your system has problems by filing an issue request on the GitHub
-page. Please provide a stack trace or other information (like OS and system configuration
-details) that would be helpful in debugging. You can also run the unit tests included by
-navigating to the "coniii" directory and running
+multiprocess module problems: `n_cpus` kwarg can be set to 0 or 1 when the algorithm class
+instance is declared.  This will disable the parallel computing functionality.
+
+### Support
+
+Please file an issue on the GitHub if you have any problems or feature requests. Provide a
+stack trace or other information that would be helpful in debugging. For example, OS,
+system configuration details, and the results of unit tests. These can be run by
+navigating to the package directory and running
 
 ```bash
 $ pytest -q
 ```
 
-Some users may encounter difficulties with the multiprocess module, in which case the
-`n_cpus` kwarg can be set to 0 or 1 when the algorithm class instance is declared.  This
-will disable the parallel computing functionality provided by the multiprocess module.
+The package directory can be found by running inside python
+```python
+>>> import coniii
+>>> coniii.__path__
+```
 
-### Support
-
-Please file an issue on the GitHub if you have any problems or feature
-requests. Please provide a stack trace or other information that would be helpful in
-debugging.
+You may also need to install pytest.
+```bash
+$ pip install pytest
+```
 
 ### Updating
 
-When updating to new 1.x.x versions please read the RELEASE_NOTES. There may
-be some modifications to the interface including parameter names as we iron out
-inconsistencies to make it more user friendly.
+When updating to new 1.x.x versions please read the
+[RELEASE_NOTES](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES). There may
+be modifications to the interface including parameter names as we make future versions
+more user friendly.
 
-Online documentation is hosted at [https://eddielee.co/coniii/index.html].
+[Documentation](https://eddielee.co/coniii/index.html "Documentation").

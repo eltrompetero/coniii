@@ -34,9 +34,9 @@ If you would like to use the `Enumerate` solver for system sizes greater than 9,
 run enumerate.py to write those files yourself. This can be run from the install
 directory.  If you do not know where the installation directory is, you can find it by
 starting a Python terminal and running
-```bash
-$ import coniii
-$ coniii.__path__
+```python
+>>> import coniii
+>>> coniii.__path__
 ```
 
 Once inside the install directory, you can run in your bash shell

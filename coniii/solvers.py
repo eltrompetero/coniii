@@ -853,8 +853,8 @@ class MCHIncompleteData(MCH):
         """
         Not ready for release.
         """
-        kwargs['sample_method'] = 'metropolis'
-        warn("Only Ising model is implemented for MCHIncompleteData.")
+
+        warn("MCHIncompleteData is not officially released as part of ConIII.")
         super(MCHIncompleteData,self).__init__(*args,**kwargs)
         self.condSamples = []
         

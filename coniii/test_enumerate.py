@@ -26,6 +26,7 @@
 # ========================================================================================================= #
 import numpy as np
 from .utils import pair_corr, bin_states
+from .enumerate import fast_logsumexp
 np.random.seed(0)
 
 
@@ -66,3 +67,11 @@ def test_basic():
     assert ((ising.calc_observables(hJ)<=1)&(ising.calc_observables(hJ)>=0)).all()
     assert np.isclose(ising.calc_observables(hJ),
                       pair_corr(bin_states(4), weights=ising.p(hJ), concat=True)).all()
+
+def test_fast_logsumexp():
+    from scipy.special import logsumexp
+
+    X = np.random.normal(size=10, scale=10, loc=1000)
+    coeffs = np.random.choice([-1,1], size=X.size)
+
+    assert np.array_equal(fast_logsumexp(X, coeffs), logsumexp(X, b=coeffs, return_sign=True))

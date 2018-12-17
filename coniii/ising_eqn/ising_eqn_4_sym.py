@@ -22,9 +22,9 @@
 
 # Equations for 4-spin Ising model.
 
-# Written on 2018/12/12.
+# Written on 2018/12/16.
 from numpy import zeros, exp, array, prod, isnan
-from scipy.special import logsumexp
+from ..enumerate import fast_logsumexp
 
 def calc_observables(params):
     """
@@ -41,26 +41,26 @@ def calc_observables(params):
     H[1]-H[2]+H[3]-J[0]+J[1]-J[2]-J[3]+J[4]-J[5], -H[0]+H[1]-H[2]-H[3]-J[0]+J[1]+J[2]-J[3]-J[4]+J[5], -H[0]-H[1]+
     H[2]+H[3]+J[0]-J[1]-J[2]-J[3]-J[4]+J[5], -H[0]-H[1]+H[2]-H[3]+J[0]-J[1]+J[2]-J[3]+J[4]-J[5], -H[0]-H[1]-H[2]+
             H[3]+J[0]+J[1]-J[2]+J[3]-J[4]-J[5], -H[0]-H[1]-H[2]-H[3]+J[0]+J[1]+J[2]+J[3]+J[4]+J[5],]
-    logZ = logsumexp(energyTerms)
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1], return_sign=True)
+    logZ = fast_logsumexp(energyTerms)[0]
+    num = fast_logsumexp(energyTerms, [ 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1])
     Cout[0] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1, 1, 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1])
     Cout[1] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1])
     Cout[2] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1, 1,-1])
     Cout[3] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1, 1])
     Cout[4] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1, 1, 1,-1,-1,-1,-1, 1, 1,-1,-1, 1, 1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1, 1,-1,-1, 1, 1,-1,-1,-1,-1, 1, 1,-1,-1, 1, 1])
     Cout[5] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1, 1,-1, 1,-1,-1, 1,-1, 1,-1, 1,-1, 1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1,-1, 1,-1, 1,-1, 1,-1,-1, 1,-1, 1,-1, 1,-1, 1])
     Cout[6] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1, 1,-1,-1,-1,-1, 1, 1, 1, 1,-1,-1,-1,-1, 1, 1])
     Cout[7] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1, 1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1, 1,-1, 1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1,-1, 1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1, 1,-1, 1])
     Cout[8] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[ 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [ 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1, 1,-1,-1, 1])
     Cout[9] = exp( num[0] - logZ ) * num[1]
     Cout[isnan(Cout)] = 0.
     return(Cout)
@@ -83,7 +83,7 @@ def p(params):
     H[1]-H[2]+H[3]-J[0]+J[1]-J[2]-J[3]+J[4]-J[5], -H[0]+H[1]-H[2]-H[3]-J[0]+J[1]+J[2]-J[3]-J[4]+J[5], -H[0]-H[1]+
     H[2]+H[3]+J[0]-J[1]-J[2]-J[3]-J[4]+J[5], -H[0]-H[1]+H[2]-H[3]+J[0]-J[1]+J[2]-J[3]+J[4]-J[5], -H[0]-H[1]-H[2]+
             H[3]+J[0]+J[1]-J[2]+J[3]-J[4]-J[5], -H[0]-H[1]-H[2]-H[3]+J[0]+J[1]+J[2]+J[3]+J[4]+J[5],]
-    logZ = logsumexp(energyTerms)
+    logZ = fast_logsumexp(energyTerms)[0]
     Pout[0] = exp( +H[0]+H[1]+H[2]+H[3]+J[0]+J[1]+J[2]+J[3]+J[4]+J[5] - logZ )
     Pout[1] = exp( +H[0]+H[1]+H[2]-H[3]+J[0]+J[1]-J[2]+J[3]-J[4]-J[5] - logZ )
     Pout[2] = exp( +H[0]+H[1]-H[2]+H[3]+J[0]-J[1]+J[2]-J[3]+J[4]-J[5] - logZ )

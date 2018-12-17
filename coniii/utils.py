@@ -31,7 +31,7 @@ from itertools import combinations
 from scipy.spatial.distance import squareform
 
 
-@njit(nogil=True,cache=True)
+@njit(nogil=True, cache=True)
 def sub_to_ind(n, i, j):
     """Convert pair of coordinates of a symmetric square array into consecutive index of
     flattened upper triangle. This is slimmed down so it won't throw errors like if i>n or
@@ -44,6 +44,10 @@ def sub_to_ind(n, i, j):
         Dimension of square array
     i,j : int
         coordinates
+
+    Returns
+    -------
+    int
     """
 
     if i<j:

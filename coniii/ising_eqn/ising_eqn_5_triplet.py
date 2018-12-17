@@ -22,9 +22,9 @@
 
 # Equations for 5-spin Ising model.
 
-# Written on 2018/12/12.
+# Written on 2018/12/16.
 from numpy import zeros, exp, array, prod, isnan
-from scipy.special import logsumexp
+from ..enumerate import fast_logsumexp
 
 def calc_observables(params):
     """
@@ -45,56 +45,56 @@ def calc_observables(params):
     J[4]+K[0], +H[0]+H[1]+H[2]+H[4]+J[0]+J[1]+J[3]+J[4]+J[6]+J[8]+K[0]+K[2]+K[4]+K[7], +H[0]+H[1]+H[2]+H[3]+
     J[0]+J[1]+J[2]+J[4]+J[5]+J[7]+K[0]+K[1]+K[3]+K[6], +H[0]+H[1]+H[2]+H[3]+H[4]+J[0]+J[1]+J[2]+J[3]+J[4]+
             J[5]+J[6]+J[7]+J[8]+J[9]+K[0]+K[1]+K[2]+K[3]+K[4]+K[5]+K[6]+K[7]+K[8]+K[9],]
-    logZ = logsumexp(energyTerms)
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], return_sign=True)
+    logZ = fast_logsumexp(energyTerms)[0]
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
     Cout[0] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
     Cout[1] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1])
     Cout[2] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1])
     Cout[3] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1])
     Cout[4] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
     Cout[5] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1])
     Cout[6] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1])
     Cout[7] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1])
     Cout[8] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
     Cout[9] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1])
     Cout[10] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1])
     Cout[11] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1])
     Cout[12] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1])
     Cout[13] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1])
     Cout[14] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
     Cout[15] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1])
     Cout[16] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1])
     Cout[17] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1])
     Cout[18] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1])
     Cout[19] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1])
     Cout[20] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1])
     Cout[21] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1])
     Cout[22] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1])
     Cout[23] = exp( num[0] - logZ ) * num[1]
-    num = logsumexp(energyTerms, b=[0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1], return_sign=True)
+    num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1])
     Cout[24] = exp( num[0] - logZ ) * num[1]
     Cout[isnan(Cout)] = 0.
     return(Cout)
@@ -122,7 +122,7 @@ def p(params):
     J[4]+K[0], +H[0]+H[1]+H[2]+H[4]+J[0]+J[1]+J[3]+J[4]+J[6]+J[8]+K[0]+K[2]+K[4]+K[7], +H[0]+H[1]+H[2]+H[3]+
     J[0]+J[1]+J[2]+J[4]+J[5]+J[7]+K[0]+K[1]+K[3]+K[6], +H[0]+H[1]+H[2]+H[3]+H[4]+J[0]+J[1]+J[2]+J[3]+J[4]+
             J[5]+J[6]+J[7]+J[8]+J[9]+K[0]+K[1]+K[2]+K[3]+K[4]+K[5]+K[6]+K[7]+K[8]+K[9],]
-    logZ = logsumexp(energyTerms)
+    logZ = fast_logsumexp(energyTerms)[0]
     Pout[0] = exp( +0+0 - logZ )
     Pout[1] = exp( +H[4]+0 - logZ )
     Pout[2] = exp( +H[3]+0 - logZ )

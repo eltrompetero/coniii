@@ -145,7 +145,7 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     f.write("# Equations for %d-spin Ising model.\n\n"%n)
     f.write("# ")
     f.write(time.strftime("Written on %Y/%m/%d.")+"\n")
-    f.write("from numpy import zeros, exp, array, prod, isnan\nfrom scipy.special import logsumexp\n\n")
+    f.write("from numpy import zeros, exp, array, prod, isnan\nfrom ..enumerate import fast_logsumexp\n\n")
 
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
@@ -161,17 +161,17 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
         k = 0
         for i in range(len(contraintTermsIx)):
             for j in range(len(signs[i])):
-                eqns += ("    num = logsumexp(energyTerms, b="+
+                eqns += ("    num = fast_logsumexp(energyTerms, "+
                          str(signs[i][j]).replace('1 ','1,').replace('1\n','1,\n')+
-                         ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                         ")\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
                 k += 1
     else:
         k = 0
         for i in range(len(contraintTermsIx)):
             for j in range(len(signs[i])):
-                eqns += ("    num = logsumexp(energyTerms, b="+
+                eqns += ("    num = fast_logsumexp(energyTerms, "+
                  str(signs[i][j]).replace('0 ','0,').replace('1 ','1,').replace('0\n','0,\n').replace('1\n','1,\n')+
-                 ", return_sign=True)\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
+                 ")\n    Cout["+str(k)+"] = exp( num[0] - logZ ) * num[1]\n")
                 k += 1
     
     # Write out correlation terms
@@ -226,7 +226,7 @@ def _write_energy_terms(f, Z):
             iend+=1
         if iend>=len(Z):
             # ignore comma at end of line
-            f.write('            '+Z[i:-1]+']\n    logZ = logsumexp(energyTerms)\n')
+            f.write('            '+Z[i:-1]+']\n    logZ = fast_logsumexp(energyTerms)[0]\n')
         else:
             f.write('    '+Z[i:iend]+'\n')
         i=iend
@@ -442,6 +442,35 @@ def _write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
         g.write('    Pout('+str(i+1)+') = '+expterms[i]+'/Z;\n')
 
     g.close()
+
+def fast_logsumexp(X, coeffs=None):
+    """Simplified version of logsumexp to do correlation calculation in Ising equation
+    files. Scipy's logsumexp can be around 10x slower in comparison.
+    
+    Parameters
+    ----------
+    X : ndarray
+        Terms inside logs.
+    coeffs : ndarray
+        Factors in front of exponentials. 
+
+    Returns
+    -------
+    float
+        Value of magnitude of quantity inside log (the sum of exponentials).
+    float
+        Sign.
+    """
+
+    Xmx = max(X)
+    if coeffs is None:
+        y = np.exp(X-Xmx).sum()
+    else:
+        y = np.exp(X-Xmx).dot(coeffs)
+
+    if y<0:
+        return np.log(np.abs(y))+Xmx, -1.
+    return np.log(y)+Xmx, 1.
 
 
 if __name__=='__main__':

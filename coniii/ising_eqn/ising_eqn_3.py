@@ -22,7 +22,7 @@
 
 # Equations for 3-spin Ising model.
 
-# Written on 2018/12/16.
+# Written on 2018/12/17.
 from numpy import zeros, exp, array, prod, isnan
 from ..enumerate import fast_logsumexp
 
@@ -33,8 +33,8 @@ def calc_observables(params):
     Cout = zeros((6))
     H = params[0:3]
     J = params[3:6]
-    energyTerms = [    +0, +H[2]+0, +H[1]+0, +H[1]+H[2]+J[2], +H[0]+0, +H[0]+H[2]+J[1], +H[0]+H[1]+J[0], +H[0]+H[1]+H[2]+J[0]+
-            J[1]+J[2],]
+    energyTerms = array([    +0, +H[2]+0, +H[1]+0, +H[1]+H[2]+J[2], +H[0]+0, +H[0]+H[2]+J[1], +H[0]+H[1]+J[0], +H[0]+H[1]+H[2]+J[0]+
+            J[1]+J[2],])
     logZ = fast_logsumexp(energyTerms)[0]
     num = fast_logsumexp(energyTerms, [0,0,0,0,1,1,1,1])
     Cout[0] = exp( num[0] - logZ ) * num[1]
@@ -61,8 +61,8 @@ def p(params):
     H = params[0:3]
     J = params[3:6]
     Pout = zeros((8))
-    energyTerms = [    +0, +H[2]+0, +H[1]+0, +H[1]+H[2]+J[2], +H[0]+0, +H[0]+H[2]+J[1], +H[0]+H[1]+J[0], +H[0]+H[1]+H[2]+J[0]+
-            J[1]+J[2],]
+    energyTerms = array([    +0, +H[2]+0, +H[1]+0, +H[1]+H[2]+J[2], +H[0]+0, +H[0]+H[2]+J[1], +H[0]+H[1]+J[0], +H[0]+H[1]+H[2]+J[0]+
+            J[1]+J[2],])
     logZ = fast_logsumexp(energyTerms)[0]
     Pout[0] = exp( +0 - logZ )
     Pout[1] = exp( +H[2]+0 - logZ )

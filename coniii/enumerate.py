@@ -72,8 +72,8 @@ def write_eqns(n, sym, corrTermsIx, suffix=''):
             for i in range(len(corrTermsIx)):
                 expterms[state] += get_terms01(corrTermsIx[i], abc[i], binstates[state], br, ix0)
 
-        expterms[state] = re.sub('\+0\+','+',expterms[state])
-        expterms[state] = re.sub('\)\+0',')',expterms[state])
+        expterms[state] = re.sub(r'\+0\+','+',expterms[state])
+        expterms[state] = re.sub(r'\)\+0',')',expterms[state])
         expterms[state] += ', '
 
     # Collect all terms with corresponding prefix in the equation to solve.
@@ -217,7 +217,7 @@ def _write_energy_terms(f, Z):
         Energy terms to write out.
     """
 
-    f.write('    energyTerms = [')
+    f.write('    energyTerms = array([')
     i=0
     while i<len(Z):
         iend=i+100
@@ -226,7 +226,7 @@ def _write_energy_terms(f, Z):
             iend+=1
         if iend>=len(Z):
             # ignore comma at end of line
-            f.write('            '+Z[i:-1]+']\n    logZ = fast_logsumexp(energyTerms)[0]\n')
+            f.write('            '+Z[i:-1]+'])\n    logZ = fast_logsumexp(energyTerms)[0]\n')
         else:
             f.write('    '+Z[i:iend]+'\n')
         i=iend

@@ -22,7 +22,7 @@
 
 # Equations for 2-spin Ising model.
 
-# Written on 2018/12/16.
+# Written on 2018/12/17.
 from numpy import zeros, exp, array, prod, isnan
 from ..enumerate import fast_logsumexp
 
@@ -33,7 +33,7 @@ def calc_observables(params):
     Cout = zeros((3))
     H = params[0:2]
     J = params[2:3]
-    energyTerms = [            +H[0]+H[1]+J[0], +H[0]-H[1]-J[0], -H[0]+H[1]-J[0], -H[0]-H[1]+J[0],]
+    energyTerms = array([            +H[0]+H[1]+J[0], +H[0]-H[1]-J[0], -H[0]+H[1]-J[0], -H[0]-H[1]+J[0],])
     logZ = fast_logsumexp(energyTerms)[0]
     num = fast_logsumexp(energyTerms, [ 1, 1,-1,-1])
     Cout[0] = exp( num[0] - logZ ) * num[1]
@@ -54,7 +54,7 @@ def p(params):
     H = params[0:2]
     J = params[2:3]
     Pout = zeros((4))
-    energyTerms = [            +H[0]+H[1]+J[0], +H[0]-H[1]-J[0], -H[0]+H[1]-J[0], -H[0]-H[1]+J[0],]
+    energyTerms = array([            +H[0]+H[1]+J[0], +H[0]-H[1]-J[0], -H[0]+H[1]-J[0], -H[0]-H[1]+J[0],])
     logZ = fast_logsumexp(energyTerms)[0]
     Pout[0] = exp( +H[0]+H[1]+J[0] - logZ )
     Pout[1] = exp( +H[0]-H[1]-J[0] - logZ )

@@ -22,7 +22,7 @@
 
 # Equations for 4-spin Ising model.
 
-# Written on 2018/12/16.
+# Written on 2018/12/17.
 from numpy import zeros, exp, array, prod, isnan
 from ..enumerate import fast_logsumexp
 
@@ -33,10 +33,10 @@ def calc_observables(params):
     Cout = zeros((10))
     H = params[0:4]
     J = params[4:10]
-    energyTerms = [    +0, +H[3]+0, +H[2]+0, +H[2]+H[3]+J[5], +H[1]+0, +H[1]+H[3]+J[4], +H[1]+H[2]+J[3], +H[1]+H[2]+H[3]+J[3]+
+    energyTerms = array([    +0, +H[3]+0, +H[2]+0, +H[2]+H[3]+J[5], +H[1]+0, +H[1]+H[3]+J[4], +H[1]+H[2]+J[3], +H[1]+H[2]+H[3]+J[3]+
     J[4]+J[5], +H[0]+0, +H[0]+H[3]+J[2], +H[0]+H[2]+J[1], +H[0]+H[2]+H[3]+J[1]+J[2]+J[5], +H[0]+H[1]+J[0], +
     H[0]+H[1]+H[3]+J[0]+J[2]+J[4], +H[0]+H[1]+H[2]+J[0]+J[1]+J[3], +H[0]+H[1]+H[2]+H[3]+J[0]+J[1]+J[2]+J[3]+
-            J[4]+J[5],]
+            J[4]+J[5],])
     logZ = fast_logsumexp(energyTerms)[0]
     num = fast_logsumexp(energyTerms, [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
     Cout[0] = exp( num[0] - logZ ) * num[1]
@@ -71,10 +71,10 @@ def p(params):
     H = params[0:4]
     J = params[4:10]
     Pout = zeros((16))
-    energyTerms = [    +0, +H[3]+0, +H[2]+0, +H[2]+H[3]+J[5], +H[1]+0, +H[1]+H[3]+J[4], +H[1]+H[2]+J[3], +H[1]+H[2]+H[3]+J[3]+
+    energyTerms = array([    +0, +H[3]+0, +H[2]+0, +H[2]+H[3]+J[5], +H[1]+0, +H[1]+H[3]+J[4], +H[1]+H[2]+J[3], +H[1]+H[2]+H[3]+J[3]+
     J[4]+J[5], +H[0]+0, +H[0]+H[3]+J[2], +H[0]+H[2]+J[1], +H[0]+H[2]+H[3]+J[1]+J[2]+J[5], +H[0]+H[1]+J[0], +
     H[0]+H[1]+H[3]+J[0]+J[2]+J[4], +H[0]+H[1]+H[2]+J[0]+J[1]+J[3], +H[0]+H[1]+H[2]+H[3]+J[0]+J[1]+J[2]+J[3]+
-            J[4]+J[5],]
+            J[4]+J[5],])
     logZ = fast_logsumexp(energyTerms)[0]
     Pout[0] = exp( +0 - logZ )
     Pout[1] = exp( +H[3]+0 - logZ )

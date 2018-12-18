@@ -206,8 +206,7 @@ class Solver():
 
 
 class Enumerate(Solver):
-    """
-    Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
+    """Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
     in arbitrary constraints.
     """
     def __init__(self, *args, **kwargs):
@@ -221,6 +220,7 @@ class Enumerate(Solver):
             lambda params: return observables
         calc_observables : function
             lambda params: return observables
+        **kwargs
         """
         super(Enumerate, self).__init__(*args, **kwargs)
 
@@ -231,12 +231,13 @@ class Enumerate(Solver):
               max_param_value=50,
               full_output=False,
               use_root=True,
-              scipy_solver_kwargs={'method':'krylov','options':{'fatol':1e-15,'xatol':1e-15}},
+              scipy_solver_kwargs={'method':'krylov','options':{'fatol':1e-13,'xatol':1e-13}},
               fsolve_kwargs=None):
         """Must specify either constraints (the correlations) or samples from which the
         correlations will be calculated using self.calc_observables. This routine by
         default uses scipy.optimize.root to find the solution. This is MUCH faster than
-        the scipy.optimize.minimize routine which can be used instead.
+        the scipy.optimize.minimize routine which can be used instead. If still too slow,
+        try adjusting the accuracy.
 
         Parameters
         ----------
@@ -254,7 +255,8 @@ class Enumerate(Solver):
         use_root : bool, True
             If False, use scipy.optimize.minimize instead. This is typically much slower.
         scipy_solver_kwargs : dict, {'options':{'fatol':1e-15,'xatol':1e-15}}
-            High accuracy is important. Default accuracy may not be so good.
+            High accuracy is slower. Although default accuracy may not be so good,
+            lowering these custom presets will speed things up.
         fsolve_kwargs : dict, None
             DEPRECATED as of v1.1.4. Use scipy_solver_kwargs instead.
 
@@ -316,8 +318,7 @@ def unwrap_self_worker_obj(arg, **kwarg):
 
 class MPF(Solver):
     def __init__(self, *args, **kwargs):
-        """
-        Parallelized implementation of Minimum Probability Flow algorithm.
+        """Parallelized implementation of Minimum Probability Flow algorithm.
         Slowest step is the computation of the energy of a given state. Make this as fast as possible.
 
         Parameters
@@ -341,8 +342,7 @@ class MPF(Solver):
                                            - calc_e(adjacentStates,params) ) ))
  
     def K( self, Xuniq, Xcount, adjacentStates, params ):
-        """
-        Compute objective function.
+        """Compute objective function.
         
         Parameters
         ----------

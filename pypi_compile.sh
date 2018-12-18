@@ -1,7 +1,6 @@
-#!/bin/bash
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee
+# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+#!/bin/bash
 
 # Code for compiling package for uplaod to PyPI.
 # Clean previous compilation results.
@@ -28,6 +27,10 @@ trash build dist
 
 # Update usage guide to latest version for upload to PyPI.
 cp ipynb/usage_guide.ipynb coniii/
+
+# Compile docs
+sphinx-build ./docs/ ./docs/_build/html
+rsync -avu docs/_build/html/* ~/Dropbox/Research/Documents/eltrompetero.github.io./coniii/
 
 # Compile wheels into dist folder.
 python setup.py bdist_wheel

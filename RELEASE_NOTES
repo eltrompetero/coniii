@@ -1,5 +1,8 @@
 Log for major changes
 
+v1.1.4 (Released 2018/12/??)
+----------------------------------------------------
+- Enumerate.solve() now uses scipy.optimize.root to find solution and is MUCH faster.
 
 v1.1.3 (Released 2018/12/17)
 ----------------------------------------------------

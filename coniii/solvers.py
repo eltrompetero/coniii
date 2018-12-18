@@ -24,7 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # =============================================================================================== #
-from scipy.optimize import minimize,fmin_ncg,minimize_scalar
+from scipy.optimize import minimize,fmin_ncg,minimize_scalar,root
 import multiprocess as mp
 import copy
 from . import mean_field_ising
@@ -230,10 +230,13 @@ class Enumerate(Solver):
               initial_guess=None,
               max_param_value=50,
               full_output=False,
-              fsolve_kwargs={'method':'powell'}):
-        """
-        Must specify either constraints (the correlations) or samples from which the
-        correlations will be calculated using self.calc_observables.
+              use_root=True,
+              scipy_solver_kwargs={'method':'krylov','options':{'fatol':1e-15,'xatol':1e-15}},
+              fsolve_kwargs=None):
+        """Must specify either constraints (the correlations) or samples from which the
+        correlations will be calculated using self.calc_observables. This routine by
+        default uses scipy.optimize.root to find the solution. This is MUCH faster than
+        the scipy.optimize.minimize routine which can be used instead.
 
         Parameters
         ----------
@@ -248,16 +251,23 @@ class Enumerate(Solver):
             passed to the minimizer, in which case this should be set to None.
         full_output : bool, False
             If True, return output from scipy.optimize.minimize.
-        fsolve_kwargs : dict, {'method':'powell'}
-            Powell method is slower but tends to converge better.
+        use_root : bool, True
+            If False, use scipy.optimize.minimize instead. This is typically much slower.
+        scipy_solver_kwargs : dict, {'options':{'fatol':1e-15,'xatol':1e-15}}
+            High accuracy is important. Default accuracy may not be so good.
+        fsolve_kwargs : dict, None
+            DEPRECATED as of v1.1.4. Use scipy_solver_kwargs instead.
 
         Returns
         -------
         ndarray
             Solved multipliers (parameters).
         dict, optional
-            Output from scipy.optimize.minimize.
+            Output from scipy.optimize.root.
         """
+        
+        if not fsolve_kwargs is None:
+            warn("fsolve_kwargs is deprecated as of v1.1.4 and does nothing. Use scipy_solver_kwargs instead.")
 
         if not constraints is None:
             self.constraints = constraints
@@ -270,16 +280,30 @@ class Enumerate(Solver):
             self.multipliers = initial_guess.copy()
         else: initial_guess = np.zeros((len(self.constraints)))
         
-        if not max_param_value is None:
-            def f(params):
-                if np.any(np.abs(params)>max_param_value):
-                    return 1e30
-                return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+        # default solver routine
+        if use_root:
+            if not max_param_value is None:
+                def f(params):
+                    if np.any(np.abs(params)>max_param_value):
+                        return 1e30
+                    return self.calc_observables_multipliers(params)-self.constraints
+            else:
+                def f(params):
+                    return self.calc_observables_multipliers(params)-self.constraints
+            
+            soln = root(f, initial_guess, **scipy_solver_kwargs)
         else:
-            def f(params):
-                return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+            if not max_param_value is None:
+                def f(params):
+                    if np.any(np.abs(params)>max_param_value):
+                        return 1e30
+                    return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+            else:
+                def f(params):
+                    return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+            
+            soln = minimize(f, initial_guess, **scipy_solver_kwargs)
 
-        soln = minimize(f, initial_guess, **fsolve_kwargs)
         self.multipliers = soln['x']
         if full_output:
             return soln['x'], soln

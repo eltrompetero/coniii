@@ -236,8 +236,11 @@ class Enumerate(Solver):
         """Must specify either constraints (the correlations) or samples from which the
         correlations will be calculated using self.calc_observables. This routine by
         default uses scipy.optimize.root to find the solution. This is MUCH faster than
-        the scipy.optimize.minimize routine which can be used instead. If still too slow,
-        try adjusting the accuracy.
+        the scipy.optimize.minimize routine which can be used instead.
+        
+        If still too slow, try adjusting the accuracy.
+        
+        If not converging, try increasing the max number of iterations.
 
         Parameters
         ----------
@@ -256,7 +259,7 @@ class Enumerate(Solver):
             If False, use scipy.optimize.minimize instead. This is typically much slower.
         scipy_solver_kwargs : dict, {'options':{'fatol':1e-15,'xatol':1e-15}}
             High accuracy is slower. Although default accuracy may not be so good,
-            lowering these custom presets will speed things up.
+            lowering these custom presets will speed things up. 
         fsolve_kwargs : dict, None
             DEPRECATED as of v1.1.4. Use scipy_solver_kwargs instead.
 

@@ -163,9 +163,13 @@ sort : bool,False</p>
 in arbitrary constraints.</p>
 <dl class="method">
 <dt id="coniii.solvers.Enumerate.solve">
-<code class="descname">solve</code><span class="sig-paren">(</span><em>constraints=None</em>, <em>samples=None</em>, <em>initial_guess=None</em>, <em>max_param_value=50</em>, <em>full_output=False</em>, <em>fsolve_kwargs={'method': 'powell'}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><em>constraints=None</em>, <em>samples=None</em>, <em>initial_guess=None</em>, <em>max_param_value=50</em>, <em>full_output=False</em>, <em>use_root=True</em>, <em>scipy_solver_kwargs={'method': 'krylov'</em>, <em>'options': {'fatol': 1e-13</em>, <em>'xatol': 1e-13}}</em>, <em>fsolve_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Must specify either constraints (the correlations) or samples from which the
-correlations will be calculated using self.calc_observables.</p>
+correlations will be calculated using self.calc_observables. This routine by
+default uses scipy.optimize.root to find the solution. This is MUCH faster than
+the scipy.optimize.minimize routine which can be used instead.</p>
+<p>If still too slow, try adjusting the accuracy.</p>
+<p>If not converging, try increasing the max number of iterations.</p>
 <dl class="docutils">
 <dt>constraints <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
 <dd>Correlations that will be fit to.</dd>
@@ -178,14 +182,19 @@ correlations will be calculated using self.calc_observables.</p>
 passed to the minimizer, in which case this should be set to None.</dd>
 <dt>full_output <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>If True, return output from scipy.optimize.minimize.</dd>
-<dt>fsolve_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict, {‘method’:’powell’}</span></dt>
-<dd>Powell method is slower but tends to converge better.</dd>
+<dt>use_root <span class="classifier-delimiter">:</span> <span class="classifier">bool, True</span></dt>
+<dd>If False, use scipy.optimize.minimize instead. This is typically much slower.</dd>
+<dt>scipy_solver_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict, {‘options’:{‘fatol’:1e-15,’xatol’:1e-15}}</span></dt>
+<dd>High accuracy is slower. Although default accuracy may not be so good,
+lowering these custom presets will speed things up.</dd>
+<dt>fsolve_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict, None</span></dt>
+<dd>DEPRECATED as of v1.1.4. Use scipy_solver_kwargs instead.</dd>
 </dl>
 <dl class="docutils">
 <dt>ndarray</dt>
 <dd>Solved multipliers (parameters).</dd>
 <dt>dict, optional</dt>
-<dd>Output from scipy.optimize.minimize.</dd>
+<dd>Output from scipy.optimize.root.</dd>
 </dl>
 </dd></dl>
 
@@ -249,7 +258,7 @@ constraints using self.calc_observables.</dd>
 <dd>Norm error allowed in found solution.</dd>
 <dt>n_iters <span class="classifier-delimiter">:</span> <span class="classifier">int, 30</span></dt>
 <dd>Number of iterations to make between samples in MCMC sampling.</dd>
-<dt>burnin <span class="classifier-delimiter">:</span> <span class="classifier">int, 30</span></dt>
+<dt>burn_in <span class="classifier-delimiter">:</span> <span class="classifier">int, 30</span></dt>
 <dd>Initial burn in from random sample when MC sampling.</dd>
 <dt>max_iter <span class="classifier-delimiter">:</span> <span class="classifier">int, 10</span></dt>
 <dd>Max number of iterations of MC sampling and MCH approximation.</dd>
@@ -310,10 +319,10 @@ solutions of the inverse pairwise Ising problem. arXiv 1-8 (2007).</p>
 </dl>
 <dl class="method">
 <dt id="coniii.solvers.MCHIncompleteData.generate_samples">
-<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters</em>, <em>burnin</em>, <em>uIncompleteStates=None</em>, <em>f_cond_sample_size=None</em>, <em>f_cond_sample_iters=None</em>, <em>sample_size=None</em>, <em>sample_method=None</em>, <em>initial_sample=None</em>, <em>run_regular_sampler=True</em>, <em>run_cond_sampler=True</em>, <em>disp=0</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.generate_samples" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters</em>, <em>burn_in</em>, <em>uIncompleteStates=None</em>, <em>f_cond_sample_size=None</em>, <em>f_cond_sample_iters=None</em>, <em>sample_size=None</em>, <em>sample_method=None</em>, <em>initial_sample=None</em>, <em>run_regular_sampler=True</em>, <em>run_cond_sampler=True</em>, <em>disp=0</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.generate_samples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around generate_samples_parallel() from available samplers.</p>
 <p>n_iters : int
-burnin : int</p>
+burn_in : int</p>
 <blockquote>
 <div>I think burn in is handled automatically in REMC.</div></blockquote>
 <p>uIncompleteStates : list of unique states
@@ -328,7 +337,6 @@ f_cond_sample_size : lambda function</p>
 sample_method : str
 initial_sample : ndarray
 generate_kwargs : dict</p>
-<p>None</p>
 </dd></dl>
 
 <dl class="method">
@@ -363,7 +371,7 @@ maxLearningSteps : int</p>
 
 <dl class="method">
 <dt id="coniii.solvers.MCHIncompleteData.solve">
-<code class="descname">solve</code><span class="sig-paren">(</span><em>X=None</em>, <em>constraints=None</em>, <em>initial_guess=None</em>, <em>cond_sample_size=100</em>, <em>cond_sample_iters=100</em>, <em>tol=None</em>, <em>tolNorm=None</em>, <em>n_iters=30</em>, <em>burnin=30</em>, <em>maxiter=10</em>, <em>disp=False</em>, <em>full_output=False</em>, <em>learn_params_kwargs={}</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><em>X=None</em>, <em>constraints=None</em>, <em>initial_guess=None</em>, <em>cond_sample_size=100</em>, <em>cond_sample_iters=100</em>, <em>tol=None</em>, <em>tolNorm=None</em>, <em>n_iters=30</em>, <em>burn_in=30</em>, <em>maxiter=10</em>, <em>disp=False</em>, <em>full_output=False</em>, <em>learn_params_kwargs={}</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve for parameters using MCH routine.</p>
 <p>X                       : ndarray
 constraints             : ndarray</p>
@@ -384,7 +392,7 @@ If function is passed in, it will be passed number of missing spins and must ret
 <dt>n_iters <span class="classifier-delimiter">:</span> <span class="classifier">int=30</span></dt>
 <dd>Number of iterations to make between samples in MCMC sampling.</dd>
 </dl>
-<p>burnin (int=30)
+<p>burn_in (int=30)
 disp                    : int=0</p>
 <blockquote>
 <div>0, no output
@@ -512,7 +520,7 @@ PRL 108, 090201 (2012).</p>
 For large sample size, it may make sense to break up differently
 if too much memory is being used.</p>
 <dl class="docutils">
-<dt>pairCooc <span class="classifier-delimiter">:</span> <span class="classifier">ndarray,None</span></dt>
+<dt>pairCooc <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
 <dd>Pass pair_cooc_mat(X) to speed calculation.</dd>
 </dl>
 </dd></dl>
@@ -536,6 +544,7 @@ with shape (dimension of system)</p>
 <dt>Jr <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
 <dd>(dimension of system) x (1)</dd>
 </dl>
+<p>float</p>
 </dd></dl>
 
 <dl class="method">
@@ -565,12 +574,15 @@ J should be symmetric</dd>
 <dd><p>Two different methods are implemented and can be called from self.solve. One is specific to the Ising
 model and the other uses a general all-purpose optimization (scipy.optimize) to solve the problem.</p>
 <dl class="docutils">
-<dt>general_case <span class="classifier-delimiter">:</span> <span class="classifier">bool,True</span></dt>
+<dt>general_case <span class="classifier-delimiter">:</span> <span class="classifier">bool, True</span></dt>
 <dd>If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the resulting
 pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
 implemented (self._solve_ising).</dd>
 </dl>
-<p>multipliers : ndarray</p>
+<dl class="docutils">
+<dt>ndarray</dt>
+<dd>multipliers</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -598,25 +610,25 @@ Finite Critical Behaviour in a Small-Scale Social System.’’ Nature Communica
 <code class="descname">solve</code><span class="sig-paren">(</span><em>samples</em>, <em>sample_size=100000</em>, <em>seed=0</em>, <em>change_seed=False</em>, <em>min_size=0</em>, <em>min_covariance=False</em>, <em>min_independent=True</em>, <em>cooc_cov=None</em>, <em>priorLmbda=0.0</em>, <em>bracket=None</em>, <em>n_grid_points=200</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Varies the strength of regularization on the mean field J to best fit given cooccurrence data.</p>
 <dl class="docutils">
-<dt>n_grid_points <span class="classifier-delimiter">:</span> <span class="classifier">int,200</span></dt>
+<dt>n_grid_points <span class="classifier-delimiter">:</span> <span class="classifier">int, 200</span></dt>
 <dd>If bracket is given, first test at n_grid_points points evenly spaced in the bracket interval,
 then give the lowest three points to scipy.optimize.minimize_scalar</dd>
 </dl>
-<p>sample_size : int,100_000
-seed : int,0</p>
+<p>sample_size : int, 100_000
+seed : int, 0</p>
 <blockquote>
 <div>initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if change Seed option
 is True</div></blockquote>
-<p>change_seed : bool,False
-min_size : int,0</p>
+<p>change_seed : bool, False
+min_size : int, 0</p>
 <blockquote>
 <div>Use a modified model in which samples with fewer ones than min_size are not allowed.</div></blockquote>
 <dl class="docutils">
-<dt>min_covariance <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span></dt>
+<dt>min_covariance <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>** As of v1.0.3, not currently supported **
 Minimize covariance from emperical frequencies (see notes); trying to avoid biases, as inspired by
 footnote 12 in TkaSchBer06</dd>
-<dt>min_independent <span class="classifier-delimiter">:</span> <span class="classifier">bool,True</span></dt>
+<dt>min_independent <span class="classifier-delimiter">:</span> <span class="classifier">bool, True</span></dt>
 <dd>** As of v1.0.3, min_independent is the only mode currently supported **
 Each &lt;xi&gt; and &lt;xi xj&gt; residual is treated as independent</dd>
 <dt>cooc_cov <span class="classifier-delimiter">:</span> <span class="classifier">ndarray,None</span></dt>
@@ -653,11 +665,11 @@ and Y is of dimensions (n_samples, n_constraints)</dd>
 
 <dl class="method">
 <dt id="coniii.solvers.Solver.generate_samples">
-<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters</em>, <em>burnin</em>, <em>multipliers=None</em>, <em>sample_size=None</em>, <em>sample_method=None</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.generate_samples" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generate_samples</code><span class="sig-paren">(</span><em>n_iters</em>, <em>burn_in</em>, <em>multipliers=None</em>, <em>sample_size=None</em>, <em>sample_method=None</em>, <em>generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.generate_samples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around generate_samples() generate_samples_parallel() methods in samplers.</p>
 <p>Samples are saved to self.samples.</p>
 <p>n_iters : int
-burnin : int</p>
+burn_in : int</p>
 <blockquote>
 <div>Burn in is handled automatically in REMC.</div></blockquote>
 <p>multipliers : ndarray,None

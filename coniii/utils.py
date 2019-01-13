@@ -29,6 +29,7 @@ from numba import jit,njit
 from scipy.special import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
+from scipy.special import binom
 
 
 @njit(nogil=True, cache=True)
@@ -253,7 +254,6 @@ def k_corr(X, k,
         <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
     """
     
-    from scipy.special import binom
     assert frozenset(np.unique(X))<=frozenset([-1,0,1])
     S, N = X.shape
     kcorr = np.zeros(int(binom(N,k)))
@@ -353,7 +353,6 @@ def ising_convert_params(oparams, convert_to, concat=False):
         Can all be concatenated together if concat switch is True.
     """
     
-    from scipy.special import binom
     oparams = oparams[::-1]
     n = len(oparams[-1])
     params = [np.zeros(int(binom(n,i))) for i in range(len(oparams),0,-1)]
@@ -403,7 +402,7 @@ def unravel_index(ijk, n):
     Parameters
     ----------
     ijk : tuple
-        Raveled index to unravel. These must be sorted increasing order.
+        Raveled index to unravel.
     n : int
         System size.
 
@@ -418,7 +417,6 @@ def unravel_index(ijk, n):
     if len(ijk)==1:
         return ijk[0]
 
-    from scipy.special import binom
     assert (np.diff(ijk)>0).all()
     assert all([i<n for i in ijk])
 
@@ -445,7 +443,6 @@ def _expand_binomial(a, b, n=2):
     n : int,2
     """
     
-    from scipy.special import binom
     coeffs=[]
     for i in range(n+1):
         coeffs.extend( [a**(n-i)*b**i]*int(binom(n,i)) )
@@ -466,7 +463,6 @@ def split_concat_params(p, n):
         Parameters increasing in order: (h, Jij, Kijk, ... ).
     """
     
-    from scipy.special import binom
     splitp = []
     counter = 0
     i = 1

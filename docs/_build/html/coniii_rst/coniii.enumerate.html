@@ -36,6 +36,25 @@
   <div class="section" id="module-coniii.enumerate">
 <span id="coniii-enumerate-module"></span><h1>coniii.enumerate module<a class="headerlink" href="#module-coniii.enumerate" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="coniii.enumerate.fast_logsumexp">
+<code class="descclassname">coniii.enumerate.</code><code class="descname">fast_logsumexp</code><span class="sig-paren">(</span><em>X</em>, <em>coeffs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.fast_logsumexp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simplified version of logsumexp to do correlation calculation in Ising equation
+files. Scipy’s logsumexp can be around 10x slower in comparison.</p>
+<dl class="docutils">
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Terms inside logs.</dd>
+<dt>coeffs <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Factors in front of exponentials.</dd>
+</dl>
+<dl class="docutils">
+<dt>float</dt>
+<dd>Value of magnitude of quantity inside log (the sum of exponentials).</dd>
+<dt>float</dt>
+<dd>Sign.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="coniii.enumerate.get_3idx">
 <code class="descclassname">coniii.enumerate.</code><code class="descname">get_3idx</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_3idx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get binary 3D matrix with truth values where index values correspond to the index

@@ -34,6 +34,8 @@ rsync -avu docs/_build/html/* ~/Dropbox/Research/Documents/eltrompetero.github.i
 
 # Compile wheels into dist folder.
 python setup.py bdist_wheel
+# Make source available
+python setup.py sdist
 
 # Rename Linux wheel for upload to PyPI.
 unamestr=`uname`

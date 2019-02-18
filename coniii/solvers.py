@@ -242,6 +242,9 @@ class Enumerate(Solver):
         
         If not converging, try increasing the max number of iterations.
 
+        If receiving Jacobian error (or some other numerical estimation error), parameter
+        values may be too large for faithful evaluation. Try decreasing max_param_value.
+
         Parameters
         ----------
         constraints : ndarray, None

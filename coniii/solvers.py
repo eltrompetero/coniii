@@ -260,7 +260,7 @@ class Enumerate(Solver):
             If True, return output from scipy.optimize.minimize.
         use_root : bool, True
             If False, use scipy.optimize.minimize instead. This is typically much slower.
-        scipy_solver_kwargs : dict, {'options':{'fatol':1e-15,'xatol':1e-15}}
+        scipy_solver_kwargs : dict, {'options':{'fatol':1e-13,'xatol':1e-13}}
             High accuracy is slower. Although default accuracy may not be so good,
             lowering these custom presets will speed things up. 
         fsolve_kwargs : dict, None

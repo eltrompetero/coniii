@@ -27,6 +27,7 @@
 import numpy as np
 import scipy.special as ss
 from itertools import combinations
+np.set_printoptions(threshold=np.nan)
 
 
 def write_eqns(n, sym, corrTermsIx, suffix=''):
@@ -93,7 +94,6 @@ def write_eqns(n, sym, corrTermsIx, suffix=''):
                     signs[i].append(np.zeros(0, dtype=int))
             for j in range(signs_.size):
                 signs[i][j] = np.append(signs[i][j], signs_[j])
-
     Z = ''.join(expterms)
 
     # Account for fact that symmetric Python had inverted the order of the states.

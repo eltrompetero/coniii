@@ -8,8 +8,9 @@ Python 3.6 and higher only (v0.2.10 works with Python 2.7 but is no longer activ
 maintained).
 
 If you use ConIII for your research, please cite the following:
-> Lee, Edward D. and Daniels, Bryan C.  Convenient Interface to Inverse Ising (ConIII): A
-> Python package for solving maximum entropy models.  arXiv preprint:1801.08216 (2018).
+> Lee, E.D. and Daniels, B.C., 2019. Convenient Interface to Inverse Ising (ConIII): A
+> Python 3 Package for Solving Ising-Type Maximum Entropy Models. Journal of Open Research
+> Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
 [Documentation](https://eddielee.co/coniii/index.html "Documentation").
 

@@ -3,7 +3,7 @@
 # 2015-04-30
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee
+# Copyright (c) 2019 Edward D. Lee
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

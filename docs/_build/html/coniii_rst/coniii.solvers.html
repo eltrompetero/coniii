@@ -159,8 +159,8 @@ sort : bool,False</p>
 <dt id="coniii.solvers.Enumerate">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">Enumerate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
-<p>Class for solving +/-1 symmetric Ising model maxent problems by gradient descent with flexibility to put
-in arbitrary constraints.</p>
+<p>Class for solving +/-1 symmetric Ising model maxent problems by gradient descent
+with flexibility to put in arbitrary constraints.</p>
 <dl class="method">
 <dt id="coniii.solvers.Enumerate.solve">
 <code class="descname">solve</code><span class="sig-paren">(</span><em>constraints=None</em>, <em>samples=None</em>, <em>initial_guess=None</em>, <em>max_param_value=50</em>, <em>full_output=False</em>, <em>use_root=True</em>, <em>scipy_solver_kwargs={'method': 'krylov'</em>, <em>'options': {'fatol': 1e-13</em>, <em>'xatol': 1e-13}}</em>, <em>fsolve_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate.solve" title="Permalink to this definition">¶</a></dt>
@@ -178,7 +178,8 @@ values may be too large for faithful evaluation. Try decreasing max_param_value.
 <dt>samples <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
 <dd>(n_samples, n_dim)</dd>
 <dt>initial_guess <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
-<dd>initial starting point</dd>
+<dd>Initial starting guess for parameters. By default, this will start with all
+zeros if left unspecified.</dd>
 <dt>max_param_value <span class="classifier-delimiter">:</span> <span class="classifier">float, 50</span></dt>
 <dd>Absolute value of max parameter value. Bounds can also be set in the kwargs
 passed to the minimizer, in which case this should be set to None.</dd>

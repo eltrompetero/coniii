@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 # Equations for 6-spin Ising model.
 
-# Written on 2018/12/17.
+# Written on 2019/03/12.
 from numpy import zeros, exp, array, prod, isnan
 from ..enumerate import fast_logsumexp
 

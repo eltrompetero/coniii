@@ -1,16 +1,10 @@
-# pseudoInverseIsing.py
-#
-# Bryan Daniels
-# 12.9.2013
-#
-# Attempting to do inverse ising using
-# the 'pseudolikelihood' approach
-# described in
-# Aurell and Ekeberg, PRL 108, 090201 (2012)
+# ===================================================================================== #
+# Test suite for enumerate.py
+# Author : Bryan C. Daniels
 #
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee
+# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +23,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+# ===================================================================================== #
+# Attempting to do inverse ising using
+# the 'pseudolikelihood' approach
+# described in
+# Aurell and Ekeberg, PRL 108, 090201 (2012)
 
 #import scipy.weave
 #import sys

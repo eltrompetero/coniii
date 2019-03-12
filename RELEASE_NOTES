@@ -1,8 +1,8 @@
-Log for major changes
+Log for major changes in releases
 
 MIT License
 
-Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
+Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+
+v1.1.6 (Released 2019/03/??)
+----------------------------------------------------
+- Bug fixes.
 
 v1.1.5 (Released 2019/02/24)
 ----------------------------------------------------

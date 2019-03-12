@@ -1,10 +1,10 @@
-# ========================================================================================================= #
+# ===================================================================================== #
 # Test suite for enumerate.py
 # Author : Edward Lee, edlee@alumni.princeton.edu
 #
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# ========================================================================================================= #
+# ===================================================================================== #
 import numpy as np
 from .utils import pair_corr, bin_states
 from .enumerate import fast_logsumexp

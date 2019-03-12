@@ -4,7 +4,7 @@
 #
 # MIT License
 # 
-# Copyright (c) 2017 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -70,8 +70,8 @@ class Solver():
         n : int
             System size given by number of spins.
         calc_de : function, None
-            Function for calculating derivative of energy with respect to the parameters. Takes in 2d
-            state array and index of the parameter.
+            Function for calculating derivative of energy with respect to the parameters.
+            Takes in 2d state array and index of the parameter.
             Defn: lambda state_2d,ix : delta_energy
         calc_observables : function, None
             Defn: lambda params : observables
@@ -87,8 +87,8 @@ class Solver():
         sample_size : int, None
         sample_method : str, None
         n_cpus : int, None
-            Number of cores to use for parallelized code. If this is set to 0,  sequential sampler
-            will be used. This should be set if multiprocess module does not work.
+            Number of cores to use for parallelized code. If this is set to 0,  sequential
+            sampler will be used. This should be set if multiprocess module does not work.
         verbose : bool, False
         """
 
@@ -296,7 +296,7 @@ class Enumerate(Solver):
             if not max_param_value is None:
                 def f(params):
                     if np.any(np.abs(params)>max_param_value):
-                        return 1e30
+                        return np.zeros_like(self.constraints) + 1e30
                     return self.calc_observables_multipliers(params)-self.constraints
             else:
                 def f(params):

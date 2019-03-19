@@ -336,7 +336,9 @@ class MPF(Solver):
         n : int
             System size.
         adj : function, None
-            function for getting all the neighbors of any given state
+            Function for getting all the neighbors of any given state. Note that the
+            backed in self.solvers runs everything in the {0,1} basis for spins, so this
+            needs to find neighboring states in the {0,1} basis.
         calc_de : function, None
             Function for calculating derivative of energy wrt parameters. Takes in 2d
             state array and index of the parameter.

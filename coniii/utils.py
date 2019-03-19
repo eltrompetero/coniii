@@ -209,9 +209,9 @@ def bin_states(n, sym=False):
     Parameters
     ----------
     n : int
-        number of spins
+        Number of spins.
     sym : bool
-        if true, return {-1,1} basis
+        If true, return states in {-1,1} basis.
 
     Returns
     -------
@@ -237,21 +237,21 @@ def k_corr(X, k,
     Parameters
     ----------
     X : ndarray
-        Dimensions (n_samples,n_dim).
+        Dimensions (n_samples, n_dim).
     k : int
-        Order of correlation <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
-    weights : np.ndarray,None : 
+        Order of correlation function <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
+    weights : np.ndarray, None : 
         Calculate single and pairwise means given fractional weights for each state in
         the data such that a state only appears with some weight, typically less than
-        one
-    exclude_empty : bool,False
+        one.
+    exclude_empty : bool, False
         When using with {-1,1} basis, you can leave entries with 0 and those will not be
         counted for any pair. If True, the weights option doesn't do anything.
 
     Returns
     -------
-    kcorr : ndarray
-        <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
+    ndarray
+        Kth order correlations <s_{i_1} * s_{i_2} * ... * s_{i_k}>.
     """
     
     assert frozenset(np.unique(X))<=frozenset([-1,0,1])
@@ -269,16 +269,17 @@ def k_corr(X, k,
         kcorr[counter] = np.prod(X[:,ijk], axis=1).dot(weights)
     return kcorr
 
-def xbin_states(n,sym=False):
+def xbin_states(n, sym=False):
     """Generator for producing binary states.
 
     Parameters
     ----------
     n : int
-        number of spins
+        Number of spins.
     sym : bool
-        if true, return {-1,1} basis
+        If true, return states in {-1,1} basis.
     """
+
     assert n>0, "n cannot be <0"
     
     def v():
@@ -296,9 +297,11 @@ def convert_params(h, J, convert_to, concat=False):
     Parameters
     ----------
     h : ndarray
+        Fields.
     J : ndarray
+        Couplings.
     convert_to : str
-        '01' or '11'
+        Either '01' or '11'.
     concat : bool, False
         If True, return a vector concatenating fields and couplings.
     
@@ -440,7 +443,7 @@ def _expand_binomial(a, b, n=2):
     ----------
     a : float
     b : float
-    n : int,2
+    n : int, 2
     """
     
     coeffs=[]
@@ -631,12 +634,14 @@ def define_pseudo_ising_helpers(N):
         Parameters
         ----------
         r : int
+            Spin index.
         X : ndarray
             Data samples of dimensions (n_samples, n_dim).
 
         Returns
         -------
-        observables
+        ndarray
+            observables
         """
 
         obs = np.zeros((X.shape[0],N))
@@ -652,7 +657,7 @@ def define_pseudo_ising_helpers(N):
                         ixcounter += 1
         return obs
 
-    return get_multipliers_r,calc_observables_r 
+    return get_multipliers_r, calc_observables_r 
 
 def define_ising_helper_functions():
     """Functions for plugging into solvers for +/-1 Ising model with fields h_i and

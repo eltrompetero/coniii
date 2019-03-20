@@ -1197,14 +1197,13 @@ class MCHIncompleteData(MCH):
 
 class Pseudo(Solver):
     """
-    Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell and Ekeberg,
-    PRL 108, 090201 (2012).
+    Pseudolikelihood approximation to solving the inverse Ising problem as described in
+    Aurell and Ekeberg, PRL 108, 090201 (2012).
     """
     def __init__(self, *args, **kwargs):
-        """
-        For this technique, must specify how to calculate the energy specific to the conditional probability
-        of spin r given the rest of the spins. These will be passed in with "get_observables_r" and
-        "calc_observables_r".
+        """For this technique, must specify how to calculate the energy specific to the
+        conditional probability of spin r given the rest of the spins. These will be
+        passed in with "get_observables_r" and "calc_observables_r".
         
         Parameters
         ----------
@@ -1223,16 +1222,24 @@ class Pseudo(Solver):
         super(Pseudo,self).__init__(*args,**kwargs)
 
     def solve(self, *args, **kwargs):
-        """
-        Two different methods are implemented and can be called from self.solve. One is specific to the Ising
-        model and the other uses a general all-purpose optimization (scipy.optimize) to solve the problem.
+        """Two different methods are implemented and can be called from self.solve. One is
+        specific to the Ising model and the other uses a general all-purpose optimization
+        to solve the problem.
 
         Parameters
         ----------
+        X : ndarray
+            Data set if dimensions (n_samples, n_dim).
+        initial_guess : ndarray, None
+            Initial guess for the parameter values.
+        return_all : bool, False
+            If True, return output from scipy.minimize() routine.
+        solver_kwargs : dict, {}
+            kwargs for scipy.minimize().
         general_case : bool, True
-            If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the resulting
-            pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
-            implemented (self._solve_ising).
+            If True, uses self.calc_observables_r and self.get_multipliers_r to maximize
+            the resulting pseudolikelihood (self._solve_general). Else an algorithm
+            specific to the Ising model is implemented (self._solve_ising).
 
         Returns
         -------
@@ -1240,14 +1247,18 @@ class Pseudo(Solver):
             multipliers
         """
 
-        if kwargs.get('general_case',False):
+        if kwargs.get('general_case',True):
             del kwargs['general_case']
             return self._solve_general(*args,**kwargs)
+        del kwargs['general_case']
         return self._solve_ising(*args,**kwargs)
 
-    def _solve_general(self, X=None, initial_guess=None, return_all=False, solver_kwargs={}):
-        """
-        Solve for Langrangian parameters according to pseudolikelihood algorithm.
+    def _solve_general(self,
+                       X=None,
+                       initial_guess=None,
+                       return_all=False,
+                       solver_kwargs={}):
+        """Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
         Parameters
         ----------
@@ -1282,8 +1293,7 @@ class Pseudo(Solver):
         return soln['x']
 
     def _solve_ising(self, X=None, initial_guess=None):
-        """
-        Solve Ising model specifically.
+        """Solve Ising model specifically.
 
         Parameters
         ----------
@@ -1331,8 +1341,7 @@ class Pseudo(Solver):
         return self.multipliers
 
     def cond_log_likelihood(self, r, X, Jr):
-        """
-        Equals the conditional log likelihood -L_r.
+        """Equals the conditional log likelihood -L_r.
         
         Parameters
         ----------
@@ -1362,9 +1371,7 @@ class Pseudo(Solver):
         return -logLs.sum()
 
     def cond_jac(self, r, X, Jr):
-        """
-        Returns d cond_log_likelihood / d Jr,
-        with shape (dimension of system)
+        """Returns d cond_log_likelihood / d Jr, with shape (dimension of system)
         """
 
         X,Jr = np.array(X),np.array(Jr)
@@ -1380,12 +1387,11 @@ class Pseudo(Solver):
         return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
 
     def cond_hess(self, r, X, Jr, pairCoocRhat=None):
-        """Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
-        (dimension of system)x(dimension of system)
+        """Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape (dimension of
+        system)x(dimension of system)
 
-        Current implementation uses more memory for speed.
-        For large sample size, it may make sense to break up differently
-        if too much memory is being used.
+        Current implementation uses more memory for speed.  For large sample size, it may
+        make sense to break up differently if too much memory is being used.
 
         Parameters
         ----------
@@ -1422,8 +1428,7 @@ class Pseudo(Solver):
         return np.transpose(p,(1,0,2))
 
     def pseudo_log_likelhood(self, X, J):
-        """
-        (Could probably be made more efficient.)
+        """(Could probably be made more efficient.)
 
         Parameters
         ----------
@@ -1440,9 +1445,8 @@ class Pseudo(Solver):
 
 
 class ClusterExpansion(Solver):
-    """
-    Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
-    described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
+    """Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem,
+    as described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).
     
     Specific to pairwise Ising constraints.
     """

@@ -166,10 +166,10 @@ class Solver():
         n_iters : int
         burn_in : int 
             Burn in is handled automatically in REMC.
-        multipliers : ndarray,None
-        sample_size : int,None
-        sample_method : str,None
-        generate_kwargs : dict,{}
+        multipliers : ndarray, None
+        sample_size : int, None
+        sample_method : str, None
+        generate_kwargs : dict, {}
         """
 
         assert not (self.sampler is None), "Must call setup_sampler() first."
@@ -223,6 +223,7 @@ class Enumerate(Solver):
             lambda params: return observables
         **kwargs
         """
+
         super(Enumerate, self).__init__(*args, **kwargs)
 
     def solve(self,
@@ -263,9 +264,12 @@ class Enumerate(Solver):
             If True, return output from scipy.optimize.minimize.
         use_root : bool, True
             If False, use scipy.optimize.minimize instead. This is typically much slower.
-        scipy_solver_kwargs : dict, {'options':{'fatol':1e-13,'xatol':1e-13}}
+        scipy_solver_kwargs : dict, {'method':'krylov', 'options':{'fatol':1e-13,'xatol':1e-13}}
             High accuracy is slower. Although default accuracy may not be so good,
-            lowering these custom presets will speed things up. 
+            lowering these custom presets will speed things up. Choice of the root finding
+            method can also change runtime and whether a solution is found or not.
+            Recommend playing around with different solvers and tolerances or getting a
+            close approximation using a different method if solution is hard to find.
         fsolve_kwargs : dict, None
             DEPRECATED as of v1.1.4. Use scipy_solver_kwargs instead.
 
@@ -403,8 +407,7 @@ class MPF(Solver):
             return obj / Xcount.sum()
        
     def _K( self, X, J ):
-        """
-        Translation from Sohl-Dickstein's code K_dk_ising.m. This is here for testing
+        """Translation from Sohl-Dickstein's code K_dk_ising.m. This is here for testing
         purposes only.  Caution: This uses a different convention for negatives and 1/2
         factors. To use this properly, all parameters will have an extra negative, the
         returned J's will be halved and the energy calculation should include a 1/2 factor
@@ -420,11 +423,11 @@ class MPF(Solver):
         
         Y = dot(J,X)
         diagJ = J.diagonal()
-    #     % XnotX contains (X - [bit flipped X])
+        # XnotX contains (X - [bit flipped X])
         XnotX = 2.*X-1;
-    #     % Kfull is a [ndims, nbatch] matrix containing the contribution to the 
-    #     % objective function from flipping each bit in the rows, for each datapoint 
-    #     % on the columns
+        # Kfull is a [ndims, nbatch] matrix containing the contribution to the 
+        # objective function from flipping each bit in the rows, for each datapoint 
+        # on the columns
         Kfull = np.exp( XnotX * Y - (1/2)*tile(diagJ[:,None],(1,nbatch)) )
         K = sum(Kfull)
         K  = K  / nbatch
@@ -526,20 +529,21 @@ class MPF(Solver):
             array of states compatible with given energy and adjacent neighbors functions
         adj : lambda state
             returns adjacent states for any given state
-        all_connected : bool,True
-            switch for summing over all states that data sets could be connected to or just summing over
-            non-data states (second summation in Eq 10 in Sohl-Dickstein 2011)
-        iterate : int,0
-            number of times to try new initial conditions if first try doesn't work. Right now, this is a
-            pretty coarse test because the fit can be good even without converging.
-        parameter_limits : float
-            some limit to constrain the space that the solver has to search. This is the maximum allowed
-            magnitude of any single parameter.
+        all_connected : bool, True
+            switch for summing over all states that data sets could be connected to or
+            just summing over non-data states (second summation in Eq 10 in Sohl-Dickstein
+            2011)
+        iterate : int, 0
+            Number of times to try new initial conditions if first try doesn't work. Right
+            now, this is a pretty coarse test because the fit can be good even without
+            converging.
+        parameter_limits : float, 100
+            Maximum allowed magnitude of any single parameter.
         solver_kwargs : dict
             For scipy.optimize.minimize.
-        uselog : bool,True
-            If True, calculate log of the objective function. This can help with numerical precision
-            errors.
+        uselog : bool, True
+            If True, calculate log of the objective function. This can help with numerical
+            precision errors.
 
         Returns
         -------
@@ -606,11 +610,12 @@ class MCH(Solver):
         sample_size : int
             Number of samples to use MCH sampling step.
         mch_approximation : function
-            For performing the MCH approximation step. Is specific to the maxent model. For the
-            pairwise Ising model, this can be defined by using
+            For performing the MCH approximation step. Is specific to the maxent model.
+            For the pairwise Ising model, this can be defined by using
             `coniii.utils.define_ising_helper_functions()`.
         n_cpus : int
-            If 1 or less no parallel processing, other numbers above 0 specify number of cores to use.
+            If 1 or less no parallel processing, other numbers above 0 specify number of
+            cores to use.
         """
 
         super(MCH, self).__init__(*args, **kwargs)
@@ -639,8 +644,7 @@ class MCH(Solver):
               learn_params_kwargs={'maxdlamda':1, 'eta':1},
               generate_kwargs={},
               **kwargs):
-        """
-        Solve for maxent model parameters using MCH routine.
+        """Solve for maxent model parameters using MCH routine.
         
         Parameters
         ----------
@@ -649,8 +653,8 @@ class MCH(Solver):
         constraints : ndarray, None
             Vector of correlations to fit.
         X : ndarray, None
-            If instead of constraints, you wish to pass the raw data on which to calculate the
-            constraints using self.calc_observables.
+            If instead of constraints, you wish to pass the raw data on which to calculate
+            the constraints using self.calc_observables.
         tol : float, None
             Maximum error allowed in any observable.
         tolNorm : float, None
@@ -662,18 +666,19 @@ class MCH(Solver):
         max_iter : int, 10
             Max number of iterations of MC sampling and MCH approximation.
         custom_convergence_f : function, None
-            Function for determining convergence criterion. At each iteration, this function should
-            return the next set of learn_params_kwargs and optionally the sample size.
+            Function for determining convergence criterion. At each iteration, this
+            function should return the next set of learn_params_kwargs and optionally the
+            sample size.
 
             As an example:
 	    def learn_settings(i):
 		'''
-		Take in the iteration counter and set the maximum change allowed in any given 
-		parameter (maxdlamda) and the multiplicative factor eta, where 
+                Take in the iteration counter and set the maximum change allowed in any
+                given parameter (maxdlamda) and the multiplicative factor eta, where 
 		d(parameter) = (error in observable) * eta.
 		
-		Additional option is to also return the sample size for that step by returning a 
-		tuple. Larger sample sizes are necessary for higher accuracy.
+                Additional option is to also return the sample size for that step by
+                returning a tuple. Larger sample sizes are necessary for higher accuracy.
 		'''
 		if i<10:
 		    return {'maxdlamda':1,'eta':1}
@@ -684,6 +689,7 @@ class MCH(Solver):
             If True, also return the errflag and error history.
         learn_parameters_kwargs : dict, {'maxdlamda':1,'eta':1}
         generate_kwargs : dict, {}
+        **kwargs
 
         Returns
         -------
@@ -792,18 +798,17 @@ class MCH(Solver):
         return self.multipliers
 
     def estimate_jac(self, eps=1e-3):
-        """
-        Approximation Jacobian using the MCH approximation. 
+        """Approximation Jacobian using the MCH approximation. 
 
         Parameters
         ----------
-        eps : float,1e-3
+        eps : float, 1e-3
 
         Returns
         -------
         jac : ndarray
-            Jacobian is an n x n matrix where each row corresponds to the behavior of fvec wrt to a
-            single parameter.
+            Jacobian is an n x n matrix where each row corresponds to the behavior of fvec
+            wrt to a single parameter.
         """
 
         dlamda = np.zeros(self._multipliers.shape)
@@ -888,8 +893,7 @@ class MCHIncompleteData(MCH):
           Not ready for release.
     """
     def __init__(self, *args, **kwargs):
-        """
-        Not ready for release.
+        """Not ready for release.
         """
 
         warn("MCHIncompleteData is not officially released as part of ConIII.")
@@ -911,8 +915,7 @@ class MCHIncompleteData(MCH):
               full_output=False,
               learn_params_kwargs={},
               generate_kwargs={}):
-        """
-        Solve for parameters using MCH routine.
+        """Solve for parameters using MCH routine.
         
         Parameters
         ----------
@@ -1470,9 +1473,7 @@ class ClusterExpansion(Solver):
           useAnalyticResults=False,
           priorLmbda=0.,
           numSamples=None):
-        """
-        Calculate pairwise entropy of cluster.
-        (First fits pairwise Ising model.)
+        """Calculate pairwise entropy of cluster.  (First fits pairwise Ising model.)
         
         Parameters
         ----------
@@ -1480,8 +1481,8 @@ class ClusterExpansion(Solver):
             List of indices belonging to each cluster.
         coocMat : ndarray
             Pairwise correlations.
-        deltaJdict : dict,{}
-        useAnalyticResults : bool,False
+        deltaJdict : dict, {}
+        useAnalyticResults : bool, False
             Probably want False until analytic formulas are changed to include prior on J
 
         Returns
@@ -1526,8 +1527,8 @@ class ClusterExpansion(Solver):
         return ent, Jfull 
 
     def Sindependent(self, cluster, coocMat):
-        """
-        Entropy approximation assuming that each cluster appears independently of the others.
+        """Entropy approximation assuming that each cluster appears independently of the
+        others.
 
         Parameters
         ----------
@@ -1537,9 +1538,9 @@ class ClusterExpansion(Solver):
 
         Returns
         -------
-        Sind : float
-            Independent entropy.
-        Jfull : ndarray
+        float
+            Sind, independent entropy.
+        ndarray
             Pairwise couplings.
         """
         
@@ -1579,20 +1580,22 @@ class ClusterExpansion(Solver):
         cluster : list 
             List of indices in cluster
         coocMat : ndarray
-        deltaSdict : dict,None
-        deltaJdict : dict,None
-        verbose : bool,True
-        meanFieldRef : bool,False
-        numSamples : int,None
-        independentRef : bool,False
+        deltaSdict : dict, None
+        deltaJdict : dict, None
+        verbose : bool, True
+        meanFieldRef : bool, False
+        numSamples : int, None
+        independentRef : bool, False
             If True, expand about independent entropy
-        meanFieldRef : bool,False
+        meanFieldRef : bool, False
             If True, expand about mean field entropy
 
         Returns
         -------
-        deltaScluster
-        deltaJcluster
+        float
+            deltaScluster
+        float
+            deltaJcluster
         """
 
         if deltaSdict is None: deltaSdict = {}
@@ -1612,10 +1615,10 @@ class ClusterExpansion(Solver):
             print("deltaS: Calculating entropy for cluster",cluster)
         
         # start with full entropy (and J)
-        deltaScluster,deltaJcluster = self.S(cluster,coocMat,
-                                            deltaJdict,
-                                            priorLmbda=priorLmbda,
-                                            numSamples=numSamples)
+        deltaScluster, deltaJcluster = self.S(cluster,coocMat,
+                                              deltaJdict,
+                                              priorLmbda=priorLmbda,
+                                              numSamples=numSamples)
         
         if independentRef:
             # subtract independent reference entropy
@@ -1651,31 +1654,31 @@ class ClusterExpansion(Solver):
     def clusterID(self, cluster):
         return tuple(np.sort(cluster))
 
-    def subsets(self, set, size, sort=False):
-        """
-        Given a list, returns a list of all unique subsets of that list with given size.
+    def subsets(self, thisSet, size, sort=False):
+        """Given a list, returns a list of all unique subsets of that list with given
+        size.
 
         Parameters
         ----------
-        set : list
+        thisSet : list
         size : int
-        sort : bool,False
+        sort : bool, False
 
         Returns
         -------
-        sub : list
+        list
             All subsets of given size.
         """
 
-        if len(set) != len(np.unique(set)): raise Exception
+        if len(thisSet) != len(np.unique(thisSet)): raise Exception
         
-        if size == len(set): return [set]
-        if size > len(set): return []
+        if size == len(thisSet): return [thisSet]
+        if size > len(thisSet): return []
         if size <= 0: return []
-        if size == 1: return [ [s,] for s in set ]
+        if size == 1: return [ [s,] for s in thisSet ]
         
         sub = []
-        rest = copy.copy(set)
+        rest = copy.copy(thisSet)
         s = rest[0]
         rest.remove(s)
         
@@ -1710,15 +1713,15 @@ class ClusterExpansion(Solver):
         X : array-like
             Data set (n_samples,n_dim).
         threshold : float
-        meanFieldRef : bool,False
+        meanFieldRef : bool, False
             Expand about mean-field reference
-        independentRef : bool,True
+        independentRef : bool, True
             Expand about independent reference
-        priorLmbda : float,0.
+        priorLmbda : float, 0.
             Strength of non-interacting prior
-        meanFieldPriorLmbda : float,None
-            Strength of non-interacting prior in mean field calculation
-            (defaults to priorLmbda)
+        meanFieldPriorLmbda : float, None
+            Strength of non-interacting prior in mean field calculation (defaults to
+            priorLmbda)
         
         Returns
         -------
@@ -1805,11 +1808,10 @@ class ClusterExpansion(Solver):
 
 
 class RegularizedMeanField(Solver):
-    """
-    Implementation of regularized mean field method for solving the inverse Ising problem, as
-    described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.  ``Control of
-    Finite Critical Behaviour in a Small-Scale Social System.'' Nature Communications 8 (2017):
-    14301.  doi:10.1038/ncomms14301
+    """Implementation of regularized mean field method for solving the inverse Ising
+    problem, as described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.
+    ``Control of Finite Critical Behaviour in a Small-Scale Social System.'' Nature
+    Communications 8 (2017): 14301.  doi:10.1038/ncomms14301
     
     Specific to pairwise Ising constraints.
     """
@@ -1832,30 +1834,33 @@ class RegularizedMeanField(Solver):
               priorLmbda=0.,
               bracket=None,
               n_grid_points=200):
-        """
-        Varies the strength of regularization on the mean field J to best fit given cooccurrence data.
+        """Varies the strength of regularization on the mean field J to best fit given
+        cooccurrence data.
         
         n_grid_points : int, 200
-            If bracket is given, first test at n_grid_points points evenly spaced in the bracket interval,
-            then give the lowest three points to scipy.optimize.minimize_scalar
+            If bracket is given, first test at n_grid_points points evenly spaced in the
+            bracket interval, then give the lowest three points to
+            scipy.optimize.minimize_scalar
         sample_size : int, 100_000
         seed : int, 0
-            initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if change Seed option
-            is True
+            initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if
+            change Seed option is True
         change_seed : bool, False
         min_size : int, 0
-            Use a modified model in which samples with fewer ones than min_size are not allowed.
+            Use a modified model in which samples with fewer ones than min_size are not
+            allowed.
         min_covariance : bool, False
             ** As of v1.0.3, not currently supported **
-            Minimize covariance from emperical frequencies (see notes); trying to avoid biases, as inspired by
-            footnote 12 in TkaSchBer06
+            Minimize covariance from emperical frequencies (see notes); trying to avoid
+            biases, as inspired by footnote 12 in TkaSchBer06
         min_independent : bool, True
             ** As of v1.0.3, min_independent is the only mode currently supported **
             Each <xi> and <xi xj> residual is treated as independent
         cooc_cov : ndarray,None
             ** As of v1.0.3, not currently supported **
-            Provide a covariance matrix for residuals.  Should typically be coocSampleCovariance(samples).
-            Only used if min_covariance and min_independent are False.
+            Provide a covariance matrix for residuals.  Should typically be
+            coocSampleCovariance(samples).  Only used if min_covariance and
+            min_independent are False.
         priorLmbda : float,0.
             ** As of v1.0.3, not currently implemented **
             Strength of noninteracting prior.
@@ -1973,8 +1978,7 @@ class RegularizedMeanField(Solver):
         return self.multipliers
 
     def bracket1d(self, xList, funcList):
-        """
-        Assumes xList is monotonically increasing
+        """Assumes xList is monotonically increasing
         
         Get bracketed interval (a,b,c) with a < b < c, and f(b) < f(a) and f(c).
         (Choose b and c to make f(b) and f(c) as small as possible.)

@@ -27,7 +27,8 @@
 import numpy as np
 import scipy.special as ss
 from itertools import combinations
-np.set_printoptions(threshold=np.nan)
+import sys
+np.set_printoptions(threshold=sys.maxsize)
 
 
 def write_eqns(n, sym, corrTermsIx, suffix=''):

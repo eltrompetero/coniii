@@ -23,9 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
+v1.1.7 (Released 2019/03/??)
+----------------------------------------------------
+- Bug fixes in interface.
+- Updated dependency requirements to later versions of numba and numpy.
+
 v1.1.6 (Released 2019/03/12)
 ----------------------------------------------------
 - Bug fixes.
+- License date update.
 
 v1.1.5 (Released 2019/02/24)
 ----------------------------------------------------

@@ -34,10 +34,10 @@ from .samplers import *
 
 
 class Solver():
-    """
-    Base class for declaring common methods and attributes for inverse maxent algorithms.
+    """Base class for declaring common methods and attributes for inverse maxent
+    algorithms.
 
-    Necessary members to define
+    Members necessary to define
     ---------------------------
     calc_e : lambda function
         Takes states and parameters to calculate the energies.
@@ -1236,22 +1236,28 @@ class Pseudo(Solver):
             If True, return output from scipy.minimize() routine.
         solver_kwargs : dict, {}
             kwargs for scipy.minimize().
-        general_case : bool, True
+        general_case : bool, True 
             If True, uses self.calc_observables_r and self.get_multipliers_r to maximize
             the resulting pseudolikelihood (self._solve_general). Else an algorithm
-            specific to the Ising model is implemented (self._solve_ising).
+            specific to the Ising model is implemented (self._solve_ising). General case
+            is slower, but better for some problems.
 
         Returns
         -------
         ndarray
             multipliers
         """
-
+        
+        # general case
         if kwargs.get('general_case',True):
+            if 'general_case' in kwargs.keys():
+                del kwargs['general_case']
+            return self._solve_general(*args, **kwargs)
+        
+        # special case of Ising model
+        if 'general_case' in kwargs.keys():
             del kwargs['general_case']
-            return self._solve_general(*args,**kwargs)
-        del kwargs['general_case']
-        return self._solve_ising(*args,**kwargs)
+        return self._solve_ising(*args, **kwargs)
 
     def _solve_general(self,
                        X=None,
@@ -1279,6 +1285,11 @@ class Pseudo(Solver):
             Output from scipy.minimize.
         """
 
+        if initial_guess is None and self.multipliers is None:
+            raise Exception("Initial guess must be specified if self.multipliers is not set.")
+        elif initial_guess is None:
+            initial_guess = np.zeros_like(self.multipliers)
+
         def f(params):
             loglikelihood = 0
             for r in range(self.n):
@@ -1286,21 +1297,21 @@ class Pseudo(Solver):
                 loglikelihood += -np.log( 1+np.exp(2*E) ).sum() 
             return -loglikelihood
         
-        soln = minimize(f,initial_guess,**solver_kwargs)
+        soln = minimize(f, initial_guess, **solver_kwargs)
         self.multipliers = soln['x']
         if return_all:
             return soln['x'],soln
         return soln['x']
 
     def _solve_ising(self, X=None, initial_guess=None):
-        """Solve Ising model specifically.
+        """Solve Ising model specifically with Pseudo.
 
         Parameters
         ----------
         X : ndarray
             Data set if dimensions (n_samples, n_dim).
-        initial_guess : ndarray
-            Initial guess for the parameter values.
+        initial_guess : ndarray, None
+            Pseudo for Ising doesn't use a starting point. This is syntactic sugar.
 
         Returns
         -------

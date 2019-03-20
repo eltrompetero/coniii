@@ -68,9 +68,9 @@ rate.</dd>
 <dd><p>Generate all possible binary spin states.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>number of spins</dd>
+<dd>Number of spins.</dd>
 <dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>if true, return {-1,1} basis</dd>
+<dd>If true, return states in {-1,1} basis.</dd>
 </dl>
 <p>v : ndarray</p>
 </dd></dl>
@@ -132,12 +132,13 @@ and &lt;sisj&gt; if concat is True.</dd>
 <dt id="coniii.utils.convert_params">
 <code class="descclassname">coniii.utils.</code><code class="descname">convert_params</code><span class="sig-paren">(</span><em>h</em>, <em>J</em>, <em>convert_to</em>, <em>concat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.</p>
-<p>h : ndarray
-J : ndarray
-convert_to : str</p>
-<blockquote>
-<div>‘01’ or ‘11’</div></blockquote>
 <dl class="docutils">
+<dt>h <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Fields.</dd>
+<dt>J <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Couplings.</dd>
+<dt>convert_to <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Either ‘01’ or ‘11’.</dd>
 <dt>concat <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>If True, return a vector concatenating fields and couplings.</dd>
 </dl>
@@ -228,20 +229,20 @@ Can all be concatenated together if concat switch is True.</dd>
 <dd><p>Calculate kth order correlations of spins.</p>
 <dl class="docutils">
 <dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
-<dd>Dimensions (n_samples,n_dim).</dd>
+<dd>Dimensions (n_samples, n_dim).</dd>
 <dt>k <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Order of correlation &lt;s_{i_1} * s_{i_2} * … * s_{i_k}&gt;.</dd>
-<dt>weights <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray,None</span> <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>Order of correlation function &lt;s_{i_1} * s_{i_2} * … * s_{i_k}&gt;.</dd>
+<dt>weights <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, None</span> <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
 <dd>Calculate single and pairwise means given fractional weights for each state in
 the data such that a state only appears with some weight, typically less than
-one</dd>
-<dt>exclude_empty <span class="classifier-delimiter">:</span> <span class="classifier">bool,False</span></dt>
+one.</dd>
+<dt>exclude_empty <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
 <dd>When using with {-1,1} basis, you can leave entries with 0 and those will not be
 counted for any pair. If True, the weights option doesn’t do anything.</dd>
 </dl>
 <dl class="docutils">
-<dt>kcorr <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
-<dd>&lt;s_{i_1} * s_{i_2} * … * s_{i_k}&gt;.</dd>
+<dt>ndarray</dt>
+<dd>Kth order correlations &lt;s_{i_1} * s_{i_2} * … * s_{i_k}&gt;.</dd>
 </dl>
 </dd></dl>
 
@@ -370,9 +371,9 @@ counted).</p>
 <dd><p>Generator for producing binary states.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>number of spins</dd>
+<dd>Number of spins.</dd>
 <dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>if true, return {-1,1} basis</dd>
+<dd>If true, return states in {-1,1} basis.</dd>
 </dl>
 </dd></dl>
 

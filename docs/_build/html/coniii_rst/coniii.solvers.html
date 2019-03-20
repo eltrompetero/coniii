@@ -39,8 +39,8 @@
 <dt id="coniii.solvers.ClusterExpansion">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">ClusterExpansion</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
-<p>Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem, as
-described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).</p>
+<p>Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem,
+as described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).</p>
 <p>Specific to pairwise Ising constraints.</p>
 <dl class="method">
 <dt id="coniii.solvers.ClusterExpansion.S">
@@ -512,16 +512,15 @@ errors.</dd>
 <dt id="coniii.solvers.Pseudo">
 <em class="property">class </em><code class="descclassname">coniii.solvers.</code><code class="descname">Pseudo</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
-<p>Pseudolikelihood approximation to solving the inverse Ising problem as described in Aurell and Ekeberg,
-PRL 108, 090201 (2012).</p>
+<p>Pseudolikelihood approximation to solving the inverse Ising problem as described in
+Aurell and Ekeberg, PRL 108, 090201 (2012).</p>
 <dl class="method">
 <dt id="coniii.solvers.Pseudo.cond_hess">
 <code class="descname">cond_hess</code><span class="sig-paren">(</span><em>r</em>, <em>X</em>, <em>Jr</em>, <em>pairCoocRhat=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_hess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape
-(dimension of system)x(dimension of system)</p>
-<p>Current implementation uses more memory for speed.
-For large sample size, it may make sense to break up differently
-if too much memory is being used.</p>
+<dd><p>Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape (dimension of
+system)x(dimension of system)</p>
+<p>Current implementation uses more memory for speed.  For large sample size, it may
+make sense to break up differently if too much memory is being used.</p>
 <dl class="docutils">
 <dt>pairCooc <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
 <dd>Pass pair_cooc_mat(X) to speed calculation.</dd>
@@ -531,8 +530,7 @@ if too much memory is being used.</p>
 <dl class="method">
 <dt id="coniii.solvers.Pseudo.cond_jac">
 <code class="descname">cond_jac</code><span class="sig-paren">(</span><em>r</em>, <em>X</em>, <em>Jr</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_jac" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns d cond_log_likelihood / d Jr,
-with shape (dimension of system)</p>
+<dd><p>Returns d cond_log_likelihood / d Jr, with shape (dimension of system)</p>
 </dd></dl>
 
 <dl class="method">
@@ -574,13 +572,22 @@ J should be symmetric</dd>
 <dl class="method">
 <dt id="coniii.solvers.Pseudo.solve">
 <code class="descname">solve</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.solve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Two different methods are implemented and can be called from self.solve. One is specific to the Ising
-model and the other uses a general all-purpose optimization (scipy.optimize) to solve the problem.</p>
+<dd><p>Two different methods are implemented and can be called from self.solve. One is
+specific to the Ising model and the other uses a general all-purpose optimization
+to solve the problem.</p>
 <dl class="docutils">
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Data set if dimensions (n_samples, n_dim).</dd>
+<dt>initial_guess <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, None</span></dt>
+<dd>Initial guess for the parameter values.</dd>
+<dt>return_all <span class="classifier-delimiter">:</span> <span class="classifier">bool, False</span></dt>
+<dd>If True, return output from scipy.minimize() routine.</dd>
+<dt>solver_kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict, {}</span></dt>
+<dd>kwargs for scipy.minimize().</dd>
 <dt>general_case <span class="classifier-delimiter">:</span> <span class="classifier">bool, True</span></dt>
-<dd>If True, uses self.calc_observables_r and self.get_multipliers_r to maximize the resulting
-pseudolikelihood (self._solve_general). Else an algorithm specific to the Ising model is
-implemented (self._solve_ising).</dd>
+<dd>If True, uses self.calc_observables_r and self.get_multipliers_r to maximize
+the resulting pseudolikelihood (self._solve_general). Else an algorithm
+specific to the Ising model is implemented (self._solve_ising).</dd>
 </dl>
 <dl class="docutils">
 <dt>ndarray</dt>

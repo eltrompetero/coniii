@@ -22,7 +22,7 @@
 
 # Equations for 4-spin Ising model.
 
-# Written on 2019/03/12.
+# Written on 2019/03/20.
 from numpy import zeros, exp, array, prod, isnan
 from ..enumerate import fast_logsumexp
 

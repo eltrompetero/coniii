@@ -93,19 +93,56 @@ print where(exact.get_nidx(3,4))
 </dd></dl>
 
 <dl class="function">
+<dt id="coniii.enumerate.mp_fast_logsumexp">
+<code class="descclassname">coniii.enumerate.</code><code class="descname">mp_fast_logsumexp</code><span class="sig-paren">(</span><em>X</em>, <em>coeffs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.mp_fast_logsumexp" title="Permalink to this definition">¶</a></dt>
+<dd><p>fast_logsumexp for high precision numbers using mpmath.</p>
+<dl class="docutils">
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Terms inside logs.</dd>
+<dt>coeffs <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Factors in front of exponentials.</dd>
+</dl>
+<dl class="docutils">
+<dt>float</dt>
+<dd>Value of magnitude of quantity inside log (the sum of exponentials).</dd>
+<dt>float</dt>
+<dd>Sign.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="coniii.enumerate.pairwise">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">pairwise</code><span class="sig-paren">(</span><em>n</em>, <em>sym=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.pairwise" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">coniii.enumerate.</code><code class="descname">pairwise</code><span class="sig-paren">(</span><em>n</em>, <em>sym=0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.pairwise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for writing pairwise maxent model (Ising) files.</p>
+<dl class="docutils">
+<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>System size.</dd>
+<dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">int, 0</span></dt>
+<dd>Can be 0 or 1.</dd>
+</dl>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs</p>
+<p>None</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.triplet">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">triplet</code><span class="sig-paren">(</span><em>n</em>, <em>sym=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.triplet" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">coniii.enumerate.</code><code class="descname">triplet</code><span class="sig-paren">(</span><em>n</em>, <em>sym=0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.triplet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for writing triplet-order maxent model.</p>
+<dl class="docutils">
+<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>System size.</dd>
+<dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">int, 0</span></dt>
+<dd>Can be 0 or 1.</dd>
+</dl>
+<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs</p>
+<p>None</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.write_eqns">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_eqns</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>corrTermsIx</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_eqns" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">coniii.enumerate.</code><code class="descname">write_eqns</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>corrTermsIx</em>, <em>suffix=''</em>, <em>high_prec=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_eqns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create strings for writing out the equations and then write them to file.</p>
+<p>TODO: This code needs some cleanup.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>number of spins</dd>
@@ -118,12 +155,13 @@ specify which correlations to write down. Each consecutive array should specify
 a matrix of sequentially increasing dimension.
 [Nx1, NxN, NxNxN, …]</dd>
 </dl>
-<p>suffix : str, ‘’</p>
+<p>suffix : str, ‘’
+high_prec : bool, False</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.write_py">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_py</code><span class="sig-paren">(</span><em>n</em>, <em>contraintTermsIx</em>, <em>signs</em>, <em>expterms</em>, <em>Z</em>, <em>extra=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_py" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">coniii.enumerate.</code><code class="descname">write_py</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>contraintTermsIx</em>, <em>signs</em>, <em>expterms</em>, <em>Z</em>, <em>extra=''</em>, <em>suffix=''</em>, <em>high_prec=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write out Ising equations for Python.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
@@ -138,10 +176,13 @@ signs : list of ndarray</p>
 <dd>Every single energy term.</dd>
 <dt>Z <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd>Energies for all states that will be put into partition function.</dd>
+<dt>extra <span class="classifier-delimiter">:</span> <span class="classifier">str, ‘’</span></dt>
+<dd>any extra lines to add at the end</dd>
 </dl>
-<p>extra : str, ‘’
-suffix : str, ‘’
-extra (str,’‘) : any extra lines to add at the end</p>
+<p>suffix : str, ‘’
+high_prec : bool, False</p>
+<blockquote>
+<div>If True, write version that uses mpmath for high precision calculations.</div></blockquote>
 </dd></dl>
 
 </div>

@@ -25,8 +25,12 @@ SOFTWARE.
 
 v1.1.7 (Released 2019/03/20)
 ----------------------------------------------------
+- enumerate.py can now write files that handle arbitrary precision using mpmath. These are
+  written to files using the prefix '_hp.py'.
 - Interface bug fixes.
-- Updated dependency requirements to later versions of numba and numpy.
+- Updated dependency requirements to later versions of numba and numpy and new dependency
+  on mpmath.
+- Some revisions to usage guide notebook.
 
 v1.1.6 (Released 2019/03/12)
 ----------------------------------------------------

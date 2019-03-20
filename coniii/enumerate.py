@@ -1,4 +1,4 @@
-# ========================================================================================================= #
+# ===================================================================================== #
 # Module for solving small n Ising models exactly.
 # Author : Edward Lee, edlee@alumni.princeton.edu
 #
@@ -23,17 +23,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# ========================================================================================================= #
+# ===================================================================================== #
 import numpy as np
+import mpmath as mp
 import scipy.special as ss
 from itertools import combinations
 import sys
 np.set_printoptions(threshold=sys.maxsize)
 
 
-def write_eqns(n, sym, corrTermsIx, suffix=''):
-    """
-    Create strings for writing out the equations and then write them to file.
+def write_eqns(n, sym, corrTermsIx, suffix='', high_prec=False):
+    """Create strings for writing out the equations and then write them to file.
+
+    TODO: This code needs some cleanup.
 
     Parameters
     ----------
@@ -48,16 +50,21 @@ def write_eqns(n, sym, corrTermsIx, suffix=''):
         a matrix of sequentially increasing dimension.
         [Nx1, NxN, NxNxN, ...]
     suffix : str, ''
+    high_prec : bool, False
     """
 
     import re
-    assert sym in [0,1], "sym must be 0 or 1."
+
+    assert sym in [0,1], "sym argument must be 0 or 1."
     abc = 'HJKLMNOPQRSTUVWXYZABCDE'
-    expterms = [] # 2**N exponential corrTermsIx
-    binstates = [] # all binary states as strings
+    expterms = []  # 2**N exponential corrTermsIx
+    binstates = []  # all binary states as strings
     signs = []  # coefficient for all numerator terms when computing correlations
     br = "[]"
     ix0 = 0
+    # default suffix for high precision files
+    if high_prec:
+        suffix += '_hp'
     
     # Collect all corrTermsIx in the partition function.
     for state in range(2**n):
@@ -74,8 +81,8 @@ def write_eqns(n, sym, corrTermsIx, suffix=''):
             for i in range(len(corrTermsIx)):
                 expterms[state] += get_terms01(corrTermsIx[i], abc[i], binstates[state], br, ix0)
 
-        expterms[state] = re.sub(r'\+0\+','+',expterms[state])
-        expterms[state] = re.sub(r'\)\+0',')',expterms[state])
+        expterms[state] = re.sub(r'\+0\+','+', expterms[state])
+        expterms[state] = re.sub(r'\)\+0',')', expterms[state])
         expterms[state] += ', '
 
     # Collect all terms with corresponding prefix in the equation to solve.
@@ -102,9 +109,17 @@ def write_eqns(n, sym, corrTermsIx, suffix=''):
         extra = '\n    Pout = Pout[::-1]'
     else:
         extra = ''
-    write_py(n, corrTermsIx, signs, expterms, Z, extra=extra, suffix=suffix)
 
-def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
+    # write to files
+    write_py(n, sym, corrTermsIx, signs, expterms, Z,
+             extra=extra,
+             suffix=suffix,
+             high_prec=high_prec)
+
+def write_py(n, sym, contraintTermsIx, signs, expterms, Z,
+             extra='',
+             suffix='',
+             high_prec=False):
     """
     Write out Ising equations for Python.
 
@@ -120,8 +135,10 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     Z : str
         Energies for all states that will be put into partition function.
     extra : str, ''
+        any extra lines to add at the end
     suffix : str, ''
-    extra (str,'') : any extra lines to add at the end
+    high_prec : bool, False
+        If True, write version that uses mpmath for high precision calculations.
     """
 
     import time
@@ -146,12 +163,21 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     f.write("# Equations for %d-spin Ising model.\n\n"%n)
     f.write("# ")
     f.write(time.strftime("Written on %Y/%m/%d.")+"\n")
-    f.write("from numpy import zeros, exp, array, prod, isnan\nfrom ..enumerate import fast_logsumexp\n\n")
+    if high_prec:
+        f.write("from numpy import zeros, array, prod\n")
+        f.write("from ..enumerate import mp_fast_logsumexp as fast_logsumexp\n")
+        f.write("from mpmath import exp, isnan\n\n")
+    else:
+        f.write("from numpy import zeros, exp, array, prod, isnan\n")
+        f.write("from ..enumerate import fast_logsumexp\n\n")
 
     # Keep these as string because they need to grow in the loop and then can just be
     # added all at once at the end.
     fargs = "def calc_observables(params):\n"
-    vardec = '    Cout = zeros(('+str(sum([len(i) for i in signs]))+'))\n' # string of variable declarations
+    if high_prec:
+        vardec = '    Cout = zeros(('+str(sum([len(i) for i in signs]))+'), dtype=object)\n' # string of variable declarations
+    else:
+        vardec = '    Cout = zeros(('+str(sum([len(i) for i in signs]))+'))\n' # string of variable declarations
     eqns = '' # string of equations to compute
     ix = np.hstack(( 0, np.cumsum([len(i) for i in signs]) ))
 
@@ -182,7 +208,10 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     f.write(vardec)
     _write_energy_terms(f, Z)
     f.write(eqns)
-    f.write("    Cout[isnan(Cout)] = 0.\n")
+    if high_prec:
+        f.write("    for i in range(Cout.size):\n         if isnan(Cout[i]):\n             Cout[i] = 0.\n")
+    else:
+        f.write("    Cout[isnan(Cout)] = 0.\n")
     f.write("    return(Cout)\n\n")
 
     # Write equations for probabilities of all states.
@@ -197,7 +226,10 @@ def write_py(n, contraintTermsIx, signs, expterms, Z, extra='', suffix=''):
     vardec = ''
     for i in range(len(contraintTermsIx)):
         vardec += '    '+abc[i]+' = params['+str(ix[i])+':'+str(ix[i+1])+']\n'
-    vardec += '    Pout = zeros(('+str(2**n)+'))\n' # string of variable declarations
+    if high_prec:
+        vardec += '    Pout = zeros(('+str(2**n)+'), dtype=object)\n'  # string of variable declarations
+    else:
+        vardec += '    Pout = zeros(('+str(2**n)+'))\n'  # string of variable declarations
     f.write(vardec)
     _write_energy_terms(f, Z)
     
@@ -371,30 +403,66 @@ def get_nidx(k, n):
                 j += 1
         return np.array(ix)[:,::-1] # make sure last idx increases first
 
-def pairwise(n, sym=0):
+def pairwise(n, sym=0, **kwargs):
+    """Wrapper for writing pairwise maxent model (Ising) files.
+
+    Parameters
+    ----------
+    n : int
+        System size.
+    sym : int, 0
+        Can be 0 or 1.
+    **kwargs
+    
+    Returns
+    -------
+    None
+    """
+    
     assert sym==0 or sym==1
 
     print("Writing equations for pairwise Ising model with %d spins."%n)
     if sym:
         write_eqns(n, sym, [np.where(np.ones((n))==1),
                             np.where(np.triu(np.ones((n,n)),k=1)==1)],
-                   suffix='_sym')
+                   suffix='_sym',
+                   **kwargs)
     else:
         write_eqns(n, sym, [np.where(np.ones((n))==1),
-                            np.where(np.triu(np.ones((n,n)),k=1)==1)])
+                            np.where(np.triu(np.ones((n,n)),k=1)==1)],
+                   **kwargs)
 
-def triplet(n, sym=0):
+def triplet(n, sym=0, **kwargs):
+    """Wrapper for writing triplet-order maxent model.
+    
+    Parameters
+    ----------
+    n : int
+        System size.
+    sym : int, 0
+        Can be 0 or 1.
+    **kwargs
+    
+    Returns
+    -------
+    None
+    """
+
     assert sym==0 or sym==1
 
     print("Writing equations for Ising model with triplet interactions and %d spins."%n)
     if sym:
         write_eqns(n,sym,[(range(n),),
                           list(zip(*list(combinations(range(n),2)))),
-                          list(zip(*list(combinations(range(n),3))))], suffix='_sym_triplet')
+                          list(zip(*list(combinations(range(n),3))))],
+                   suffix='_sym_triplet',
+                   **kwargs)
     else:
         write_eqns(n,sym,[(range(n),),
                           list(zip(*list(combinations(range(n),2)))),
-                          list(zip(*list(combinations(range(n),3))))], suffix='_triplet')
+                          list(zip(*list(combinations(range(n),3))))],
+                   suffix='_triplet',
+                   **kwargs)
 
 def _write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
     """
@@ -475,10 +543,38 @@ def fast_logsumexp(X, coeffs=None):
         return np.log(np.abs(y))+Xmx, -1.
     return np.log(y)+Xmx, 1.
 
+def mp_fast_logsumexp(X, coeffs=None):
+    """fast_logsumexp for high precision numbers using mpmath.
+    
+    Parameters
+    ----------
+    X : ndarray
+        Terms inside logs.
+    coeffs : ndarray
+        Factors in front of exponentials. 
+
+    Returns
+    -------
+    float
+        Value of magnitude of quantity inside log (the sum of exponentials).
+    float
+        Sign.
+    """
+
+    Xmx = max(X)
+    if coeffs is None:
+        y = sum(map(mp.exp, X-Xmx))
+    else:
+        y = np.array(coeffs).dot(list(map(mp.exp, X-Xmx)))
+
+    if y<0:
+        return mp.log(abs(y))+Xmx, -1.
+    return mp.log(y)+Xmx, 1.
+
+
 
 if __name__=='__main__':
-    """
-    When run with Python, this will write the equations for the Ising model
+    """When run with Python, this will write the equations for the Ising model
     into file ising_eqn_[n][_sym] where n will be replaced by the system size
     and the suffix '_sym' is included if the equations are written in the
     {-1,+1} basis.
@@ -491,27 +587,43 @@ if __name__=='__main__':
 
     To include triplet order interactions, include a 3 at the very end
     >>> python enumerate.py 3 0 3
+
+    To write high precision, include an '-hp=true' as the last argument.
+    >>> python enumerate.py 3 0 3 -hp=true
     """
 
     import sys
-    n = int(sys.argv[1])
-    if len(sys.argv)==2:
+
+    args = [i for i in sys.argv if '-'!=i[0]]
+    kwargs = [i for i in sys.argv if '-'==i[0]]
+
+    n = int(args[1])
+    if len(args)==2:
         sym = 0
         order = 2
-    elif len(sys.argv)==3:
-        sym = int(sys.argv[2])
+    elif len(args)==3:
+        sym = int(args[2])
         assert sym==0 or sym==1
         order = 2
-    elif len(sys.argv)==4:
-        sym = int(sys.argv[2])
-        order = int(sys.argv[3])
+    elif len(args)==4:
+        sym = int(args[2])
+        order = int(args[3])
     else:
         raise Exception("Unrecognized arguments.")
     
+    # parse kwargs
+    if len(kwargs):
+        if '-hp='==kwargs[0][:4]:
+            if kwargs[0][4:].lower()=='true':
+                high_prec = True
+            elif kwargs[0][4:].lower()=='false':
+                high_prec = False
+            else:
+                raise Exception("Unrecognized value for hp.")   
+
     if order==2:
-        pairwise(n, sym) 
+        pairwise(n, sym, high_prec=high_prec) 
     elif order==3:
-        triplet(n, sym) 
+        triplet(n, sym, high_prec=high_prec) 
     else:
         raise NotImplementedError("Only order up to 3 implemented for this convenient interface.")
-

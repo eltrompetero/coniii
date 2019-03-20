@@ -24,6 +24,7 @@
 # Code for compiling package for uplaod to PyPI.
 # Clean previous compilation results.
 trash build dist
+find ./ -name *.pyc -exec rm {} \;
 
 # Update usage guide to latest version for upload to PyPI.
 cp ipynb/usage_guide.ipynb coniii/

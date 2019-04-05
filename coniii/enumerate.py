@@ -619,7 +619,12 @@ if __name__=='__main__':
             elif kwargs[0][4:].lower()=='false':
                 high_prec = False
             else:
-                raise Exception("Unrecognized value for hp.")   
+                raise Exception("Unrecognized value for hp.")
+        else:
+            high_prec = False
+    else:
+        # default kwargs
+        high_prec = False
 
     if order==2:
         pairwise(n, sym, high_prec=high_prec) 

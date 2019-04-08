@@ -96,7 +96,7 @@ $ pip install matplotlib 'multiprocess>=0.70.5,<1' matplotlib scipy 'numpy>=1.15
 ## Troubleshooting
 
 This package is only maintained for Python 3 as of v1.0.2 and has only been tested for
-Python 3.6 up to 3.7.1. Check which version of Python you are running in your terminal
+Python 3.7.2. Check which version of Python you are running in your terminal
 with 
 ```bash
 $ python --version

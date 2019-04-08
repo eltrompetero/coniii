@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
+v1.1.8 (Released 2019/04/08)
+----------------------------------------------------
+- Bug fixes.
+
 v1.1.7 (Released 2019/03/20)
 ----------------------------------------------------
 - enumerate.py can now write files that handle arbitrary precision using mpmath. These are

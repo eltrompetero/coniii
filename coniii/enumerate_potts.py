@@ -106,7 +106,7 @@ class PythonFileWriterBase():
         f.write('# This file contains equations for the Potts model with %d spins and %d states.'%(n,k))
         f.write('\n\n')
         f.write('from numpy import zeros, exp\n')
-        f.write('from .enumerate import fast_logsumexp\n\n')
+        f.write('from ..enumerate import fast_logsumexp\n\n')
     
     def _write_correlations(self, f):
         f.write('def calc_observables(params):\n')

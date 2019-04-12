@@ -183,6 +183,8 @@ def test_calc_de():
             counter+=1
 
 def test_base_repr():
+    base_repr(0,2)
+
     for i in range(50,80):
         for base in [2,3,5,18]:
             print('i=%d, base=%d'%(i, base))

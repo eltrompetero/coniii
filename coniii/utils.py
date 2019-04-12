@@ -313,12 +313,12 @@ def xpotts_states(n, k):
 
     assert n>0, "n cannot be <0"
     assert k>=2, "k cannot be <2"
-    
+   
     def v():
         for i in range(k**n):
-            state = [int(i) for i in np.base_repr(i, base=k)]
+            state = base_repr(i, k)
             while len(state)<n:
-                state.insert(0,0)
+                state.insert(0,'0')
             yield state
     return v()
 
@@ -337,6 +337,9 @@ def base_repr(i, base):
     """
 
     assert i>=0 and base>=2
+    
+    if i==0:
+        return ['0']
 
     if base<=10:
         return _small_base(i, base)

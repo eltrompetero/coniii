@@ -322,6 +322,70 @@ def xpotts_states(n, k):
             yield state
     return v()
 
+@njit
+def base_repr(i, base):
+    """Return decimal number in given base as list.
+    
+    Parameters
+    ----------
+    i : int
+    base : int
+
+    Returns
+    -------
+    list
+    """
+
+    assert i>=0 and base>=2
+
+    if base<=10:
+        return _small_base(i, base)
+
+    assert base<=36
+    return _large_base(i, base)
+
+@njit
+def _small_base(i, base):
+    alphabet = '0123456789'
+    rep = []
+    largestPower = int(np.log(i)/np.log(base))
+    term = int(i/base**largestPower)
+    rep.append(alphabet[term])
+    i -= term*base**largestPower
+    
+    exponent = largestPower-1
+    while exponent>0:
+        if base**exponent>i:
+            rep.append('0')
+        else:
+            term = int(i/base**exponent)
+            rep.append(alphabet[term])
+            i -= term*base**exponent
+        exponent -= 1
+    rep.append(alphabet[i])
+    return rep
+  
+@njit
+def _large_base(i, base):
+    alphabet = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
+    rep = []
+    largestPower = int(np.log(i)//np.log(base))
+    term = int(i//base**largestPower)
+    rep.append(alphabet[term])
+    i -= term*base**largestPower
+    
+    exponent = largestPower-1
+    while exponent>0:
+        if base**exponent>i:
+            rep.append('0')
+        else:
+            term = int(i//base**exponent)
+            rep.append(alphabet[term])
+            i -= term*base**exponent
+        exponent -= 1
+    rep.append(alphabet[i])
+    return rep
+
 def convert_params(h, J, convert_to, concat=False):
     """Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.
 

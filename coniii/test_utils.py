@@ -182,5 +182,12 @@ def test_calc_de():
             assert calc_de(s[None,:], counter)==-s[i]*s[j]
             counter+=1
 
+def test_base_repr():
+    for i in range(50,80):
+        for base in [2,3,5,18]:
+            print('i=%d, base=%d'%(i, base))
+            print('my algo '+''.join(base_repr(i,base)), '\nnumpy', np.base_repr(i,base))
+            assert ''.join(base_repr(i,base))==np.base_repr(i,base)
+
 if __name__=='__main__':
     test_convert_params()

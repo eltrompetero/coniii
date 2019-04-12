@@ -318,7 +318,7 @@ def xpotts_states(n, k):
         for i in range(k**n):
             state = base_repr(i, k)
             while len(state)<n:
-                state.insert(0,'0')
+                state.insert(0, '0')
             yield state
     return v()
 
@@ -357,7 +357,7 @@ def _small_base(i, base):
     i -= term*base**largestPower
     
     exponent = largestPower-1
-    while exponent>0:
+    while exponent>=0:
         if base**exponent>i:
             rep.append('0')
         else:
@@ -365,7 +365,6 @@ def _small_base(i, base):
             rep.append(alphabet[term])
             i -= term*base**exponent
         exponent -= 1
-    rep.append(alphabet[i])
     return rep
   
 @njit
@@ -378,7 +377,7 @@ def _large_base(i, base):
     i -= term*base**largestPower
     
     exponent = largestPower-1
-    while exponent>0:
+    while exponent>=0:
         if base**exponent>i:
             rep.append('0')
         else:
@@ -386,7 +385,6 @@ def _large_base(i, base):
             rep.append(alphabet[term])
             i -= term*base**exponent
         exponent -= 1
-    rep.append(alphabet[i])
     return rep
 
 def convert_params(h, J, convert_to, concat=False):

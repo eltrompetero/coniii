@@ -183,13 +183,17 @@ def test_calc_de():
             counter+=1
 
 def test_base_repr():
-    base_repr(0,2)
-
+    # some misc test cases
     for i in range(50,80):
         for base in [2,3,5,18]:
             print('i=%d, base=%d'%(i, base))
             print('my algo '+''.join(base_repr(i,base)), '\nnumpy', np.base_repr(i,base))
             assert ''.join(base_repr(i,base))==np.base_repr(i,base)
+    
+    # systematically increasing power: can be a difficult case (given floating point rep)
+    for i in range(2,37):
+        for power in range(1,7):
+            assert ''.join(base_repr(i**power,i))=='1'+'0'*power
 
 if __name__=='__main__':
     test_convert_params()

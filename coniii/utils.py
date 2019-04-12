@@ -30,6 +30,8 @@ from scipy.special import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
 from scipy.special import binom
+NUMERALS = '0123456789'
+ALPHNUM = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
 
 
 @njit(nogil=True, cache=True)
@@ -349,41 +351,50 @@ def base_repr(i, base):
 
 @njit
 def _small_base(i, base):
-    alphabet = '0123456789'
     rep = []
-    largestPower = int(np.log(i)/np.log(base))
-    term = int(i/base**largestPower)
-    rep.append(alphabet[term])
-    i -= term*base**largestPower
+    exponent = int(np.log(i)/np.log(base))
+    term = int(i/base**exponent)
+    # handle problematically rounded cases
+    if term==base:
+        exponent += 1
+        term = 1
+    rep.append(NUMERALS[term])
+    i -= term*base**exponent
     
-    exponent = largestPower-1
+    exponent -= 1
     while exponent>=0:
-        if base**exponent>i:
+        baseToExp = base**exponent
+        if baseToExp>i:
             rep.append('0')
         else:
-            term = int(i/base**exponent)
-            rep.append(alphabet[term])
-            i -= term*base**exponent
+            term = int(i/baseToExp)
+            rep.append(NUMERALS[term])
+            i -= term*baseToExp
         exponent -= 1
     return rep
   
 @njit
 def _large_base(i, base):
-    alphabet = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
+    ALPHANUM = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
     rep = []
-    largestPower = int(np.log(i)//np.log(base))
-    term = int(i//base**largestPower)
-    rep.append(alphabet[term])
-    i -= term*base**largestPower
+    exponent = int(np.log(i)/np.log(base))
+    term = int(i/base**exponent)
+    # handle problematically rounded cases
+    if term==base:
+        exponent += 1
+        term = 1
+    rep.append(ALPHANUM[term])
+    i -= term*base**exponent
     
-    exponent = largestPower-1
+    exponent -= 1
     while exponent>=0:
-        if base**exponent>i:
+        baseToExp = base**exponent
+        if baseToExp>i:
             rep.append('0')
         else:
-            term = int(i//base**exponent)
-            rep.append(alphabet[term])
-            i -= term*base**exponent
+            term = int(i/baseToExp)
+            rep.append(ALPHANUM[term])
+            i -= term*baseToExp
         exponent -= 1
     return rep
 

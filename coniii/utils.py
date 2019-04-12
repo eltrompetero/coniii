@@ -270,7 +270,7 @@ def k_corr(X, k,
     return kcorr
 
 def xbin_states(n, sym=False):
-    """Generator for producing binary states.
+    """Generator for iterating through all possible binary states.
 
     Parameters
     ----------
@@ -278,6 +278,10 @@ def xbin_states(n, sym=False):
         Number of spins.
     sym : bool
         If true, return states in {-1,1} basis.
+
+    Returns
+    -------
+    generator
     """
 
     assert n>0, "n cannot be <0"
@@ -289,6 +293,33 @@ def xbin_states(n, sym=False):
             else:
                 yield np.array(list(np.binary_repr(i,width=n))).astype('int')*2-1
 
+    return v()
+
+def xpotts_states(n, k):
+    """Generator for iterating through all states for Potts model with k distinct states.
+
+    Parameters
+    ----------
+    n : int
+        Number of spins.
+    k : int
+        Number of distinct states. These are labeled by integers starting from 0 and must
+        be <=36.
+
+    Returns
+    -------
+    generator
+    """
+
+    assert n>0, "n cannot be <0"
+    assert k>=2, "k cannot be <2"
+    
+    def v():
+        for i in range(k**n):
+            state = [int(i) for i in np.base_repr(i, base=k)]
+            while len(state)<n:
+                state.insert(0,0)
+            yield state
     return v()
 
 def convert_params(h, J, convert_to, concat=False):

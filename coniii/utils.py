@@ -987,3 +987,72 @@ def calc_de(s, i):
         i -= s.shape[1]
         i, j = ind_to_sub(s.shape[1], i)
         return -s[:,i] * s[:,j]
+
+def coarse_grain_with_func(X, n_times, sim_func, coarse_func):
+    """Iteratively coarse-grain X by combining pairs with the highest similarity. Both the
+    function to measure similarity and to implement the coarse-graining must be supplied.
+
+    Parameters
+    ----------
+    X : ndarray
+        Each col is a variable and each row is an observation (n_samples, n_system).
+    n_times : int
+        Number of times to coarse grain.
+    sim_func : function
+        Takes an array like X and returns a vector of ncol*(ncol-1)//2 pairwise
+        similarities.
+    coarse_func : function
+        Takes a two col array and returns a single vector.
+
+    Returns
+    -------
+    ndarray
+        Coarse-grained version of X.
+    list of lists of ints 
+        Each list specifies which columns of X have been coarse-grained into each col of
+        the coarse X.
+    """
+
+    assert np.log2(X.shape[1])>n_times
+
+    coarseX = X.copy()
+    originalIx = [[i] for i in range(X.shape[1])]
+
+    # Combine sets of spins with the largest pairwise correlations
+    for coarseix in range(n_times):
+        n = coarseX.shape[1]
+        cij = squareform(sim_func(coarseX))
+        assert cij.shape==(n,n)
+        ix = list(range(coarseX.shape[1]))
+        
+        newClusters = []
+        for i in range(n//2):
+            # find maximally correlated pair of spins
+            mxix = np.argmax(cij.ravel())
+            mxix = (mxix//(n-2*i), mxix%(n-2*i))  # row and col
+            if mxix[0]>mxix[1]:
+                mxix = (mxix[1],mxix[0])
+            
+            newClusters.append((ix[mxix[0]], ix[mxix[1]]))
+            # remove corresponding rows and cols of combined pair
+            cij = np.delete(np.delete(cij, mxix[0], axis=0), mxix[0], axis=1)
+            cij = np.delete(np.delete(cij, mxix[1]-1, axis=0), mxix[1]-1, axis=1)
+            ix.pop(mxix[0])
+            ix.pop(mxix[1]-1)
+        if n%2:
+            # if X contains an odd number of cols
+            newClusters.append((ix[0],))
+        
+        # coarse-grain data
+        X_ = np.zeros((coarseX.shape[0],int(np.ceil(n/2))), dtype=X.dtype)
+        originalIx_ = []
+        for i,ix in enumerate(newClusters):
+            X_[:,i] = coarse_func(coarseX[:,ix])
+            originalIx_.append([])
+            for ix_ in ix:
+                originalIx_[-1] += originalIx[ix_]
+        originalIx = originalIx_
+        coarseX = X_
+    binsix = originalIx
+    
+    return coarseX, binsix

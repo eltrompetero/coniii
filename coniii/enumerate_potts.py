@@ -220,17 +220,19 @@ class SpecificFieldGenericCouplings(PythonFileWriterBase):
         return gen()
 #end SpecificFieldGenericCouplings
 
+
 # terminal interface
 if __name__=='__main__':
     """
-    An example to write an N=9 system with K=3 distinct states.
-    >>> python enumerate_potts.py 9 3 coniii/ising_eqn/ising_eqn_9_potts.py
+    An example to write an N=9 system with K=3 distinct states. Must specify that it is a
+    module to be able to get relative imports to work.
+    >>> python -m coniii.enumerate_potts 9 3 coniii/ising_eqn/ising_eqn_9_potts.py
     """
 
     n = int(sys.argv[1])
     k = int(sys.argv[2])
     fname = sys.argv[3]
-    assert n>2 and n>k
+    assert n>2 and k>=2
 
     writer = SpecificFieldGenericCouplings(n, k)
     writer.write(fname)

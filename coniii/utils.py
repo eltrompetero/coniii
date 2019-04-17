@@ -843,10 +843,14 @@ def define_ising_helper_functions_sym():
 
     Returns
     -------
-    calc_e
-    calc_observables
-    mch_approximation
+    function
+        calc_e
+    function
+        calc_observables
+    function
+        mch_approximation
     """
+
     @njit("float64[:](int64[:],float64[:,:])", cache=True)
     def fast_sum(J,s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""

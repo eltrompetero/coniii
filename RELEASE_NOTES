@@ -27,6 +27,7 @@ v1.1.9 (Released 2019/04/??)
 ----------------------------------------------------
 - Added support for Potts models in enumerate_potts.py module.
 - Typos in usage guide Jupyter notebook fixed.
+- Added Ising class in .ising module.
 
 v1.1.8 (Released 2019/04/08)
 ----------------------------------------------------

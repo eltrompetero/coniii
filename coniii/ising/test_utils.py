@@ -29,7 +29,15 @@ from .utils import *
 
 def test_Ising():
     n = 5
-    model = Ising(n, h=-.1, J=.1)
+    model = Ising(n, h=-10, J=.1)
     assert model.hJ.size==(n*(n-1)//2+n)
     assert model.Jmat.shape==(n,n)
     assert np.array_equal(model.find_basin(np.ones(n)), -np.ones(n))
+    assert np.array_equal(model.find_basin(-np.ones(n)), -np.ones(n))
+
+    model.correlations()
+    model.correlations('1')
+    model.fields()
+    model.fields('1')
+    model.couplings()
+    model.couplings('1')

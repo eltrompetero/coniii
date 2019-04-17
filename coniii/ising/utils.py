@@ -60,7 +60,7 @@ class Ising():
         elif not hasattr(J, '__len__'):
             J = np.zeros(n*(n-1)//2)+J
         else:
-            assert len(J)==(n*(n-1)/2+n), "Number of couplings should be equal to n choose 2."
+            assert len(J)==(n*(n-1)//2), "Number of couplings should be equal to n choose 2."
         assert h.ndim==1 and J.ndim==1, "Both h and J must be provided as vectors."
         
         self.n = n
@@ -144,12 +144,12 @@ class Ising():
                 atMin = True
         return thisState
     
-    def neighbor_dE(self, currentState):
+    def neighbor_dE(self, state):
         """dE to get to single flip neighbors."""
 
         dE = np.zeros(self.n)
         for i in range(self.n):
-            dE[i] = -2*currentState[i]*self.hJ[i] -2*currentState[i]*self.Jmat[i].sum()
+            dE[i] = 2*state[i]*self.hJ[i] +2*state[i]*(state*self.Jmat[i]).sum()
         return dE
     
     @staticmethod

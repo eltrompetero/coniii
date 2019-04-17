@@ -1,3 +1,12 @@
+# ===================================================================================== #
+# Enumerate module for writing equations for Potts models. There are many different kinds
+# of ways of parameterizing Potts models especially in the face of limited data. Here are
+# a few particular examples that may be useful.
+# 
+# Provided as part of the ConIII package.
+# 
+# Author: Eddie Lee, edl56@cornell.edu
+# ===================================================================================== #
 # MIT License
 # 
 # Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
@@ -19,15 +28,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# ===================================================================================== #
-# Enumerate module for writing equations for Potts models. There are many different kinds
-# of ways of parameterizing Potts models especially in the face of limited data. Here are
-# a few particular examples that may be useful.
-# 
-# Provided as part of the ConIII package.
-# 
-# Author: Eddie Lee, edl56@cornell.edu
-# ===================================================================================== #
+import sys
 import numpy as np
 import re
 from .enumerate import fast_logsumexp
@@ -212,7 +213,17 @@ class SpecificFieldGenericCouplings(PythonFileWriterBase):
         return gen()
 #end SpecificFieldGenericCouplings
 
-# an example
-#if __name__=='__main__':
-#    writer = SpecificFieldGenericCouplings(3,3)
-#    writer.write_py('test.py')
+# terminal interface
+if __name__=='__main__':
+    """
+    An example to write an N=9 system with K=3 distinct states.
+    >>> python enumerate_potts.py 9 3 coniii/ising_eqn/ising_eqn_9_potts.py
+    """
+
+    n = int(sys.argv[1])
+    k = int(sys.argv[2])
+    fname = sys.argv[3])
+    assert n>2 and n>k
+
+    writer = SpecificFieldGenericCouplings(n, k)
+    writer.write(fname)

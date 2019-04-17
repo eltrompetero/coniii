@@ -1,6 +1,12 @@
 # ===================================================================================== #
-# Module for solving small n Ising models exactly.
+# Module for solving Ising models exactly.
+# 
+# Distributed with ConIII.
+# 
+# NOTE: This code needs cleanup.
+#
 # Author : Edward Lee, edlee@alumni.princeton.edu
+# ===================================================================================== #
 #
 # MIT License
 # 
@@ -23,7 +29,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# ===================================================================================== #
 import numpy as np
 import mpmath as mp
 import scipy.special as ss

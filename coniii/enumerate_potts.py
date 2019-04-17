@@ -36,6 +36,9 @@ from .utils import xpotts_states
 from itertools import combinations
 
 
+# ========= #
+# Functions #
+# ========= #
 def split_string(s, n):
     """Insert \n character every n.
     """
@@ -54,6 +57,10 @@ def insert_newlines(s, n):
         s.insert(i, '\n')
         i += n+2
 
+
+# ======= #
+# Classes #
+# ======= #
 class PythonFileWriterBase():
     def __init__(self, n, k):
         """
@@ -222,7 +229,7 @@ if __name__=='__main__':
 
     n = int(sys.argv[1])
     k = int(sys.argv[2])
-    fname = sys.argv[3])
+    fname = sys.argv[3]
     assert n>2 and n>k
 
     writer = SpecificFieldGenericCouplings(n, k)

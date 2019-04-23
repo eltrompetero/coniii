@@ -24,9 +24,9 @@ copyright = '2018, Edward D. Lee, Bryan C. Daniels'
 author = 'Edward D. Lee, Bryan C. Daniels'
 
 # The short X.Y version
-version = '1.0'
+version = '1.1'
 # The full version, including alpha/beta/rc tags
-release = '1.0.2'
+release = '1.1.9'
 
 
 # -- General configuration ---------------------------------------------------

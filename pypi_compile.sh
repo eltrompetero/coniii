@@ -31,7 +31,7 @@ cp ipynb/usage_guide.ipynb coniii/
 
 # Compile docs
 sphinx-build ./docs/ ./docs/_build/html
-rsync -avu docs/_build/html/* ~/Dropbox/Research/Documents/eltrompetero.github.io./coniii/
+rsync -avu docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
 
 # Compile wheels into dist folder.
 python setup.py bdist_wheel

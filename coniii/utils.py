@@ -297,8 +297,11 @@ def xbin_states(n, sym=False):
 
     return v()
 
+@njit
 def xpotts_states(n, k):
     """Generator for iterating through all states for Potts model with k distinct states.
+    This is a faster version of calling xbin_states(n, False) except with strings returned
+    as elements instead of integers.
 
     Parameters
     ----------
@@ -316,13 +319,9 @@ def xpotts_states(n, k):
     assert n>0, "n cannot be <0"
     assert k>=2, "k cannot be <2"
    
-    def v():
-        for i in range(k**n):
-            state = base_repr(i, k)
-            while len(state)<n:
-                state.insert(0, '0')
-            yield state
-    return v()
+    for i in range(k**n):
+        state = base_repr(i, k)
+        yield ['0']*(n-len(state)) + state
 
 @njit
 def base_repr(i, base):

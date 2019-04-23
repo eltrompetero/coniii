@@ -91,7 +91,6 @@ v1.1.0 (Released 2018/12/13)
 - Removed use_numba switch for samplers.
 - Removed FastMCIsing sampler.
 
-
 v1.0.3 (Released 2018/11)
 ----------------------------------------------------
 - First official release.

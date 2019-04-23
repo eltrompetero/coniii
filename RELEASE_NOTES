@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v1.1.9 (Released 2019/04/??)
+v1.1.9 (Released 2019/04/22)
 ----------------------------------------------------
 - Added support for Potts models in new module enumerate_potts.py.
 - Typos fixed in usage guide Jupyter notebook.

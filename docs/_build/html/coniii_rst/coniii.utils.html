@@ -62,6 +62,15 @@ rate.</dd>
 <dd><p>Symmetric version of adj() where spins are in {-1,1}.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="coniii.utils.base_repr">
+<code class="descclassname">coniii.utils.</code><code class="descname">base_repr</code><a class="headerlink" href="#coniii.utils.base_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return decimal number in given base as list.</p>
+<p>i : int
+base : int</p>
+<p>list</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="coniii.utils.bin_states">
 <code class="descclassname">coniii.utils.</code><code class="descname">bin_states</code><span class="sig-paren">(</span><em>n</em>, <em>sym=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.bin_states" title="Permalink to this definition">¶</a></dt>
@@ -101,6 +110,31 @@ ignore_zeros (bool=False)</p>
 <blockquote>
 <div>Instead of normalizing by the number of spins, normalize by the minimum number of
 nonzero spins.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.coarse_grain_with_func">
+<code class="descclassname">coniii.utils.</code><code class="descname">coarse_grain_with_func</code><span class="sig-paren">(</span><em>X</em>, <em>n_times</em>, <em>sim_func</em>, <em>coarse_func</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.coarse_grain_with_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iteratively coarse-grain X by combining pairs with the highest similarity. Both the
+function to measure similarity and to implement the coarse-graining must be supplied.</p>
+<dl class="docutils">
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Each col is a variable and each row is an observation (n_samples, n_system).</dd>
+<dt>n_times <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of times to coarse grain.</dd>
+<dt>sim_func <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd>Takes an array like X and returns a vector of ncol*(ncol-1)//2 pairwise
+similarities.</dd>
+<dt>coarse_func <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd>Takes a two col array and returns a single vector.</dd>
+</dl>
+<dl class="docutils">
+<dt>ndarray</dt>
+<dd>Coarse-grained version of X.</dd>
+<dt>list of lists of ints </dt>
+<dd>Each list specifies which columns of X have been coarse-grained into each col of
+the coarse X.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -170,9 +204,14 @@ couplings J_ij.</p>
 <code class="descclassname">coniii.utils.</code><code class="descname">define_ising_helper_functions_sym</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions_sym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no
 fields.</p>
-<p>calc_e
-calc_observables
-mch_approximation</p>
+<dl class="docutils">
+<dt>function</dt>
+<dd>calc_e</dd>
+<dt>function</dt>
+<dd>calc_observables</dd>
+<dt>function</dt>
+<dd>mch_approximation</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -368,13 +407,30 @@ counted).</p>
 <dl class="function">
 <dt id="coniii.utils.xbin_states">
 <code class="descclassname">coniii.utils.</code><code class="descname">xbin_states</code><span class="sig-paren">(</span><em>n</em>, <em>sym=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.xbin_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generator for producing binary states.</p>
+<dd><p>Generator for iterating through all possible binary states.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>Number of spins.</dd>
 <dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
 <dd>If true, return states in {-1,1} basis.</dd>
 </dl>
+<p>generator</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="coniii.utils.xpotts_states">
+<code class="descclassname">coniii.utils.</code><code class="descname">xpotts_states</code><a class="headerlink" href="#coniii.utils.xpotts_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator for iterating through all states for Potts model with k distinct states.
+This is a faster version of calling xbin_states(n, False) except with strings returned
+as elements instead of integers.</p>
+<dl class="docutils">
+<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of spins.</dd>
+<dt>k <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of distinct states. These are labeled by integers starting from 0 and must
+be &lt;=36.</dd>
+</dl>
+<p>generator</p>
 </dd></dl>
 
 </div>

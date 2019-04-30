@@ -31,6 +31,7 @@
 import sys
 import numpy as np
 import re
+from datetime import datetime
 from .enumerate import fast_logsumexp
 from .utils import xpotts_states
 from itertools import combinations
@@ -102,6 +103,12 @@ class PythonFileWriterBase():
         
         n, k = self.n, self.k
 
+        # write intro
+        f.write('# This file contains equations for the Potts model with %d spins and %d states.\n'%(n,k))
+        f.write('# Provided as part of ConIII package.\n')
+        f.write('# Written on %s.\n'%str(datetime.now()))
+        f.write('#\n#\n')
+        
         # read in license file and copy it
         try:
             licenseText = ''.join(['# '+el for el in open('LICENSE.txt','r').readlines()])
@@ -109,13 +116,11 @@ class PythonFileWriterBase():
         except FileNotFoundError:
             print("LICENSE.txt not found.")
         f.write('#\n')
-
-        # write intro
-        f.write('# This file contains equations for the Potts model with %d spins and %d states.'%(n,k))
-        f.write('\n\n')
+            
+        # import statements
         f.write('from numpy import zeros, exp\n')
         f.write('from ..enumerate import fast_logsumexp\n\n')
-    
+
     def _write_correlations(self, f):
         f.write('def calc_observables(params):\n')
         f.write('\tassert params.size==%d\n'%(self.n*self.k+self.n*(self.n-1)//2))

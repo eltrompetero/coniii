@@ -188,7 +188,7 @@ class PythonFileWriterBase():
         
         # write all probabilities
         for i,term in enumerate(self.energy_terms_generator()):
-            f.write('\tp[%d] = exp(%s - logZ)\n'%(i,term[0]))
+            f.write('\tp[%d] = exp(energies[%d] - logZ)\n'%(i,i))
         f.write('\treturn p\n')
 #end PythonFileWriterBase
 

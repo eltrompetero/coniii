@@ -63,7 +63,7 @@ setup(name='coniii',
       include_package_data=True,
       package_data={'coniii':['setup_module.py','usage_guide.ipynb','version.py']},  # files to include in coniii directory
       py_modules=['coniii.enumerate',
-                  'coniii.enumerate_potts'
+                  'coniii.enumerate_potts',
                   'coniii.general_model_rmc',
                   'coniii.ising',
                   'coniii.ising_eqn',

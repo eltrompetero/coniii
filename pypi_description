@@ -3,6 +3,8 @@ pairwise maximum entropy model, also known as the inverse Ising problem.
 
 Authors: Edward D Lee, Bryan C Daniels
 
-See "usage_guide.ipynb" for usage documentation and examples. For more details about the
+See GitHub page for details about the package.
+
+Examples for usage are included in the "usage_guide.ipynb". For more details about the
 implemented algorithms, see the accompanying guide
 [https://github.com/eltrompetero/coniii/blob/py3/guide/guide.pdf] and the Github project.

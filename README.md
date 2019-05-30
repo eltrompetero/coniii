@@ -4,10 +4,9 @@
 
 ConIII is a Python package for solving maximum entropy problems with a focus on the
 pairwise maximum entropy model, also known as the inverse Ising problem. Support for
-Python 3.7 and higher only (v0.2.10 works with Python 2.7 but is no longer actively
-maintained).
+Python 3.7 and higher only.
 
-If you use ConIII for your research, please cite the following:
+If you use ConIII for your research, please consider citing the following:
 > Lee, E.D. and Daniels, B.C., 2019. Convenient Interface to Inverse Ising (ConIII): A
 > Python 3 Package for Solving Ising-Type Maximum Entropy Models. Journal of Open Research
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
@@ -20,6 +19,8 @@ This package is available on PyPI. It can be installed by running
 ```bash
 $ pip install coniii
 ```
+We highly recommend the use of virtual environments as supported through Anaconda to
+manage this package and associated ones that need to be installed.
 
 If you have trouble using `pip` and PyPI, then you can always build this package from
 source.  Download the latest release from GitHub. Make sure that you are running Python

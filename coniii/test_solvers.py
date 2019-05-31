@@ -133,11 +133,10 @@ def test_Pseudo():
                     calc_observables=calc_observables,
                     calc_observables_r=calc_observables_r,
                     get_multipliers_r=get_multipliers_r)
-    estMultipliers1 = solver.solve(sample, np.zeros(6), general_case=True)
-    estMultipliers2 = solver.solve(sample, np.zeros(6))
+    estMultipliers = solver.solve(sample, np.zeros(6))
     
     # Check that both ways of solving the problem agree
-    assert np.isclose(estMultipliers1, estMultipliers2, atol=1e-3).all()
+    assert np.isclose(ising.calc_observables(estMultipliers), sisj, atol=1e-2).all()
 
 def test_pickling():
     pass

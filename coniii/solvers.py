@@ -1225,9 +1225,8 @@ class Pseudo(Solver):
         super(Pseudo,self).__init__(*args,**kwargs)
 
     def solve(self, *args, **kwargs):
-        """Two different methods are implemented and can be called from self.solve. One is
-        specific to the Ising model and the other uses a general all-purpose optimization
-        to solve the problem.
+        """Uses a general all-purpose optimization to solve the problem using functions
+        defined in self.get_multipliers_r and self.calc_observables_r.
 
         Parameters
         ----------
@@ -1239,11 +1238,6 @@ class Pseudo(Solver):
             If True, return output from scipy.minimize() routine.
         solver_kwargs : dict, {}
             kwargs for scipy.minimize().
-        general_case : bool, True 
-            If True, uses self.calc_observables_r and self.get_multipliers_r to maximize
-            the resulting pseudolikelihood (self._solve_general). Else an algorithm
-            specific to the Ising model is implemented (self._solve_ising). General case
-            is slower, but better for some problems.
 
         Returns
         -------
@@ -1253,17 +1247,9 @@ class Pseudo(Solver):
         
         if 'return_all' in kwargs.keys():
             warn("DEPRECATION WARNING: return_all keyword argument is now deprecated.")
-        # general case
-        if kwargs.get('general_case',True):
-            if 'general_case' in kwargs.keys():
-                del kwargs['general_case']
-            return self._solve_general(*args, **kwargs)
-        
-        # special case of Ising model
-        if 'general_case' in kwargs.keys():
-            del kwargs['general_case']
-        return self._solve_ising(*args, **kwargs)
 
+        return self._solve_general(*args, **kwargs)
+        
     def _solve_general(self,
                        X=None,
                        initial_guess=None,

@@ -292,7 +292,7 @@ class Enumerate(Solver):
             raise Exception("Must specify either constraints or samples.")
         
         if not initial_guess is None:
-            self.multipliers = initial_guess.copy()
+            assert initial_guess.size==self.constraints.size
         else: initial_guess = np.zeros((len(self.constraints)))
         
         # default solver routine

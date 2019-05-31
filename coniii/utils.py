@@ -30,11 +30,12 @@ from scipy.special import logsumexp
 from itertools import combinations
 from scipy.spatial.distance import squareform
 from scipy.special import binom
+from warnings import warn
 NUMERALS = '0123456789'
 ALPHNUM = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
 
 
-@njit(nogil=True, cache=True)
+@njit(cache=True)
 def sub_to_ind(n, i, j):
     """Convert pair of coordinates of a symmetric square array into consecutive index of
     flattened upper triangle. This is slimmed down so it won't throw errors like if i>n or
@@ -692,7 +693,11 @@ def state_probs(v, allstates=None, weights=None, normalized=True):
 # Helper functions for solving Ising model. # 
 # ========================================= #
 def define_pseudo_ising_helpers(N):
-    """Define helper functions for using Pseudo method on fully connected Ising model.
+    warn("DEPRECATION WARNING: now renamed to define_pseudo_ising_helper_functions")
+    return define_pseudo_ising_helper_functions(N)
+
+def define_pseudo_ising_helper_functions(N):
+    """Define helper functions for using Pseudo method on Ising model.
 
     Parameters
     ----------
@@ -701,39 +706,48 @@ def define_pseudo_ising_helpers(N):
 
     Returns
     -------
-    get_multipliers_r, calc_observables_r 
+    function
+        get_multipliers_r
+    function
+        calc_observables_r 
     """
 
     @njit
-    def get_multipliers_r(r, multipliers):
-        """Return the parameters relevant for calculating the conditional probability of
-        spin r.
+    def get_multipliers_r(r, multipliers, N=N):
+        """Return r's field and all couplings to spin r.
 
         Parameters
         ----------
         r : int
         multipliers : ndarray
+            All fields and couplings concatenated together.
 
         Returns
         -------
-        multipliers
+        ndarray
+            Relevant multipliers.
+        list
+            Index of where multipliers appear in full multipliers array.
         """
-
-        ix = np.arange(N)
-        ix[0] = r  # index for local field
-        couplingcounter = N
-        ixcounter = 1
-        for i in range(N-1):
-            for j in range(i+1,N):
-                if i==r or j==r:
-                    ix[ixcounter] = couplingcounter  # indices for couplings
-                    ixcounter += 1
-                couplingcounter += 1
         
-        return multipliers[ix]
+        ix = [r] 
+        multipliersr = np.zeros(N)
+        multipliersr[0] = multipliers[r]
+
+        ixcounter = 1
+        for i in range(N):
+            if i!=r:
+                if i<r:
+                    ix.append( sub_to_ind(N, i, r) + N )
+                    multipliersr[ixcounter] = multipliers[ix[ixcounter]]
+                else:
+                    ix.append( sub_to_ind(N, r, i) + N )
+                    multipliersr[ixcounter] = multipliers[ix[ixcounter]]
+                ixcounter += 1
+        return multipliersr, ix
 
     @njit
-    def calc_observables_r(r, X):
+    def calc_observables_r(r, X, N=N):
         """Return the observables relevant for calculating the conditional probability of
         spin r.
 
@@ -759,7 +773,7 @@ def define_pseudo_ising_helpers(N):
             for i in range(N-1):
                 for j in range(i+1,N):
                     if i==r or j==r:
-                        obs[rowix,ixcounter] = X[rowix,i]*X[rowix,j]  # indices for couplings
+                        obs[rowix,ixcounter] = X[rowix,i]*X[rowix,j]
                         ixcounter += 1
         return obs
 

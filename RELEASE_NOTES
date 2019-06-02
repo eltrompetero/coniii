@@ -23,8 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v1.2.1 (Released 2019/??/??)
+v1.2.1 (Released 2019/05/31)
 ----------------------------------------------------
+- Pseudo solver sped up and Ising-specific calculation removed.
 - Bugs.
 
 v1.2.0 (Released 2019/05/02)

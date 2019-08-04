@@ -638,31 +638,35 @@ def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
     return newsi, newsisj
 
 def state_probs(v, allstates=None, weights=None, normalized=True):
-    """Get probability of unique states. There is an option to allow for weights counting
-    of the words.
+    """Get probability of unique states. There is an option to allow for weighted
+    counting.
     
     Parameters
     ----------
     states : ndarray
-        (n_samples,n_dim)
+        Sample of states on which to extract probabilities of unique configurations with
+        dimensions (n_samples,n_dimension).
     allstates : ndarray, None
+        Unique configurations to look for with dimensions (n_samples, n_dimension).
     weights : vector, None
+        For weighted counting of each state given in allstate kwarg.
     normalized : bool, True
-        Return probability distribution instead of frequency count
+        If True, return probability distribution instead of frequency count.
     
     Returns
     -------
     ndarray
         Vector of the probabilities of each state.
     ndarray
-        All unique states found in the data. Each state is a row.
+        All unique states found in the data. Each state is a row. Only returned if
+        allstates kwarg is not provided.
     """
 
     if v.ndim==1:
         v = v[:,None]
     n = v.shape[1]
     j = 0
-    return_all_states = False
+    return_all_states = False  # switch to keep track of whether or not allstates were given
 
     if allstates is None:
         allstates = v[unique_rows(v)]

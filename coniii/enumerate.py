@@ -157,7 +157,7 @@ def write_py(n, sym, contraintTermsIx, signs, expterms, Z,
     f = open(fname,'w')
     # insert license
     try:
-        license = open('../LICENSE.txt','r').readlines()
+        license = open('LICENSE.txt','r').readlines()
         for el in license:
             el = '# '+el
             f.write(el)

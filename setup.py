@@ -27,8 +27,13 @@ from codecs import open
 from os import path
 from distutils.extension import Extension
 from coniii.version import version as __version__
+from shutil import copyfile
+
 
 here = path.abspath(path.dirname(__file__))
+
+# copy license into package
+copyfile('LICENSE.txt','coniii/LICENSE.txt')
 
 # Get the long description from the README file
 with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
@@ -61,7 +66,7 @@ setup(name='coniii',
                         'dill',
                         'joblib'],
       include_package_data=True,
-      package_data={'coniii':['setup_module.py','usage_guide.ipynb','version.py']},  # files to include in coniii directory
+      package_data={'coniii':['setup_module.py','usage_guide.ipynb','version.py','LICENSE.txt']},  # files to include in coniii directory
       py_modules=['coniii.enumerate',
                   'coniii.enumerate_potts',
                   'coniii.general_model_rmc',
@@ -73,5 +78,4 @@ setup(name='coniii',
                   'coniii.samplers',
                   'coniii.solvers',
                   'coniii.utils'],
-      data_files=['LICENSE.txt']
 )

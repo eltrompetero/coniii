@@ -72,5 +72,6 @@ setup(name='coniii',
                   'coniii.pseudo_inverse_ising',
                   'coniii.samplers',
                   'coniii.solvers',
-                  'coniii.utils']
+                  'coniii.utils'],
+      data_files=['LICENSE.txt']
 )

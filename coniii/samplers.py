@@ -170,6 +170,7 @@ class Sampler():
             Lagrangian multipliers.
         """
 
+        assert type(n) is int, "n must be of type int."
         self.n = n
         self.theta = theta
         return
@@ -644,6 +645,7 @@ class ParallelTempering(Sampler):
         rng : RandomState, None
         """
         
+        assert type(n) is int, "n must be of type int."
         assert Tbds[0]<Tbds[1] and Tbds[0]>0
         assert n_replicas>1
 
@@ -1155,10 +1157,12 @@ class Metropolis(Sampler):
         rng : np.random.RandomState
             Random number generator.
         """
-
+        
+        assert type(n) is int, "n must be of type int."
         self.n = n
         self.theta = theta
         self.nCpus = n_cpus or mp.cpu_count()-1
+        assert type(self.nCpus) is int, "n_cpus must be of type int."
         self.calc_e = calc_e
         self.rng = rng or np.random.RandomState()
         self._samples = None

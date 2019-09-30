@@ -49,12 +49,12 @@ sisj = pair_corr(sample, concat=True)  # means and pairwise correlations
 
 # Define common functions.
 calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
-get_multipliers_r,calc_observables_r = define_pseudo_ising_helpers(n)
+get_multipliers_r,calc_observables_r = define_pseudo_ising_helper_functions(n)
 
 
 def test_init():
     """Check that all derived Solver classes can be initialized."""
-    from .utils import pair_corr, define_ising_helper_functions, define_pseudo_ising_helpers
+    from .utils import pair_corr, define_ising_helper_functions, define_pseudo_ising_helper_functions
     
     # Define function specifically needed for creating Enumerate class.
     def calc_observables_multipliers(J):

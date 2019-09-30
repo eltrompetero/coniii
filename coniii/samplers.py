@@ -27,8 +27,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ========================================================================================================= #
-
-#from numdifftools import Gradient
 from numba import jit,njit,float64,int64
 from numpy import sin,cos,exp
 from scipy.spatial.distance import squareform
@@ -2016,3 +2014,53 @@ def check_e_logp(sample, calc_e):
     uniqueE = calc_e(uniqStates)
     return uniqStates,uniqueE,np.log(stateCount)
 
+def sample_ising(Jflat, n_samples,
+                 n_cpus=None,
+                 seed=None,
+                 generate_samples_kw={}):
+    """Easy way to Metropolis sample from Ising model.
+
+    Parameters
+    ----------
+    Jflat : ndarray
+        N individual parameters followed by N(N-1)/2 pairwise parameters (ordered as in
+        np.triu_indices(N,k=1)).
+    n_samples : int
+        Number of samples to take.
+    n_cpus : int, None
+        Number of cpus to use. If more than one, multiprocessing invoked.
+    seed : int, None
+        Random number generator seed.
+    generate_samples_kw : dict, {}
+        Any extra arguments to send into Metropolis sampler. Default args are
+             n_iters=1000
+             systematic_iter=False
+             saveHistory=False
+             initial_sample=None
+     
+    Returns
+    -------
+    ndarray
+        Matrix of dimensions (n_samples, n).
+    """
+    
+    Jflat = np.array(Jflat)
+    n_cpus = n_cpus or cpu_count()
+
+    # set up coniii metropolis sampler
+    calc_e_fast, calc_observables, _ = define_ising_helper_functions()
+    #calc_e = lambda s, multipliers : -calc_observables(s).dot(multipliers)
+    rng = np.random.RandomState(seed=seed)
+    multipliers = Jflat
+    n = 0.5 * (-1 + np.sqrt(1 + 8*len(multipliers)) )
+    assert n == int(n),"The length of Jflat does not correspond to an integer number of spins."
+
+    sampler = Metropolis( int(n), multipliers, calc_e_fast,
+                          n_cpus=n_cpus, rng=rng )
+    
+    # generate samples
+    if n_cpus > 1:
+        sampler.generate_samples_parallel(n_samples, **generate_samples_kw)
+    else:
+        sampler.generate_samples(n_samples, **generate_samples_kw)
+    return sampler.samples

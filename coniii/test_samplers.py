@@ -32,6 +32,8 @@ import time
 
 n=5
 
+def test_test_sample_ising():
+    assert sample_ising(np.zeros(n+n*(n-1)//2), 10).shape==(10,n)
 
 def test_Metropolis(run_timing=False):
     # Check that everything compiles and runs.

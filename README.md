@@ -27,10 +27,12 @@ manage this package and associated ones that need to be installed.
 
 If you have trouble using `pip` and PyPI, then you can always build this package from
 source.  Download the latest release from GitHub. Make sure that you are running Python
-3.7 or higher.  Inside "coniii", you must run
+3.7 or higher.  Inside the top directory "coniii", you must run 
 ```bash
-$ pip install . 
+$ cd dist
+$ pip install coniii-2.0.0-py3-none-any.whl 
 ```
+or the appropriate wheel file version.
 
 Note: Using setuptools in the usual way of `python setup.py install` will not work because
 eggs are incompatible with cached jit functions.

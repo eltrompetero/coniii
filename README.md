@@ -61,7 +61,7 @@ $ python enumerate.py [N] 1
 specifies that the system should be written for the {-1,1} basis.  For more details, see
 the `__main__` block at the end of the file enumerate.py.
 
-## Quick guide
+## Quick guide (with Jupyter notebook)
 
 A [Jupyter notebook](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb) with a brief introduction and examples for how to use ConIII is
 available. An HTML version is [here](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.html). The
@@ -83,6 +83,19 @@ $ jupyter notebook
 ```
 
 This should open the notebook in your default web browser.
+
+## Quick guide (console)
+
+First, install iPython for a console-based interpreter.
+```bash
+$ pip install ipython
+```
+or if you are using the Conda package manager
+```bash
+$ conda install ipython
+```
+
+
 
 ## Dependencies
 

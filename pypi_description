@@ -1,10 +1,10 @@
 Python package for solving the inverse maximum entropy problem with a focus on the
 pairwise maximum entropy model, also known as the inverse Ising problem.
 
-Authors: Edward D Lee, Bryan C Daniels
+See GitHub page for overview on how to install and use package.
 
-See GitHub page for details about the package.
+Examples are included in the Jupyter notebook "usage_guide.ipynb" and the Python
+script "usage_guide.py" (see GitHub). A somewhat outdated overview is also published in the
+[paper](https://github.com/eltrompetero/coniii/blob/py3/guide/guide.pdf).
 
-Examples for usage are included in the "usage_guide.ipynb". For more details about the
-implemented algorithms, see the accompanying guide
-[https://github.com/eltrompetero/coniii/blob/py3/guide/guide.pdf] and the Github project.
+Authors: Edward D. Lee, Bryan C. Daniels

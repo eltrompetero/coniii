@@ -31,211 +31,84 @@ from . import mean_field_ising
 from warnings import warn
 from .utils import *
 from .samplers import *
+from .models import Ising
 
 
 class Solver():
     """Base class for declaring common methods and attributes for inverse maxent
     algorithms.
-
-    Members necessary to define
-    ---------------------------
-    calc_e : lambda function
-        Takes states and parameters to calculate the energies.
-    calc_observables : lambda function
-        Calculate observables from given sample of states.
-        lambda X: Y
-        where X is of dimensions (n_samples, n_dim)
-        and Y is of dimensions (n_samples, n_constraints)
-
-    Methods to customize
-    --------------------
-    solve
     """
-    def __init__(self, n,
-                 calc_de=None,
-                 calc_observables=None,
-                 calc_observables_multipliers=None,
-                 adj=None,
-                 multipliers=None,
-                 constraints=None,
-                 sample_size=None,
-                 sample_method=None,
-                 mch_approximation=None,
-                 n_cpus=None,
-                 rng=None,
-                 verbose=False):
+    def basic_setup(self, sample, model=None, calc_observables=None, model_kwargs={}):
         """
         Parameters
         ----------
-        n : int
-            System size given by number of spins.
-        calc_de : function, None
-            Function for calculating derivative of energy with respect to the parameters.
-            Takes in 2d state array and index of the parameter.
-            Defn: lambda state_2d,ix : delta_energy
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
         calc_observables : function, None
-            Defn: lambda params : observables
-        calc_observables_multipliers : function, None
-            Calculate predicted observables using the parameters.
-            Defn: lambda parameters : pred_observables
-        adj : function, None
-            Return adjacency matrix.
-        multipliers : ndarray, None
-            Langrangian multipliers or parameters.
-        constraints : ndarray, None
-            Correlations to constrain.
-        sample_size : int, None
-        sample_method : str, None
-        n_cpus : int, None
-            Number of cores to use for parallelized code. If this is set to 0,  sequential
-            sampler will be used. This should be set if multiprocess module does not work.
-        verbose : bool, False
+            For calculating observables from a set of samples.
+        model_kwargs : dict, {}
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None. Important ones include "n_cpus" and "rng".
         """
+        
+        assert set(np.unique(sample).tolist())<=set((-1,1)), "Data must be of only -1, 1 entries."
+        self.sample = sample
+        self.n = sample.shape[1]
 
-        # Basic checks on the inputs.
-        assert type(n) is int
-        if not sample_size is None:
-            assert type(sample_size) is int
-        if not n_cpus is None:
-            assert type(n_cpus) is int
-        
-        self.n = n
-        self.multipliers = multipliers
-        self.constraints = constraints
-        self.sampleSize = sample_size
-        self.sampleMethod = sample_method
-        self.mch_approximation = mch_approximation
-        
-        self.calc_observables = calc_observables
-        self.calc_observables_multipliers = calc_observables_multipliers
-        self.calc_e = lambda s, multipliers : -self.calc_observables(s).dot(multipliers)
-        self.calc_de = calc_de
-        self.adj = adj
-        
-        self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
-        self.nCpus = n_cpus or mp.cpu_count()-1
-        self.verbose = verbose
+        if model is None:
+            self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
+            if self.model.calc_observables is None:
+                msg = ("Python file enumerating the Ising equations for system of size %d must be written to"+
+                       " use this solver.")
+                raise Exception(msg%self.n)
+        else:
+            self.model = model
+
+        if calc_observables is None:
+            self.calc_observables = define_ising_helper_functions()[1]
+        else:
+            self.calc_observables = calc_observables
+
+        self.constraints = self.calc_observables(sample).mean(0)
+        if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any():
+            warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions.")
 
     def solve(self):
         return
-              
-    def estimate_jac(self, eps=1e-3):
-        return 
-
-    def setup_sampler(self,
-                      sample_method='metropolis',
-                      sampler_kwargs={}):
-        """
-        Instantiate sampler class object. Uses self.rng as the random number generator.
-
-        Parameters
-        ----------
-        sample_method : str, 'metropolis'
-            'metropolis'
-        sampler_kwargs : dict, {}
-            Kwargs that can be passed into the initialization function for the sampler.
-        """
-
-        sample_method = sample_method or self.sampleMethod
-        
-        if sample_method=='metropolis':
-            self.sampleMethod = sample_method
-            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e,
-                                       n_cpus=self.nCpus,
-                                       rng=self.rng,
-                                       **sampler_kwargs )
-      
-        elif sample_method=='ising_metropolis':
-            raise NotImplementedError("FastMCIsing is no longer available.")
-        else:
-           raise NotImplementedError("Unrecognized sampler %s."%sample_method)
-        self.samples = None
-
-    def generate_samples(self, n_iters, burn_in,
-                         multipliers=None,
-                         sample_size=None,
-                         sample_method=None,
-                         generate_kwargs={}):
-        """
-        Wrapper around generate_samples() generate_samples_parallel() methods in samplers.
-
-        Samples are saved to self.samples.
-
-        Parameters
-        ----------
-        n_iters : int
-        burn_in : int 
-            Burn in is handled automatically in REMC.
-        multipliers : ndarray, None
-        sample_size : int, None
-        sample_method : str, None
-        generate_kwargs : dict, {}
-        """
-
-        assert not (self.sampler is None), "Must call setup_sampler() first."
-        
-        if multipliers is None:
-            multipliers = self.multipliers
-        sample_method = sample_method or self.sampleMethod
-        sample_size = sample_size or self.sampleSize
-        
-        # When sequential sampling should be used.
-        if self.nCpus<=1:
-            if sample_method=='metropolis':
-                self.sampler.theta = multipliers.copy()
-                # Burn in.
-                self.sampler.generate_samples(sample_size,
-                                              n_iters=burn_in)
-                self.sampler.generate_samples(sample_size,
-                                              n_iters=n_iters)
-                self.samples = self.sampler.samples
-
-            else:
-               raise NotImplementedError("Unrecognized sampler.")
-        # When parallel sampling using the multiprocess module.
-        else:
-            if sample_method=='metropolis':
-                self.sampler.theta = multipliers.copy()
-                self.sampler.generate_samples_parallel(sample_size,
-                                                       n_iters=burn_in+n_iters)
-                self.samples = self.sampler.samples
-
-            else:
-               raise NotImplementedError("Unrecognized sampler.")
-# end Solver
+#end Solver
 
 
 class Enumerate(Solver):
     """Class for solving +/-1 symmetric Ising model maxent problems by gradient descent
     with flexibility to put in arbitrary constraints.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sample, model=None, calc_observables=None, **default_model_kwargs):
         """
         Parameters
         ----------
-        n : int
-            System size.
-        calc_observables_multipliers : function
-            Function for calculating the observables given a set of multipliers. Function
-            call is 
-            lambda params: return observables
-        calc_observables : function
-            lambda params: return observables
-        **kwargs
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
         """
-
-        super(Enumerate, self).__init__(*args, **kwargs)
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs) 
 
     def solve(self,
-              constraints=None,
-              samples=None,
               initial_guess=None,
+              constraints=None,
               max_param_value=50,
               full_output=False,
               use_root=True,
               scipy_solver_kwargs={'method':'krylov',
-                                   'options':{'fatol':1e-13,'xatol':1e-13}},
-              fsolve_kwargs=None):
+                                   'options':{'fatol':1e-13,'xatol':1e-13}}):
         """Must specify either constraints (the correlations) or samples from which the
         correlations will be calculated using self.calc_observables. This routine by
         default uses scipy.optimize.root to find the solution. This is MUCH faster than
@@ -250,13 +123,13 @@ class Enumerate(Solver):
 
         Parameters
         ----------
-        constraints : ndarray, None
-            Correlations that will be fit to.
-        samples : ndarray, None
-            (n_samples, n_dim)
         initial_guess : ndarray, None
             Initial starting guess for parameters. By default, this will start with all
             zeros if left unspecified.
+        constraints : ndarray, None
+            For debugging!
+            Can specify constraints directly instead of using the ones calculated from the
+            sample. This can be useful when the pairwise correlations are known exactly.
         max_param_value : float, 50
             Absolute value of max parameter value. Bounds can also be set in the kwargs
             passed to the minimizer, in which case this should be set to None.
@@ -270,8 +143,6 @@ class Enumerate(Solver):
             method can also change runtime and whether a solution is found or not.
             Recommend playing around with different solvers and tolerances or getting a
             close approximation using a different method if solution is hard to find.
-        fsolve_kwargs : dict, None
-            DEPRECATED as of v1.1.4. Use scipy_solver_kwargs instead.
 
         Returns
         -------
@@ -281,30 +152,22 @@ class Enumerate(Solver):
             Output from scipy.optimize.root.
         """
         
-        if not fsolve_kwargs is None:
-            warn("fsolve_kwargs is deprecated as of v1.1.4 and does nothing. Use scipy_solver_kwargs instead.")
-
-        if not constraints is None:
-            self.constraints = constraints
-        elif not samples is None:
-            self.constraints = self.calc_observables(samples).mean(0)
-        else:
-            raise Exception("Must specify either constraints or samples.")
-        
         if not initial_guess is None:
             assert initial_guess.size==self.constraints.size
         else: initial_guess = np.zeros((len(self.constraints)))
+        if constraints is None:
+            constraints = self.constraints
         
         # default solver routine
         if use_root:
             if not max_param_value is None:
                 def f(params):
                     if np.any(np.abs(params)>max_param_value):
-                        return np.zeros_like(self.constraints) + 1e30
-                    return self.calc_observables_multipliers(params)-self.constraints
+                        return np.zeros_like(constraints) + 1e30
+                    return self.model.calc_observables(params)-constraints
             else:
                 def f(params):
-                    return self.calc_observables_multipliers(params)-self.constraints
+                    return self.model.calc_observables(params)-constraints
             
             soln = root(f, initial_guess, **scipy_solver_kwargs)
         else:
@@ -312,10 +175,10 @@ class Enumerate(Solver):
                 def f(params):
                     if np.any(np.abs(params)>max_param_value):
                         return 1e30
-                    return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+                    return np.linalg.norm( self.model.calc_observables(params)-constraints )
             else:
                 def f(params):
-                    return np.linalg.norm( self.calc_observables_multipliers(params)-self.constraints )
+                    return np.linalg.norm( self.model.calc_observables(params)-constraints )
             
             soln = minimize(f, initial_guess, **scipy_solver_kwargs)
 
@@ -330,28 +193,43 @@ def unwrap_self_worker_obj(arg, **kwarg):
     return MPF.worker_objective_task(*arg, **kwarg)
 
 class MPF(Solver):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sample,
+                 model=None,
+                 calc_observables=None,
+                 calc_de=None,
+                 adj=None,
+                 **default_model_kwargs):
         """Parallelized implementation of Minimum Probability Flow algorithm.
+
         Most time consuming step is the computation of the energy of a given state. Make
         this as fast as possible.
 
         Parameters
         ----------
-        n : int
-            System size.
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        calc_de : function, None
+            Function for calculating derivative of energy wrt parameters. Takes in 2d
+            state array and index of the parameter.
         adj : function, None
             Function for getting all the neighbors of any given state. Note that the
             backed in self.solvers runs everything in the {0,1} basis for spins, so this
             needs to find neighboring states in the {0,1} basis.
-        calc_de : function, None
-            Function for calculating derivative of energy wrt parameters. Takes in 2d
-            state array and index of the parameter.
-        n_cpus : int, 0
-            If 0 no parallel processing, other numbers above 0 specify number of cores to
-            use.
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
         """
-
-        super(MPF,self).__init__(*args,**kwargs)
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        if adj is None:
+            from .utils import adj
+            self.adj = adj
+        if calc_de is None:
+            self.calc_de = calc_de  # imported from utils.py
         
     @staticmethod
     def worker_objective_task( s, Xcount, adjacentStates, params, calc_e ):
@@ -381,8 +259,8 @@ class MPF(Solver):
         obj = 0.
         objGrad = np.zeros((params.size))
         for i,s in enumerate(Xuniq):
-            dobj = Xcount[i] * np.exp( .5*(self.calc_e(s[None,:], params) 
-                                           - self.calc_e(adjacentStates[i], params) ) )
+            dobj = Xcount[i] * np.exp( .5*(self.model.calc_e(s[None,:], params) 
+                                           - self.model.calc_e(adjacentStates[i], params) ) )
             if not self.calc_de is None:
                 for j in range(params.size):
                     if dobj.size != adjacentStates[i].shape[0]:
@@ -454,13 +332,12 @@ class MPF(Solver):
         logK : float
         """
 
-        from scipy.special import logsumexp
-
         obj = 0.
         objGrad = np.zeros((params.size))
-        power=np.zeros((len(Xuniq), len(adjacentStates[0])))  # energy differences
+        power = np.zeros((len(Xuniq), len(adjacentStates[0])))  # energy differences
         for i,s in enumerate(Xuniq):
-            power[i,:] = .5*( self.calc_e(s[None,:],params) - self.calc_e(adjacentStates[i],params) )
+            power[i,:] = .5*( self.model.calc_e(s[None,:], params) -
+                              self.model.calc_e(adjacentStates[i], params) )
             
         obj = logsumexp( power + np.log(Xcount)[:,None] -np.log(Xcount.sum()) )
         
@@ -482,8 +359,7 @@ class MPF(Solver):
         return obj, objGrad
 
     def list_adjacent_states(self, Xuniq, all_connected):
-        """
-        Use self.adj to evaluate all adjacent states in Xuniq.
+        """Use self.adj to evaluate all adjacent states in Xuniq.
 
         Parameters
         ----------
@@ -497,7 +373,7 @@ class MPF(Solver):
 
         adjacentStates = []
         for s in Xuniq:
-            adjacentStates.append( self.adj(s) )
+            adjacentStates.append( self.adj(s).astype(int) )
             # Remove states already in data
             if not all_connected:
                 ix = np.zeros((s.size))==0
@@ -511,7 +387,6 @@ class MPF(Solver):
         return adjacentStates
 
     def solve(self,
-              X=None, 
               initial_guess=None,
               method='L-BFGS-B',
               full_output=False,
@@ -519,27 +394,21 @@ class MPF(Solver):
               parameter_limits=100,
               solver_kwargs={'maxiter':100,'disp':False,'ftol':1e-15},
               uselog=True):
-        """
-        Minimize MPF objective function using scipy.optimize.minimize.
+        """Minimize MPF objective function using scipy.optimize.minimize.
 
         Parameters
         ----------
-        X : ndarray
-            (ndata, ndim)
-            array of states compatible with given energy and adjacent neighbors functions
-        adj : lambda state
-            returns adjacent states for any given state
+        initial_guess : ndarray, None
+        method : str, 'L-BFGS-B'
+            Option for scipy.optimize.minimize.
+        full_output : bool, False
         all_connected : bool, True
-            switch for summing over all states that data sets could be connected to or
+            Switch for summing over all states that data sets could be connected to or
             just summing over non-data states (second summation in Eq 10 in Sohl-Dickstein
-            2011)
-        iterate : int, 0
-            Number of times to try new initial conditions if first try doesn't work. Right
-            now, this is a pretty coarse test because the fit can be good even without
-            converging.
+            2011).
         parameter_limits : float, 100
             Maximum allowed magnitude of any single parameter.
-        solver_kwargs : dict
+        solver_kwargs : dict, {'maxiter':100,'disp':False,'ftol':1e-15}
             For scipy.optimize.minimize.
         uselog : bool, True
             If True, calculate log of the objective function. This can help with numerical
@@ -547,31 +416,27 @@ class MPF(Solver):
 
         Returns
         -------
-        soln : ndarray
-            found solution to problem
-        output : dict
-            full output from minimize solver
+        ndarray
+            Solution.
+        dict (optional)
+            Output from scipy.optimize.minimize returned if full_output is True.
         """
         
-        from .utils import split_concat_params
         assert parameter_limits>0
-        assert not X is None, "samples from distribution of states must be provided for MPF"
-
         # Convert from {0,1} to {+/-1} asis.
-        X = (X+1)/2
-        
+        X = (self.sample+1)//2
+
         if not self.calc_de is None:
             includeGrad = True
         else:
             includeGrad = False
-        X = X.astype(float)
         if initial_guess is None:
             initial_guess = self.calc_observables(X).mean(0)
+        else:
+            initial_guess = ising_convert_params( split_concat_params(initial_guess, self.n), '01', True)
          
         # Get list of unique data states and how frequently they appear.
-        Xuniq = X[unique_rows(X)]
-        ix = unique_rows(X, return_inverse=True)
-        Xcount = np.bincount(ix)
+        Xuniq, ix, Xcount = np.unique(X, axis=0, return_inverse=True, return_counts=True)
         adjacentStates = self.list_adjacent_states(Xuniq, all_connected)
 
         # Interface to objective function.
@@ -586,9 +451,10 @@ class MPF(Solver):
         soln = minimize( f, initial_guess,
                          bounds=[(-parameter_limits,parameter_limits)]*len(initial_guess),
                          method=method, jac=includeGrad, options=solver_kwargs )
-        self.multipliers = soln['x']
+        self.multipliers = ising_convert_params( split_concat_params(soln['x'], self.n), '11', True)
+
         if full_output:
-            return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True), soln
+            return self.multipliers, soln
         return ising_convert_params( split_concat_params(soln['x'], self.n), '11', True)
 #end MPF
 
@@ -599,40 +465,52 @@ class MCH(Solver):
     Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. & Bialek, W. Faster solutions of the
     inverse pairwise Ising problem. arXiv 1-8 (2007).
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sample, 
+                 model=None,
+                 calc_observables=None,
+                 sample_size=1000,
+                 sample_method='metropolis',
+                 mch_approximation=None,
+                 **default_model_kwargs):
         """
         Parameters
         ----------
-        calc_observables : function
-            takes in samples as argument
-        sample_method : str
-            Can be 'metropolis'.
-        sample_size : int
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        sample_size : int, 1000
             Number of samples to use MCH sampling step.
-        mch_approximation : function
+        sample_method : str, 'metropolis'
+            Only 'metropolis' allowed currently.
+        mch_approximation : function, None
             For performing the MCH approximation step. Is specific to the maxent model.
-            For the pairwise Ising model, this can be defined by using
-            `coniii.utils.define_ising_helper_functions()`.
-        n_cpus : int
+        rng : np.random.RandomState, None
+            Random number generator.
+        n_cpus : int, None
             If 1 or less no parallel processing, other numbers above 0 specify number of
             cores to use.
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
         """
+        
+        assert sample_size>0
+        if sample_size<1000: warn("Small sample size will lead to poor convergence.")
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
 
-        super(MCH, self).__init__(*args, **kwargs)
-        assert not self.sampleSize is None, "Must specify sample_size."
-        assert not self.mch_approximation is None, "Must specify mch_approximation."
-        assert not self.calc_observables is None, "Must specify calc_observables."
-        
         # Sampling parameters.
-        self.sampler = None
-        self.samples = None
+        self.sampleSize = sample_size
+        self.mch_approximation = mch_approximation or define_ising_helper_functions()[-1]
         
-        self.setup_sampler()
+        self.model.setup_sampler(sample_size=sample_size)
     
     def solve(self,
               initial_guess=None,
               constraints=None,
-              X=None,
               tol=None,
               tolNorm=None,
               n_iters=30,
@@ -642,8 +520,7 @@ class MCH(Solver):
               iprint=False,
               full_output=False,
               learn_params_kwargs={'maxdlamda':1, 'eta':1},
-              generate_kwargs={},
-              **kwargs):
+              generate_kwargs={}):
         """Solve for maxent model parameters using MCH routine.
         
         Parameters
@@ -651,10 +528,8 @@ class MCH(Solver):
         initial_guess : ndarray, None
             Initial starting point.
         constraints : ndarray, None
+            For debugging!
             Vector of correlations to fit.
-        X : ndarray, None
-            If instead of constraints, you wish to pass the raw data on which to calculate
-            the constraints using self.calc_observables.
         tol : float, None
             Maximum error allowed in any observable.
         tolNorm : float, None
@@ -689,7 +564,6 @@ class MCH(Solver):
             If True, also return the errflag and error history.
         learn_parameters_kwargs : dict, {'maxdlamda':1,'eta':1}
         generate_kwargs : dict, {}
-        **kwargs
 
         Returns
         -------
@@ -703,61 +577,51 @@ class MCH(Solver):
             Log of errors in matching constraints at each step of iteration.
         """
 
-        if 'disp' in kwargs.keys():
-            raise Exception("disp kwarg has been replaced with iprint.")
-        if 'burnin' in kwargs.keys():
-            warn("burnin kwarg has been replaced with burn_in.")
-            burn_in = kwargs['burnin']
         if (self.n*10)>burn_in:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
         if (self.n*10)>n_iters:
             warn("Number of MCMC iterations between samples may be too small for convergence to "+
                  "stationary distribution.")
+        if constraints is None:
+            constraints = self.constraints
 
         errors = []  # history of errors to track
 
-        # Read in constraints.
-        if not constraints is None:
-            self.constraints = constraints
-        elif not X is None:
-            self.constraints = self.calc_observables(X).mean(0)
-        else: assert not self.constraints is None
-        
         # Set initial guess for parameters. self._multipliers is where the current guess for the
         # parameters is stored.
         if not (initial_guess is None):
-            assert len(initial_guess)==len(self.constraints)
+            assert len(initial_guess)==len(constraints)
             self._multipliers = initial_guess.copy()
         else:
-            self._multipliers = np.zeros((len(self.constraints)))
-        tol = tol or 1/np.sqrt(self.sampleSize)
-        tolNorm = tolNorm or np.sqrt( 1/self.sampleSize )*len(self._multipliers)
+            self._multipliers = np.zeros((len(constraints)))
+        tol = tol or 1/np.sqrt(self.model.sampleSize)
+        tolNorm = tolNorm or np.sqrt( 1/self.model.sampleSize )*len(self._multipliers)
         
         # Redefine function for automatically adjusting learn_params_kwargs so that it returns the
         # MCH iterator settings and the sample size if it doesn't already.
         if custom_convergence_f is None:
-            custom_convergence_f = lambda i:learn_params_kwargs,self.sampleSize
+            custom_convergence_f = lambda i:learn_params_kwargs,self.model.sampleSize
         if type(custom_convergence_f(0)) is dict:
             custom_convergence_f_ = custom_convergence_f
-            custom_convergence_f = lambda i:(custom_convergence_f_(i),self.sampleSize)
+            custom_convergence_f = lambda i:(custom_convergence_f_(i),self.model.sampleSize)
         assert 'maxdlamda' and 'eta' in list(custom_convergence_f(0)[0].keys())
         assert type(custom_convergence_f(0)[1]) is int
         
         
         # Generate initial set of samples.
-        self.generate_samples( n_iters,burn_in,
-                               multipliers=self._multipliers,
-                               generate_kwargs=generate_kwargs )
-        thisConstraints = self.calc_observables(self.samples).mean(0)
-        errors.append( thisConstraints-self.constraints )
+        self.model.generate_samples( n_iters,burn_in,
+                                     multipliers=self._multipliers,
+                                     generate_kwargs=generate_kwargs )
+        thisConstraints = self.calc_observables(self.model.sample).mean(0)
+        errors.append( thisConstraints - constraints )
         if iprint=='detailed': print(self._multipliers)
 
 
         # MCH iterations.
         counter = 0  # number of MCMC and MCH steps
         keepLooping = True  # loop control
-        learn_params_kwargs,self.sampleSize = custom_convergence_f(counter)
+        learn_params_kwargs, self.model.sampleSize = custom_convergence_f(counter)
         while keepLooping:
             # MCH step
             if iprint:
@@ -770,27 +634,27 @@ class MCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.generate_samples( n_iters,burn_in,
-                                   multipliers=self._multipliers,
-                                   generate_kwargs=generate_kwargs )
-            thisConstraints = self.calc_observables(self.samples).mean(0)
+            self.model.generate_samples( n_iters, burn_in,
+                                         multipliers=self._multipliers,
+                                         generate_kwargs=generate_kwargs )
+            thisConstraints = self.calc_observables(self.model.sample).mean(0)
             counter += 1
             
-            errors.append( thisConstraints-self.constraints )
+            errors.append( thisConstraints - constraints )
             if iprint=='detailed':
                 print("Error is %1.4f"%np.linalg.norm(errors[-1]))
             # Exit criteria.
             if ( np.linalg.norm(errors[-1])<tolNorm
-                 and np.all(np.abs(thisConstraints-self.constraints)<tol) ):
+                 and np.all(np.abs(thisConstraints - constraints)<tol) ):
                 if iprint: print("Solved.")
-                errflag=0
+                errflag = 0
                 keepLooping=False
             elif counter>maxiter:
                 if iprint: print("Over maxiter")
-                errflag=1
+                errflag = 1
                 keepLooping=False
             else:
-                learn_params_kwargs, self.sampleSize = custom_convergence_f(counter)
+                learn_params_kwargs, self.model.sampleSize = custom_convergence_f(counter)
         
         self.multipliers = self._multipliers.copy()
         if full_output:
@@ -816,10 +680,10 @@ class MCH(Solver):
         print("evaluating jac")
         for i in range(len(self._multipliers)):
             dlamda[i] += eps
-            dConstraintsPlus = self.mch_approximation(self.samples,dlamda)     
+            dConstraintsPlus = self.mch_approximation(self.sample, dlamda)
 
             dlamda[i] -= 2*eps
-            dConstraintsMinus = self.mch_approximation(self.samples,dlamda)     
+            dConstraintsMinus = self.mch_approximation(self.sample, dlamda)     
 
             jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
             dlamda[i] += eps
@@ -864,7 +728,7 @@ class MCH(Solver):
             #dMultipliers /= dMultipliers.max()
             
             # Predict distribution with new parameters.
-            estConstraints = self.mch_approximation( self.samples, dlamda )
+            estConstraints = self.mch_approximation( self.sample, dlamda )
             distance = np.linalg.norm( estConstraints-self.constraints )
                         
             # Counter.
@@ -1203,26 +1067,38 @@ class Pseudo(Solver):
     Pseudolikelihood approximation to solving the inverse Ising problem as described in
     Aurell and Ekeberg, PRL 108, 090201 (2012).
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sample,
+                 model=None,
+                 calc_observables=None,
+                 get_multipliers_r=None,
+                 calc_observables_r=None,
+                 **default_model_kwargs):
         """For this technique, must specify how to calculate the energy specific to the
         conditional probability of spin r given the rest of the spins. These will be
         passed in with "get_observables_r" and "calc_observables_r".
         
         Parameters
         ----------
-        get_multipliers_r : lambda function
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        get_multipliers_r : function, None
             Takes index r and multipliers.
             Defn: lambda r,multipliers : r_multipliers
-        calc_observables_r : lambda function
+        calc_observables_r : function, None
             Takes index r and samples X.
             Defn: lambda r,X : r_observable
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
         """
-
-        self.calc_observables_r = kwargs.get('calc_observables_r',None)
-        self.get_multipliers_r = kwargs.get('get_multipliers_r',None)
-        assert not ( (self.calc_observables_r is None) or (self.get_multipliers_r is None) )
-        del kwargs['calc_observables_r'],kwargs['get_multipliers_r']
-        super(Pseudo,self).__init__(*args,**kwargs)
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        if calc_observables_r is None or get_multipliers_r is None:
+            self.get_multipliers_r, self.calc_observables_r = define_pseudo_ising_helper_functions(self.n)
 
     def solve(self, *args, **kwargs):
         """Uses a general all-purpose optimization to solve the problem using functions
@@ -1230,12 +1106,8 @@ class Pseudo(Solver):
 
         Parameters
         ----------
-        X : ndarray
-            Data set if dimensions (n_samples, n_dim).
         initial_guess : ndarray, None
             Initial guess for the parameter values.
-        return_all : bool, False
-            If True, return output from scipy.minimize() routine.
         solver_kwargs : dict, {}
             kwargs for scipy.minimize().
 
@@ -1245,28 +1117,19 @@ class Pseudo(Solver):
             multipliers
         """
         
-        if 'return_all' in kwargs.keys():
-            warn("DEPRECATION WARNING: return_all keyword argument is now deprecated.")
-
         return self._solve_general(*args, **kwargs)
         
     def _solve_general(self,
-                       X=None,
                        initial_guess=None,
                        full_output=False,
-                       return_all=False,
                        solver_kwargs={}):
         """Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
         Parameters
         ----------
-        X : ndarray
-            Data set if dimensions (n_samples, n_dim).
         initial_guess : ndarray, None
             Initial guess for the parameter values.
         full_output : bool, False
-            If True, return output from scipy.minimize() routine.
-        return_all (DEPRECATED) : bool, False
             If True, return output from scipy.minimize() routine.
         solver_kwargs : dict, {}
             kwargs for scipy.minimize().
@@ -1279,10 +1142,8 @@ class Pseudo(Solver):
             Output from scipy.minimize.
         """
 
-        if initial_guess is None and self.multipliers is None:
-            raise Exception("Initial guess must be specified if self.multipliers is not set.")
-        elif initial_guess is None:
-            initial_guess = np.zeros_like(self.multipliers)
+        if initial_guess is None:
+            initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
         
         def f(params,
               n=self.n,
@@ -1293,7 +1154,7 @@ class Pseudo(Solver):
 
             # iterate through each spin
             for r in range(n):
-                obs = calc_observables_r(r, X)
+                obs = calc_observables_r(r, self.sample)
                 multipliers, multipliersrix = get_multipliers_r(r,params)
                 E = -obs.dot(multipliers)
                 loglikelihood += -np.log( 1+np.exp(2*E) ).sum() 
@@ -1302,17 +1163,15 @@ class Pseudo(Solver):
         
         soln = minimize(f, initial_guess, jac=True, **solver_kwargs)
         self.multipliers = soln['x']
-        if full_output or return_all:
+        if full_output:
             return soln['x'],soln
         return soln['x']
 
-    def _solve_ising(self, X=None, initial_guess=None, full_output=False):
+    def _solve_ising(self, initial_guess=None, full_output=False):
         """Solve Ising model specifically with Pseudo.
 
         Parameters
         ----------
-        X : ndarray
-            Data set if dimensions (n_samples, n_dim).
         initial_guess : ndarray, None
             Pseudo for Ising doesn't use a starting point. This is syntactic sugar.
 
@@ -1321,11 +1180,12 @@ class Pseudo(Solver):
         ndarray
             multipliers
         """
-
+        
+        X = self.sample
         X = (X + 1)/2  # change from {-1,1} to {0,1}
         
         # start at freq. model params?
-        freqs = np.mean(X,axis=0)
+        freqs = np.mean(X, axis=0)
         hList = -np.log(freqs/(1.-freqs))
         Jfinal = np.zeros((self.n,self.n))
 
@@ -1338,9 +1198,9 @@ class Pseudo(Solver):
             # calculate once and pass to hessian algorithm for speed
             pairCoocRhat = self.pair_cooc_mat(XRhat)
             
-            Lr = lambda Jr: - self.cond_log_likelihood(r,X,Jr)
-            fprime = lambda Jr: self.cond_jac(r,X,Jr)
-            fhess = lambda Jr: self.cond_hess(r,X,Jr,pairCoocRhat=pairCoocRhat)
+            Lr = lambda Jr: - self.cond_log_likelihood(r, X, Jr)
+            fprime = lambda Jr: self.cond_jac(r, X, Jr)
+            fhess = lambda Jr: self.cond_hess(r, X, Jr, pairCoocRhat=pairCoocRhat)
             
             Jr = fmin_ncg(Lr, Jr0, fprime, fhess=fhess, disp=False)
             Jfinal[r] = Jr
@@ -1371,7 +1231,7 @@ class Pseudo(Solver):
         float
         """
 
-        X,Jr = np.array(X),np.array(Jr)
+        X, Jr = np.array(X), np.array(Jr)
         
         sigmaRtilde = (2.*X[:,r] - 1.)
         samplesRhat = 2.*X.copy()
@@ -1413,7 +1273,7 @@ class Pseudo(Solver):
             Pass pair_cooc_mat(X) to speed calculation.
         """
 
-        X,Jr = np.array(X),np.array(Jr)
+        X, Jr = np.array(X), np.array(Jr)
         
         sigmaRtilde = (2.*X[:,r] - 1.)
         samplesRhat = 2.*X.copy()
@@ -1442,7 +1302,7 @@ class Pseudo(Solver):
         return np.transpose(p,(1,0,2))
 
     def pseudo_log_likelhood(self, X, J):
-        """(Could probably be made more efficient.)
+        """TODO: Could probably be made more efficient.
 
         Parameters
         ----------
@@ -1453,8 +1313,7 @@ class Pseudo(Solver):
             J should be symmetric
         """
 
-        return np.sum([ cond_log_likelihood(r,X,J) \
-                           for r in range(len(J)) ])
+        return np.sum([ cond_log_likelihood(r,X,J) for r in range(len(J)) ])
 #end Pseudo
 
 
@@ -1464,9 +1323,37 @@ class ClusterExpansion(Solver):
     
     Specific to pairwise Ising constraints.
     """
-    def __init__(self, *args, **kwargs):
-        super(ClusterExpansion,self).__init__(*args,**kwargs)
-        self.setup_sampler(kwargs.get('sample_method','metropolis'))
+    def __init__(self, sample,
+                 model=None,
+                 calc_observables=None,
+                 sample_size=1000,
+                 **default_model_kwargs):
+        """
+        Parameters
+        ----------
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        sample_size : int, 1000
+            Number of MC samples.
+        rng : np.random.RandomState, None
+            Random number generator.
+        n_cpus : int, None
+            If 1 or less no parallel processing, other numbers above 0 specify number of
+            cores to use.
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
+        """
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        if sample_size<1000:
+            warn("Sample size may be too small for convergence.")
+        self.sampleSize = sample_size
+        self.model.setup_sampler(sample_size=sample_size)
     
     def S(self, cluster, coocMat,
           deltaJdict={}, 
@@ -1695,7 +1582,7 @@ class ClusterExpansion(Solver):
 
     # "Algorithm 2"
     # was "adaptiveClusterExpansion"
-    def solve(self, X, threshold, 
+    def solve(self, threshold, 
               cluster=None,
               deltaSdict=None,
               deltaJdict=None,
@@ -1706,12 +1593,10 @@ class ClusterExpansion(Solver):
               independentRef=True,
               veryVerbose=False,
               meanFieldPriorLmbda=None,
-              return_all=False):
+              full_output=False):
         """
         Parameters
         ----------
-        X : array-like
-            Data set (n_samples,n_dim).
         threshold : float
         meanFieldRef : bool, False
             Expand about mean-field reference
@@ -1725,10 +1610,10 @@ class ClusterExpansion(Solver):
         
         Returns
         -------
-        With return_all=False, returns
+        With full_output=False, returns
             J           : Estimated interaction matrix
         
-        With return_all=True, returns
+        With full_output=True, returns
             ent         : Estimated entropy
             J           : Estimated interaction matrix
             clusters    : List of clusters
@@ -1737,7 +1622,7 @@ class ClusterExpansion(Solver):
         """
 
         # convert input to coocMat
-        coocMat = mean_field_ising.cooccurrence_matrix((X+1)/2)
+        coocMat = mean_field_ising.cooccurrence_matrix((self.sample+1)/2)
         
         if deltaSdict is None: deltaSdict = {}
         if deltaJdict is None: deltaJdict = {}
@@ -1751,7 +1636,7 @@ class ClusterExpansion(Solver):
         T = threshold
         if cluster is None: cluster = list(range(N))
 
-        clusters = {} # LIST
+        clusters = {}
         size = 1
         clusters[1] = [ [i] for i in cluster ]
 
@@ -1780,10 +1665,9 @@ class ClusterExpansion(Solver):
             size += 1
         
         if independentRef:
-            ent,J0 = self.Sindependent(cluster,coocMat)
+            ent, J0 = self.Sindependent(cluster, coocMat)
         elif meanFieldRef:
-            ent,J0 = SmeanField(cluster,coocMat,
-                                meanFieldPriorLmbda,numSamples)
+            ent, J0 = SmeanField(cluster, coocMat, meanFieldPriorLmbda, numSamples)
         else:
             ent = 0.
             J0 = np.zeros((N,N))
@@ -1797,10 +1681,10 @@ class ClusterExpansion(Solver):
 
         # convert J to {-1,1} basis
         h = -J.diagonal()
-        J = -mean_field_ising.zeroDiag(J)
+        J = -zero_diag(J)
         self.multipliers = convert_params( h, squareform(J)*2, '11', concat=True )
 
-        if return_all:
+        if full_output:
             return ent, self.multipliers, clusters, deltaSdict, deltaJdict
         else:
             return self.multipliers
@@ -1815,18 +1699,46 @@ class RegularizedMeanField(Solver):
     
     Specific to pairwise Ising constraints.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sample,
+                 model=None,
+                 calc_observables=None,
+                 sample_size=1_000,
+                 verbose=False,
+                 **default_model_kwargs):
         """
-        See Solver. Default sample_method is '_metropolis'.
+        Parameters
+        ----------
+        sample : ndarray
+            Of dimensions (samples, dimension).
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        sample : ndarray
+        model : class from models.py, None
+        calc_observables : function, None
+        sample_size : int, 1_000
+        verbose : bool, False
+        rng : np.random.RandomState, None
+            Random number generator.
+        n_cpus : int, None
+            If 1 or less no parallel processing, other numbers above 0 specify number of
+            cores to use.
+        **default_model_kwargs : kwargs for default model
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
         """
-        super(RegularizedMeanField,self).__init__(*args,**kwargs)
-        # some case handling to ensure that RMF gets control over the random number generator
-        self.setup_sampler(kwargs.get('sample_method','metropolis'))
+        
+        assert sample_size>0
+        if sample_size<1000: warn("Small sample size will lead to poor convergence.")
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.sampleSize = sample_size
+        self.verbose = verbose
 
-    def solve(self, samples,
-              sample_size=100000,
-              seed=0,
-              change_seed=False,
+        self.model.setup_sampler(sample_size=sample_size)
+
+    def solve(self,
               min_size=0,
               min_covariance=False,
               min_independent=True,
@@ -1841,11 +1753,6 @@ class RegularizedMeanField(Solver):
             If bracket is given, first test at n_grid_points points evenly spaced in the
             bracket interval, then give the lowest three points to
             scipy.optimize.minimize_scalar
-        sample_size : int, 100_000
-        seed : int, 0
-            initial seed for rng, seed is incremented by mean_field_ising.seedGenerator if
-            change Seed option is True
-        change_seed : bool, False
         min_size : int, 0
             Use a modified model in which samples with fewer ones than min_size are not
             allowed.
@@ -1868,15 +1775,12 @@ class RegularizedMeanField(Solver):
 
         from scipy import transpose
 
-        numDataSamples = len(samples)
+        numDataSamples = len(self.sample)
         # convert input to coocMat
-        coocMatData = mean_field_ising.cooccurrence_matrix((samples+1)/2)
+        coocMatData = mean_field_ising.cooccurrence_matrix((self.sample+1)/2)
         
         if cooc_cov is None:
-            cooc_cov = mean_field_ising.coocSampleCovariance(samples)
-        
-        if change_seed: seedIter = mean_field_ising.seedGenerator(seed, 1)
-        else: seedIter = mean_field_ising.seedGenerator(seed, 0)
+            cooc_cov = mean_field_ising.coocSampleCovariance(self.sample)
         
         if priorLmbda != 0.:
             raise NotImplementedError("priorLmbda is not currently supported")
@@ -1900,25 +1804,22 @@ class RegularizedMeanField(Solver):
         else:
             raise NotImplementedError("correlated residuals calculation is not currently supported")
             if cooc_cov is None: raise Exception
-            cov = cooc_cov # / numDataSamples (can't do this here due to numerical issues)
-                          # instead include numDataSamples in the calculation of coocMatMeanZSq
+            cov = cooc_cov  # / numDataSamples (can't do this here due to numerical issues)
+                            # instead include numDataSamples in the calculation of coocMatMeanZSq
 
         # for use in gammaPrime <-> priorLmbda
         freqsList = np.diag(coocMatData)
         pmean = np.mean(freqsList)
         
-        # adapted from findJMatrixBruteForce_CoocMat
+        # Generate samples from model (need to translate parameters)
         def samples(J):
-           seed = next(seedIter)
            if min_covariance:
                J = tildeJ2normalJ(J, empiricalFreqs)
            burninDefault = 100*self.n
            J = J + J.T
-           self.multipliers = np.concatenate([J.diagonal(), squareform(mean_field_ising.zeroDiag(-J))])
-           self.sampler.rng = np.random.RandomState(seed)
-           self.generate_samples(1, burninDefault, sample_size=int(sample_size))
-           isingSamples = self.samples.copy()
-           return isingSamples
+           self.model.set_multipliers(np.concatenate([J.diagonal(), squareform(zero_diag(-J))]))
+           self.model.generate_samples(burninDefault, 1)
+           return self.model.sample
 
         # adapted from findJMatrixBruteForce_CoocMat
         def func(meanFieldGammaPrime):
@@ -1972,7 +1873,7 @@ class RegularizedMeanField(Solver):
 
         # convert J to {-1,1} basis
         h = -J.diagonal()
-        J = -mean_field_ising.zeroDiag(J)
+        J = -zero_diag(J)
         self.multipliers = convert_params( h, squareform(J)*2, '11', concat=True )
 
         return self.multipliers

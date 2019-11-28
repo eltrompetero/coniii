@@ -31,6 +31,7 @@ from .ising_eqn import ising_eqn_3_sym as ising
 import numpy as np
 calc_observables_multipliers = ising.calc_observables
 
+
 # Generate example data set to use in tests
 n = 3  # system size
 np.random.seed(0)  # standardize random seed
@@ -66,47 +67,30 @@ def test_init():
         return pair_corr( allstates, np.exp(-E-logsumexp(-E)), concat=True )
     
     # try initializing the solvers
-    solver = Enumerate(n,
-                       calc_observables_multipliers=calc_observables_multipliers,
-                       calc_observables=calc_observables)
-    solver = MPF(n, 
-                 calc_observables=calc_observables,
-                 adj=adj)
-    solver = Pseudo(n,
-                    calc_observables=calc_observables,
-                    calc_observables_r=calc_observables_r,
-                    get_multipliers_r=get_multipliers_r)
-    solver = ClusterExpansion(n, calc_observables=calc_observables)
-    solver = MCH(n,
-                 calc_observables=calc_observables,
-                 sample_size=100,
-                 sample_method='metropolis',
-                 mch_approximation=mchApproximation,
-                 n_cpus=1)
-    solver = RegularizedMeanField(n, calc_observables=calc_observables)
+    solver = Enumerate(sample)
+    solver = MPF(sample)
+    solver = Pseudo(sample)
+    solver = ClusterExpansion(sample)
+    solver = MCH(sample, sample_size=1000)
+    solver = RegularizedMeanField(sample)
 
 def test_Enumerate():
     from .utils import pair_corr
 
     # Enumerate should be able to find exact solution when passed the exact correlations
-    solver = Enumerate(n,
-                       calc_observables_multipliers=calc_observables_multipliers,
-                       calc_observables=calc_observables)
-    soln = solver.solve(sisjTrue, initial_guess=hJ/2)
+    solver = Enumerate(sample)
+    soln = solver.solve(initial_guess=hJ/2, constraints=sisjTrue)
     assert np.isclose(hJ, soln).all()
 
 def test_MPF():
     """Check MPF."""
-    from .utils import adj
 
-    solver = MPF(n, 
-                 calc_observables=calc_observables,
-                 adj=adj)
+    solver = MPF(sample)
     
     # compare log objective function with non-log version
     # Convert from {0,1} to {+/-1} basis.
     X = sample
-    X = (X+1)/2
+    X = (X+1)//2
      
     # Get list of unique data states and how frequently they appear.
     Xuniq = X[unique_rows(X)]
@@ -124,16 +108,13 @@ def test_MPF():
     assert np.isclose(f(hJ), g(hJ)), (f(hJ), g(hJ))
  
     # Check that found solutions agree closely
-    assert np.isclose( solver.solve(sample, solver_kwargs={'disp':False}),
-                       solver.solve(sample, solver_kwargs={'disp':False}, uselog=False),
+    assert np.isclose( solver.solve(solver_kwargs={'disp':False}),
+                       solver.solve(solver_kwargs={'disp':False}, uselog=False),
                        atol=1e-3 ).all()
 
 def test_Pseudo():
-    solver = Pseudo(n,
-                    calc_observables=calc_observables,
-                    calc_observables_r=calc_observables_r,
-                    get_multipliers_r=get_multipliers_r)
-    estMultipliers = solver.solve(sample, np.zeros(6))
+    solver = Pseudo(sample)
+    estMultipliers = solver.solve(initial_guess=np.zeros(6))
     
     # Check that both ways of solving the problem agree
     assert np.isclose(ising.calc_observables(estMultipliers), sisj, atol=1e-2).all()

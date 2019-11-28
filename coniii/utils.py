@@ -692,14 +692,44 @@ def state_probs(v, allstates=None, weights=None, normalized=True):
         return freq, allstates
     return freq
 
-    
+def replace_diag(mat, newdiag):
+    """Replace diagonal entries of square matrix.
+
+    Parameters
+    ----------
+    mat : ndarray
+    newdiag : ndarray
+
+    Returns
+    -------
+    ndarray
+    """
+
+    if newdiag.ndim>1: 
+        raise Exception("newdiag should be 1-dimensional")
+    if not (mat.shape[0]==mat.shape[1]==newdiag.size):
+        raise Exception("Incorrect dimensions.")
+    return mat - np.diag(mat.diagonal()) + np.diag(newdiag)
+
+def zero_diag(mat):
+    """Replace diagonal entries of square matrix with zeros.
+
+    Parameters
+    ----------
+    mat : ndarray
+
+    Returns
+    -------
+    ndarray
+    """
+
+    return replace_diag(mat, np.zeros(mat.shape[0]))
+
+
+
 # ========================================= #
 # Helper functions for solving Ising model. # 
 # ========================================= #
-def define_pseudo_ising_helpers(N):
-    warn("DEPRECATION WARNING: now renamed to define_pseudo_ising_helper_functions")
-    return define_pseudo_ising_helper_functions(N)
-
 def define_pseudo_ising_helper_functions(N):
     """Define helper functions for using Pseudo method on Ising model.
 
@@ -922,6 +952,38 @@ def define_ising_helper_functions_sym():
         return obs
     return calc_e, calc_observables, mch_approximation
 
+def define_triplet_helper_functions():
+    @njit
+    def calc_observables(X):
+        """Triplet order model consists of constraining all the correlations up to third order."""
+        
+        n = X.shape[1]
+        Y = np.zeros((len(X), n+n*(n-1)//2+n*(n-1)*(n-2)//6))
+        
+        # average orientation (magnetization)
+        counter = 0
+        for i in range(n):
+            Y[:,counter] = X[:,i]
+            counter += 1
+        
+        # pairwise correlations
+        for i in range(n-1):
+            for j in range(i+1, n):
+                Y[:,counter] = X[:,i]*X[:,j]
+                counter += 1
+                
+        # triplet correlations
+        for i in range(n-2):
+            for j in range(i+1, n-1):
+                for k in range(j+1, n):
+                    Y[:,counter] = X[:,i]*X[:,j]*X[:,k]
+                    counter += 1
+        return Y
+
+    def calc_e(X, multipliers):
+        return -calc_observables(X).dot(multipliers)
+
+    return calc_e, calc_observables
 
 @njit
 def adj(s, n_random_neighbors=0):

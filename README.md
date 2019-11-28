@@ -86,7 +86,7 @@ This should open the notebook in your default web browser.
 
 ## Quick guide (console)
 
-First, install iPython for a console-based interpreter.
+First, install iPython for a console-based interpreter and start it.
 ```bash
 $ pip install ipython
 ```
@@ -95,7 +95,16 @@ or if you are using the Conda package manager
 $ conda install ipython
 ```
 
+Then, first copy the notebook file ["usage_guide.py"](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.py) into a directory outside the "coniii" directory.  Change to this directory and run
+```bash
+$ ipython
+```
 
+Once inside the iPython interpreter, run
+```python
+>>> %run usage_guide.py
+```
+This will run all the examples sequentially, so you may want to comment out unwanted lines.
 
 ## Dependencies
 

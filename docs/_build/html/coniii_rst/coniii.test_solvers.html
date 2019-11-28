@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>coniii.test_solvers module &#8212; ConIII 1.1.9 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -13,6 +11,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -35,29 +34,29 @@
 <span id="coniii-test-solvers-module"></span><h1>coniii.test_solvers module<a class="headerlink" href="#module-coniii.test_solvers" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="coniii.test_solvers.test_Enumerate">
-<code class="descclassname">coniii.test_solvers.</code><code class="descname">test_Enumerate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_Enumerate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.test_solvers.</code><code class="sig-name descname">test_Enumerate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_Enumerate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="coniii.test_solvers.test_MPF">
-<code class="descclassname">coniii.test_solvers.</code><code class="descname">test_MPF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_MPF" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.test_solvers.</code><code class="sig-name descname">test_MPF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_MPF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check MPF.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.test_solvers.test_Pseudo">
-<code class="descclassname">coniii.test_solvers.</code><code class="descname">test_Pseudo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_Pseudo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.test_solvers.</code><code class="sig-name descname">test_Pseudo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_Pseudo" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="coniii.test_solvers.test_init">
-<code class="descclassname">coniii.test_solvers.</code><code class="descname">test_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_init" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.test_solvers.</code><code class="sig-name descname">test_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that all derived Solver classes can be initialized.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.test_solvers.test_pickling">
-<code class="descclassname">coniii.test_solvers.</code><code class="descname">test_pickling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_pickling" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.test_solvers.</code><code class="sig-name descname">test_pickling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.test_solvers.test_pickling" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -97,17 +96,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -116,8 +121,8 @@
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/coniii_rst/coniii.test_solvers.rst.txt"

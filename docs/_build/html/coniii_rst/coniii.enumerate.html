@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>coniii.enumerate module &#8212; ConIII 1.1.9 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -13,6 +11,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="coniii.enumerate_potts module" href="coniii.enumerate_potts.html" />
@@ -37,26 +36,26 @@
 <span id="coniii-enumerate-module"></span><h1>coniii.enumerate module<a class="headerlink" href="#module-coniii.enumerate" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="coniii.enumerate.fast_logsumexp">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">fast_logsumexp</code><span class="sig-paren">(</span><em>X</em>, <em>coeffs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.fast_logsumexp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">fast_logsumexp</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">coeffs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.fast_logsumexp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simplified version of logsumexp to do correlation calculation in Ising equation
 files. Scipy’s logsumexp can be around 10x slower in comparison.</p>
-<dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
-<dd>Terms inside logs.</dd>
-<dt>coeffs <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
-<dd>Factors in front of exponentials.</dd>
+<dl class="simple">
+<dt>X<span class="classifier">ndarray</span></dt><dd><p>Terms inside logs.</p>
+</dd>
+<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>Factors in front of exponentials.</p>
+</dd>
 </dl>
-<dl class="docutils">
-<dt>float</dt>
-<dd>Value of magnitude of quantity inside log (the sum of exponentials).</dd>
-<dt>float</dt>
-<dd>Sign.</dd>
+<dl class="simple">
+<dt>float</dt><dd><p>Value of magnitude of quantity inside log (the sum of exponentials).</p>
+</dd>
+<dt>float</dt><dd><p>Sign.</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.get_3idx">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">get_3idx</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_3idx" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">get_3idx</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_3idx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get binary 3D matrix with truth values where index values correspond to the index
 of all possible ijk parameters.  We can do this by recognizing that the pattern along
 each plane in the third dimension is like the upper triangle pattern that just moves
@@ -65,7 +64,7 @@ up and over by one block each cut lower into the box.</p>
 
 <dl class="function">
 <dt id="coniii.enumerate.get_nidx">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">get_nidx</code><span class="sig-paren">(</span><em>k</em>, <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_nidx" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">get_nidx</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_nidx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the kth order indices corresponding to all the states in which k elements
 are firing up out of n spins. The ordering correspond to that returned by
 bin_states().</p>
@@ -76,49 +75,49 @@ print where(exact.get_nidx(3,4))
 
 <dl class="function">
 <dt id="coniii.enumerate.get_terms">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">get_terms</code><span class="sig-paren">(</span><em>subix</em>, <em>prefix</em>, <em>binstate</em>, <em>br</em>, <em>ix0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_terms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">get_terms</code><span class="sig-paren">(</span><em class="sig-param">subix</em>, <em class="sig-param">prefix</em>, <em class="sig-param">binstate</em>, <em class="sig-param">br</em>, <em class="sig-param">ix0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_terms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Spins are put in explicitly</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.get_terms01">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">get_terms01</code><span class="sig-paren">(</span><em>subix</em>, <em>prefix</em>, <em>binstate</em>, <em>br</em>, <em>ix0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_terms01" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">get_terms01</code><span class="sig-paren">(</span><em class="sig-param">subix</em>, <em class="sig-param">prefix</em>, <em class="sig-param">binstate</em>, <em class="sig-param">br</em>, <em class="sig-param">ix0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_terms01" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific to {0,1}.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.get_terms11">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">get_terms11</code><span class="sig-paren">(</span><em>subix</em>, <em>prefix</em>, <em>binstate</em>, <em>br</em>, <em>ix0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_terms11" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">get_terms11</code><span class="sig-paren">(</span><em class="sig-param">subix</em>, <em class="sig-param">prefix</em>, <em class="sig-param">binstate</em>, <em class="sig-param">br</em>, <em class="sig-param">ix0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.get_terms11" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific to {-1,1}.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.mp_fast_logsumexp">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">mp_fast_logsumexp</code><span class="sig-paren">(</span><em>X</em>, <em>coeffs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.mp_fast_logsumexp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">mp_fast_logsumexp</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">coeffs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.mp_fast_logsumexp" title="Permalink to this definition">¶</a></dt>
 <dd><p>fast_logsumexp for high precision numbers using mpmath.</p>
-<dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
-<dd>Terms inside logs.</dd>
-<dt>coeffs <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
-<dd>Factors in front of exponentials.</dd>
+<dl class="simple">
+<dt>X<span class="classifier">ndarray</span></dt><dd><p>Terms inside logs.</p>
+</dd>
+<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>Factors in front of exponentials.</p>
+</dd>
 </dl>
-<dl class="docutils">
-<dt>float</dt>
-<dd>Value of magnitude of quantity inside log (the sum of exponentials).</dd>
-<dt>float</dt>
-<dd>Sign.</dd>
+<dl class="simple">
+<dt>float</dt><dd><p>Value of magnitude of quantity inside log (the sum of exponentials).</p>
+</dd>
+<dt>float</dt><dd><p>Sign.</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="coniii.enumerate.pairwise">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">pairwise</code><span class="sig-paren">(</span><em>n</em>, <em>sym=0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.pairwise" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">pairwise</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">sym=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.pairwise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper for writing pairwise maxent model (Ising) files.</p>
-<dl class="docutils">
-<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>System size.</dd>
-<dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">int, 0</span></dt>
-<dd>Can be 0 or 1.</dd>
+<dl class="simple">
+<dt>n<span class="classifier">int</span></dt><dd><p>System size.</p>
+</dd>
+<dt>sym<span class="classifier">int, 0</span></dt><dd><p>Can be 0 or 1.</p>
+</dd>
 </dl>
 <p><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs</p>
 <p>None</p>
@@ -126,13 +125,13 @@ print where(exact.get_nidx(3,4))
 
 <dl class="function">
 <dt id="coniii.enumerate.triplet">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">triplet</code><span class="sig-paren">(</span><em>n</em>, <em>sym=0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.triplet" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">triplet</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">sym=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.triplet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper for writing triplet-order maxent model.</p>
-<dl class="docutils">
-<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>System size.</dd>
-<dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">int, 0</span></dt>
-<dd>Can be 0 or 1.</dd>
+<dl class="simple">
+<dt>n<span class="classifier">int</span></dt><dd><p>System size.</p>
+</dd>
+<dt>sym<span class="classifier">int, 0</span></dt><dd><p>Can be 0 or 1.</p>
+</dd>
 </dl>
 <p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs</p>
 <p>None</p>
@@ -140,20 +139,20 @@ print where(exact.get_nidx(3,4))
 
 <dl class="function">
 <dt id="coniii.enumerate.write_eqns">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_eqns</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>corrTermsIx</em>, <em>suffix=''</em>, <em>high_prec=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_eqns" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">write_eqns</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">sym</em>, <em class="sig-param">corrTermsIx</em>, <em class="sig-param">suffix=''</em>, <em class="sig-param">high_prec=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_eqns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create strings for writing out the equations and then write them to file.</p>
 <p>TODO: This code needs some cleanup.</p>
-<dl class="docutils">
-<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>number of spins</dd>
-<dt>sym <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>value of 1 will use {-1,1} formulation, 0 means {0,1}</dd>
-<dt>corrTermsIx <span class="classifier-delimiter">:</span> <span class="classifier">list of ndarrays</span></dt>
-<dd>Allows specification of arbitrary correlations to constrain using an index based
+<dl class="simple">
+<dt>n<span class="classifier">int</span></dt><dd><p>number of spins</p>
+</dd>
+<dt>sym<span class="classifier">int</span></dt><dd><p>value of 1 will use {-1,1} formulation, 0 means {0,1}</p>
+</dd>
+<dt>corrTermsIx<span class="classifier">list of ndarrays</span></dt><dd><p>Allows specification of arbitrary correlations to constrain using an index based
 structure. These should be index arrays as would be returned by np.where that
 specify which correlations to write down. Each consecutive array should specify
 a matrix of sequentially increasing dimension.
-[Nx1, NxN, NxNxN, …]</dd>
+[Nx1, NxN, NxNxN, …]</p>
+</dd>
 </dl>
 <p>suffix : str, ‘’
 high_prec : bool, False</p>
@@ -161,28 +160,30 @@ high_prec : bool, False</p>
 
 <dl class="function">
 <dt id="coniii.enumerate.write_py">
-<code class="descclassname">coniii.enumerate.</code><code class="descname">write_py</code><span class="sig-paren">(</span><em>n</em>, <em>sym</em>, <em>contraintTermsIx</em>, <em>signs</em>, <em>expterms</em>, <em>Z</em>, <em>extra=''</em>, <em>suffix=''</em>, <em>high_prec=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_py" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.enumerate.</code><code class="sig-name descname">write_py</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">sym</em>, <em class="sig-param">contraintTermsIx</em>, <em class="sig-param">signs</em>, <em class="sig-param">expterms</em>, <em class="sig-param">Z</em>, <em class="sig-param">extra=''</em>, <em class="sig-param">suffix=''</em>, <em class="sig-param">high_prec=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.enumerate.write_py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write out Ising equations for Python.</p>
-<dl class="docutils">
-<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>System size.</dd>
+<dl class="simple">
+<dt>n<span class="classifier">int</span></dt><dd><p>System size.</p>
+</dd>
 </dl>
 <p>contraintTermsIx : list of str
 signs : list of ndarray</p>
 <blockquote>
-<div>Sign for each term in the numerator when computing correlations.</div></blockquote>
-<dl class="docutils">
-<dt>expterms <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
-<dd>Every single energy term.</dd>
-<dt>Z <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Energies for all states that will be put into partition function.</dd>
-<dt>extra <span class="classifier-delimiter">:</span> <span class="classifier">str, ‘’</span></dt>
-<dd>any extra lines to add at the end</dd>
+<div><p>Sign for each term in the numerator when computing correlations.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>expterms<span class="classifier">list of str</span></dt><dd><p>Every single energy term.</p>
+</dd>
+<dt>Z<span class="classifier">str</span></dt><dd><p>Energies for all states that will be put into partition function.</p>
+</dd>
+<dt>extra<span class="classifier">str, ‘’</span></dt><dd><p>any extra lines to add at the end</p>
+</dd>
 </dl>
 <p>suffix : str, ‘’
 high_prec : bool, False</p>
 <blockquote>
-<div>If True, write version that uses mpmath for high precision calculations.</div></blockquote>
+<div><p>If True, write version that uses mpmath for high precision calculations.</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -224,17 +225,23 @@ high_prec : bool, False</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -243,8 +250,8 @@ high_prec : bool, False</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/coniii_rst/coniii.enumerate.rst.txt"

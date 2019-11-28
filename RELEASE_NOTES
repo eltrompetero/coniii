@@ -23,6 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
+v2.1.0 (Released 2019/11/28) 
+----------------------------------------------------
+- Fixed bug in Pseudo. It was using a non-standard algorithm for solving the
+  Ising model.  Find more details in Issue #8
+  (https://github.com/eltrompetero/coniii/issues/8).
+
+
 v2.0.0 (Released 2019/11/28) VERSION RELEASE, BREAKS COMPATIBILITY, READ NOTES
 ----------------------------------------------------
 - Simpler interface for using solvers with Ising model. No custom function

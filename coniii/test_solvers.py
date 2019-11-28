@@ -114,10 +114,11 @@ def test_MPF():
 
 def test_Pseudo():
     solver = Pseudo(sample)
-    estMultipliers = solver.solve(initial_guess=np.zeros(6))
-    
-    # Check that both ways of solving the problem agree
-    assert np.isclose(ising.calc_observables(estMultipliers), sisj, atol=1e-2).all()
+    solver.solve(initial_guess=np.zeros(6))
+    assert np.isclose(ising.calc_observables(solver.multipliers), sisj, atol=1e-2).all()
+
+    solver.solve(force_general=True, initial_guess=np.zeros(6))
+    assert np.isclose(ising.calc_observables(solver.multipliers), sisj, atol=1e-2).all()
 
 def test_pickling():
     pass

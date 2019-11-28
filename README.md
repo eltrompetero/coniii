@@ -32,7 +32,7 @@ source.  Download the latest release from GitHub. Make sure that you are running
 $ cd dist
 $ pip install coniii-2.0.0-py3-none-any.whl 
 ```
-or the appropriate wheel file version.
+or the appropriate wheel file version.  
 
 Note: Using setuptools in the usual way of `python setup.py install` will not work because
 eggs are incompatible with cached jit functions.

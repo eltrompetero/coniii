@@ -27,6 +27,7 @@
 import scipy
 import scipy.optimize
 import copy
+import numpy as np
 #import scipy.weave # for efficient fourth-order matrix calculation
 
 exp, cosh = scipy.exp, scipy.cosh
@@ -53,7 +54,7 @@ def aboveDiagFlat(mat, keepDiag=False, offDiagMult=None):
 # 9.15.2014 updated for new scipy.diag behavior
 # 1.17.2013 moved from criticalPoint.py
 # 1.31.2012
-def replaceDiag(mat,lst):
+def replaceDiag(mat, lst):
     if len(scipy.shape(lst)) > 1:
         raise Exception("Lst should be 1-dimensional")
     if scipy.shape(mat) != (len(lst),len(lst)):
@@ -404,19 +405,20 @@ def analyticEntropy(J):
 
 # 7.20.2017 moved from inverseIsing.py
 # 2.7.2014
-def coocSampleCovariance(samples,bayesianMean=True,includePrior=True):
+def coocSampleCovariance(samples, bayesianMean=True, includePrior=True):
     """
     includePrior (True)             : Include diagonal component corresponding
                                       to ell*(ell-1)/2 prior residuals for
                                       interaction parameters
     """
+
     coocs4 = fourthOrderCoocMat(samples)
     if bayesianMean:
         #coocs4mean = coocMatBayesianMean(coocs4,len(samples))
         print("coocSampleCovariance : WARNING : using ad-hoc 'Laplace' correction")
         N = len(samples)
         newDiag = (scipy.diag(coocs4)*N + 1.)/(N + 2.)
-        coocs4mean = replaceDiag(coocs4,newDiag)
+        coocs4mean = replaceDiag(coocs4, newDiag)
     else:
         coocs4mean = coocs4
     cov = coocs4mean*(1.-coocs4mean)
@@ -438,15 +440,23 @@ def isingDeltaCooc(isingSamples,coocMatDesired):
 # 7.18.2017 from SparsenessTools.cooccurranceMatrixFights
 # 3.17.2014 copied from generateFightData.py
 # 4.1.2011
-def cooccurrence_matrix(samples,keepDiag=True):
+def cooccurrence_matrix(samples, keep_diag=True):
+    """Matrix of pairwise correlations. Only upper right triangle is filled.
+    
+    Parameters
+    ----------
+    samples : ndarray
+    keep_diag : bool, True
+        If True, diagonal is filled with ones. Else zeros.
+
+    Returns
+    -------
+    ndarray
     """
-    """
-    samples = scipy.array(samples,dtype=float)
-    mat = scipy.dot(samples.T,samples)
-    if keepDiag: k=-1
-    else: k=0
-    mat *= (1 - scipy.tri(len(mat),k=k)) # only above diagonal
-    mat /= float(len(samples)) # mat /= np.sum(mat)
+
+    mat = samples.T.dot(samples)
+    mat = mat*(1 - np.tri(len(mat), k=keep_diag*-1))  # only modify entries above diagonal
+    mat /= len(samples)  # mat /= np.sum(mat)
     return mat
 
 # 7.20.2017 moved from inverseIsing.py
@@ -527,7 +537,7 @@ def coocMatBayesianMean(coocMat,numFights):
 # 1.12.2012 changed to take coocMatDesired instead of dataSamples
 def isingDeltaCooc(isingSamples,coocMatDesired):
     isingCooc = cooccurrence_matrix(isingSamples)
-    return aboveDiagFlat(isingCooc-coocMatDesired,keepDiag=True)
+    return aboveDiagFlat(isingCooc-coocMatDesired, keepDiag=True)
 
 
 # --- exact Ising code below ---

@@ -22,8 +22,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-v1.2.3 (Released 2019/10/??)
+
+v2.0.0 (Released 2019/11/28) VERSION RELEASE, BREAKS COMPATIBILITY, READ NOTES
 ----------------------------------------------------
+- Simpler interface for using solvers with Ising model. No custom function
+  definitions required. All are defined by default. Note that this will break
+  compatibility with code relying on version 1. See usage_guide.ipynb for
+  examples with new interface.
+- New "models.py" module to wrap evaluation of and sampling from maxent models.
 - Added a convenient Metropolis sampler call, samplers.sample_ising.
 
 v1.2.2 (Released 2019/09/19)

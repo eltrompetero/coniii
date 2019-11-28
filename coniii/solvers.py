@@ -1100,12 +1100,14 @@ class Pseudo(Solver):
         if calc_observables_r is None or get_multipliers_r is None:
             self.get_multipliers_r, self.calc_observables_r = define_pseudo_ising_helper_functions(self.n)
 
-    def solve(self, *args, **kwargs):
+    def solve(self, force_general=False, **kwargs):
         """Uses a general all-purpose optimization to solve the problem using functions
         defined in self.get_multipliers_r and self.calc_observables_r.
 
         Parameters
         ----------
+        force_general : bool, False
+            If True, force use of "general" algorithm.
         initial_guess : ndarray, None
             Initial guess for the parameter values.
         solver_kwargs : dict, {}
@@ -1117,12 +1119,14 @@ class Pseudo(Solver):
             multipliers
         """
         
-        return self._solve_general(*args, **kwargs)
+        if type(self.model) is Ising and not force_general:
+            return self._solve_ising(**kwargs)
+        return self._solve_general(**kwargs)
         
-    def _solve_general(self,
-                       initial_guess=None,
-                       full_output=False,
-                       solver_kwargs={}):
+    def _solve_ising(self,
+                     initial_guess=None,
+                     full_output=False,
+                     solver_kwargs={}):
         """Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
         Parameters
@@ -1132,53 +1136,130 @@ class Pseudo(Solver):
         full_output : bool, False
             If True, return output from scipy.minimize() routine.
         solver_kwargs : dict, {}
-            kwargs for scipy.minimize().
+            Keyword arguments for scipy.optimize.minimize.
 
         Returns
         -------
         ndarray
-            multipliers
+            Solved multipliers.
         dict (optional)
-            Output from scipy.minimize.
+            Output from scipy.optimize.minimize.
         """
 
         if initial_guess is None:
             initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
+            
+        # reformat initial_guess for easy looping later
+        initial_guessAsMat = replace_diag(squareform(initial_guess[self.n:]), initial_guess[:self.n])
+        for i in range(1,self.n):
+            tmp = initial_guessAsMat[i,i]
+            initial_guessAsMat[i,i] = initial_guessAsMat[i,0]
+            initial_guessAsMat[i,0] = tmp
+        # initialize variables that will be used later 
+        obs = [self.calc_observables_r(r, self.sample) for r in range(self.n)]
+        soln = []  # list of output from scipy.optimize.minimize for each spin
+        Jmat = np.zeros((self.n, self.n))  # couplings stored in matrix format with fields along diagonal
         
-        def f(params,
-              n=self.n,
-              calc_observables_r=self.calc_observables_r,
-              get_multipliers_r=self.get_multipliers_r):
+        # iterate through each spin and solve for parameters for each one
+        for r in range(self.n):
+            # to use below...
+            multipliersrix = self.get_multipliers_r(r, initial_guess)[1]
+            guess = initial_guess.copy()
+
+            # params only change the terms relevant to the particular spin being considered
+            def f(params):
+                guess[multipliersrix] = params
+                multipliers = self.get_multipliers_r(r, guess)[0]
+                E = -obs[r].dot(multipliers)
+                loglikelihood = -np.log( 1+np.exp(2*E) ).sum()
+                dloglikelihood = ( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs[r] ).sum(0)
+                return -loglikelihood, dloglikelihood
+        
+            soln.append(minimize(f, initial_guessAsMat[r], jac=True, **solver_kwargs))
+            thisMultipliers = soln[-1]['x']
+            Jmat[r,r] = thisMultipliers[0]
+            Jmat[r,np.delete(np.arange(self.n),r)] = thisMultipliers[1:]
+        
+        # symmetrize couplings
+        Jmat = (Jmat + Jmat.T)/2
+        self.multipliers = np.concatenate((Jmat.diagonal(), squareform(zero_diag(Jmat))))
+            
+        if full_output:
+            return self.multipliers, soln
+        return self.multipliers
+        
+    def _solve_general(self,
+                       initial_guess=None,
+                       full_output=False,
+                       solver_kwargs={}):
+        """Solve for Langrangian parameters according to a variation on the
+        pseudolikelihood algorithm detailed in Aurell and Ekeberg (PRL, 2012). There, the
+        conditional log-likelihoods per spin are minimized independently and then the
+        resulting couplings are combined in a way that ensures that the interactions are
+        symmetric. The generalization is straightforward for higher-order interactions
+        (normalize by the order of the interaction), but here present a different approach
+        that is somewhat computationally simpler.
+        
+        The *sum* of the conditional likelihoods over each spin is minimized, ensuring
+        that the parameters are equal across all conditional likelihood equations by
+        construction. In general, this gives different results from the normal
+        pseudolikelihood formulation, but they agree closely in many cases.
+
+        Parameters
+        ----------
+        initial_guess : ndarray, None
+            Initial guess for the parameter values.
+        full_output : bool, False
+            If True, return output from scipy.minimize() routine.
+        solver_kwargs : dict, {}
+            Keyword arguments for scipy.optimize.minimize.
+
+        Returns
+        -------
+        ndarray
+            Solved multipliers.
+        dict (optional)
+            Output from scipy.optimize.minimize.
+        """
+
+        if initial_guess is None:
+            initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
+        obs = [self.calc_observables_r(r, self.sample) for r in range(self.n)]
+        
+        def f(params):
+            # running sums of function evaluations over all spins
             loglikelihood = 0
             dloglikelihood = np.zeros_like(initial_guess)  # gradient
 
             # iterate through each spin
-            for r in range(n):
-                obs = calc_observables_r(r, self.sample)
-                multipliers, multipliersrix = get_multipliers_r(r,params)
-                E = -obs.dot(multipliers)
+            for r in range(self.n):
+                multipliers, multipliersrix = self.get_multipliers_r(r, params)
+                E = -obs[r].dot(multipliers)
                 loglikelihood += -np.log( 1+np.exp(2*E) ).sum() 
-                dloglikelihood[multipliersrix] += ( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs ).sum(0)
+                dloglikelihood[multipliersrix] += ( -(1/(1+np.exp(2*E)) *
+                                                    np.exp(2*E))[:,None] *
+                                                    2*obs[r] ).sum(0)
             return -loglikelihood, dloglikelihood
         
         soln = minimize(f, initial_guess, jac=True, **solver_kwargs)
         self.multipliers = soln['x']
         if full_output:
-            return soln['x'],soln
+            return soln['x'], soln
         return soln['x']
 
-    def _solve_ising(self, initial_guess=None, full_output=False):
-        """Solve Ising model specifically with Pseudo.
+    def _solve_ising_deprecated(self, initial_guess=None, full_output=False):
+        """Deprecated.
 
         Parameters
         ----------
         initial_guess : ndarray, None
             Pseudo for Ising doesn't use a starting point. This is syntactic sugar.
+        full_output : bool, False
 
         Returns
         -------
         ndarray
-            multipliers
+            Solved multipliers.
         """
         
         X = self.sample
@@ -1186,7 +1267,7 @@ class Pseudo(Solver):
         
         # start at freq. model params?
         freqs = np.mean(X, axis=0)
-        hList = -np.log(freqs/(1.-freqs))
+        hList = -np.log(freqs / (1. - freqs))
         Jfinal = np.zeros((self.n,self.n))
 
         for r in range(self.n):
@@ -1216,6 +1297,8 @@ class Pseudo(Solver):
 
     def cond_log_likelihood(self, r, X, Jr):
         """Equals the conditional log likelihood -L_r.
+
+        Deprecated.
         
         Parameters
         ----------
@@ -1246,6 +1329,8 @@ class Pseudo(Solver):
 
     def cond_jac(self, r, X, Jr):
         """Returns d cond_log_likelihood / d Jr, with shape (dimension of system)
+
+        Deprecated.
         """
 
         X,Jr = np.array(X),np.array(Jr)
@@ -1266,6 +1351,8 @@ class Pseudo(Solver):
 
         Current implementation uses more memory for speed.  For large sample size, it may
         make sense to break up differently if too much memory is being used.
+
+        Deprecated.
 
         Parameters
         ----------
@@ -1296,13 +1383,17 @@ class Pseudo(Solver):
         For use with cond_hess.
         
         Slow because I haven't thought of a better way of doing it yet.
+
+        Deprecated.
         """
 
         p = [ np.outer(f,f) for f in X ]
         return np.transpose(p,(1,0,2))
 
-    def pseudo_log_likelhood(self, X, J):
+    def pseudo_log_likelihood(self, X, J):
         """TODO: Could probably be made more efficient.
+
+        Deprecated.
 
         Parameters
         ----------

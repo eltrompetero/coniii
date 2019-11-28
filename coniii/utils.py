@@ -766,8 +766,9 @@ def define_pseudo_ising_helper_functions(N):
         
         ix = [r] 
         multipliersr = np.zeros(N)
-        multipliersr[0] = multipliers[r]
+        multipliersr[0] = multipliers[r]  # first entry is the biasing field
 
+        # fill in the couplings
         ixcounter = 1
         for i in range(N):
             if i!=r:

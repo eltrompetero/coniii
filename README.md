@@ -2,16 +2,19 @@
 
 # Convenient Interface to Inverse Ising
 
+**ConIII is now on version 2. Major interface updates may break code compatibility. 
+See [release notes](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES "release notes").**
+
 ConIII is a Python package for solving maximum entropy problems with a focus on the
 pairwise maximum entropy model, also known as the inverse Ising problem. Support for
-Python 3.7 and higher only.
+Python 3.7.4 and higher only.
 
 If you use ConIII for your research, please consider citing the following:
 > Lee, E.D. and Daniels, B.C., 2019. Convenient Interface to Inverse Ising (ConIII): A
 > Python 3 Package for Solving Ising-Type Maximum Entropy Models. Journal of Open Research
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
-[Documentation](https://eddielee.co/coniii/index.html "Documentation").
+The paper also contains an overview of the module. For code documentation, see [here](https://eddielee.co/coniii/index.html "Documentation").
 
 ## Installation
 
@@ -58,11 +61,9 @@ the `__main__` block at the end of the file enumerate.py.
 
 ## Quick guide
 
-A Jupyter notebook with a brief introduction and examples for how to use ConIII is
-available in the "ipynb" directory on the GitHub repository:
-[https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb].  The
-notebook is installed into your package directory if you used pip, or you can download it
-from the above GitHub link.
+A [Jupyter notebook](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb) with a brief introduction and examples for how to use ConIII is
+available. An HTML version is [here](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.html). The
+notebook is installed into your package directory if you used pip.
 
 To use the notebook, install jupyter. 
 ```bash
@@ -97,7 +98,7 @@ $ pip install matplotlib 'multiprocess>=0.70.5,<1' matplotlib scipy 'numpy>=1.15
 ## Troubleshooting
 
 This package is only maintained for Python 3 as of v1.0.2 and has only been tested for
-Python 3.7.2. Check which version of Python you are running in your terminal
+Python 3.7.4. Check which version of Python you are running in your terminal
 with 
 ```bash
 $ python --version
@@ -105,8 +106,7 @@ $ python --version
 
 ConIII has been tested on the following systems
 * Debian 9 (Stretch)
-* Mac OS X 10.12 (Sierra)
-* Mac OS X 10.13 (High Sierra)
+* Mac OS X 10.15 (Catalina)
 
 multiprocess module problems: `n_cpus` kwarg can be set to 0 or 1 when the algorithm class
 instance is declared.  This will disable the parallel computing functionality.
@@ -115,7 +115,7 @@ instance is declared.  This will disable the parallel computing functionality.
 
 Please file an issue on the GitHub if you have any problems or feature requests. Provide a
 stack trace or other information that would be helpful in debugging. For example, OS,
-system configuration details, and the results of unit tests. These can be run by
+system configuration details, and the results of unit tests. Unit tests can be run by
 navigating to the package directory and running
 
 ```bash
@@ -135,8 +135,7 @@ $ pip install pytest
 
 ### Updating
 
-When updating to new 1.x.x versions please read the
-[RELEASE_NOTES](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES). There may
+When updating, please read the [RELEASE_NOTES](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES). There may
 be modifications to the interface including parameter names as we make future versions
 more user friendly.
 

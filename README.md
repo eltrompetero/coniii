@@ -30,7 +30,7 @@ source.  Download the latest release from GitHub. Make sure that you are running
 3.7 or higher.  Inside the top directory "coniii", you must run 
 ```bash
 $ cd dist
-$ pip install coniii-2.0.0-py3-none-any.whl 
+$ pip install coniii-2.1.1-py3-none-any.whl 
 ```
 or the appropriate wheel file version.  
 

@@ -296,6 +296,21 @@ counted for any pair. If True, the weights option doesn’t do anything.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="coniii.utils.mat2vec">
+<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">mat2vec</code><span class="sig-paren">(</span><em class="sig-param">multipliers</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.mat2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert matrix form of Ising parameters to a vector.</p>
+<p>This is specific to the Ising model.</p>
+<dl class="simple">
+<dt>multipliers<span class="classifier">ndarray</span></dt><dd><p>Matrix of couplings with diagonal elements as fields.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ndarray</dt><dd><p>Vector of fields and couplings, respectively.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="coniii.utils.multinomial">
 <code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">multinomial</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.multinomial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -423,6 +438,27 @@ counted).</p>
 </dl>
 <dl class="simple">
 <dt>ix<span class="classifier">int</span></dt><dd><p>Unraveled index.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="coniii.utils.vec2mat">
+<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">vec2mat</code><span class="sig-paren">(</span><em class="sig-param">multipliers</em>, <em class="sig-param">separate_fields=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.vec2mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert vector of parameters containing fields and couplings to a matrix where the
+diagonal elements are the fields and the remaining elements are the couplings. Fields
+can be returned separately with the separate_fields keyword argument.</p>
+<p>This is specific to the Ising model.</p>
+<dl class="simple">
+<dt>multipliers<span class="classifier">ndarray</span></dt><dd><p>Vector of fields and couplings.</p>
+</dd>
+</dl>
+<p>separate_fields : bool, False</p>
+<dl class="simple">
+<dt>ndarray</dt><dd><p>n x n matrix. Diagonal elements are fields <em>unless</em> separate_fields keyword
+argument is True, in which case the diagonal elements are 0.</p>
+</dd>
+<dt>ndarray (optional)</dt><dd><p>Fields if separate_fields keyword argument is True.</p>
 </dd>
 </dl>
 </dd></dl>

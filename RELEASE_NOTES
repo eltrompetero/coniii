@@ -23,6 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
+v2.1.1 (Released 2019/11/29) 
+----------------------------------------------------
+- Added convenient multiplier transformation functions utils.vec2mat and
+  utils.mat2vec.
+- Output from ClusterExpansion.solve is of different order when
+  full_output=True. Now, entropy estimate comes second instead of first to
+  maintain consistency for when full_output=False.
+
 v2.1.0 (Released 2019/11/28) 
 ----------------------------------------------------
 - Fixed bug in Pseudo. It was using a non-standard algorithm for solving the

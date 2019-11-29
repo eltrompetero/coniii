@@ -121,25 +121,31 @@ independentRef : bool, False</p>
 <dd><p>threshold : float
 meanFieldRef : bool, False</p>
 <blockquote>
-<div><p>Expand about mean-field reference</p>
+<div><p>Expand about mean-field reference.</p>
 </div></blockquote>
 <dl class="simple">
-<dt>independentRef<span class="classifier">bool, True</span></dt><dd><p>Expand about independent reference</p>
+<dt>independentRef<span class="classifier">bool, True</span></dt><dd><p>Expand about independent reference.</p>
 </dd>
-<dt>priorLmbda<span class="classifier">float, 0.</span></dt><dd><p>Strength of non-interacting prior</p>
+<dt>priorLmbda<span class="classifier">float, 0.</span></dt><dd><p>Strength of non-interacting prior.</p>
 </dd>
 <dt>meanFieldPriorLmbda<span class="classifier">float, None</span></dt><dd><p>Strength of non-interacting prior in mean field calculation (defaults to
-priorLmbda)</p>
+priorLmbda).</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>With full_output=False, returns</dt><dd><p>J           : Estimated interaction matrix</p>
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
 </dd>
-<dt>With full_output=True, returns</dt><dd><p>ent         : Estimated entropy
-J           : Estimated interaction matrix
-clusters    : List of clusters
-deltaSdict  : 
-deltaJdict  :</p>
+<dt>float (optional, only if full_output=True)</dt><dd><p>Estimated entropy.</p>
+</dd>
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
+</dd>
+<dt>list (optional, only if full_output=True)</dt><dd><p>List of clusters.</p>
+</dd>
+<dt>dict (optional, only if full_output=True)</dt><dd><p>deltaSdict</p>
+</dd>
+<dt>dict (optional, only if full_output=True)</dt><dd><p>deltaJdict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -200,7 +206,8 @@ close approximation using a different method if solution is hard to find.</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>ndarray</dt><dd><p>Solved multipliers (parameters).</p>
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
 </dd>
 <dt>dict, optional</dt><dd><p>Output from scipy.optimize.root.</p>
 </dd>
@@ -301,7 +308,8 @@ full_output : bool, False</p>
 <p>learn_parameters_kwargs : dict, {‘maxdlamda’:1,’eta’:1}
 generate_kwargs : dict, {}</p>
 <dl class="simple">
-<dt>ndarray</dt><dd><p>Found solution to inverse problem.</p>
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
 </dd>
 <dt>int</dt><dd><p>Error flag.
 0, converged within given criterion
@@ -507,7 +515,8 @@ precision errors.</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>ndarray</dt><dd><p>Solution.</p>
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
 </dd>
 <dt>dict (optional)</dt><dd><p>Output from scipy.optimize.minimize returned if full_output is True.</p>
 </dd>
@@ -601,7 +610,8 @@ defined in self.get_multipliers_r and self.calc_observables_r.</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>ndarray</dt><dd><p>multipliers</p>
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -646,13 +656,18 @@ biases, as inspired by footnote 12 in TkaSchBer06</p>
 <dt>min_independent<span class="classifier">bool, True</span></dt><dd><p>** As of v1.0.3, min_independent is the only mode currently supported **
 Each &lt;xi&gt; and &lt;xi xj&gt; residual is treated as independent</p>
 </dd>
-<dt>cooc_cov<span class="classifier">ndarray,None</span></dt><dd><p>** As of v1.0.3, not currently supported **
+<dt>cooc_cov<span class="classifier">ndarray, None</span></dt><dd><p>** As of v1.0.3, not currently supported **
 Provide a covariance matrix for residuals.  Should typically be
 coocSampleCovariance(samples).  Only used if min_covariance and
 min_independent are False.</p>
 </dd>
 <dt>priorLmbda<span class="classifier">float,0.</span></dt><dd><p>** As of v1.0.3, not currently implemented **
 Strength of noninteracting prior.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters). For Ising problem, these can be converted
+into matrix format using utils.vec2mat.</p>
 </dd>
 </dl>
 </dd></dl>

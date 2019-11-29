@@ -1854,7 +1854,7 @@ class RegularizedMeanField(Solver):
         min_independent : bool, True
             ** As of v1.0.3, min_independent is the only mode currently supported **
             Each <xi> and <xi xj> residual is treated as independent
-        cooc_cov : ndarray,None
+        cooc_cov : ndarray, None
             ** As of v1.0.3, not currently supported **
             Provide a covariance matrix for residuals.  Should typically be
             coocSampleCovariance(samples).  Only used if min_covariance and

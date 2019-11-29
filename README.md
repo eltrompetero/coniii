@@ -63,8 +63,8 @@ the `__main__` block at the end of the file enumerate.py.
 
 ## Quick guide (with Jupyter notebook)
 
-A [Jupyter notebook](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.ipynb) with a brief introduction and examples for how to use ConIII is
-available. An HTML version is [here](https://github.com/eltrompetero/coniii/blob/master/ipynb/usage_guide.html). The
+A [Jupyter notebook](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.ipynb) with a brief introduction and examples for how to use ConIII is
+available. An HTML version is [here](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.html). The
 notebook is installed into your package directory if you used pip.
 
 To use the notebook, install jupyter. 

@@ -1140,3 +1140,51 @@ def coarse_grain_with_func(X, n_times, sim_func, coarse_func):
     binsix = originalIx
     
     return coarseX, binsix
+
+def vec2mat(multipliers, separate_fields=False):
+    """Convert vector of parameters containing fields and couplings to a matrix where the
+    diagonal elements are the fields and the remaining elements are the couplings. Fields
+    can be returned separately with the separate_fields keyword argument.
+
+    This is specific to the Ising model.
+    
+    Parameters
+    ----------
+    multipliers : ndarray
+        Vector of fields and couplings.
+    separate_fields : bool, False
+    
+    Returns
+    -------
+    ndarray
+        n x n matrix. Diagonal elements are fields *unless* separate_fields keyword
+        argument is True, in which case the diagonal elements are 0.
+    ndarray (optional)
+        Fields if separate_fields keyword argument is True.
+    """
+
+    n = (np.sqrt(1+8*multipliers.size)-1)//2
+    assert (n%1)==0, "Must be n fields and (n choose 2) couplings."
+    n = int(n)
+
+    if separate_fields:
+        return multipliers[:n], squareform(multipliers[n:])
+    return replace_diag(squareform(multipliers[n:]), multipliers[:n])
+
+def mat2vec(multipliers):
+    """Convert matrix form of Ising parameters to a vector. 
+
+    This is specific to the Ising model.
+    
+    Parameters
+    ----------
+    multipliers : ndarray
+        Matrix of couplings with diagonal elements as fields.
+    
+    Returns
+    -------
+    ndarray
+        Vector of fields and couplings, respectively.
+    """
+
+    return np.concatenate([multipliers.diagonal(), squareform(zero_diag(multipliers))])

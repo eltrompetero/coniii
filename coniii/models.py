@@ -123,12 +123,16 @@ class Ising(Model):
         Parameters
         ----------
         multipliers : list of ndarray or ndarray
-            Can be a list of vectors [fields, couplings], a vector of fields and couplings
-            concatenated together, or a matrix of parameters where the diagonal entries
-            are the fields.
+            Can be an integer (all parameters are set to zero), list of vectors [fields,
+            couplings], a vector of fields and couplings concatenated together, or a
+            matrix of parameters where the diagonal entries are the fields.
         """
         
         # intelligently read in multipliers by handling multiple use cases
+        if type(multipliers) is int:
+            assert multipliers>1, "System size must be greater than 1."
+            self.n = multipliers
+            multipliers = np.zeros(self.n+self.n*(self.n-1)//2)
         if len(multipliers)==2:
             # case where two vectors are given
             self.n = len(multipliers[0])

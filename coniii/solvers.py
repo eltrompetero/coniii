@@ -24,7 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # =============================================================================================== #
-from scipy.optimize import minimize,fmin_ncg,minimize_scalar,root
+from scipy.optimize import minimize, fmin_ncg, minimize_scalar, root
 import multiprocess as mp
 import copy
 from . import mean_field_ising
@@ -147,7 +147,8 @@ class Enumerate(Solver):
         Returns
         -------
         ndarray
-            Solved multipliers (parameters).
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
         dict, optional
             Output from scipy.optimize.root.
         """
@@ -417,7 +418,8 @@ class MPF(Solver):
         Returns
         -------
         ndarray
-            Solution.
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
         dict (optional)
             Output from scipy.optimize.minimize returned if full_output is True.
         """
@@ -568,7 +570,8 @@ class MCH(Solver):
         Returns
         -------
         ndarray
-            Found solution to inverse problem.
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
         int
             Error flag.
             0, converged within given criterion
@@ -1116,7 +1119,8 @@ class Pseudo(Solver):
         Returns
         -------
         ndarray
-            multipliers
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
         """
         
         if type(self.model) is Ising and not force_general:
@@ -1690,26 +1694,31 @@ class ClusterExpansion(Solver):
         ----------
         threshold : float
         meanFieldRef : bool, False
-            Expand about mean-field reference
+            Expand about mean-field reference.
         independentRef : bool, True
-            Expand about independent reference
+            Expand about independent reference.
         priorLmbda : float, 0.
-            Strength of non-interacting prior
+            Strength of non-interacting prior.
         meanFieldPriorLmbda : float, None
             Strength of non-interacting prior in mean field calculation (defaults to
-            priorLmbda)
+            priorLmbda).
         
         Returns
         -------
-        With full_output=False, returns
-            J           : Estimated interaction matrix
-        
-        With full_output=True, returns
-            ent         : Estimated entropy
-            J           : Estimated interaction matrix
-            clusters    : List of clusters
-            deltaSdict  : 
-            deltaJdict  :
+        ndarray
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
+        float (optional, only if full_output=True)
+            Estimated entropy.
+        ndarray
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
+        list (optional, only if full_output=True)
+            List of clusters.
+        dict (optional, only if full_output=True)
+            deltaSdict
+        dict (optional, only if full_output=True)
+            deltaJdict
         """
 
         # convert input to coocMat
@@ -1776,7 +1785,7 @@ class ClusterExpansion(Solver):
         self.multipliers = convert_params( h, squareform(J)*2, '11', concat=True )
 
         if full_output:
-            return ent, self.multipliers, clusters, deltaSdict, deltaJdict
+            return self.multipliers, ent, clusters, deltaSdict, deltaJdict
         else:
             return self.multipliers
 # end ClusterExpansion
@@ -1840,6 +1849,8 @@ class RegularizedMeanField(Solver):
         """Varies the strength of regularization on the mean field J to best fit given
         cooccurrence data.
         
+        Parameters
+        ----------
         n_grid_points : int, 200
             If bracket is given, first test at n_grid_points points evenly spaced in the
             bracket interval, then give the lowest three points to
@@ -1862,6 +1873,12 @@ class RegularizedMeanField(Solver):
         priorLmbda : float,0.
             ** As of v1.0.3, not currently implemented **
             Strength of noninteracting prior.
+
+        Returns
+        -------
+        ndarray
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
         """
 
         from scipy import transpose

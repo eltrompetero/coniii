@@ -195,5 +195,12 @@ def test_base_repr():
         for power in range(1,7):
             assert ''.join(base_repr(i**power,i))=='1'+'0'*power
 
+def test_vec2mat():
+    for n in range(3,100):
+        x = np.random.rand(n+n*(n-1)//2)
+        assert np.array_equal(x, mat2vec(vec2mat(x)))
+        xvec, xmat = vec2mat(x, True)
+        assert np.array_equal(xvec, x[:n])
+
 if __name__=='__main__':
     test_convert_params()

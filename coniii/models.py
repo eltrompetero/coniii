@@ -62,6 +62,16 @@ class Model():
            raise NotImplementedError("Unrecognized sampler %s."%sample_method)
         self.sample = None
 
+    def set_rng(self, rng):
+        """Replace random number generator.
+
+        Parameters
+        ----------
+        rng : np.random.RandomState
+        """
+        self.rng = rng
+        self.sampler.rng = rng
+
     def generate_samples(self, n_iters, burn_in,
                          multipliers=None,
                          sample_size=None,

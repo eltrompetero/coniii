@@ -1187,7 +1187,8 @@ class Metropolis(Sampler):
         saveHistory : bool, False
             If True, also save the energy of each sample at each sampling step.
         initial_sample : ndarray, None
-            Start with this sample (i.e. to avoid warming up). Otherwise, self._samples is the initial sample.
+            Start with this sample (i.e. to avoid warming up). Otherwise, self._samples is
+            the initial sample.
 
         Returns
         -------
@@ -1258,8 +1259,11 @@ class Metropolis(Sampler):
                                   initial_sample=None,
                                   systematic_iter=False):
         """
-        Generate samples in parallel. Each replica in self._samples runs on its own thread and a 
-        sample is generated every n_iters.
+        Generate samples in parallel. Each replica in self._samples runs on its own thread
+        and a sample is generated every n_iters.
+
+        In order to control the random number generator, we pass in seeds that are samples
+        from the class instance's rng.
 
         Parameters
         ----------
@@ -1270,7 +1274,8 @@ class Metropolis(Sampler):
         initial_sample : ndarray, None
             Starting set of replicas otherwise self._samples is used.
         systematic_iter : bool, False
-            If True, iterate through spins systematically instead of choosing them randomly.
+            If True, iterate through spins systematically instead of choosing them
+            randomly.
         """
         
         n_cpus = self.nCpus  # alias
@@ -1329,18 +1334,18 @@ class Metropolis(Sampler):
                               systematic_iter=False,
                               parallel=True):
         """
-        Generate samples from conditional distribution (while a subset of the spins are held fixed).
-        Samples are generated in parallel.
+        Generate samples from conditional distribution (while a subset of the spins are
+        held fixed).  Samples are generated in parallel.
         
-        NOTE: There is a bug with multiprocess where many calls to the parallel sampling routine in
-        a row leads to increasingly slow evaluation of the code.
+        NOTE: There is a bug with multiprocess where many calls to the parallel sampling
+        routine in a row leads to increasingly slow evaluation of the code.
 
         Parameters
         ----------
         sample_size : int
         fixed_subset : list of duples
-            Each duple is the index of the spin and the value to fix it at.  These should be ordered
-            by spin index.
+            Each duple is the index of the spin and the value to fix it at.  These should
+            be ordered by spin index.
         burn_in : int
             Burn in.
         n_cpus : int
@@ -1606,8 +1611,8 @@ class HamiltonianMC(Sampler):
         return x
     
     def generate_samples(self, nSamples, nBurn=100, fast=True, x0=None):
-        """
-        Generate nSamples from this Hamiltonian starting from random initial conditions from each sample.
+        """Generate nSamples from this Hamiltonian starting from random initial conditions
+        from each sample.
         """
 
         if x0 is None:
@@ -1862,9 +1867,9 @@ class Heisenberg3DSampler(Sampler):
                          for r in randv])
 
     def sample_nearby_sample(self, X, **kwargs):
-        """
-        Randomly move given state around for new metropolis sample.
-        Question is whether it is more efficient to push only one of the many vectors around or all of them simultaneously.
+        """Randomly move given state around for new metropolis sample.  Question is
+        whether it is more efficient to push only one of the many vectors around or all of
+        them simultaneously.
         """
 
         return np.vstack([self.sample_nearby_vector(x,**kwargs) for x in X])

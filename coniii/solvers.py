@@ -1839,13 +1839,14 @@ class RegularizedMeanField(Solver):
         self.model.setup_sampler(sample_size=sample_size)
 
     def solve(self,
+              n_grid_points=200,
               min_size=0,
+              reset_rng=True,
               min_covariance=False,
               min_independent=True,
               cooc_cov=None,
               priorLmbda=0.,
-              bracket=None,
-              n_grid_points=200):
+              bracket=None):
         """Varies the strength of regularization on the mean field J to best fit given
         cooccurrence data.
         
@@ -1858,6 +1859,9 @@ class RegularizedMeanField(Solver):
         min_size : int, 0
             Use a modified model in which samples with fewer ones than min_size are not
             allowed.
+        reset_rng: bool, True
+            Reset random number generator seed before sampling to ensure that objective
+            function does not depend on generator state.
         min_covariance : bool, False
             ** As of v1.0.3, not currently supported **
             Minimize covariance from emperical frequencies (see notes); trying to avoid
@@ -1882,9 +1886,16 @@ class RegularizedMeanField(Solver):
         """
 
         from scipy import transpose
+        
+        if reset_rng:
+            # return same rng in initial state every time
+            rseed = self.model.rng.randint(2**32-1)
+            get_rng = lambda rseed=rseed: np.random.RandomState(rseed)
+        else:
+            get_rng = lambda: self.model.rng
 
         numDataSamples = len(self.sample)
-        # convert input to coocMat
+        # convert data samples to coocMat
         coocMatData = mean_field_ising.cooccurrence_matrix((self.sample+1)/2)
         
         if cooc_cov is None:
@@ -1921,6 +1932,7 @@ class RegularizedMeanField(Solver):
         
         # Generate samples from model (need to translate parameters)
         def samples(J):
+           self.model.set_rng(get_rng())
            if min_covariance:
                J = tildeJ2normalJ(J, empiricalFreqs)
            burninDefault = 100*self.n

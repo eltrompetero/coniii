@@ -41,7 +41,8 @@
 <dl class="method">
 <dt id="coniii.samplers.HamiltonianMC.generate_samples">
 <code class="sig-name descname">generate_samples</code><span class="sig-paren">(</span><em class="sig-param">nSamples</em>, <em class="sig-param">nBurn=100</em>, <em class="sig-param">fast=True</em>, <em class="sig-param">x0=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.generate_samples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate nSamples from this Hamiltonian starting from random initial conditions from each sample.</p>
+<dd><p>Generate nSamples from this Hamiltonian starting from random initial conditions
+from each sample.</p>
 </dd></dl>
 
 <dl class="method">
@@ -84,7 +85,7 @@ sample_energy_min()</p>
 
 <dl class="method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_energy_min">
-<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F2A1A872AF0</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F9BA06F5D10</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find local energy minimum given state in angular form. Angular representation makes it easy to be
 explicit about constraints on the vectors.</p>
 <dl class="simple">
@@ -109,8 +110,9 @@ explicit about constraints on the vectors.</p>
 <dl class="method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_nearby_sample">
 <code class="sig-name descname">sample_nearby_sample</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Randomly move given state around for new metropolis sample.
-Question is whether it is more efficient to push only one of the many vectors around or all of them simultaneously.</p>
+<dd><p>Randomly move given state around for new metropolis sample.  Question is
+whether it is more efficient to push only one of the many vectors around or all of
+them simultaneously.</p>
 </dd></dl>
 
 <dl class="method">
@@ -147,15 +149,15 @@ NOTE: code might be simplified by using arctan2 instead of arctan</p>
 <dl class="method">
 <dt id="coniii.samplers.Metropolis.generate_cond_samples">
 <code class="sig-name descname">generate_cond_samples</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">fixed_subset</em>, <em class="sig-param">burn_in=1000</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">initial_sample=None</em>, <em class="sig-param">systematic_iter=False</em>, <em class="sig-param">parallel=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_cond_samples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate samples from conditional distribution (while a subset of the spins are held fixed).
-Samples are generated in parallel.</p>
-<p>NOTE: There is a bug with multiprocess where many calls to the parallel sampling routine in
-a row leads to increasingly slow evaluation of the code.</p>
+<dd><p>Generate samples from conditional distribution (while a subset of the spins are
+held fixed).  Samples are generated in parallel.</p>
+<p>NOTE: There is a bug with multiprocess where many calls to the parallel sampling
+routine in a row leads to increasingly slow evaluation of the code.</p>
 <p>sample_size : int
 fixed_subset : list of duples</p>
 <blockquote>
-<div><p>Each duple is the index of the spin and the value to fix it at.  These should be ordered
-by spin index.</p>
+<div><p>Each duple is the index of the spin and the value to fix it at.  These should
+be ordered by spin index.</p>
 </div></blockquote>
 <dl class="simple">
 <dt>burn_in<span class="classifier">int</span></dt><dd><p>Burn in.</p>
@@ -190,7 +192,8 @@ by spin index.</p>
 </dd>
 <dt>saveHistory<span class="classifier">bool, False</span></dt><dd><p>If True, also save the energy of each sample at each sampling step.</p>
 </dd>
-<dt>initial_sample<span class="classifier">ndarray, None</span></dt><dd><p>Start with this sample (i.e. to avoid warming up). Otherwise, self._samples is the initial sample.</p>
+<dt>initial_sample<span class="classifier">ndarray, None</span></dt><dd><p>Start with this sample (i.e. to avoid warming up). Otherwise, self._samples is
+the initial sample.</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -202,8 +205,10 @@ by spin index.</p>
 <dl class="method">
 <dt id="coniii.samplers.Metropolis.generate_samples_parallel">
 <code class="sig-name descname">generate_samples_parallel</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">initial_sample=None</em>, <em class="sig-param">systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread and a 
-sample is generated every n_iters.</p>
+<dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
+and a sample is generated every n_iters.</p>
+<p>In order to control the random number generator, we pass in seeds that are samples
+from the class instance’s rng.</p>
 <dl class="simple">
 <dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
 </dd>
@@ -211,7 +216,8 @@ sample is generated every n_iters.</p>
 </dd>
 <dt>initial_sample<span class="classifier">ndarray, None</span></dt><dd><p>Starting set of replicas otherwise self._samples is used.</p>
 </dd>
-<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through spins systematically instead of choosing them randomly.</p>
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through spins systematically instead of choosing them
+randomly.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -638,7 +638,7 @@ Communications 8 (2017): 14301.  doi:10.1038/ncomms14301</p>
 
 <dl class="method">
 <dt id="coniii.solvers.RegularizedMeanField.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">min_size=0</em>, <em class="sig-param">min_covariance=False</em>, <em class="sig-param">min_independent=True</em>, <em class="sig-param">cooc_cov=None</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">bracket=None</em>, <em class="sig-param">n_grid_points=200</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">n_grid_points=200</em>, <em class="sig-param">min_size=0</em>, <em class="sig-param">reset_rng=True</em>, <em class="sig-param">min_covariance=False</em>, <em class="sig-param">min_independent=True</em>, <em class="sig-param">cooc_cov=None</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">bracket=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Varies the strength of regularization on the mean field J to best fit given
 cooccurrence data.</p>
 <dl class="simple">
@@ -648,6 +648,9 @@ scipy.optimize.minimize_scalar</p>
 </dd>
 <dt>min_size<span class="classifier">int, 0</span></dt><dd><p>Use a modified model in which samples with fewer ones than min_size are not
 allowed.</p>
+</dd>
+<dt>reset_rng: bool, True</dt><dd><p>Reset random number generator seed before sampling to ensure that objective
+function does not depend on generator state.</p>
 </dd>
 <dt>min_covariance<span class="classifier">bool, False</span></dt><dd><p>** As of v1.0.3, not currently supported **
 Minimize covariance from emperical frequencies (see notes); trying to avoid

@@ -1316,7 +1316,6 @@ class Metropolis(Sampler):
                 return samples, s, E
         
         pool = mp.Pool(n_cpus)
-        print(self.rng.rand())
         self.samples, self._samples, self.E = list(zip(*pool.map(f,zip(self._samples,
                                                         E,
                                                         [int(np.ceil(sample_size/n_cpus))]*n_cpus,

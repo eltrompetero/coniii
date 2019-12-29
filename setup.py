@@ -24,7 +24,7 @@
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path
+from os import path, environ
 from distutils.extension import Extension
 from coniii.version import version as __version__
 from shutil import copyfile
@@ -41,10 +41,11 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 
 # setup C++ extension
 samplersModule = Extension('coniii.samplers_ext',
-                           library_dirs=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu'],
-                           extra_objects=['-l:libboost_python-py35.so', '-l:libboost_numpy37.so.1.72.0'],
                            include_dirs = ['cpp'],
+                           library_dirs=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu'],
                            sources=['cpp/samplers.cpp', 'cpp/py.cpp'],
+                           extra_objects=['-l:libboost_python-py35.so', '-l:libboost_numpy37.so.1.72.0'],
+                           extra_compile_args=['-std=c++11'],
                            language='c++')
 
 setup(name='coniii',
@@ -75,8 +76,6 @@ setup(name='coniii',
       include_package_data=True,  # see MANIFEST.in
       py_modules=['coniii.enumerate',
                   'coniii.enumerate_potts',
-                  'coniii.ising',
-                  'coniii.ising_eqn',
                   'coniii.mean_field_ising',
                   'coniii.pseudo_inverse_ising',
                   'coniii.samplers',

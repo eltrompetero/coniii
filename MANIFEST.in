@@ -1,1 +1,3 @@
-global-include *.pyx
+include coniii/usage_guide.ipynb
+include coniii/version.py
+include coniii/LICENSE.txt

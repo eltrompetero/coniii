@@ -39,6 +39,14 @@ copyfile('LICENSE.txt','coniii/LICENSE.txt')
 with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
 
+# setup C++ extension
+samplersModule = Extension('coniii.samplers_ext',
+                           library_dirs=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu'],
+                           extra_objects=['-l:libboost_python-py35.so', '-l:libboost_numpy37.so.1.72.0'],
+                           include_dirs = ['cpp'],
+                           sources=['cpp/samplers.cpp', 'cpp/py.cpp'],
+                           language='c++')
+
 setup(name='coniii',
       version=__version__,
       description='Convenient Interface to Inverse Ising (ConIII)',
@@ -64,17 +72,15 @@ setup(name='coniii',
                         'numba>=0.45.1,<1',
                         'mpmath>=1.1.0',
                         'dill'],
-      include_package_data=True,
-      package_data={'coniii':['setup_module.py','usage_guide.ipynb','version.py','LICENSE.txt']},  # files to include in coniii directory
+      include_package_data=True,  # see MANIFEST.in
       py_modules=['coniii.enumerate',
                   'coniii.enumerate_potts',
-                  'coniii.general_model_rmc',
                   'coniii.ising',
                   'coniii.ising_eqn',
-                  'coniii.mc_hist',
                   'coniii.mean_field_ising',
                   'coniii.pseudo_inverse_ising',
                   'coniii.samplers',
                   'coniii.solvers',
                   'coniii.utils'],
+      ext_modules = [samplersModule],
 )

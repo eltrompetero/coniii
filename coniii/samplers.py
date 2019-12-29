@@ -1,13 +1,11 @@
-# ========================================================================================================= #
+# ====================================================================================== #
 # Classes for sampling from Boltzmann type models.
-# For HamiltonianMC (aka hybrid Monte Carlo and for only continuous state space systems), you should
-# define functions calc_e() and grad_e() at the top of this file to use the jit speedup.
-# 
-# Eddie Lee edl56@cornell.edu
-# 
+# Released with ConIII package.
+# Author : Eddie Lee, edlee@alumni.princeton.edu
+
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee
+# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +24,20 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# ========================================================================================================= #
-from numba import jit,njit,float64,int64
-from numpy import sin,cos,exp
+# ====================================================================================== #
+from numba import jit, njit, float64, int64
+from numpy import sin, cos, exp
 from scipy.spatial.distance import squareform
 import multiprocess as mp
 from .utils import *
 from datetime import datetime
 from multiprocess import Pool, cpu_count
 from warnings import warn
+try:
+    from .samplers_ext import Metropolis as boostMetropolis
+    IMPORTED_SAMPLERS_EXT = True
+except ModuleNotFoundError:
+    IMPORTED_SAMPLERS_EXT = False
 
 
 # ------------------------------------------------------------------------------- #
@@ -680,7 +683,7 @@ class ParallelTempering(Sampler):
 
         self.replicas = []
         for i,b in enumerate(self.beta):
-            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, n_cpus=1) )
+            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, n_cpus=1, boost=False) )
             # give each replica an index
             self.replicas[i].index = i
         self.burn_in_replicas()
@@ -1140,9 +1143,10 @@ def _jit_sample_metropolis(sample0, h, J, flip_site, rng):
 class Metropolis(Sampler):
     def __init__(self, n, theta, calc_e,
                  n_cpus=None,
-                 rng=None):
-        """
-        MC sample on Ising model with +/-1 formulation.
+                 rng=None,
+                 boost=True):
+        """MC sample on Ising model with +/-1 formulation. Attempts to use Boost library
+        but defaults back to pure Python methods if it is unavailable.
 
         Parameters
         ----------
@@ -1152,10 +1156,12 @@ class Metropolis(Sampler):
             Vector of parameters in Hamiltonian.
         calc_e : function
             f( states, params )
-        n_cpus : int
+        n_cpus : int, None
             If None, then will use all available CPUs.
-        rng : np.random.RandomState
+        rng : np.random.RandomState, None
             Random number generator.
+        boost : bool, True 
+            If True, use boost library.
         """
         
         assert type(n) is int, "n must be of type int."
@@ -1166,15 +1172,62 @@ class Metropolis(Sampler):
         self.calc_e = calc_e
         self.rng = rng or np.random.RandomState()
         self._samples = None
-    
-    def generate_samples(self,
-                         sample_size,
-                         n_iters=1000,
-                         systematic_iter=False,
-                         saveHistory=False,
-                         initial_sample=None):
+        
+        # use boost by default
+        if boost and IMPORTED_SAMPLERS_EXT and self.theta.size==(n*(n-1)//2+n):
+            warn("Assuming that the model is Ising.")
+            self.bsampler = boostMetropolis(n, theta, self.rng.randint(2**31-1))
+
+            # use boost library for fast sampling
+            self.generate_samples = self.generate_samples_boost
+            self.generate_samples_parallel = self.generate_samples_parallel_boost
+        else:
+            if boost:
+                warn("Boost library not available. Defaulting to slower sampling methods.")
+            self.generate_samples = self.generate_samples_py
+            self.generate_samples_parallel = self.generate_samples_parallel_py
+
+    def generate_samples_boost(self,
+                               sample_size,
+                               n_iters=1000,
+                               burn_in=None,
+                               systematic_iter=False):
+        """Generate Metropolis samples using C++ and boost.
+
+        Parameters
+        ----------
+        sample_size : int
+            Number of samples.
+        n_iters : int, 1000
+            Number of Metropolis iterations between samples.
+        burn_in : int, None
+            If not set, will be the same value as n_iters.
+        systematic_iter : bool, False
+            If True, iterate through each element of system by increment index by one. 
+
+        Returns
+        -------
+        ndarray, optional
+            Saved array of energies at each sampling step.
         """
-        Generate Metropolis samples using a for loop.
+        
+        if self.nCpus>1: warn("Sampler's multiprocessing capability is not being used.")
+        burn_in = burn_in or n_iters
+        assert sample_size>0 and n_iters>0 and burn_in>0
+
+        self.bsampler.generate_sample(sample_size,
+                                      n_iters,
+                                      n_iters,
+                                      systematic_iter)
+        self.samples = self.bsampler.fetch_sample().astype(int)
+    
+    def generate_samples_py(self,
+                            sample_size,
+                            n_iters=1000,
+                            systematic_iter=False,
+                            saveHistory=False,
+                            initial_sample=None):
+        """Generate Metropolis samples using a for loop.
 
         Parameters
         ----------
@@ -1196,7 +1249,7 @@ class Metropolis(Sampler):
             Saved array of energies at each sampling step.
         """
         
-        assert self.nCpus<=1, "Instantiate another instance for sequential sampling."
+        if self.nCpus>1: warn("Sampler's multiprocessing capability is not being used.")
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=sample_size)):
             self._samples = self.rng.choice([-1,1], size=(1, self.n))
@@ -1253,11 +1306,55 @@ class Metropolis(Sampler):
                     self.samples[i,:] = self._samples[:]
                     self.E[i] = E
 
-    def generate_samples_parallel(self,
-                                  sample_size,
-                                  n_iters=1000,
-                                  initial_sample=None,
-                                  systematic_iter=False):
+    def generate_samples_parallel_boost(self,
+                                        sample_size,
+                                        n_iters=1000,
+                                        burn_in=None,
+                                        systematic_iter=False):
+        """
+        Generate samples in parallel. Each replica in self._samples runs on its own thread
+        and a sample is generated every n_iters.
+
+        In order to control the random number generator, we pass in seeds that are samples
+        from the class instance's rng.
+
+        Parameters
+        ----------
+        sample_size : int
+            Number of samples.
+        n_iters : int, 1000
+            Number of iterations between taking a random sample.
+        burn_in : int, None
+            If None, n_iters is used.
+        systematic_iter : bool, False
+            If True, iterate through spins systematically instead of choosing them
+            randomly.
+        """
+        
+        burn_in = burn_in or n_iters
+        n_cpus = self.nCpus  # alias
+        assert n_cpus>=2, "Sampler is not set up for multiprocessing, nCpus<=1."
+        assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
+
+        # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
+        def f(args, n=self.n, multipliers=self.theta):
+            nSamples, seed = args
+            bsampler = boostMetropolis(n, multipliers, int(seed))
+            bsampler.generate_sample(nSamples, burn_in, n_iters, systematic_iter)
+            return bsampler.fetch_sample().astype(int)
+        
+        pool = mp.Pool(n_cpus)
+        self.samples = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
+                                                        self.rng.randint(2**31-1, size=n_cpus)))) )
+        pool.close()
+
+        self.samples = np.vstack(self.samples)[:sample_size]
+
+    def generate_samples_parallel_py(self,
+                                     sample_size,
+                                     n_iters=1000,
+                                     initial_sample=None,
+                                     systematic_iter=False):
         """
         Generate samples in parallel. Each replica in self._samples runs on its own thread
         and a sample is generated every n_iters.
@@ -1280,6 +1377,7 @@ class Metropolis(Sampler):
         
         n_cpus = self.nCpus  # alias
         assert n_cpus>=2, "Instantiate another instance for parallel sampling."
+        assert n_cpus>=2, "Sampler is not set up for multiprocessing, nCpus<=1."
         assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=n_cpus)):

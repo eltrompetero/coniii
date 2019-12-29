@@ -51,49 +51,37 @@ def test_Metropolis(run_timing=False):
     sampler.generate_samples(n, systematic_iter=True)
     print("Done.")
 
-    print("Running sampler.generate_samples(n, saveHistory=True)")
-    sampler.generate_samples(n, saveHistory=True)
-    print("Done.")
-
-    print("Running sampler.generate_samples(n, saveHistory=True, systematic_iter=True)")
-    sampler.generate_samples(n, saveHistory=True, systematic_iter=True)
-    print("Done.")
-
-     # test control over rng
-    sampler.rng = np.random.RandomState(0)
-    initialSample = np.random.choice([-1.,1], size=(1,n))
-    sampler.generate_samples(n, systematic_iter=True, initial_sample=initialSample)
+    # test control over rng
+    sampler=Metropolis(n, theta, calc_e, n_cpus=1, rng=np.random.RandomState(0))
+    sampler.generate_samples(n, systematic_iter=True)
     X1 = sampler.samples.copy()
 
-    sampler.rng = np.random.RandomState(0)
-    sampler.generate_samples(n, systematic_iter=True, initial_sample=initialSample)
+    sampler=Metropolis(n, theta, calc_e, n_cpus=1, rng=np.random.RandomState(0))
+    sampler.generate_samples(n, systematic_iter=True)
     X2 = sampler.samples.copy()
 
     assert np.array_equal(X1, X2), (X1, X2)
    
     # parallelization
+    print("Running sampler.generate_samples_parallel(n, systematic_iter=True)")
     sampler = Metropolis(n, theta, calc_e, rng=np.random.RandomState(0))
-    print("Running sampler.generate_samples(n, systematic_iter=True)")
     sampler.generate_samples_parallel(n, systematic_iter=True)
     X1 = sampler.samples.copy()
 
     print("Running sampler.generate_samples_parallel(n, systematic_iter=True)")
-    sampler._samples = None
-    sampler.rng = np.random.RandomState(0)
+    sampler = Metropolis(n, theta, calc_e, rng=np.random.RandomState(0))
     sampler.generate_samples_parallel(n, systematic_iter=True)
     X2 = sampler.samples.copy()
     assert np.array_equal(X1, X2)
 
     # parallelization without systematic iter
-    print("Running sampler.generate_samples(n, systematic_iter=False)")
-    sampler._samples = None
-    sampler.rng = np.random.RandomState(0)
+    print("Running sampler.generate_samples_parallel(n, systematic_iter=False)")
+    sampler = Metropolis(n, theta, calc_e, rng=np.random.RandomState(0))
     sampler.generate_samples_parallel(n, systematic_iter=False)
     X1 = sampler.samples.copy()
 
     print("Running sampler.generate_samples_parallel(n, systematic_iter=False)")
-    sampler._samples = None
-    sampler.rng = np.random.RandomState(0)
+    sampler = Metropolis(n, theta, calc_e, rng=np.random.RandomState(0))
     sampler.generate_samples_parallel(n, systematic_iter=False)
     X2 = sampler.samples.copy()
     assert np.array_equal(X1, X2)
@@ -115,7 +103,7 @@ def test_Metropolis(run_timing=False):
 def test_ParallelTempering():
     # basic functionality
     theta = np.random.normal(size=n+n*(n-1)//2, scale=.1)
-    calc_e,_,_ = define_ising_helper_functions()
+    calc_e = define_ising_helper_functions()[0]
     sampler = ParallelTempering(n, theta, calc_e, 4, (1,3))
     sampler.generate_samples(10)
 

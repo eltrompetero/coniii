@@ -24,7 +24,7 @@
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path
+from os import path, environ
 from distutils.extension import Extension
 from coniii.version import version as __version__
 from shutil import copyfile
@@ -38,6 +38,15 @@ copyfile('LICENSE.txt','coniii/LICENSE.txt')
 # Get the long description from the README file
 with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
+
+# setup C++ extension
+samplersModule = Extension('coniii.samplers_ext',
+                           include_dirs = ['cpp'],
+                           library_dirs=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu'],
+                           sources=['cpp/samplers.cpp', 'cpp/py.cpp'],
+                           extra_objects=['-l:libboost_python-py35.so', '-l:libboost_numpy37.so.1.72.0'],
+                           extra_compile_args=['-std=c++11'],
+                           language='c++')
 
 setup(name='coniii',
       version=__version__,
@@ -64,17 +73,13 @@ setup(name='coniii',
                         'numba>=0.45.1,<1',
                         'mpmath>=1.1.0',
                         'dill'],
-      include_package_data=True,
-      package_data={'coniii':['setup_module.py','usage_guide.ipynb','version.py','LICENSE.txt']},  # files to include in coniii directory
+      include_package_data=True,  # see MANIFEST.in
       py_modules=['coniii.enumerate',
                   'coniii.enumerate_potts',
-                  'coniii.general_model_rmc',
-                  'coniii.ising',
-                  'coniii.ising_eqn',
-                  'coniii.mc_hist',
                   'coniii.mean_field_ising',
                   'coniii.pseudo_inverse_ising',
                   'coniii.samplers',
                   'coniii.solvers',
                   'coniii.utils'],
+      ext_modules = [samplersModule],
 )

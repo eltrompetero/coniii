@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
+v2.3.0 (Scheduled release 2020/01)
+----------------------------------------------------
+- Sped up Metropolis sampling using Boost C++ extension.
+
 v2.2.1 (Released 2019/12/2)
 ----------------------------------------------------
 - Random number generator use update in RegularizedMeanField.

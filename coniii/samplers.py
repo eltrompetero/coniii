@@ -1224,6 +1224,7 @@ class Metropolis(Sampler):
     def generate_samples_py(self,
                             sample_size,
                             n_iters=1000,
+                            burn_in=None,
                             systematic_iter=False,
                             saveHistory=False,
                             initial_sample=None):
@@ -1235,6 +1236,8 @@ class Metropolis(Sampler):
             Number of samples.
         n_iters : int, 1000
             Number of iterations to run the sampler floor.
+        burn_in : int, None
+            If None, n_iters is used.
         systematic_iter : bool, False
             If True, iterate through each element of system by increment index by one. 
         saveHistory : bool, False
@@ -1249,6 +1252,7 @@ class Metropolis(Sampler):
             Saved array of energies at each sampling step.
         """
         
+        burn_in = burn_in or n_iters
         if self.nCpus>1: warn("Sampler's multiprocessing capability is not being used.")
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=sample_size)):
@@ -1261,6 +1265,16 @@ class Metropolis(Sampler):
         E = self.calc_e( self._samples, self.theta )
         self.samples = np.zeros((sample_size, self.n), dtype=int)
         self.E = np.zeros(sample_size)
+        
+        # burn in
+        if systematic_iter:
+            for i in range(burn_in):
+                de = self.sample_metropolis( self._samples[0], E, flip_site=i%self.n, rng=self.rng )
+                E += de
+        else:
+            for i in range(burn_in):
+                de = self.sample_metropolis( self._samples[0], E, rng=self.rng )
+                E += de
 
         if saveHistory:
             history = np.zeros(sample_size*n_iters+1)
@@ -1353,6 +1367,7 @@ class Metropolis(Sampler):
     def generate_samples_parallel_py(self,
                                      sample_size,
                                      n_iters=1000,
+                                     burn_in=None,
                                      initial_sample=None,
                                      systematic_iter=False):
         """
@@ -1368,6 +1383,8 @@ class Metropolis(Sampler):
             Number of samples.
         n_iters : int, 1000
             Number of iterations between taking a random sample.
+        burn_in : int, None
+            If None, n_iters is used.
         initial_sample : ndarray, None
             Starting set of replicas otherwise self._samples is used.
         systematic_iter : bool, False
@@ -1375,6 +1392,7 @@ class Metropolis(Sampler):
             randomly.
         """
         
+        burn_in = burn_in or n_iters
         n_cpus = self.nCpus  # alias
         assert n_cpus>=2, "Instantiate another instance for parallel sampling."
         assert n_cpus>=2, "Sampler is not set up for multiprocessing, nCpus<=1."
@@ -1395,6 +1413,11 @@ class Metropolis(Sampler):
                 s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
                 samples = np.zeros((nSamples, self.n), dtype=int)
+
+                for i in range(burn_in):
+                    de = self.sample_metropolis( s, E, rng=rng )
+                    E += de
+
                 for i in range(nSamples):
                     for j in range(n_iters):
                         de = self.sample_metropolis( s, E, rng=rng )
@@ -1406,6 +1429,11 @@ class Metropolis(Sampler):
                 s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
                 samples = np.zeros((nSamples, self.n), dtype=int)
+
+                for i in range(burn_in):
+                    de = self.sample_metropolis( s, E, rng=rng, flip_site=i%self.n )
+                    E += de
+
                 for i in range(nSamples):
                     for j in range(n_iters):
                         de = self.sample_metropolis( s, E, rng=rng, flip_site=j%self.n )

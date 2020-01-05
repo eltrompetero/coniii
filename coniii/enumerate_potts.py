@@ -1,12 +1,12 @@
-# ===================================================================================== #
+# ====================================================================================== #
 # Enumerate module for writing equations for Potts models. There are many different kinds
 # of ways of parameterizing Potts models especially in the face of limited data. Here are
 # a few particular examples that may be useful.
 # 
 # Provided as part of the ConIII package.
 # 
-# Author: Eddie Lee, edl56@cornell.edu
-# ===================================================================================== #
+# Author: Eddie Lee, edlee@alumni.princeton.edu
+#
 # MIT License
 # 
 # Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
@@ -28,6 +28,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+# ====================================================================================== #
 import sys
 import numpy as np
 import re
@@ -228,9 +229,8 @@ class SpecificFieldGenericCouplings(PythonFileWriterBase):
 
 # terminal interface
 if __name__=='__main__':
-    """
-    An example to write an N=9 system with K=3 distinct states. Must specify that it is a
-    module to be able to get relative imports to work.
+    """An example to write an N=9 system with K=3 distinct states. Must specify that it is
+    a module to make relative imports work (see below):
     >>> python -m coniii.enumerate_potts 9 3 coniii/ising_eqn/ising_eqn_9_potts.py
     """
 

@@ -85,7 +85,7 @@ sample_energy_min()</p>
 
 <dl class="method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_energy_min">
-<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F9BA06F5D10</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=&lt;mtrand.RandomState object&gt;</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find local energy minimum given state in angular form. Angular representation makes it easy to be
 explicit about constraints on the vectors.</p>
 <dl class="simple">
@@ -144,7 +144,7 @@ NOTE: code might be simplified by using arctan2 instead of arctan</p>
 
 <dl class="class">
 <dt id="coniii.samplers.Metropolis">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Metropolis</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">theta</em>, <em class="sig-param">calc_e</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">rng=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Metropolis</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">theta</em>, <em class="sig-param">calc_e</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">rng=None</em>, <em class="sig-param">boost=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="method">
 <dt id="coniii.samplers.Metropolis.generate_cond_samples">
@@ -180,13 +180,77 @@ be ordered by spin index.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="coniii.samplers.Metropolis.generate_samples">
-<code class="sig-name descname">generate_samples</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">systematic_iter=False</em>, <em class="sig-param">saveHistory=False</em>, <em class="sig-param">initial_sample=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Metropolis.generate_samples_boost">
+<code class="sig-name descname">generate_samples_boost</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">burn_in=None</em>, <em class="sig-param">systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_boost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Metropolis samples using C++ and boost.</p>
+<dl class="simple">
+<dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
+</dd>
+<dt>n_iters<span class="classifier">int, 1000</span></dt><dd><p>Number of Metropolis iterations between samples.</p>
+</dd>
+<dt>burn_in<span class="classifier">int, None</span></dt><dd><p>If not set, will be the same value as n_iters.</p>
+</dd>
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through each element of system by increment index by one.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ndarray, optional</dt><dd><p>Saved array of energies at each sampling step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.generate_samples_parallel_boost">
+<code class="sig-name descname">generate_samples_parallel_boost</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">burn_in=None</em>, <em class="sig-param">systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel_boost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
+and a sample is generated every n_iters.</p>
+<p>In order to control the random number generator, we pass in seeds that are samples
+from the class instance’s rng.</p>
+<dl class="simple">
+<dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
+</dd>
+<dt>n_iters<span class="classifier">int, 1000</span></dt><dd><p>Number of iterations between taking a random sample.</p>
+</dd>
+<dt>burn_in<span class="classifier">int, None</span></dt><dd><p>If None, n_iters is used.</p>
+</dd>
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through spins systematically instead of choosing them
+randomly.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.generate_samples_parallel_py">
+<code class="sig-name descname">generate_samples_parallel_py</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">burn_in=None</em>, <em class="sig-param">initial_sample=None</em>, <em class="sig-param">systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
+and a sample is generated every n_iters.</p>
+<p>In order to control the random number generator, we pass in seeds that are samples
+from the class instance’s rng.</p>
+<dl class="simple">
+<dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
+</dd>
+<dt>n_iters<span class="classifier">int, 1000</span></dt><dd><p>Number of iterations between taking a random sample.</p>
+</dd>
+<dt>burn_in<span class="classifier">int, None</span></dt><dd><p>If None, n_iters is used.</p>
+</dd>
+<dt>initial_sample<span class="classifier">ndarray, None</span></dt><dd><p>Starting set of replicas otherwise self._samples is used.</p>
+</dd>
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through spins systematically instead of choosing them
+randomly.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Metropolis.generate_samples_py">
+<code class="sig-name descname">generate_samples_py</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">burn_in=None</em>, <em class="sig-param">systematic_iter=False</em>, <em class="sig-param">saveHistory=False</em>, <em class="sig-param">initial_sample=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Metropolis samples using a for loop.</p>
 <dl class="simple">
 <dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
 </dd>
 <dt>n_iters<span class="classifier">int, 1000</span></dt><dd><p>Number of iterations to run the sampler floor.</p>
+</dd>
+<dt>burn_in<span class="classifier">int, None</span></dt><dd><p>If None, n_iters is used.</p>
 </dd>
 <dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through each element of system by increment index by one.</p>
 </dd>
@@ -198,26 +262,6 @@ the initial sample.</p>
 </dl>
 <dl class="simple">
 <dt>ndarray, optional</dt><dd><p>Saved array of energies at each sampling step.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="coniii.samplers.Metropolis.generate_samples_parallel">
-<code class="sig-name descname">generate_samples_parallel</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">initial_sample=None</em>, <em class="sig-param">systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
-and a sample is generated every n_iters.</p>
-<p>In order to control the random number generator, we pass in seeds that are samples
-from the class instance’s rng.</p>
-<dl class="simple">
-<dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
-</dd>
-<dt>n_iters<span class="classifier">int, 1000</span></dt><dd><p>Number of iterations between taking a random sample.</p>
-</dd>
-<dt>initial_sample<span class="classifier">ndarray, None</span></dt><dd><p>Starting set of replicas otherwise self._samples is used.</p>
-</dd>
-<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through spins systematically instead of choosing them
-randomly.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -682,7 +726,7 @@ initial_sample=None</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -1015,6 +1015,35 @@ def define_ternary_helper_functions():
 
     return calc_e, calc_observables
 
+def define_potts3_helper_functions():
+    """Helper functions for calculating quantities in 3-state Potts model.
+    """
+    @njit
+    def calc_observables(X):
+        n = X.shape[1]
+        Y = np.zeros((len(X), n*3+n*(n-1)//2))
+        
+        # average orientation (magnetization)
+        # note that fields for the third state are set to 0 by default
+        counter = 0
+        for i in range(3):
+            for j in range(n):
+                Y[:,counter] = X[:,j]==i
+                counter += 1
+        
+        # pairwise correlations
+        for i in range(n-1):
+            for j in range(i+1, n):
+                Y[:,counter] = X[:,i]==X[:,j]
+                counter += 1
+                
+        return Y
+
+    def calc_e(X, multipliers):
+        return -calc_observables(X).dot(multipliers)
+
+    return calc_e, calc_observables
+
 @njit
 def adj(s, n_random_neighbors=0):
     """Return one-flip neighbors and a set of random neighbors. This is written to be used

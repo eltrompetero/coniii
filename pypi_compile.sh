@@ -30,8 +30,11 @@ find ./ -name *.pyc -exec rm {} \;
 cp ipynb/usage_guide.ipynb coniii/
 
 # Compile docs
-sphinx-build ./docs/ ./docs/_build/html
-rsync -avu docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
+#sphinx-build ./docs/ ./docs/_build/html
+#rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
+
+# Update cpp code
+rsync -au ../../cpp/cppsamplers/cppsamplers/*.*pp cpp/
 
 # Compile wheels into dist folder.
 python setup.py bdist_wheel

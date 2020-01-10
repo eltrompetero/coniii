@@ -247,7 +247,7 @@ class Triplet(Model):
 #end Triplet
 
 
-class TernaryIsing(Model):
+class Potts3(Model):
     """Three-state spin model constraining means and pairwise correlations.
     """
     def __init__(self, multipliers, rng=None, n_cpus=None, verbose=False):
@@ -293,4 +293,4 @@ class TernaryIsing(Model):
         if not self._calc_observables is None:
             self.calc_observables = lambda x=self.multipliers: self._calc_observables(x)
             self.calc_p = lambda x=self.multipliers: self._calc_p(x)
-#end TernaryIsing
+#end Potts3

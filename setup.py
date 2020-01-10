@@ -44,7 +44,7 @@ samplersModule = Extension('coniii.samplers_ext',
                            include_dirs = ['cpp'],
                            library_dirs=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu'],
                            sources=['cpp/samplers.cpp', 'cpp/py.cpp'],
-                           extra_objects=['-l:libboost_python-py35.so', '-l:libboost_numpy37.so.1.72.0'],
+                           extra_objects=['-l:libboost_python37.so', '-l:libboost_numpy37.so'],
                            extra_compile_args=['-std=c++11'],
                            language='c++')
 

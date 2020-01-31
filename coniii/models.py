@@ -1,6 +1,7 @@
 # ====================================================================================== #
 # ConIII module for maxent models.
-# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels (bryan.daniels.1@asu.edu)
+# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
+#          (bryan.daniels.1@asu.edu)
 #
 # MIT License
 # 

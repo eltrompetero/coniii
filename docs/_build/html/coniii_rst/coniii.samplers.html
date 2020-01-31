@@ -85,7 +85,7 @@ sample_energy_min()</p>
 
 <dl class="method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_energy_min">
-<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=&lt;mtrand.RandomState object&gt;</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F785208E490</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find local energy minimum given state in angular form. Angular representation makes it easy to be
 explicit about constraints on the vectors.</p>
 <dl class="simple">
@@ -144,7 +144,7 @@ NOTE: code might be simplified by using arctan2 instead of arctan</p>
 
 <dl class="class">
 <dt id="coniii.samplers.Metropolis">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Metropolis</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">theta</em>, <em class="sig-param">calc_e</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">rng=None</em>, <em class="sig-param">boost=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Metropolis</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">theta</em>, <em class="sig-param">calc_e=None</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">rng=None</em>, <em class="sig-param">boost=True</em>, <em class="sig-param">iprint=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="method">
 <dt id="coniii.samplers.Metropolis.generate_cond_samples">
@@ -267,6 +267,11 @@ the initial sample.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="coniii.samplers.Metropolis.random_sample">
+<code class="sig-name descname">random_sample</code><span class="sig-paren">(</span><em class="sig-param">n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.random_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="coniii.samplers.Metropolis.sample_metropolis">
 <code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param">sample0</em>, <em class="sig-param">E0</em>, <em class="sig-param">rng=None</em>, <em class="sig-param">flip_site=None</em>, <em class="sig-param">calc_e=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.sample_metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Metropolis sampling given an arbitrary sampling function.</p>
@@ -382,6 +387,59 @@ temperatures. Replicas are burned in and ready to sample.</p>
 <dt id="coniii.samplers.ParallelTempering.update_replica_parameters">
 <code class="sig-name descname">update_replica_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.update_replica_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update parameters for each replica. Remember that the parameters include the factor of beta.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="coniii.samplers.Potts3">
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Potts3</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">theta</em>, <em class="sig-param">calc_e=None</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">rng=None</em>, <em class="sig-param">boost=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Metropolis" title="coniii.samplers.Metropolis"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Metropolis</span></code></a></p>
+<dl class="method">
+<dt id="coniii.samplers.Potts3.generate_samples_parallel_boost">
+<code class="sig-name descname">generate_samples_parallel_boost</code><span class="sig-paren">(</span><em class="sig-param">sample_size</em>, <em class="sig-param">n_iters=1000</em>, <em class="sig-param">burn_in=None</em>, <em class="sig-param">systematic_iter=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.generate_samples_parallel_boost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
+and a sample is generated every n_iters.</p>
+<p>In order to control the random number generator, we pass in seeds that are samples
+from the class instance’s rng.</p>
+<dl class="simple">
+<dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
+</dd>
+<dt>n_iters<span class="classifier">int, 1000</span></dt><dd><p>Number of iterations between taking a random sample.</p>
+</dd>
+<dt>burn_in<span class="classifier">int, None</span></dt><dd><p>If None, n_iters is used.</p>
+</dd>
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>If True, iterate through spins systematically instead of choosing them
+randomly.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Potts3.random_sample">
+<code class="sig-name descname">random_sample</code><span class="sig-paren">(</span><em class="sig-param">n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.random_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="coniii.samplers.Potts3.sample_metropolis">
+<code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param">sample0</em>, <em class="sig-param">E0</em>, <em class="sig-param">rng=None</em>, <em class="sig-param">flip_site=None</em>, <em class="sig-param">calc_e=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metropolis sampling given an arbitrary sampling function.</p>
+<dl class="simple">
+<dt>sample0<span class="classifier">ndarray</span></dt><dd><p>Sample to start with. Passed by ref and changed.</p>
+</dd>
+<dt>E0<span class="classifier">ndarray</span></dt><dd><p>Initial energy of state.</p>
+</dd>
+<dt>rng<span class="classifier">np.random.RandomState</span></dt><dd><p>Random number generator.</p>
+</dd>
+<dt>flip_site<span class="classifier">int</span></dt><dd><p>Site to flip.</p>
+</dd>
+<dt>calc_e<span class="classifier">function</span></dt><dd><p>If another function to calculate energy should be used</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>float</dt><dd><p>delta energy.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -626,11 +684,10 @@ J</p>
 
 <dl class="function">
 <dt id="coniii.samplers.sample_ising">
-<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">sample_ising</code><span class="sig-paren">(</span><em class="sig-param">Jflat</em>, <em class="sig-param">n_samples</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">generate_samples_kw={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.sample_ising" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">sample_ising</code><span class="sig-paren">(</span><em class="sig-param">multipliers</em>, <em class="sig-param">n_samples</em>, <em class="sig-param">n_cpus=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">generate_samples_kw={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.sample_ising" title="Permalink to this definition">¶</a></dt>
 <dd><p>Easy way to Metropolis sample from Ising model.</p>
 <dl class="simple">
-<dt>Jflat<span class="classifier">ndarray</span></dt><dd><p>N individual parameters followed by N(N-1)/2 pairwise parameters (ordered as in
-np.triu_indices(N,k=1)).</p>
+<dt>multipliers<span class="classifier">ndarray</span></dt><dd><p>N individual fields followed by N(N-1)/2 pairwise couplings.</p>
 </dd>
 <dt>n_samples<span class="classifier">int</span></dt><dd><p>Number of samples to take.</p>
 </dd>

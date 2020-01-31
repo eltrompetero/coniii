@@ -5,7 +5,7 @@
 
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -311,8 +311,8 @@ class WolffIsing(Sampler):
         return sample
             
     def one_step(self,state,initialsite=None):
-        """
-        Run one iteration of the Wolff algorithm that involves finding a cluster and possibly flipping it.
+        """Run one iteration of the Wolff algorithm that involves finding a cluster and
+        possibly flipping it.
         """
 
         n,J,h=self.n,self.J,self.h
@@ -346,11 +346,11 @@ class WolffIsing(Sampler):
         return marked
         
     def find_neighbors(self,state,site,alreadyMarked):
-        """
-        Return neighbors of given site that need to be visited excluding sites that have already been visited.
-        This is the implementation of the Wolff algorithm for finding neighbors such that detailed balance is
-        satisfied. I have modified to include random fields such tha the probability of adding a neighbors
-        depends both on its coupling with the current site and the neighbor's magnetic field.
+        """Return neighbors of given site that need to be visited excluding sites that
+        have already been visited.  This is the implementation of the Wolff algorithm for
+        finding neighbors such that detailed balance is satisfied. I have modified to
+        include random fields such tha the probability of adding a neighbors depends both
+        on its coupling with the current site and the neighbor's magnetic field.
 
         Parameters
         ----------
@@ -376,8 +376,8 @@ class WolffIsing(Sampler):
 # Helper functions for WolffIsing.
 @jit
 def iterate_neighbors(n,ix,expdJ,r):
-    """
-    Iterate through all neighbors of a particular site and see if a bond should be formed between them.
+    """Iterate through all neighbors of a particular site and see if a bond should be
+    formed between them.
 
     Parameters
     ----------
@@ -617,30 +617,30 @@ class ParallelTempering(Sampler):
                  rep_ex_burnin=None,
                  n_cpus=None,
                  rng=None):
-        """
-        Run multiple replicas in parallel at different temperatures using Metropolis sampling to
-        equilibrate.
+        """Run multiple replicas in parallel at different temperatures using Metropolis
+        sampling to equilibrate.
 
-        Hukushima, K, and K Nemoto. “Exchange Monte Carlo Method and Application to Spin Glass
-        Simulations.” Journal of the Physical Society of Japan 65 (1996): 1604–1608.
+        Hukushima, K, and K Nemoto. “Exchange Monte Carlo Method and Application to Spin
+        Glass Simulations.” Journal of the Physical Society of Japan 65 (1996): 1604–1608.
 
         Parameters
         ----------
         n : int
             Number of elements in system.
         theta : ndarray
-            Concatenated vector of the field hi and couplings Jij. They should be ordered in
-            ascending order 0<=i<n and for Jij in order of 0<=i<j<n.
+            Concatenated vector of the field hi and couplings Jij. They should be ordered
+            in ascending order 0<=i<n and for Jij in order of 0<=i<j<n.
         calc_e : function
             For calculating energy.
         n_replicas : int
             Number of replicas.
         Tbds : duple, (1,3)
-            Lowest and highest temperatures to start with. Lowest temperature will not change.
+            Lowest and highest temperatures to start with. Lowest temperature will not
+            change.
         sample_size : int, 1000
         replica_burnin : int, n*50
-            Default number of burn in iterations for each replica when first initialising (from completely
-            uniform distribution).
+            Default number of burn in iterations for each replica when first initialising
+            (from completely uniform distribution).
         rep_ex_burnin : int, n*10
             Default number of Metropolis steps after exchange.
         n_cpus : int, 0
@@ -668,17 +668,17 @@ class ParallelTempering(Sampler):
         assert (np.diff(self.beta)>0).all(), self.beta
     
     def update_replica_parameters(self):
-        """
-        Update parameters for each replica. Remember that the parameters include the factor of beta.
+        """Update parameters for each replica. Remember that the parameters include the
+        factor of beta.
         """
 
         for b,rep in zip(self.beta, self.replicas):
             rep.theta = self.theta*b
 
     def setup_replicas(self):
-        """
-        Initialise a set of replicas at different temperatures using the Metropolis algorithm and optimize the
-        temperatures. Replicas are burned in and ready to sample.
+        """Initialise a set of replicas at different temperatures using the Metropolis
+        algorithm and optimize the temperatures. Replicas are burned in and ready to
+        sample.
         """
 
         self.replicas = []
@@ -755,13 +755,14 @@ class ParallelTempering(Sampler):
         sample_size : int
             Number of samples to take for each replica.
         save_exchange_trajectory : bool, False
-            If True, keep track of the location of each replica in beta space and return the history.
+            If True, keep track of the location of each replica in beta space and return
+            the history.
 
         Returns
         -------
         ndarray, optional
-            Trajectory of each replica through beta space. Each row is tells where each index is located in
-            beta space.
+            Trajectory of each replica through beta space. Each row is tells where each
+            index is located in beta space.
         """
         
         self.samples = [np.zeros((sample_size,self.n), dtype=int) for i in range(self.nReplicas)]
@@ -797,8 +798,7 @@ class ParallelTempering(Sampler):
     
     @staticmethod
     def iterate_beta(beta, acceptance_ratio):
-        """
-        Apply algorithm from Hukushima but reversed to maintain one replica at T=1.
+        """Apply algorithm from Hukushima but reversed to maintain one replica at T=1.
 
         Parameters
         ----------
@@ -827,20 +827,20 @@ class ParallelTempering(Sampler):
                       n_iters,
                       tol=.01,
                       max_iter=10):
-        """
-        Find suitable temperature range for replicas. Sets self.beta.
+        """Find suitable temperature range for replicas. Sets self.beta.
 
         Parameters
         ----------
         n_samples : int
-            Number of samples to use to estimate acceptance ratio. Acceptance ratio is estimated as the
-            average of these samples.
+            Number of samples to use to estimate acceptance ratio. Acceptance ratio is
+            estimated as the average of these samples.
         n_iters : int
             Number of sampling iterations for each replica.
         tol : float, .1
             Average change in beta to reach before stopping.
         max_iter : int, 10
-            Number of times to iterate algorithm for beta. Each iteration involves sampling from replicas.
+            Number of times to iterate algorithm for beta. Each iteration involves
+            sampling from replicas.
         """
         
         beta = self.beta
@@ -876,7 +876,8 @@ class ParallelTempering(Sampler):
         n_iters : int
             Number of MC steps between samples. Bigger is better.
         pairs : list of duples, None
-            Pairs for which to compute the acceptance ratio. If not given, all pairs are compared.
+            Pairs for which to compute the acceptance ratio. If not given, all pairs are
+            compared.
 
         Returns
         -------
@@ -1145,7 +1146,8 @@ class Metropolis(Sampler):
                  calc_e=None,
                  n_cpus=None,
                  rng=None,
-                 boost=True):
+                 boost=True,
+                 iprint=True):
         """MC sample on Ising model with +/-1 formulation. Attempts to use Boost library
         but defaults back to pure Python methods if it is unavailable.
 
@@ -1165,6 +1167,8 @@ class Metropolis(Sampler):
             Random number generator.
         boost : bool, True 
             If True, use boost library.
+        iprint : bool, True
+            If True, print details when code is run.
         """
         
         assert type(n) is int, "n must be of type int."
@@ -1178,14 +1182,14 @@ class Metropolis(Sampler):
         
         # use boost by default
         if boost and IMPORTED_SAMPLERS_EXT and self.theta.size==(n*(n-1)//2+n):
-            warn("Assuming that the model is Ising.")
+            if iprint: warn("Assuming that the model is Ising.")
             self.bsampler = BoostIsing(n, theta, self.rng.randint(2**31-1))
 
             # use boost library for fast sampling
             self.generate_samples = self.generate_samples_boost
             self.generate_samples_parallel = self.generate_samples_parallel_boost
         else:
-            if boost:
+            if boost and iprint:
                 warn("Boost library not available. Defaulting to slower sampling methods.")
             assert not self.calc_e is None
             self.generate_samples = self.generate_samples_py
@@ -2013,9 +2017,10 @@ class Heisenberg3DSampler(Sampler):
         J : ndarray
             vector of coupling parameters
         calc_e : lambda
-            Function for calculating energies of array of given states with args (J,states). States
-            must be array with dimensions (nSamples,nSpins,3).  random_sample (lambda)
-            Function for returning random samples with args (rng,n_samples).
+            Function for calculating energies of array of given states with args
+            (J,states). States must be array with dimensions (nSamples,nSpins,3).
+            random_sample (lambda) Function for returning random samples with args
+            (rng,n_samples).
         """
 
         raise NotImplementedError("This hasn't been properly tested.")
@@ -2180,9 +2185,8 @@ class Heisenberg3DSampler(Sampler):
                           initialState=None,
                           method='powell',
                           **kwargs):
-        """
-        Find local energy minimum given state in angular form. Angular representation makes it easy to be
-        explicit about constraints on the vectors.
+        """Find local energy minimum given state in angular form. Angular representation
+        makes it easy to be explicit about constraints on the vectors.
         
         Parameters
         ----------
@@ -2215,8 +2219,8 @@ class Heisenberg3DSampler(Sampler):
 
     @classmethod
     def to_dict(cls,data,names):
-        """
-        Convenience function taking 3d array of of samples and arranging them into n x 3 arrays in a dictionary.
+        """Convenience function taking 3d array of of samples and arranging them into n x
+        3 arrays in a dictionary.
         """
 
         from collections import OrderedDict
@@ -2281,9 +2285,8 @@ def jit_sample_nearby_vector(rseed,v,nSamples,otheta,ophi,sigma):
     return rotatedv
 
 def check_e_logp(sample, calc_e):
-    """
-    Boltzmann type model with discrete state space should have E propto -logP. Calculate these quantities for
-    comparison.
+    """Boltzmann type model with discrete state space should have E propto -logP.
+    Calculate these quantities for comparison.
 
     Parameters
     ----------
@@ -2337,17 +2340,12 @@ def sample_ising(multipliers, n_samples,
     rng = np.random.RandomState(seed=seed)
     multipliers = multipliers
     n = 0.5 * (-1 + np.sqrt(1 + 8*len(multipliers)) )
-    assert n == int(n),"The length of multipliers does not correspond to an integer number of spins."
+    assert n == int(n),"The length of multipliers vector does not correspond to an integer number of spins."
     
-    if IMPORTED_SAMPLERS_EXT:
-        sampler = Metropolis( int(n), multipliers,
-                              n_cpus=n_cpus, rng=rng )
-    else:
-        calc_e = define_ising_helper_functions()[0]
-        sampler = Metropolis( int(n), multipliers,
-                              calc_e=calc_e,
-                              n_cpus=n_cpus,
-                              rng=rng )
+    sampler = Metropolis( int(n), multipliers,
+                          n_cpus=n_cpus,
+                          rng=rng,
+                          iprint=False )
     
     # generate samples
     if n_cpus > 1:

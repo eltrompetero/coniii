@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,13 @@
 # SOFTWARE.
 #!/bin/bash
 
-# Code for compiling package for uplaod to PyPI.
+# Code for compiling package for upload to PyPI.
 # Clean previous compilation results.
 trash build dist
 find ./ -name *.pyc -exec rm {} \;
 
-# Update usage guide to latest version for upload to PyPI.
-cp ipynb/usage_guide.ipynb coniii/
-
-# Compile docs
-#sphinx-build ./docs/ ./docs/_build/html
-#rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
-
 # Update cpp code
-rsync -au ../../cpp/cppsamplers/cppsamplers/*.*pp cpp/
+# rsync -au ../../cpp/cppsamplers/cppsamplers/*.*pp cpp/
 
 # Compile wheels into dist folder.
 python setup.py bdist_wheel
@@ -45,4 +38,15 @@ python setup.py sdist
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
     rename 's/linux/manylinux1/' dist/*
+fi
+
+# For pypi upload
+if [ "$1" == "--all" ]
+then
+    # Update usage guide to latest version for upload to PyPI.
+    cp ipynb/usage_guide.ipynb coniii/
+
+    # Compile docs
+    sphinx-build ./docs/ ./docs/_build/html
+    rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
 fi

@@ -2,8 +2,9 @@
 
 # Convenient Interface to Inverse Ising
 
-**ConIII is now on version 2. Major interface updates may break code compatibility. 
-See [release notes](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES "release notes").**
+**ConIII is now on version 2. Major interface updates may break code compatibility.  See
+[release notes](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES "release
+notes").**
 
 ConIII is a Python package for solving maximum entropy problems with a focus on the
 pairwise maximum entropy model, also known as the inverse Ising problem. Support for
@@ -14,7 +15,8 @@ If you use ConIII for your research, please consider citing the following:
 > Python 3 Package for Solving Ising-Type Maximum Entropy Models. Journal of Open Research
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
-The paper also contains an overview of the module. For code documentation, see [here](https://eddielee.co/coniii/index.html "Documentation").
+The paper also contains an overview of the module. For code documentation, see
+[here](https://eddielee.co/coniii/index.html "Documentation").
 
 ## Installation
 
@@ -29,16 +31,30 @@ If you have trouble using `pip` and PyPI, then you can always build this package
 source.  Download the latest release from GitHub. Make sure that you are running Python
 3.7 or higher.  Inside the top directory "coniii", you must run 
 ```bash
-$ cd dist
-$ pip install coniii-2.1.1-py3-none-any.whl 
+$ ./pypi_compile.sh
+$ pip install dist/*.whl
 ```
-or the appropriate wheel file version.  
+(Note: Using setuptools in the usual way of `python
+setup.py install` will not work because eggs are incompatible with cached jit functions
+generated using numba.)
 
-Note: Using setuptools in the usual way of `python setup.py install` will not work because
-eggs are incompatible with cached jit functions.
+#### Speeding up Metropolis sampler
+We provide a much faster version of the Metropolis sampler from the Ising model using a
+C++ Boost library implementation. In order to compile this code, you must have Boost v1.72
+installed and compiled for Python 3.7. The dynamic libraries libboost_python and
+libboost_numpy must also be on your environment path.
 
-If you would like to use the `Enumerate` solver for system sizes greater than 9, you must
-run enumerate.py to write those files yourself. This can be run from the install
+To compile the code, download the source code, and run the compilation script.
+```bash
+$ git clone https://github.com/eltrompetero/coniii.git
+$ cd coniii
+$ ./pypi_compile.sh
+$ pip install dist/*.whl --force-reinstall --no-deps
+```
+
+#### Setting up analytic solution for systems *N > 9*
+If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
+must run enumerate.py to write those files yourself. This can be run from the install
 directory.  If you do not know where the installation directory is, you can find it by
 starting a Python terminal and running
 ```python
@@ -63,8 +79,10 @@ the `__main__` block at the end of the file enumerate.py.
 
 ## Quick guide (with Jupyter notebook)
 
-A [Jupyter notebook](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.ipynb) with a brief introduction and examples for how to use ConIII is
-available. An HTML version is [here](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.html). The
+A [Jupyter
+notebook](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.ipynb) with a
+brief introduction and examples for how to use ConIII is available. An HTML version is
+[here](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.html). The
 notebook is installed into your package directory if you used pip.
 
 To use the notebook, install jupyter. 
@@ -95,7 +113,9 @@ or if you are using the Conda package manager
 $ conda install ipython
 ```
 
-Then, first copy the notebook file ["usage_guide.py"](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.py) into a directory outside the "coniii" directory.  Change to this directory and run
+Then, first copy the notebook file
+["usage_guide.py"](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.py)
+into a directory outside the "coniii" directory.  Change to this directory and run
 ```bash
 $ ipython
 ```

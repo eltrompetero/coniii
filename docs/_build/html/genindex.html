@@ -195,12 +195,16 @@
 </li>
       <li><a href="coniii_rst/coniii.utils.html#coniii.utils.define_ising_helper_functions_sym">define_ising_helper_functions_sym() (in module coniii.utils)</a>
 </li>
+      <li><a href="coniii_rst/coniii.utils.html#coniii.utils.define_potts3_helper_functions">define_potts3_helper_functions() (in module coniii.utils)</a>
+</li>
       <li><a href="coniii_rst/coniii.utils.html#coniii.utils.define_pseudo_ising_helper_functions">define_pseudo_ising_helper_functions() (in module coniii.utils)</a>
 </li>
-      <li><a href="coniii_rst/coniii.utils.html#coniii.utils.define_triplet_helper_functions">define_triplet_helper_functions() (in module coniii.utils)</a>
+      <li><a href="coniii_rst/coniii.utils.html#coniii.utils.define_ternary_helper_functions">define_ternary_helper_functions() (in module coniii.utils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="coniii_rst/coniii.utils.html#coniii.utils.define_triplet_helper_functions">define_triplet_helper_functions() (in module coniii.utils)</a>
+</li>
       <li><a href="coniii_rst/coniii.solvers.html#coniii.solvers.ClusterExpansion.deltaS">deltaS() (coniii.solvers.ClusterExpansion method)</a>
 </li>
       <li><a href="coniii_rst/coniii.mean_field_ising.html#coniii.mean_field_ising.dFdT">dFdT() (in module coniii.mean_field_ising)</a>
@@ -276,8 +280,6 @@
       <ul>
         <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.generate_samples">(coniii.samplers.Heisenberg3DSampler method)</a>
 </li>
-        <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.generate_samples">(coniii.samplers.Metropolis method)</a>
-</li>
         <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.ParallelTempering.generate_samples">(coniii.samplers.ParallelTempering method)</a>
 </li>
         <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Sampler.generate_samples">(coniii.samplers.Sampler method)</a>
@@ -285,14 +287,22 @@
         <li><a href="coniii_rst/coniii.solvers.html#coniii.solvers.MCHIncompleteData.generate_samples">(coniii.solvers.MCHIncompleteData method)</a>
 </li>
       </ul></li>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.generate_samples_boost">generate_samples_boost() (coniii.samplers.Metropolis method)</a>
+</li>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Sampler.generate_samples_parallel">generate_samples_parallel() (coniii.samplers.Sampler method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.generate_samples_parallel">generate_samples_parallel() (coniii.samplers.Metropolis method)</a>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.generate_samples_parallel_boost">generate_samples_parallel_boost() (coniii.samplers.Metropolis method)</a>
 
       <ul>
-        <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Sampler.generate_samples_parallel">(coniii.samplers.Sampler method)</a>
+        <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Potts3.generate_samples_parallel_boost">(coniii.samplers.Potts3 method)</a>
 </li>
       </ul></li>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.generate_samples_parallel_py">generate_samples_parallel_py() (coniii.samplers.Metropolis method)</a>
+</li>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.generate_samples_py">generate_samples_py() (coniii.samplers.Metropolis method)</a>
+</li>
       <li><a href="coniii_rst/coniii.enumerate.html#coniii.enumerate.get_3idx">get_3idx() (in module coniii.enumerate)</a>
 </li>
       <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.SWIsing.get_clusters">get_clusters() (coniii.samplers.SWIsing method)</a>
@@ -467,6 +477,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Potts3">Potts3 (class in coniii.samplers)</a>
+</li>
       <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.SWIsing.print_cluster_size">print_cluster_size() (coniii.samplers.SWIsing method)</a>
 </li>
       <li><a href="coniii_rst/coniii.solvers.html#coniii.solvers.Pseudo">Pseudo (class in coniii.solvers)</a>
@@ -485,12 +497,18 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.SWIsing.randomly_flip_clusters">randomly_flip_clusters() (coniii.samplers.SWIsing method)</a>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.random_sample">random_sample() (coniii.samplers.Metropolis method)</a>
+
+      <ul>
+        <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Potts3.random_sample">(coniii.samplers.Potts3 method)</a>
 </li>
-      <li><a href="coniii_rst/coniii.solvers.html#coniii.solvers.RegularizedMeanField">RegularizedMeanField (class in coniii.solvers)</a>
+      </ul></li>
+      <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.SWIsing.randomly_flip_clusters">randomly_flip_clusters() (coniii.samplers.SWIsing method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="coniii_rst/coniii.solvers.html#coniii.solvers.RegularizedMeanField">RegularizedMeanField (class in coniii.solvers)</a>
+</li>
       <li><a href="coniii_rst/coniii.utils.html#coniii.utils.replace_diag">replace_diag() (in module coniii.utils)</a>
 </li>
       <li><a href="coniii_rst/coniii.mean_field_ising.html#coniii.mean_field_ising.replaceDiag">replaceDiag() (in module coniii.mean_field_ising)</a>
@@ -515,6 +533,8 @@
 
       <ul>
         <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Metropolis.sample_metropolis">(coniii.samplers.Metropolis method)</a>
+</li>
+        <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Potts3.sample_metropolis">(coniii.samplers.Potts3 method)</a>
 </li>
         <li><a href="coniii_rst/coniii.samplers.html#coniii.samplers.Sampler.sample_metropolis">(coniii.samplers.Sampler method)</a>
 </li>
@@ -605,21 +625,23 @@
 </li>
       <li><a href="coniii_rst/coniii.test_solvers.html#coniii.test_solvers.test_MPF">test_MPF() (in module coniii.test_solvers)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coniii_rst/coniii.test_utils.html#coniii.test_utils.test_pair_corr">test_pair_corr() (in module coniii.test_utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="coniii_rst/coniii.test_samplers.html#coniii.test_samplers.test_ParallelTempering">test_ParallelTempering() (in module coniii.test_samplers)</a>
 </li>
       <li><a href="coniii_rst/coniii.test_solvers.html#coniii.test_solvers.test_pickling">test_pickling() (in module coniii.test_solvers)</a>
 </li>
+      <li><a href="coniii_rst/coniii.test_samplers.html#coniii.test_samplers.test_Potts3">test_Potts3() (in module coniii.test_samplers)</a>
+</li>
       <li><a href="coniii_rst/coniii.test_solvers.html#coniii.test_solvers.test_Pseudo">test_Pseudo() (in module coniii.test_solvers)</a>
+</li>
+      <li><a href="coniii_rst/coniii.test_samplers.html#coniii.test_samplers.test_sample_ising">test_sample_ising() (in module coniii.test_samplers)</a>
 </li>
       <li><a href="coniii_rst/coniii.test_utils.html#coniii.test_utils.test_state_gen_and_count">test_state_gen_and_count() (in module coniii.test_utils)</a>
 </li>
       <li><a href="coniii_rst/coniii.test_utils.html#coniii.test_utils.test_sub_to_ind">test_sub_to_ind() (in module coniii.test_utils)</a>
-</li>
-      <li><a href="coniii_rst/coniii.test_samplers.html#coniii.test_samplers.test_test_sample_ising">test_test_sample_ising() (in module coniii.test_samplers)</a>
 </li>
       <li><a href="coniii_rst/coniii.test_utils.html#coniii.test_utils.test_vec2mat">test_vec2mat() (in module coniii.test_utils)</a>
 </li>
@@ -771,7 +793,7 @@
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

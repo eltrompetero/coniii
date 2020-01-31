@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
+import os
 from os import path, environ
 from distutils.extension import Extension
 from coniii.version import version as __version__
@@ -40,13 +41,21 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
     long_description = f.read()
 
 # setup C++ extension
-samplersModule = Extension('coniii.samplers_ext',
-                           include_dirs = ['cpp'],
-                           library_dirs=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu'],
-                           sources=['cpp/samplers.cpp', 'cpp/py.cpp'],
-                           extra_objects=['-l:libboost_python-py35.so', '-l:libboost_numpy37.so.1.72.0'],
-                           extra_compile_args=['-std=c++11'],
-                           language='c++')
+DEFAULT_LIBRARY_DR=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu']  # default places to search for boost lib
+# make sure libraries exist if C++ extension is to be compiled
+if ((path.exists('libboost_python37.so') and path.exists('libboost_numpy37.so')) or
+    (any(['libboost_python37.so' in os.listdir(dr) for dr in DEFAULT_LIBRARY_DR]) and
+     any(['libboost_numpy37.so' in os.listdir(dr) for dr in DEFAULT_LIBRARY_DR]))):
+    samplersModule = Extension('coniii.samplers_ext',
+                               include_dirs = ['./cpp'],
+                               library_dirs=DEFAULT_LIBRARY_DR,
+                               sources=['./cpp/samplers.cpp', './cpp/py.cpp'],
+                               extra_objects=['-l:libboost_python37.so', '-l:libboost_numpy37.so'],
+                               extra_compile_args=['-std=c++11'],
+                               language='c++')
+    print("Successfully setup Boost C++ extension.")
+else:
+    print("Failed to setup Boost C++ extension.")
 
 setup(name='coniii',
       version=__version__,
@@ -54,7 +63,7 @@ setup(name='coniii',
       long_description=long_description,
       url='https://github.com/eltrompetero/coniii',
       author='Edward D. Lee, Bryan C Daniels',
-      author_email='edlee@alumni.princeton.edu',
+      author_email='edlee@santafe.edu',
       license='MIT',
       classifiers=[
           'Development Status :: 5 - Production/Stable',

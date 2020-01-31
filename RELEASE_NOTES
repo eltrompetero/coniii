@@ -2,7 +2,7 @@ Log for major changes in releases
 
 MIT License
 
-Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v2.3.0 (Scheduled release 2020/01)
+v2.3.0 (Scheduled release 2020/02)
 ----------------------------------------------------
-- Sped up Metropolis sampling using Boost C++ extension.
+- Sped up Metropolis sampling using Boost C++ extension. Up to 1000x speedup
+  achievable.
+- Added variation of 3-state Potts model.
 
 v2.2.1 (Released 2019/12/2)
 ----------------------------------------------------

@@ -1,6 +1,7 @@
-# =============================================================================================== #
+# ====================================================================================== #
 # ConIII module for maxent models.
-# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels (bryan.daniels.1@asu.edu)
+# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
+#          (bryan.daniels.1@asu.edu)
 #
 # MIT License
 # 
@@ -23,7 +24,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# =============================================================================================== #
+# ====================================================================================== #
 from importlib import import_module
 from .utils import *
 from .samplers import *
@@ -196,6 +197,7 @@ class Ising(Model):
 # alias for Ising
 PairwiseMaxent = Ising
 
+
 class Triplet(Model):
     """Third order maxent model constraining means, pairwise correlations, and triplet
     correlations.
@@ -244,3 +246,52 @@ class Triplet(Model):
             self.calc_observables = lambda x=self.multipliers: self._calc_observables(x)
             self.calc_p = lambda x=self.multipliers: self._calc_p(x)
 #end Triplet
+
+
+class Potts3(Model):
+    """Three-state spin model constraining means and pairwise correlations.
+    """
+    def __init__(self, multipliers, rng=None, n_cpus=None, verbose=False):
+        """
+        Parameters
+        ----------
+        multipliers : list of ndarray
+            Can be a list of vectors [fields, couplings].
+        """
+        
+        assert (len(multipliers[0])%3)==0
+        assert len(multipliers)==2
+
+        # parameters must be given separately
+        self.n = int(len(multipliers[0])//3)
+        assert binom(self.n,2)==len(multipliers[1]), "Wrong number of couplings."
+        multipliers = np.concatenate(multipliers)
+        
+        self.calc_e = define_ternary_helper_functions()[0]
+        try:
+            ising = import_module('coniii.ising_eqn.ising_eqn_%d_potts'%self.n)
+            self._calc_observables = ising.calc_observables
+            self._calc_p = ising.p
+        except ModuleNotFoundError:
+            self._calc_observables = None
+            self._calc_p = None
+            self.calc_observables = None
+            self.calc_p = None
+        self.set_multipliers(multipliers)
+
+        self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
+        self.nCpus = n_cpus or mp.cpu_count()-1
+        self.verbose = verbose
+
+    def set_multipliers(self, multipliers):
+        """Set multipliers to a new value. Need to redefine some functions that rely on
+        copy of self.multipliers.
+        """
+
+        self.multipliers = multipliers
+
+        # if system is small enough, we can use enumeration to calculate observables from the multipliers
+        if not self._calc_observables is None:
+            self.calc_observables = lambda x=self.multipliers: self._calc_observables(x)
+            self.calc_p = lambda x=self.multipliers: self._calc_p(x)
+#end Potts3

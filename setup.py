@@ -29,9 +29,13 @@ from os import path, environ
 from distutils.extension import Extension
 from coniii.version import version as __version__
 from shutil import copyfile
-import platform
+import platform, sys
 
 
+# flags
+NO_BOOST = False
+
+# setup
 here = path.abspath(path.dirname(__file__))
 system = platform.system()
 if system=='Linux':
@@ -57,7 +61,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 dylibsOnPath = all([path.exists(f) for f in dylibNames])
 dylibsInSearchDrs = all([any([(f in os.listdir(dr) if os.path.isdir(dr) else False)
                                 for dr in DEFAULT_LIBRARY_DR]) for f in dylibNames])
-if (dylibsOnPath or dylibsInSearchDrs):
+if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
     samplersModule = Extension('coniii.samplers_ext',
                                include_dirs = ['./cpp'],
                                library_dirs=DEFAULT_LIBRARY_DR,

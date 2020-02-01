@@ -44,6 +44,13 @@ C++ Boost library implementation. In order to compile this code, you must have B
 installed and compiled for Python 3.7. The dynamic libraries libboost_python and
 libboost_numpy must also be on your environment path.
 
+[For Mac users: If you do not have the Boost library installed, you can install it using
+Homebrew.
+```bash
+$ brew install boost-python3
+```
+This will symlink the necessary Boost libraries into `/usr/local/lib`.]
+
 To compile the code, download the source code, and run the compilation script.
 ```bash
 $ git clone https://github.com/eltrompetero/coniii.git

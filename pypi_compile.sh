@@ -35,10 +35,10 @@ python setup.py bdist_wheel
 python setup.py sdist
 
 # Rename Linux wheel for upload to PyPI.
-unamestr=`uname`
-if [[ "$unamestr" == 'Linux' ]]; then
-    rename 's/linux/manylinux1/' dist/*
-fi
+#unamestr=`uname`
+#if [[ "$unamestr" == 'Linux' ]]; then
+#    rename 's/linux/manylinux1/' dist/*
+#fi
 
 # For pypi upload
 if [ "$1" == "--all" ]

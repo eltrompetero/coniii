@@ -72,7 +72,7 @@ if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
     ext_modules = [samplersModule]
 else:
     ext_modules = []
-    print("Dynamic libraries not on path.")
+    print("Dynamic libraries not on path. Boost not compiled.")
 
 # compile
 setup(name='coniii',

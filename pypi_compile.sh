@@ -23,7 +23,12 @@
 
 # Code for compiling package for upload to PyPI.
 # Clean previous compilation results.
-trash build dist
+if [ ! `command -v trash` ]
+then
+    echo "trash-cli is not installed. Cannot empty dist directory properly."
+else
+    trash build dist
+fi
 find ./ -name *.pyc -exec rm {} \;
 
 # Update cpp code
@@ -37,6 +42,11 @@ python setup.py sdist
 # Rename Linux wheel for upload to PyPI.
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
+    if [ ! `command -v rename` ]
+    then
+        echo "rename is not installed. wheel not renamed."
+        exit 1
+    fi
     rename 's/linux/manylinux1/' dist/*
 fi
 

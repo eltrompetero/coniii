@@ -1419,7 +1419,7 @@ class Metropolis(Sampler):
             def f(args):
                 s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
-                samples = np.zeros((nSamples, self.n), dtype=int)
+                samples = np.zeros((nSamples, self.n), dtype=np.int8)
 
                 for i in range(burn_in):
                     de = self.sample_metropolis( s, E, rng=rng )
@@ -1435,7 +1435,7 @@ class Metropolis(Sampler):
             def f(args):
                 s, E, nSamples, seed = args
                 rng = np.random.RandomState(seed)
-                samples = np.zeros((nSamples, self.n), dtype=int)
+                samples = np.zeros((nSamples, self.n), dtype=np.int8)
 
                 for i in range(burn_in):
                     de = self.sample_metropolis( s, E, rng=rng, flip_site=i%self.n )

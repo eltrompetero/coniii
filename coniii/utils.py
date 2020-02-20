@@ -814,6 +814,114 @@ def define_pseudo_ising_helper_functions(N):
 
     return get_multipliers_r, calc_observables_r 
 
+def define_pseudo_potts_helper_functions(n, k):
+    """Define helper functions for using Pseudo method on Potts model with simple form for
+    couplings that are only nonzero when the spins are occupying the same state.
+
+    Parameters
+    ----------
+    n : int
+        System size.
+    k : int
+        Number of possible configurations in Potts model.
+
+    Returns
+    -------
+    function
+        get_multipliers_r
+    function
+        calc_observables_r 
+    """
+
+    assert n>1
+    assert k>1
+
+    @njit
+    def get_multipliers_r(r, multipliers, n=n, k=k):
+        """Return r's field and all couplings to spin r.
+
+        Parameters
+        ----------
+        r : int
+        multipliers : ndarray
+            All fields and couplings concatenated together.
+
+        Returns
+        -------
+        ndarray
+            Relevant multipliers.
+        list
+            Index of where multipliers appear in full multipliers array.
+        """
+        
+        ix = [r+n*i for i in range(k)]
+        multipliersr = np.zeros(k-1+n)
+        for i in range(k):
+            multipliersr[i] = multipliers[r+n*i]
+
+        # fill in the couplings
+        ixcounter = k
+        for i in range(n):
+            if i!=r:
+                if i<r:
+                    ix.append( sub_to_ind(n, i, r) + k*n )
+                    multipliersr[ixcounter] = multipliers[ix[ixcounter]]
+                else:
+                    ix.append( sub_to_ind(n, r, i) + k*n )
+                    multipliersr[ixcounter] = multipliers[ix[ixcounter]]
+                ixcounter += 1
+        return multipliersr, ix
+
+    @njit
+    def calc_observables_r(r, X, n=n, k=k):
+        """Return the observables relevant for calculating the conditional probability of
+        spin r.
+
+        Parameters
+        ----------
+        r : int
+            Spin index.
+        X : ndarray
+            Data samples of dimensions (n_samples, n_dim).
+
+        Returns
+        -------
+        ndarray
+            observables
+        list of ndarray
+            observables if spin r were to occupy all other possible states
+        """
+
+        obs = np.zeros((X.shape[0],k-1+n), dtype=np.int8)
+        # keep another copy of observables where the spin iterates thru all other possible states
+        otherobs = [np.zeros((X.shape[0],k-1+n), dtype=np.int8)
+                    for i in range(k-1)]
+        
+        for rowix in range(X.shape[0]):
+            counter = 0
+            for i in range(k):
+                if X[rowix,r]==i:
+                    obs[rowix,i] = 1
+                else:
+                    otherobs[counter][rowix,i] = 1
+                    counter += 1
+            ixcounter = k
+            
+            for i in range(n-1):
+                for j in range(i+1,n):
+                    if i==r:
+                        obs[rowix,ixcounter] = X[rowix,i]==X[rowix,j]
+                        for state in range(k-1):
+                            otherobs[state][rowix,ixcounter] = X[rowix,j]==state
+                    elif j==r:
+                        obs[rowix,ixcounter] = X[rowix,i]==X[rowix,j]
+                        for state in range(k-1):
+                            otherobs[state][rowix,ixcounter] = X[rowix,i]==state
+                        ixcounter += 1
+        return obs, otherobs
+
+    return get_multipliers_r, calc_observables_r 
+
 def define_ising_helper_functions():
     """Functions for plugging into solvers for +/-1 Ising model with fields h_i and
     couplings J_ij.
@@ -1015,18 +1123,24 @@ def define_ternary_helper_functions():
 
     return calc_e, calc_observables
 
-def define_potts3_helper_functions():
-    """Helper functions for calculating quantities in 3-state Potts model.
+def define_potts_helper_functions(k):
+    """Helper functions for calculating quantities in k-state Potts model.
+
+    Parameters
+    ----------
+    k : int 
+        Number of possible states.
     """
+
     @njit
-    def calc_observables(X):
+    def calc_observables(X, k=k):
         n = X.shape[1]
-        Y = np.zeros((len(X), n*3+n*(n-1)//2))
+        Y = np.zeros((len(X), n*k+n*(n-1)//2))
         
         # average orientation (magnetization)
         # note that fields for the third state are set to 0 by default
         counter = 0
-        for i in range(3):
+        for i in range(k):
             for j in range(n):
                 Y[:,counter] = X[:,j]==i
                 counter += 1
@@ -1039,8 +1153,8 @@ def define_potts3_helper_functions():
                 
         return Y
 
-    def calc_e(X, multipliers):
-        return -calc_observables(X).dot(multipliers)
+    def calc_e(X, multipliers, k=k):
+        return -calc_observables(X, k).dot(multipliers)
 
     return calc_e, calc_observables
 

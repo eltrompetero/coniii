@@ -53,7 +53,8 @@ class Solver():
             model is None. Important ones include "n_cpus" and "rng".
         """
         
-        assert set(np.unique(sample).tolist())<=set((-1,1)), "Data must be of only -1, 1 entries."
+        if not set(np.unique(sample).tolist())<=set((-1,1)):
+            warn("Data is not only -1, 1 entries.")
         self.sample = sample
         self.n = sample.shape[1]
 
@@ -67,6 +68,7 @@ class Solver():
             self.model = model
 
         if calc_observables is None:
+            warn("Assuming that calc_observables should be for Ising model.")
             self.calc_observables = define_ising_helper_functions()[1]
         else:
             self.calc_observables = calc_observables
@@ -425,7 +427,7 @@ class MPF(Solver):
         """
         
         assert parameter_limits>0
-        # Convert from {0,1} to {+/-1} asis.
+        # Convert from {+/-1} to {0,1} axis.
         X = (self.sample+1)//2
 
         if not self.calc_de is None:
@@ -1075,6 +1077,7 @@ class Pseudo(Solver):
                  calc_observables=None,
                  get_multipliers_r=None,
                  calc_observables_r=None,
+                 k=2,
                  **default_model_kwargs):
         """For this technique, must specify how to calculate the energy specific to the
         conditional probability of spin r given the rest of the spins. These will be
@@ -1094,6 +1097,8 @@ class Pseudo(Solver):
         calc_observables_r : function, None
             Takes index r and samples X.
             Defn: lambda r,X : r_observable
+        k : int
+            Number of possible states for each spin. This should only be changed for the Potts model.
         **default_model_kwargs
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
@@ -1102,6 +1107,9 @@ class Pseudo(Solver):
         self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
         if calc_observables_r is None or get_multipliers_r is None:
             self.get_multipliers_r, self.calc_observables_r = define_pseudo_ising_helper_functions(self.n)
+        else:
+            self.k = k
+            self.get_multipliers_r, self.calc_observables_r = get_multipliers_r, calc_observables_r
 
     def solve(self, force_general=False, **kwargs):
         """Uses a general all-purpose optimization to solve the problem using functions
@@ -1122,9 +1130,13 @@ class Pseudo(Solver):
             Solved multipliers (parameters). For Ising problem, these can be converted
             into matrix format using utils.vec2mat.
         """
+
+        from .models import Potts3, Ising
         
         if type(self.model) is Ising and not force_general:
             return self._solve_ising(**kwargs)
+        elif type(self.model) is Potts3:
+            return self._solve_potts(**kwargs)
         return self._solve_general(**kwargs)
         
     def _solve_ising(self,
@@ -1206,7 +1218,7 @@ class Pseudo(Solver):
         
         The *sum* of the conditional likelihoods over each spin is minimized, ensuring
         that the parameters are equal across all conditional likelihood equations by
-        construction. In general, this gives different results from the normal
+        construction. In general, this gives different results from the original
         pseudolikelihood formulation, but they agree closely in many cases.
 
         Parameters
@@ -1246,6 +1258,62 @@ class Pseudo(Solver):
             return -loglikelihood, dloglikelihood
         
         soln = minimize(f, initial_guess, jac=True, **solver_kwargs)
+        self.multipliers = soln['x']
+        if full_output:
+            return soln['x'], soln
+        return soln['x']
+
+    def _solve_potts(self,
+                     initial_guess=None,
+                     full_output=False,
+                     solver_kwargs={}):
+        """Solve Potts model formulation with k-states and non-zero coupling if spins are
+        in the same state.
+
+        Parameters
+        ----------
+        initial_guess : ndarray, None
+            Initial guess for the parameter values.
+        full_output : bool, False
+            If True, return output from scipy.minimize() routine.
+        solver_kwargs : dict, {}
+            Keyword arguments for scipy.optimize.minimize.
+
+        Returns
+        -------
+        ndarray
+            Solved multipliers.
+        dict (optional)
+            Output from scipy.optimize.minimize.
+        """
+
+        if initial_guess is None:
+            initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
+        obs = []
+        otherobs = []
+        for r in range(self.n):
+            out = self.calc_observables_r(r, self.sample)
+            obs.append(out[0])
+            otherobs.append(out[1])
+        
+        def f(params):
+            # running sums of function evaluations over all spins
+            loglikelihood = 0
+            #dloglikelihood = np.zeros_like(initial_guess)  # gradient
+
+            # iterate through each spin
+            for r in range(self.n):
+                multipliers, multipliersrix = self.get_multipliers_r(r, params)
+                E = -obs[r].dot(multipliers)
+                Edelta = np.vstack([o.dot(multipliers)+E for o in otherobs[r]]).T
+                Edelta = np.hstack((np.zeros((self.sample.shape[0],1)), Edelta))
+                loglikelihood += -logsumexp(Edelta, axis=1).sum()
+                #dloglikelihood[multipliersrix] += ( -(1/(1+np.exp(2*E)) *
+                #                                    np.exp(2*E))[:,None] *
+                #                                    2*obs[r] ).sum(0)
+            return -loglikelihood#, dloglikelihood
+        
+        soln = minimize(f, initial_guess, jac=False, **solver_kwargs)
         self.multipliers = soln['x']
         if full_output:
             return soln['x'], soln

@@ -26,8 +26,10 @@
 # SOFTWARE.
 # ====================================================================================== #
 from importlib import import_module
+import multiprocess as mp
 from .utils import *
-from .samplers import *
+from .samplers import Metropolis
+from .samplers import Potts3 as mcPotts3
 
 
 class Model():
@@ -52,13 +54,18 @@ class Model():
         
         self.sampleSize = sample_size
 
-        if sample_method=='metropolis':
+        if sample_method=='metropolis' and type(self) is Ising:
             self.sampleMethod = sample_method
             self.sampler = Metropolis( self.n, self.multipliers, self.calc_e,
                                        n_cpus=self.nCpus,
                                        rng=self.rng,
                                        **sampler_kwargs )
-      
+        elif sample_method=='metropolis' and type(self) is Potts3:
+            self.sampleMethod = sample_method
+            self.sampler = mcPotts3( self.n, self.multipliers, self.calc_e,
+                                     n_cpus=self.nCpus,
+                                     rng=self.rng,
+                                     **sampler_kwargs )
         else:
            raise NotImplementedError("Unrecognized sampler %s."%sample_method)
         self.sample = None
@@ -101,7 +108,7 @@ class Model():
         sample_size = sample_size or self.sampleSize
         
         # When sequential sampling should be used.
-        if self.nCpus<=1:
+        if not self.nCpus is None and self.nCpus<=1:
             if sample_method=='metropolis':
                 self.sampler.theta = multipliers.copy()
                 # Burn in.
@@ -178,7 +185,7 @@ class Ising(Model):
         self.set_multipliers(multipliers)
 
         self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
-        self.nCpus = n_cpus or mp.cpu_count()-1
+        self.nCpus = n_cpus
         self.verbose = verbose
 
     def set_multipliers(self, multipliers):
@@ -231,7 +238,7 @@ class Triplet(Model):
         self.set_multipliers(multipliers)
 
         self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
-        self.nCpus = n_cpus or mp.cpu_count()-1
+        self.nCpus = n_cpus
         self.verbose = verbose
 
     def set_multipliers(self, multipliers):
@@ -267,7 +274,7 @@ class Potts3(Model):
         assert binom(self.n,2)==len(multipliers[1]), "Wrong number of couplings."
         multipliers = np.concatenate(multipliers)
         
-        self.calc_e = define_ternary_helper_functions()[0]
+        self.calc_e = define_potts_helper_functions(3)[0]
         try:
             ising = import_module('coniii.ising_eqn.ising_eqn_%d_potts'%self.n)
             self._calc_observables = ising.calc_observables
@@ -280,7 +287,7 @@ class Potts3(Model):
         self.set_multipliers(multipliers)
 
         self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
-        self.nCpus = n_cpus or mp.cpu_count()-1
+        self.nCpus = n_cpus
         self.verbose = verbose
 
     def set_multipliers(self, multipliers):

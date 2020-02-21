@@ -31,7 +31,7 @@ else
         trash build
     fi
     if [ -d dist ]; then
-        dist
+        trash dist
     fi
 fi
 find ./ -name *.pyc -exec rm {} \;

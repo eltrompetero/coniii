@@ -106,7 +106,7 @@ def test_Potts3():
     # Check that everything compiles and runs.
     n = 5
     theta = np.random.normal(size=n*3 + n*(n-1)//2, scale=.1)
-    calc_e = define_potts3_helper_functions()[0]
+    calc_e = define_potts_helper_functions(3)[0]
     print("Running timing suite for Potts3 sampling functions for n=%d..."%n)
 
     sampler = Potts3(n, theta, calc_e, n_cpus=1)

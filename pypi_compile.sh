@@ -27,7 +27,12 @@ if [ ! `command -v trash` ]
 then
     echo "trash-cli is not installed. Cannot empty dist directory properly."
 else
-    trash build dist
+    if [ -d build ]; then
+        trash build
+    fi
+    if [ -d dist ]; then
+        dist
+    fi
 fi
 find ./ -name *.pyc -exec rm {} \;
 

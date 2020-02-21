@@ -37,15 +37,15 @@ NO_BOOST = False
 
 # setup
 here = path.abspath(path.dirname(__file__))
-system = platform.system()
-if system=='Linux':
-    dynlibSuffix = 'so'
-    DEFAULT_LIBRARY_DR=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu']  # default places to search for boost lib
-elif system=='Darwin':
-    dynlibSuffix = 'dylib'
-    DEFAULT_LIBRARY_DR=['/usr/local/lib']  # default places to search for boost lib
-else:
-    raise Exception("System unrecognized.")
+#system = platform.system()
+#if system=='Linux':
+#    dynlibSuffix = 'so'
+#    DEFAULT_LIBRARY_DR=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu']  # default places to search for boost lib
+#elif system=='Darwin':
+#    dynlibSuffix = 'dylib'
+#    DEFAULT_LIBRARY_DR = ['/usr/local/lib']  # default places to search for boost lib
+#else:
+#    raise Exception("System unrecognized.")
 dylibNames = ['boost_python37', 'boost_numpy37']
 
 # copy license into package
@@ -57,28 +57,28 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 
 # setup C++ extension
 # make sure libraries exist if C++ extension is to be compiled
-dylibsOnPath = all([path.exists('lib%s.%s'%(f,dynlibSuffix)) for f in dylibNames])
-dylibsInSearchDrs = any([
-                        all([ path.exists('%s/lib%s.%s'%(dr,f,dynlibSuffix))
-                              for f in dylibNames ])
-                        for dr in DEFAULT_LIBRARY_DR ])
-if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
-    samplersModule = Extension('coniii.samplers_ext',
-                               include_dirs = ['./cpp'],
-                               library_dirs=DEFAULT_LIBRARY_DR,
-                               sources=['./cpp/samplers.cpp', './cpp/py.cpp'],
-                               extra_objects=['-l%s'%f for f in dylibNames],
-                               extra_compile_args=['-std=c++11'],
-                               language='c++')
-    ext_modules = [samplersModule]
-else:
-    ext_modules = []
-    print("--------------------------------------------------")
-    print("************ coniii setup.py WARNING *************")
-    print("Boost dynamic libraries could not be found.")
-    print("Boost will not be compiled.")
-    print("Please look for troubleshooting tips in README.md.")
-    print("--------------------------------------------------")
+#dylibsOnPath = all([path.exists('lib%s.%s'%(f,dynlibSuffix)) for f in dylibNames])
+#dylibsInSearchDrs = any([
+#                        all([ path.exists('%s/lib%s.%s'%(dr,f,dynlibSuffix))
+#                              for f in dylibNames ])
+#                        for dr in DEFAULT_LIBRARY_DR ])
+#if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
+samplersModule = Extension('coniii.samplers_ext',
+                           include_dirs = ['./cpp'],
+                           #library_dirs=DEFAULT_LIBRARY_DR,
+                           sources=['./cpp/samplers.cpp', './cpp/py.cpp'],
+                           extra_objects=['-l%s'%f for f in dylibNames],
+                           extra_compile_args=['-std=c++11'],
+                           language='c++')
+ext_modules = [samplersModule]
+#else:
+#    ext_modules = []
+#    print("--------------------------------------------------")
+#    print("************ coniii setup.py WARNING *************")
+#    print("Boost dynamic libraries could not be found.")
+#    print("Boost will not be compiled.")
+#    print("Please look for troubleshooting tips in README.md.")
+#    print("--------------------------------------------------")
 
 # compile
 setup(name='coniii',

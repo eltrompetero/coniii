@@ -1169,10 +1169,34 @@ def define_potts_helper_functions(k):
                 
         return Y
 
-    def calc_e(X, multipliers, k=k):
+    def calc_e(X, multipliers, k=k, calc_observables=calc_observables):
         return -calc_observables(X, k).dot(multipliers)
 
-    return calc_e, calc_observables
+    def mch_approximation(sample, dlamda, calc_e=calc_e):
+        """Function for making MCH approximation step for Potts model.
+        
+        Parameters
+        ----------
+        sample : ndarray
+            Of dimensions (n_sample, n_spins).
+        dlamda : ndarray
+            Change in parameters.
+        
+        Returns
+        -------
+        ndarray
+            Predicted correlations.
+        """
+
+        dE = calc_e(sample, dlamda)
+        ZFraction = len(dE) / np.exp(logsumexp(-dE))
+        predsisj = (np.exp(-dE[:,None]) / len(dE) * calc_observables(sample)).sum(0) * ZFraction  
+        assert not (np.any(predsisj<-1e-15) or
+            np.any(predsisj>(1+1e-15))),"Predicted values are beyond limits, (%E,%E)"%(predsisj.min(),
+                                                                                       predsisj.max())
+        return predsisj
+
+    return calc_e, calc_observables, mch_approximation
 
 @njit
 def adj(s, n_random_neighbors=0):

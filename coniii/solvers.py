@@ -748,6 +748,7 @@ class MCH(Solver):
         self._multipliers += dlamda
         return estConstraints
 #end MCH
+MonteCarloHistogram = MCH  # alias
 
 
 class MCHIncompleteData(MCH):

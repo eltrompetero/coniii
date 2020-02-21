@@ -58,9 +58,10 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 # setup C++ extension
 # make sure libraries exist if C++ extension is to be compiled
 dylibsOnPath = all([path.exists('lib%s.%s'%(f,dynlibSuffix)) for f in dylibNames])
-dylibsInSearchDrs = all([path.exists('%s/lib%s.%s'%(dr,f,dynlibSuffix))
-                         for f in dylibNames
-                         for dr in DEFAULT_LIBRARY_DR])
+dylibsInSearchDrs = any([
+                        all([ path.exists('%s/lib%s.%s'%(dr,f,dynlibSuffix))
+                              for f in dylibNames ])
+                        for dr in DEFAULT_LIBRARY_DR ])
 if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
     samplersModule = Extension('coniii.samplers_ext',
                                include_dirs = ['./cpp'],

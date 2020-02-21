@@ -266,13 +266,19 @@ class Potts3(Model):
             Can be a list of vectors [fields, couplings].
         """
         
-        assert (len(multipliers[0])%3)==0
-        assert len(multipliers)==2
+        if type(multipliers) is list:
+            assert (len(multipliers[0])%3)==0
+            assert len(multipliers)==2
 
-        # parameters must be given separately
-        self.n = int(len(multipliers[0])//3)
-        assert binom(self.n,2)==len(multipliers[1]), "Wrong number of couplings."
-        multipliers = np.concatenate(multipliers)
+            # parameters must be given separately
+            self.n = int(len(multipliers[0])//3)
+            assert binom(self.n,2)==len(multipliers[1]), "Wrong number of couplings."
+            multipliers = np.concatenate(multipliers)
+        else:
+            assert type(multipliers) is np.ndarray, "Multipliers must be ndarray or list."
+            n = (np.sqrt(25+8*multipliers.size)-5)/2
+            assert n==int(n), "Incompatible number of parameters."
+            self.n = int(n)
         
         self.calc_e = define_potts_helper_functions(3)[0]
         try:

@@ -1108,6 +1108,7 @@ class Pseudo(Solver):
         if calc_observables_r is None or get_multipliers_r is None:
             self.get_multipliers_r, self.calc_observables_r = define_pseudo_ising_helper_functions(self.n)
         else:
+            assert sample.max()<=(k-1)
             self.k = k
             self.get_multipliers_r, self.calc_observables_r = get_multipliers_r, calc_observables_r
 
@@ -1291,29 +1292,81 @@ class Pseudo(Solver):
             initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
         obs = []
         otherobs = []
+        otherobsstate = []
         for r in range(self.n):
             out = self.calc_observables_r(r, self.sample)
             obs.append(out[0])
             otherobs.append(out[1])
-        
+            otherobsstate.append(out[2])
+
         def f(params):
             # running sums of function evaluations over all spins
             loglikelihood = 0
-            #dloglikelihood = np.zeros_like(initial_guess)  # gradient
+            dloglikelihood = np.zeros_like(initial_guess)  # gradient
 
             # iterate through each spin
             for r in range(self.n):
                 multipliers, multipliersrix = self.get_multipliers_r(r, params)
+                
+                # first, calculate the log likelihood
                 E = -obs[r].dot(multipliers)
-                Edelta = np.vstack([o.dot(multipliers)+E for o in otherobs[r]]).T
-                Edelta = np.hstack((np.zeros((self.sample.shape[0],1)), Edelta))
-                loglikelihood += -logsumexp(Edelta, axis=1).sum()
-                #dloglikelihood[multipliersrix] += ( -(1/(1+np.exp(2*E)) *
-                #                                    np.exp(2*E))[:,None] *
-                #                                    2*obs[r] ).sum(0)
-            return -loglikelihood#, dloglikelihood
+                Eother = np.vstack([-o.dot(multipliers) for o in otherobs[r]]).T
+
+                Edelta = Eother - E[:,None]
+                Edelta = np.hstack((Edelta, np.zeros((self.sample.shape[0],1))))  # add constant term
+                loglikelihoodPerSample = -logsumexp(-Edelta, axis=1)
+
+                loglikelihood += loglikelihoodPerSample.sum()
+
+                # calculate log likelihood gradient (take a derivative wrt to each parameter)
+                den = -np.exp(-loglikelihoodPerSample)
+
+                # iterate over each field
+                # note that we are taking the derivative of the loglikelihood divided by
+                # the term in the numerator, which makes the eqn simpler to handle but
+                # makes keeping track of negatives and zeros a pain, which is mainly what
+                # is happening below
+                for hix in range(self.k):
+                    num = np.zeros(self.sample.shape[0])
+
+                    # iterate over each exponential term that consists of the (k-1) possible other values of
+                    # this spin 
+                    for ix in range(self.k-1):
+                        sgn = np.ones(self.sample.shape[0])
+                        currentStateAndSameField = self.sample[:,r]==hix
+                        sgn[currentStateAndSameField] = -1
+                        notCurrentStateAndNoField = (~currentStateAndSameField) & (otherobsstate[r][:,ix]!=hix)
+                        sgn[notCurrentStateAndNoField] = 0
+
+                        num += sgn * np.exp(-Edelta[:,ix])
+                    dloglikelihood[multipliersrix[hix]] += (num/den).sum()
+            
+                # derivative wrt to each coupling
+                for i,jix in enumerate(np.delete(range(self.n), r)):
+                    num = np.zeros(self.sample.shape[0])
+
+                    # iterate over each exponential term
+                    for ix in range(self.k-1):
+                        sgn = np.zeros(self.sample.shape[0])
+                        
+                        neighborjIsSameStateAsCounterfactual = otherobsstate[r][:,ix]==self.sample[:,jix]
+                        sgn[neighborjIsSameStateAsCounterfactual] = 1
+
+                        sameStateAsR = self.sample[:,r]==self.sample[:,jix]
+                        sgn[sameStateAsR] = -1
+
+                        num += sgn * np.exp(-Edelta[:,ix])
+                    dloglikelihood[multipliersrix[i+self.k]] += (num/den).sum()
+            return -loglikelihood, -dloglikelihood
         
-        soln = minimize(f, initial_guess, jac=False, **solver_kwargs)
+        #from scipy.optimize import check_grad, approx_fprime
+        #if check_grad(lambda x: f(x)[0], lambda x: f(x)[1], initial_guess)>1e-6:
+        #    print("num:",approx_fprime(initial_guess, lambda x: f(x)[0], 1e-7)[9:])
+        #    print("analytic:",f(initial_guess)[1][9:])
+        #    print(approx_fprime(initial_guess, lambda x: f(x)[0], 1e-7) - f(initial_guess)[1])
+        #    raise Exception
+        
+        soln = minimize(f, initial_guess, jac=True, **solver_kwargs)
         self.multipliers = soln['x']
         if full_output:
             return soln['x'], soln

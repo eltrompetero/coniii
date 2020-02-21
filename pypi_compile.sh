@@ -58,5 +58,19 @@ then
 
     # Compile docs
     sphinx-build ./docs/ ./docs/_build/html
+
+    echo "rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/"
     rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
+fi
+
+# check if boost module compiled
+has_dirs() {
+  for f do
+    [ -d "$f" ] && return
+  done
+  false
+}
+
+if [ ! -d `has_dirs ./build/lib.*/coniii` ]; then
+    echo "Failed to build Boost module."
 fi

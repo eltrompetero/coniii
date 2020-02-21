@@ -890,20 +890,29 @@ def define_pseudo_potts_helper_functions(n, k):
             observables
         list of ndarray
             observables if spin r were to occupy all other possible states
+        ndarray
+            Each col details the occupied by spin r in each array of the previous return
+            value, i.e., the first col of this array tells me what r has been changed to
+            in the first array in the above list.
         """
 
         obs = np.zeros((X.shape[0],k-1+n), dtype=np.int8)
         # keep another copy of observables where the spin iterates thru all other possible states
         otherobs = [np.zeros((X.shape[0],k-1+n), dtype=np.int8)
                     for i in range(k-1)]
+        # note the hypothetical states occupied by spin r. this makes it easier to keep track of things later
+        otherstates = np.zeros((X.shape[0],k-1), dtype=np.int8)
         
+        # for each data sample in X
         for rowix in range(X.shape[0]):
             counter = 0
+            # record state of spin r in obs and hypothetical scenarios when it is another state in otherobs
             for i in range(k):
                 if X[rowix,r]==i:
                     obs[rowix,i] = 1
                 else:
                     otherobs[counter][rowix,i] = 1
+                    otherstates[rowix,counter] = i
                     counter += 1
             ixcounter = k
             
@@ -911,14 +920,21 @@ def define_pseudo_potts_helper_functions(n, k):
                 for j in range(i+1,n):
                     if i==r:
                         obs[rowix,ixcounter] = X[rowix,i]==X[rowix,j]
-                        for state in range(k-1):
-                            otherobs[state][rowix,ixcounter] = X[rowix,j]==state
+                        kcounter = 0
+                        for state in range(k):
+                            if state!=X[rowix,r]:
+                                otherobs[kcounter][rowix,ixcounter] = X[rowix,j]==state
+                                kcounter += 1
+                        ixcounter += 1
                     elif j==r:
                         obs[rowix,ixcounter] = X[rowix,i]==X[rowix,j]
-                        for state in range(k-1):
-                            otherobs[state][rowix,ixcounter] = X[rowix,i]==state
+                        kcounter = 0
+                        for state in range(k):
+                            if state!=X[rowix,r]:
+                                otherobs[kcounter][rowix,ixcounter] = X[rowix,i]==state
+                                kcounter += 1
                         ixcounter += 1
-        return obs, otherobs
+        return obs, otherobs, otherstates
 
     return get_multipliers_r, calc_observables_r 
 
@@ -1135,7 +1151,7 @@ def define_potts_helper_functions(k):
     @njit
     def calc_observables(X, k=k):
         n = X.shape[1]
-        Y = np.zeros((len(X), n*k+n*(n-1)//2))
+        Y = np.zeros((len(X), n*k+n*(n-1)//2), dtype=np.int8)
         
         # average orientation (magnetization)
         # note that fields for the third state are set to 0 by default

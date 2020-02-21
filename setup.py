@@ -46,8 +46,7 @@ elif system=='Darwin':
     DEFAULT_LIBRARY_DR=['/usr/local/lib']  # default places to search for boost lib
 else:
     raise Exception("System unrecognized.")
-dylibNames = ['libboost_python37.%s'%dynlibSuffix,
-              'libboost_numpy37.%s'%dynlibSuffix]
+dylibNames = ['boost_python37', 'boost_numpy37']
 
 # copy license into package
 copyfile('LICENSE.txt','coniii/LICENSE.txt')
@@ -58,15 +57,16 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 
 # setup C++ extension
 # make sure libraries exist if C++ extension is to be compiled
-dylibsOnPath = all([path.exists(f) for f in dylibNames])
-dylibsInSearchDrs = all([any([(f in os.listdir(dr) if os.path.isdir(dr) else False)
-                                for dr in DEFAULT_LIBRARY_DR]) for f in dylibNames])
+dylibsOnPath = all([path.exists('lib%s.%s'%(f,dynlibSuffix)) for f in dylibNames])
+dylibsInSearchDrs = all([path.exists('%s/lib%s.%s'%(dr,f,dynlibSuffix))
+                         for f in dylibNames
+                         for dr in DEFAULT_LIBRARY_DR])
 if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
     samplersModule = Extension('coniii.samplers_ext',
                                include_dirs = ['./cpp'],
                                library_dirs=DEFAULT_LIBRARY_DR,
                                sources=['./cpp/samplers.cpp', './cpp/py.cpp'],
-                               extra_objects=['-l:%s'%f for f in dylibNames],
+                               extra_objects=['-l%s'%f for f in dylibNames],
                                extra_compile_args=['-std=c++11'],
                                language='c++')
     ext_modules = [samplersModule]

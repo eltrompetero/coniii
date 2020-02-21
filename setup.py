@@ -73,7 +73,12 @@ if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
     ext_modules = [samplersModule]
 else:
     ext_modules = []
-    print("Dynamic libraries not on path. Boost not compiled.")
+    print("--------------------------------------------------")
+    print("************ coniii setup.py WARNING *************")
+    print("Boost dynamic libraries could not be found.")
+    print("Boost will not be compiled.")
+    print("Please look for troubleshooting tips in README.md.")
+    print("--------------------------------------------------")
 
 # compile
 setup(name='coniii',

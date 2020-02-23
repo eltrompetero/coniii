@@ -1,10 +1,10 @@
 # ========================================================================================================= #
 # Miscellaneous functions used for various computations.
-# Author : Edward Lee, edlee@alumni.princeton.edu
+# Author : Edward Lee, edlee@santafe.edu
 #
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1146,10 +1146,31 @@ def define_potts_helper_functions(k):
     ----------
     k : int 
         Number of possible states.
+
+    Returns
+    -------
+    function
+        calc_e
+    function
+        calc_observables
+    function
+        mch_approximation
     """
 
     @njit
     def calc_observables(X, k=k):
+        """
+        Parameters
+        ----------
+        X : ndarray of dtype np.int64
+            Dimensions (n_samples, n_spins).
+
+        Returns
+        -------
+        ndarray
+            Dimensions (n_samples, n_observables).
+        """
+
         n = X.shape[1]
         Y = np.zeros((len(X), n*k+n*(n-1)//2), dtype=np.int8)
         
@@ -1170,6 +1191,19 @@ def define_potts_helper_functions(k):
         return Y
 
     def calc_e(X, multipliers, k=k, calc_observables=calc_observables):
+        """
+        Parameters
+        ----------
+        X : ndarray of dtype np.int64
+            Dimensions (n_samples, n_spins).
+        multipliers : ndarray of dtype np.float64
+
+        Returns
+        -------
+        ndarray
+            Energies of each observable.
+        """
+
         return -calc_observables(X, k).dot(multipliers)
 
     def mch_approximation(sample, dlamda, calc_e=calc_e):
@@ -1191,9 +1225,9 @@ def define_potts_helper_functions(k):
         dE = calc_e(sample, dlamda)
         ZFraction = len(dE) / np.exp(logsumexp(-dE))
         predsisj = (np.exp(-dE[:,None]) / len(dE) * calc_observables(sample)).sum(0) * ZFraction  
-        assert not (np.any(predsisj<-1e-15) or
-            np.any(predsisj>(1+1e-15))),"Predicted values are beyond limits, (%E,%E)"%(predsisj.min(),
-                                                                                       predsisj.max())
+        assert not ((predsisj<0).any() or
+                    (predsisj>(1+1e-10)).any()),"Predicted values are beyond limits, (%E,%E)"%(predsisj.min(),
+                                                                                               predsisj.max())
         return predsisj
 
     return calc_e, calc_observables, mch_approximation

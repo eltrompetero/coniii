@@ -4,7 +4,7 @@
 #
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import multiprocess as mp
 import copy
 from . import mean_field_ising
 from warnings import warn
+from scipy.optimize import check_grad
 from .utils import *
 from .samplers import *
 from .models import Ising
@@ -1268,7 +1269,9 @@ class Pseudo(Solver):
     def _solve_potts(self,
                      initial_guess=None,
                      full_output=False,
-                     solver_kwargs={}):
+                     solver_kwargs={},
+                     cost_fcn=None,
+                     cost_fcn_jac=None):
         """Solve Potts model formulation with k-states and non-zero coupling if spins are
         in the same state.
 
@@ -1280,6 +1283,11 @@ class Pseudo(Solver):
             If True, return output from scipy.minimize() routine.
         solver_kwargs : dict, {}
             Keyword arguments for scipy.optimize.minimize.
+        cost_fcn : lambda function, None
+            Takes the given set of parameters and returns a cost that is added to the neg
+            log likelihood.  Must be specified along with the jacobian.
+        cost_fcn_jac : lambda function, None
+            Jacobian for above cost function. 
 
         Returns
         -------
@@ -1299,6 +1307,14 @@ class Pseudo(Solver):
             obs.append(out[0])
             otherobs.append(out[1])
             otherobsstate.append(out[2])
+        if cost_fcn is None:
+            cost_fcn = lambda x: 0
+            cost_fcn_jac = lambda x: 0
+        elif cost_fcn:
+            assert cost_fcn_jac, "Must specify jacobian for cost function as well."
+            jacErr = check_grad(cost_fcn, cost_fcn_jac, initial_guess)
+            if jacErr>1e-4:
+                warn("Jacobian fcn is bad. Norm error of %E."%jacErr)
 
         def f(params):
             # running sums of function evaluations over all spins
@@ -1358,7 +1374,7 @@ class Pseudo(Solver):
 
                         num += sgn * np.exp(-Edelta[:,ix])
                     dloglikelihood[multipliersrix[i+self.k]] += (num/den).sum()
-            return -loglikelihood, -dloglikelihood
+            return -loglikelihood + cost_fcn(params), -dloglikelihood + cost_fcn_jac(params)
         
         #from scipy.optimize import check_grad, approx_fprime
         #if check_grad(lambda x: f(x)[0], lambda x: f(x)[1], initial_guess)>1e-6:

@@ -81,8 +81,9 @@ for the Ising model in the {0,1} basis. On the other hand,
 $ python enumerate.py [N] 1
 ```
 
-specifies that the system should be written for the {-1,1} basis.  For more details, see
-the `__main__` block at the end of the file enumerate.py.
+specifies that the system should be written for the {-1,1} basis. Note that the solver
+uses the {-1,1} basis. For more details, see the `__main__` block at the end of the file
+enumerate.py.
 
 ## Quick guide (with Jupyter notebook)
 

@@ -7,11 +7,11 @@
     <title>coniii.solvers module &#8212; ConIII 1.1.9 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="coniii.samplers module" href="coniii.samplers.html" />
@@ -34,16 +34,16 @@
             
   <div class="section" id="module-coniii.solvers">
 <span id="coniii-solvers-module"></span><h1>coniii.solvers module<a class="headerlink" href="#module-coniii.solvers" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.ClusterExpansion">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">ClusterExpansion</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">sample_size=1000</em>, <em class="sig-param">**default_model_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">ClusterExpansion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sample_size</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Implementation of Adaptive Cluster Expansion for solving the inverse Ising problem,
 as described in John Barton and Simona Cocco, J. of Stat. Mech.  P03002 (2013).</p>
 <p>Specific to pairwise Ising constraints.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.ClusterExpansion.S">
-<code class="sig-name descname">S</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">coocMat</em>, <em class="sig-param">deltaJdict={}</em>, <em class="sig-param">useAnalyticResults=False</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">numSamples=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.S" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">S</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="n">deltaJdict</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">useAnalyticResults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">priorLmbda</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">numSamples</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.S" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate pairwise entropy of cluster.  (First fits pairwise Ising model.)</p>
 <dl class="simple">
 <dt>cluster<span class="classifier">list</span></dt><dd><p>List of indices belonging to each cluster.</p>
@@ -63,9 +63,9 @@ Jfull : ndarray</p>
 </div></blockquote>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.ClusterExpansion.Sindependent">
-<code class="sig-name descname">Sindependent</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">coocMat</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.Sindependent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">Sindependent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">coocMat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.Sindependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entropy approximation assuming that each cluster appears independently of the
 others.</p>
 <p>cluster : list
@@ -81,14 +81,14 @@ coocMat : ndarray</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.ClusterExpansion.clusterID">
-<code class="sig-name descname">clusterID</code><span class="sig-paren">(</span><em class="sig-param">cluster</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.clusterID" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">clusterID</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.clusterID" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.ClusterExpansion.deltaS">
-<code class="sig-name descname">deltaS</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">coocMat</em>, <em class="sig-param">deltaSdict=None</em>, <em class="sig-param">deltaJdict=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">meanFieldRef=False</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">numSamples=None</em>, <em class="sig-param">independentRef=False</em>, <em class="sig-param">meanFieldPriorLmbda=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.deltaS" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">deltaS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="n">deltaSdict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">deltaJdict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">meanFieldRef</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">priorLmbda</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">numSamples</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">independentRef</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">meanFieldPriorLmbda</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.deltaS" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>cluster<span class="classifier">list </span></dt><dd><p>List of indices in cluster</p>
 </dd>
@@ -115,9 +115,9 @@ independentRef : bool, False</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.ClusterExpansion.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">threshold</em>, <em class="sig-param">cluster=None</em>, <em class="sig-param">deltaSdict=None</em>, <em class="sig-param">deltaJdict=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">numSamples=None</em>, <em class="sig-param">meanFieldRef=False</em>, <em class="sig-param">independentRef=True</em>, <em class="sig-param">veryVerbose=False</em>, <em class="sig-param">meanFieldPriorLmbda=None</em>, <em class="sig-param">full_output=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threshold</span></em>, <em class="sig-param"><span class="n">cluster</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">deltaSdict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">deltaJdict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">priorLmbda</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">numSamples</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meanFieldRef</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">independentRef</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">veryVerbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">meanFieldPriorLmbda</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>threshold : float
 meanFieldRef : bool, False</p>
 <blockquote>
@@ -150,9 +150,9 @@ into matrix format using utils.vec2mat.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.ClusterExpansion.subsets">
-<code class="sig-name descname">subsets</code><span class="sig-paren">(</span><em class="sig-param">thisSet</em>, <em class="sig-param">size</em>, <em class="sig-param">sort=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.subsets" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">subsets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thisSet</span></em>, <em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">sort</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.ClusterExpansion.subsets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a list, returns a list of all unique subsets of that list with given
 size.</p>
 <p>thisSet : list
@@ -166,15 +166,15 @@ sort : bool, False</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.Enumerate">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Enumerate</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">**default_model_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Enumerate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Class for solving +/-1 symmetric Ising model maxent problems by gradient descent
 with flexibility to put in arbitrary constraints.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Enumerate.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">initial_guess=None</em>, <em class="sig-param">constraints=None</em>, <em class="sig-param">max_param_value=50</em>, <em class="sig-param">full_output=False</em>, <em class="sig-param">use_root=True</em>, <em class="sig-param">scipy_solver_kwargs={'method': 'krylov'</em>, <em class="sig-param">'options': {'fatol': 1e-13</em>, <em class="sig-param">'xatol': 1e-13}}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_param_value</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">use_root</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">scipy_solver_kwargs</span><span class="o">=</span><span class="default_value">{'method': 'krylov', 'options': {'fatol': 1e-13, 'xatol': 1e-13}}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Must specify either constraints (the correlations) or samples from which the
 correlations will be calculated using self.calc_observables. This routine by
 default uses scipy.optimize.root to find the solution. This is MUCH faster than
@@ -216,16 +216,16 @@ into matrix format using utils.vec2mat.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.MCH">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MCH</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">sample_size=1000</em>, <em class="sig-param">sample_method='metropolis'</em>, <em class="sig-param">mch_approximation=None</em>, <em class="sig-param">**default_model_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MCH</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sample_size</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">sample_method</span><span class="o">=</span><span class="default_value">'metropolis'</span></em>, <em class="sig-param"><span class="n">mch_approximation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Class for solving maxent problems using the Monte Carlo Histogram method.</p>
 <p>Broderick, T., Dudik, M., Tkacik, G., Schapire, R. E. &amp; Bialek, W. Faster solutions of the
 inverse pairwise Ising problem. arXiv 1-8 (2007).</p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MCH.estimate_jac">
-<code class="sig-name descname">estimate_jac</code><span class="sig-paren">(</span><em class="sig-param">eps=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.estimate_jac" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">estimate_jac</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.estimate_jac" title="Permalink to this definition">¶</a></dt>
 <dd><p>Approximation Jacobian using the MCH approximation.</p>
 <p>eps : float, 1e-3</p>
 <dl class="simple">
@@ -235,9 +235,9 @@ wrt to a single parameter.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MCH.learn_parameters_mch">
-<code class="sig-name descname">learn_parameters_mch</code><span class="sig-paren">(</span><em class="sig-param">estConstraints</em>, <em class="sig-param">maxdlamda=1</em>, <em class="sig-param">maxdlamdaNorm=1</em>, <em class="sig-param">maxLearningSteps=50</em>, <em class="sig-param">eta=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.learn_parameters_mch" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">learn_parameters_mch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">estConstraints</span></em>, <em class="sig-param"><span class="n">maxdlamda</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">maxdlamdaNorm</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">maxLearningSteps</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">eta</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.learn_parameters_mch" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>estConstraints<span class="classifier">ndarray</span></dt><dd><p>Constraints estimated from MCH approximation.</p>
 </dd>
@@ -256,9 +256,9 @@ wrt to a single parameter.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MCH.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">initial_guess=None</em>, <em class="sig-param">constraints=None</em>, <em class="sig-param">tol=None</em>, <em class="sig-param">tolNorm=None</em>, <em class="sig-param">n_iters=30</em>, <em class="sig-param">burn_in=30</em>, <em class="sig-param">maxiter=10</em>, <em class="sig-param">custom_convergence_f=None</em>, <em class="sig-param">iprint=False</em>, <em class="sig-param">full_output=False</em>, <em class="sig-param">learn_params_kwargs={'eta': 1</em>, <em class="sig-param">'maxdlamda': 1}</em>, <em class="sig-param">generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tolNorm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">custom_convergence_f</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">iprint</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">learn_params_kwargs</span><span class="o">=</span><span class="default_value">{'eta': 1, 'maxdlamda': 1}</span></em>, <em class="sig-param"><span class="n">generate_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCH.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve for maxent model parameters using MCH routine.</p>
 <dl>
 <dt>initial_guess<span class="classifier">ndarray, None</span></dt><dd><p>Initial starting point.</p>
@@ -322,9 +322,9 @@ into matrix format using utils.vec2mat.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.MCHIncompleteData">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MCHIncompleteData</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MCHIncompleteData</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.MCH" title="coniii.solvers.MCH"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.MCH</span></code></a></p>
 <p>Class for solving maxent problems using the Monte Carlo Histogram method on
 incomplete data where some spins may not be visible.</p>
@@ -334,9 +334,9 @@ solutions of the inverse pairwise Ising problem. arXiv 1-8 (2007).</p>
 <dt>NOTE: This only works for Ising model.</dt><dd><p>Not ready for release.</p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MCHIncompleteData.generate_samples">
-<code class="sig-name descname">generate_samples</code><span class="sig-paren">(</span><em class="sig-param">n_iters</em>, <em class="sig-param">burn_in</em>, <em class="sig-param">uIncompleteStates=None</em>, <em class="sig-param">f_cond_sample_size=None</em>, <em class="sig-param">f_cond_sample_iters=None</em>, <em class="sig-param">sample_size=None</em>, <em class="sig-param">sample_method=None</em>, <em class="sig-param">initial_sample=None</em>, <em class="sig-param">run_regular_sampler=True</em>, <em class="sig-param">run_cond_sampler=True</em>, <em class="sig-param">disp=0</em>, <em class="sig-param">generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.generate_samples" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_samples</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">burn_in</span></em>, <em class="sig-param"><span class="n">uIncompleteStates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">f_cond_sample_size</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">f_cond_sample_iters</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sample_size</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sample_method</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_sample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">run_regular_sampler</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">run_cond_sampler</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">disp</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">generate_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.generate_samples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around generate_samples_parallel() from available samplers.</p>
 <p>n_iters : int
 burn_in : int</p>
@@ -358,9 +358,9 @@ initial_sample : ndarray
 generate_kwargs : dict</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MCHIncompleteData.learn_parameters_mch">
-<code class="sig-name descname">learn_parameters_mch</code><span class="sig-paren">(</span><em class="sig-param">estConstraints</em>, <em class="sig-param">fullFraction</em>, <em class="sig-param">uIncompleteStates</em>, <em class="sig-param">uIncompleteStatesCount</em>, <em class="sig-param">maxdlamda=1</em>, <em class="sig-param">maxdlamdaNorm=1</em>, <em class="sig-param">maxLearningSteps=50</em>, <em class="sig-param">eta=1</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.learn_parameters_mch" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">learn_parameters_mch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">estConstraints</span></em>, <em class="sig-param"><span class="n">fullFraction</span></em>, <em class="sig-param"><span class="n">uIncompleteStates</span></em>, <em class="sig-param"><span class="n">uIncompleteStatesCount</span></em>, <em class="sig-param"><span class="n">maxdlamda</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">maxdlamdaNorm</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">maxLearningSteps</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">eta</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.learn_parameters_mch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update parameters with MCH step. Update is proportional to the difference between the
 observables and the predicted observables after a small change to the parameters. This is
 calculated from likelihood maximization, and for the incomplete data points this corresponds
@@ -390,9 +390,9 @@ maxLearningSteps : int</p>
 <p>estimatedConstraints : ndarray</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MCHIncompleteData.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">X=None</em>, <em class="sig-param">constraints=None</em>, <em class="sig-param">initial_guess=None</em>, <em class="sig-param">cond_sample_size=100</em>, <em class="sig-param">cond_sample_iters=100</em>, <em class="sig-param">tol=None</em>, <em class="sig-param">tolNorm=None</em>, <em class="sig-param">n_iters=30</em>, <em class="sig-param">burn_in=30</em>, <em class="sig-param">maxiter=10</em>, <em class="sig-param">disp=False</em>, <em class="sig-param">full_output=False</em>, <em class="sig-param">learn_params_kwargs={}</em>, <em class="sig-param">generate_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cond_sample_size</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">cond_sample_iters</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tolNorm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">disp</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">learn_params_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">generate_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MCHIncompleteData.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve for parameters using MCH routine.</p>
 <p>X                       : ndarray
 constraints             : ndarray</p>
@@ -440,13 +440,13 @@ errors : ndarray</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.MPF">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MPF</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">calc_de=None</em>, <em class="sig-param">adj=None</em>, <em class="sig-param">**default_model_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MPF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_de</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">adj</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MPF.K">
-<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param">Xuniq</em>, <em class="sig-param">Xcount</em>, <em class="sig-param">adjacentStates</em>, <em class="sig-param">params</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.K" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Xuniq</span></em>, <em class="sig-param"><span class="n">Xcount</span></em>, <em class="sig-param"><span class="n">adjacentStates</span></em>, <em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.K" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute objective function.</p>
 <dl class="simple">
 <dt>Xuniq<span class="classifier">ndarray</span></dt><dd><p>(ndata x ndims)
@@ -462,18 +462,18 @@ unique states that appear in the data</p>
 <p>K : float</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MPF.list_adjacent_states">
-<code class="sig-name descname">list_adjacent_states</code><span class="sig-paren">(</span><em class="sig-param">Xuniq</em>, <em class="sig-param">all_connected</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.list_adjacent_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">list_adjacent_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Xuniq</span></em>, <em class="sig-param"><span class="n">all_connected</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.list_adjacent_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use self.adj to evaluate all adjacent states in Xuniq.</p>
 <p>Xuniq : ndarray
 all_connected : bool</p>
 <p>adjacentStates</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MPF.logK">
-<code class="sig-name descname">logK</code><span class="sig-paren">(</span><em class="sig-param">Xuniq</em>, <em class="sig-param">Xcount</em>, <em class="sig-param">adjacentStates</em>, <em class="sig-param">params</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.logK" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">logK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Xuniq</span></em>, <em class="sig-param"><span class="n">Xcount</span></em>, <em class="sig-param"><span class="n">adjacentStates</span></em>, <em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.logK" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute log of objective function.</p>
 <dl class="simple">
 <dt>Xuniq<span class="classifier">ndarray</span></dt><dd><p>(n_samples, n_dim)
@@ -489,9 +489,9 @@ unique states that appear in the data</p>
 <p>logK : float</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MPF.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">initial_guess=None</em>, <em class="sig-param">method='L-BFGS-B'</em>, <em class="sig-param">full_output=False</em>, <em class="sig-param">all_connected=True</em>, <em class="sig-param">parameter_limits=100</em>, <em class="sig-param">solver_kwargs={'disp': False</em>, <em class="sig-param">'ftol': 1e-15</em>, <em class="sig-param">'maxiter': 100}</em>, <em class="sig-param">uselog=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'L-BFGS-B'</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">all_connected</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">parameter_limits</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">solver_kwargs</span><span class="o">=</span><span class="default_value">{'disp': False, 'ftol': 1e-15, 'maxiter': 100}</span></em>, <em class="sig-param"><span class="n">uselog</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimize MPF objective function using scipy.optimize.minimize.</p>
 <p>initial_guess : ndarray, None
 method : str, ‘L-BFGS-B’</p>
@@ -523,22 +523,28 @@ into matrix format using utils.vec2mat.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.MPF.worker_objective_task">
-<em class="property">static </em><code class="sig-name descname">worker_objective_task</code><span class="sig-paren">(</span><em class="sig-param">s</em>, <em class="sig-param">Xcount</em>, <em class="sig-param">adjacentStates</em>, <em class="sig-param">params</em>, <em class="sig-param">calc_e</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.worker_objective_task" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">worker_objective_task</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">Xcount</span></em>, <em class="sig-param"><span class="n">adjacentStates</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">calc_e</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.MPF.worker_objective_task" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py attribute">
+<dt id="coniii.solvers.MonteCarloHistogram">
+<code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">MonteCarloHistogram</code><a class="headerlink" href="#coniii.solvers.MonteCarloHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#coniii.solvers.MCH" title="coniii.solvers.MCH"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.MCH</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
 <dt id="coniii.solvers.Pseudo">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Pseudo</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">get_multipliers_r=None</em>, <em class="sig-param">calc_observables_r=None</em>, <em class="sig-param">**default_model_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Pseudo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">get_multipliers_r</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables_r</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Pseudolikelihood approximation to solving the inverse Ising problem as described in
 Aurell and Ekeberg, PRL 108, 090201 (2012).</p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Pseudo.cond_hess">
-<code class="sig-name descname">cond_hess</code><span class="sig-paren">(</span><em class="sig-param">r</em>, <em class="sig-param">X</em>, <em class="sig-param">Jr</em>, <em class="sig-param">pairCoocRhat=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_hess" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cond_hess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">Jr</span></em>, <em class="sig-param"><span class="n">pairCoocRhat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_hess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape (dimension of
 system)x(dimension of system)</p>
 <p>Current implementation uses more memory for speed.  For large sample size, it may
@@ -550,16 +556,16 @@ make sense to break up differently if too much memory is being used.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Pseudo.cond_jac">
-<code class="sig-name descname">cond_jac</code><span class="sig-paren">(</span><em class="sig-param">r</em>, <em class="sig-param">X</em>, <em class="sig-param">Jr</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_jac" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cond_jac</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">Jr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_jac" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns d cond_log_likelihood / d Jr, with shape (dimension of system)</p>
 <p>Deprecated.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Pseudo.cond_log_likelihood">
-<code class="sig-name descname">cond_log_likelihood</code><span class="sig-paren">(</span><em class="sig-param">r</em>, <em class="sig-param">X</em>, <em class="sig-param">Jr</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_log_likelihood" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cond_log_likelihood</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">Jr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.cond_log_likelihood" title="Permalink to this definition">¶</a></dt>
 <dd><p>Equals the conditional log likelihood -L_r.</p>
 <p>Deprecated.</p>
 <dl class="simple">
@@ -573,18 +579,18 @@ make sense to break up differently if too much memory is being used.</p>
 <p>float</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Pseudo.pair_cooc_mat">
-<code class="sig-name descname">pair_cooc_mat</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.pair_cooc_mat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pair_cooc_mat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.pair_cooc_mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns matrix of shape (self.n)x(# X)x(self.n).</p>
 <p>For use with cond_hess.</p>
 <p>Slow because I haven’t thought of a better way of doing it yet.</p>
 <p>Deprecated.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Pseudo.pseudo_log_likelihood">
-<code class="sig-name descname">pseudo_log_likelihood</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">J</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.pseudo_log_likelihood" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pseudo_log_likelihood</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">J</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.pseudo_log_likelihood" title="Permalink to this definition">¶</a></dt>
 <dd><p>TODO: Could probably be made more efficient.</p>
 <p>Deprecated.</p>
 <dl class="simple">
@@ -596,9 +602,9 @@ J should be symmetric</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Pseudo.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">force_general=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">force_general</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Pseudo.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses a general all-purpose optimization to solve the problem using functions
 defined in self.get_multipliers_r and self.calc_observables_r.</p>
 <dl class="simple">
@@ -618,27 +624,27 @@ into matrix format using utils.vec2mat.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.RegularizedMeanField">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">RegularizedMeanField</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">sample_size=1000</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">**default_model_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">RegularizedMeanField</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sample_size</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
 <p>Implementation of regularized mean field method for solving the inverse Ising
 problem, as described in Daniels, Bryan C., David C. Krakauer, and Jessica C. Flack.
 <a href="#id1"><span class="problematic" id="id2">``</span></a>Control of Finite Critical Behaviour in a Small-Scale Social System.’’ Nature
 Communications 8 (2017): 14301.  doi:10.1038/ncomms14301</p>
 <p>Specific to pairwise Ising constraints.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.RegularizedMeanField.bracket1d">
-<code class="sig-name descname">bracket1d</code><span class="sig-paren">(</span><em class="sig-param">xList</em>, <em class="sig-param">funcList</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.bracket1d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">bracket1d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xList</span></em>, <em class="sig-param"><span class="n">funcList</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.bracket1d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assumes xList is monotonically increasing</p>
 <p>Get bracketed interval (a,b,c) with a &lt; b &lt; c, and f(b) &lt; f(a) and f(c).
 (Choose b and c to make f(b) and f(c) as small as possible.)</p>
 <p>If minimum is at one end, raise error.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.RegularizedMeanField.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">n_grid_points=200</em>, <em class="sig-param">min_size=0</em>, <em class="sig-param">reset_rng=True</em>, <em class="sig-param">min_covariance=False</em>, <em class="sig-param">min_independent=True</em>, <em class="sig-param">cooc_cov=None</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">bracket=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_grid_points</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">min_size</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">reset_rng</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">min_covariance</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">min_independent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">cooc_cov</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">priorLmbda</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">bracket</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.RegularizedMeanField.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Varies the strength of regularization on the mean field J to best fit given
 cooccurrence data.</p>
 <dl class="simple">
@@ -677,15 +683,15 @@ into matrix format using utils.vec2mat.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="coniii.solvers.Solver">
 <em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Solver</code><a class="headerlink" href="#coniii.solvers.Solver" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for declaring common methods and attributes for inverse maxent
 algorithms.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Solver.basic_setup">
-<code class="sig-name descname">basic_setup</code><span class="sig-paren">(</span><em class="sig-param">sample</em>, <em class="sig-param">model=None</em>, <em class="sig-param">calc_observables=None</em>, <em class="sig-param">model_kwargs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.basic_setup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">basic_setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.basic_setup" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>sample<span class="classifier">ndarray</span></dt><dd><p>Of dimensions (samples, dimension).</p>
 </dd>
@@ -699,16 +705,16 @@ model is None. Important ones include “n_cpus” and “rng”.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="coniii.solvers.Solver.solve">
 <code class="sig-name descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.solve" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.solvers.unwrap_self_worker_obj">
-<code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">unwrap_self_worker_obj</code><span class="sig-paren">(</span><em class="sig-param">arg</em>, <em class="sig-param">**kwarg</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.unwrap_self_worker_obj" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">unwrap_self_worker_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwarg</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.unwrap_self_worker_obj" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -758,7 +764,7 @@ model is None. Important ones include “n_cpus” and “rng”.</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -775,7 +781,7 @@ model is None. Important ones include “n_cpus” and “rng”.</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

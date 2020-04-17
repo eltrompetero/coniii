@@ -23,10 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v2.3.0 (Scheduled release 2020/02)
+v2.3.0 (Scheduled release 2020/04)
 ----------------------------------------------------
 - Sped up Metropolis sampling using Boost C++ extension. Up to 1000x speedup
-  achievable.
+  achievable compared to Python version. This must be compiled separately and is
+  not yet available through a PyPI installation.
 - Added variation of 3-state Potts model.
 
 v2.2.1 (Released 2019/12/2)

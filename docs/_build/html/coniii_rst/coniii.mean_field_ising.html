@@ -7,11 +7,11 @@
     <title>coniii.mean_field_ising module &#8212; ConIII 1.1.9 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -32,37 +32,37 @@
             
   <div class="section" id="module-coniii.mean_field_ising">
 <span id="coniii-mean-field-ising-module"></span><h1>coniii.mean_field_ising module<a class="headerlink" href="#module-coniii.mean_field_ising" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.FHomogeneous">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">FHomogeneous</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em>, <em class="sig-param">m</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.FHomogeneous" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">FHomogeneous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.FHomogeneous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use Hubbard-Stratonovich (auxiliary field) to calculate the
 (free energy?) of a homogeneous system as a function of the
 field m (m equals the mean field as N -&gt; infinity?).</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.JfullFromCluster">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">JfullFromCluster</code><span class="sig-paren">(</span><em class="sig-param">Jcluster</em>, <em class="sig-param">cluster</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.JfullFromCluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">JfullFromCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Jcluster</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.JfullFromCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>NOTE: There is perhaps a faster way of doing this?</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.JmeanField">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">JmeanField</code><span class="sig-paren">(</span><em class="sig-param">coocMat</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.JmeanField" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">JmeanField</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.JmeanField" title="Permalink to this definition">¶</a></dt>
 <dd><p>See SmeanField for important optional arguments,
 including noninteracting prior weighting.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.SHomogeneous">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">SHomogeneous</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.SHomogeneous" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">SHomogeneous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.SHomogeneous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use Hubbard-Stratonovich (auxiliary field) to numerically 
 calculate entropy of a homogeneous system.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.SmeanField">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">SmeanField</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">coocMat</em>, <em class="sig-param">meanFieldPriorLmbda=0.0</em>, <em class="sig-param">numSamples=None</em>, <em class="sig-param">indTerm=True</em>, <em class="sig-param">alternateEnt=False</em>, <em class="sig-param">useRegularizedEq=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.SmeanField" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">SmeanField</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="n">meanFieldPriorLmbda</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">numSamples</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">indTerm</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">alternateEnt</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">useRegularizedEq</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.SmeanField" title="Permalink to this definition">¶</a></dt>
 <dd><p>meanFieldPriorLmbda (0.): 3.23.2014
 indTerm (True)          : As of 2.19.2014, I’m not</p>
 <blockquote>
@@ -77,55 +77,55 @@ be included, but I think so</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.aboveDiagFlat">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">aboveDiagFlat</code><span class="sig-paren">(</span><em class="sig-param">mat</em>, <em class="sig-param">keepDiag=False</em>, <em class="sig-param">offDiagMult=None</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.aboveDiagFlat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">aboveDiagFlat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">keepDiag</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">offDiagMult</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.aboveDiagFlat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a flattened list of all elements of the 
 matrix above the diagonal.</p>
 <p>Use offDiagMult = 2 for symmetric J matrix.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.analyticEntropy">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">analyticEntropy</code><span class="sig-paren">(</span><em class="sig-param">J</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.analyticEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">analyticEntropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.analyticEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>In nats.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.avgE">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">avgE</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">ell</em>, <em class="sig-param">T</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.avgE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">avgE</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.avgE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.avgmHomogeneous">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">avgmHomogeneous</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.avgmHomogeneous" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">avgmHomogeneous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.avgmHomogeneous" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.avgxHomogeneous">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">avgxHomogeneous</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.avgxHomogeneous" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">avgxHomogeneous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.avgxHomogeneous" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.coocCluster">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocCluster</code><span class="sig-paren">(</span><em class="sig-param">coocMat</em>, <em class="sig-param">cluster</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocCluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="n">cluster</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort coocMat by the cluster indices</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.coocExpectations">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocExpectations</code><span class="sig-paren">(</span><em class="sig-param">J</em>, <em class="sig-param">hext=0</em>, <em class="sig-param">zeroBelowDiag=True</em>, <em class="sig-param">minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocExpectations" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocExpectations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">hext</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">zeroBelowDiag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocExpectations" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.coocMatBayesianMean">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocMatBayesianMean</code><span class="sig-paren">(</span><em class="sig-param">coocMat</em>, <em class="sig-param">numFights</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocMatBayesianMean" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocMatBayesianMean</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="n">numFights</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocMatBayesianMean" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using “Laplace’s method”</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.coocSampleCovariance">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocSampleCovariance</code><span class="sig-paren">(</span><em class="sig-param">samples</em>, <em class="sig-param">bayesianMean=True</em>, <em class="sig-param">includePrior=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocSampleCovariance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocSampleCovariance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">bayesianMean</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">includePrior</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocSampleCovariance" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>includePrior (True)<span class="classifier">Include diagonal component corresponding</span></dt><dd><p>to ell*(ell-1)/2 prior residuals for
 interaction parameters</p>
@@ -133,16 +133,16 @@ interaction parameters</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.coocStdevsFlat">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocStdevsFlat</code><span class="sig-paren">(</span><em class="sig-param">coocMat</em>, <em class="sig-param">numFights</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocStdevsFlat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">coocStdevsFlat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coocMat</span></em>, <em class="sig-param"><span class="n">numFights</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.coocStdevsFlat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a flattened expected standard deviation matrix used
 to divide deltaCooc to turn it into z scores.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.cooccurrence_matrix">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">cooccurrence_matrix</code><span class="sig-paren">(</span><em class="sig-param">samples</em>, <em class="sig-param">keep_diag=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.cooccurrence_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">cooccurrence_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">keep_diag</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.cooccurrence_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Matrix of pairwise correlations. Only upper right triangle is filled.</p>
 <p>samples : ndarray
 keep_diag : bool, True</p>
@@ -152,119 +152,119 @@ keep_diag : bool, True</p>
 <p>ndarray</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.dFdT">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">dFdT</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em>, <em class="sig-param">m</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.dFdT" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">dFdT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.dFdT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.diagFlatIndex">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">diagFlatIndex</code><span class="sig-paren">(</span><em class="sig-param">i</em>, <em class="sig-param">j</em>, <em class="sig-param">ell</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.diagFlatIndex" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">diagFlatIndex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">ell</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.diagFlatIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Should have j&gt;=i…</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.dmdT">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">dmdT</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">ell</em>, <em class="sig-param">T</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.dmdT" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">dmdT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.dmdT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.fightPossibilities">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">fightPossibilities</code><span class="sig-paren">(</span><em class="sig-param">ell</em>, <em class="sig-param">minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.fightPossibilities" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">fightPossibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.fightPossibilities" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.findJmatrixAnalytic_CoocMat">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">findJmatrixAnalytic_CoocMat</code><span class="sig-paren">(</span><em class="sig-param">coocMatData</em>, <em class="sig-param">Jinit=None</em>, <em class="sig-param">bayesianMean=False</em>, <em class="sig-param">numSamples=None</em>, <em class="sig-param">priorLmbda=0.0</em>, <em class="sig-param">minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.findJmatrixAnalytic_CoocMat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">findJmatrixAnalytic_CoocMat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coocMatData</span></em>, <em class="sig-param"><span class="n">Jinit</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bayesianMean</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">numSamples</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">priorLmbda</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.findJmatrixAnalytic_CoocMat" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.fourthOrderCoocMat">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">fourthOrderCoocMat</code><span class="sig-paren">(</span><em class="sig-param">samples</em>, <em class="sig-param">slowMethod=True</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.fourthOrderCoocMat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">fourthOrderCoocMat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">slowMethod</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.fourthOrderCoocMat" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.independentEntropyHomogeneous">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">independentEntropyHomogeneous</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.independentEntropyHomogeneous" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">independentEntropyHomogeneous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.independentEntropyHomogeneous" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.independentEntropyHomogeneous2">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">independentEntropyHomogeneous2</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.independentEntropyHomogeneous2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">independentEntropyHomogeneous2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.independentEntropyHomogeneous2" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.isingDeltaCooc">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">isingDeltaCooc</code><span class="sig-paren">(</span><em class="sig-param">isingSamples</em>, <em class="sig-param">coocMatDesired</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.isingDeltaCooc" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">isingDeltaCooc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">isingSamples</span></em>, <em class="sig-param"><span class="n">coocMatDesired</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.isingDeltaCooc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.logCosh">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">logCosh</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.logCosh" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">logCosh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.logCosh" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.m">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">m</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">ell</em>, <em class="sig-param">T</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.m" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">m</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.m" title="Permalink to this definition">¶</a></dt>
 <dd><p>Careful if T is small for loss of precision?</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.meanFieldStability">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">meanFieldStability</code><span class="sig-paren">(</span><em class="sig-param">J</em>, <em class="sig-param">freqs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.meanFieldStability" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">meanFieldStability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">freqs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.meanFieldStability" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.multiInfoHomogeneous">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">multiInfoHomogeneous</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.multiInfoHomogeneous" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">multiInfoHomogeneous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.multiInfoHomogeneous" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.replaceDiag">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">replaceDiag</code><span class="sig-paren">(</span><em class="sig-param">mat</em>, <em class="sig-param">lst</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.replaceDiag" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">replaceDiag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">lst</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.replaceDiag" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.seedGenerator">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">seedGenerator</code><span class="sig-paren">(</span><em class="sig-param">seedStart</em>, <em class="sig-param">deltaSeed</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.seedGenerator" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">seedGenerator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seedStart</span></em>, <em class="sig-param"><span class="n">deltaSeed</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.seedGenerator" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.specificHeat">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">specificHeat</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">ell</em>, <em class="sig-param">T</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.specificHeat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">specificHeat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.specificHeat" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.susc">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">susc</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">J</em>, <em class="sig-param">ell</em>, <em class="sig-param">T</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.susc" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">susc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.susc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.symmetrizeUsingUpper">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">symmetrizeUsingUpper</code><span class="sig-paren">(</span><em class="sig-param">mat</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.symmetrizeUsingUpper" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">symmetrizeUsingUpper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.symmetrizeUsingUpper" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.unflatten">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">unflatten</code><span class="sig-paren">(</span><em class="sig-param">flatList</em>, <em class="sig-param">ell</em>, <em class="sig-param">symmetrize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.unflatten" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">unflatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flatList</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">symmetrize</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.unflatten" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inverse of aboveDiagFlat with keepDiag=True.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.unsummedLogZ">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">unsummedLogZ</code><span class="sig-paren">(</span><em class="sig-param">J</em>, <em class="sig-param">hext=0</em>, <em class="sig-param">minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.unsummedLogZ" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">unsummedLogZ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">hext</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.unsummedLogZ" title="Permalink to this definition">¶</a></dt>
 <dd><p>J should have h on the diagonal.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.unsummedZ">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">unsummedZ</code><span class="sig-paren">(</span><em class="sig-param">J</em>, <em class="sig-param">hext=0</em>, <em class="sig-param">minSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.unsummedZ" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">unsummedZ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">hext</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.unsummedZ" title="Permalink to this definition">¶</a></dt>
 <dd><p>J should have h on the diagonal.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="coniii.mean_field_ising.zeroDiag">
-<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">zeroDiag</code><span class="sig-paren">(</span><em class="sig-param">mat</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.zeroDiag" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.mean_field_ising.</code><code class="sig-name descname">zeroDiag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.mean_field_ising.zeroDiag" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -312,7 +312,7 @@ keep_diag : bool, True</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -329,7 +329,7 @@ keep_diag : bool, True</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

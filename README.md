@@ -62,8 +62,9 @@ $ pip install dist/*.whl --force-reinstall --no-deps
 If the Boost extension refuses to compile, you may need to explicitly specify the path to
 your dynamic libraries. For example, I have installed my Boost libraries on
 `/usr/local/lib/boost_1_72_0/stage/lib`, so in `setup.py` I edit the `DEFAULT_LIBRARY_DR`
-variable to include this path on line 42. For a few more hints, see DEVREADME or open an
-issue!
+variable to include this path on line 42. Alternatively, you can modify the environment
+path variables LIBRARY_PATH and LD_LIBRARY_PATH. For a few more hints, see DEVREADME or
+open an issue!
 
 #### Setting up analytic solution for systems *N > 9*
 If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
@@ -156,14 +157,14 @@ $ pip install matplotlib 'multiprocess>=0.70.5,<1' matplotlib scipy 'numpy>=1.15
 ## Troubleshooting
 
 This package is only maintained for Python 3 as of v1.0.2 and has only been tested for
-Python 3.7.4. Check which version of Python you are running in your terminal
+Python 3.7.4 and 3.7.5. Check which version of Python you are running in your terminal
 with 
 ```bash
 $ python --version
 ```
 
 ConIII has been tested on the following systems
-* Debian 9 (Stretch)
+* Ubuntu 18.04.1
 * Mac OS X 10.15 (Catalina)
 
 multiprocess module problems: `n_cpus` kwarg can be set to 0 or 1 when the algorithm class

@@ -61,7 +61,7 @@ if not NO_BOOST:
                                library_dirs=DEFAULT_LIBRARY_DR,
                                sources=['./cpp/samplers.cpp', './cpp/py.cpp'],
                                extra_objects=['-l%s'%f for f in dylibNames],
-                               extra_compile_args=['-std=c++11'],
+                               extra_compile_args=['-std=c++11','-stdlib=libc++'],
                                language='c++')
     ext_modules = [samplersModule]
 else:

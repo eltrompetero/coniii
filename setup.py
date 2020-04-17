@@ -39,10 +39,8 @@ NO_BOOST = False
 here = path.abspath(path.dirname(__file__))
 system = platform.system()
 if system=='Linux':
-    dynlibSuffix = 'so'
     DEFAULT_LIBRARY_DR=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu']  # default places to search for boost lib
 elif system=='Darwin':
-    dynlibSuffix = 'dylib'
     DEFAULT_LIBRARY_DR=['/usr/local/lib']  # default places to search for boost lib
 else:
     raise Exception("System unrecognized.")
@@ -57,11 +55,7 @@ with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
 
 # setup C++ extension
 # make sure libraries exist if C++ extension is to be compiled
-dylibsOnPath = all([path.exists('lib%s.%s'%(f,dynlibSuffix)) for f in dylibNames])
-dylibsInSearchDrs = all([path.exists('%s/lib%s.%s'%(dr,f,dynlibSuffix))
-                         for f in dylibNames
-                         for dr in DEFAULT_LIBRARY_DR])
-if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
+if not NO_BOOST:
     samplersModule = Extension('coniii.samplers_ext',
                                include_dirs = ['./cpp'],
                                library_dirs=DEFAULT_LIBRARY_DR,
@@ -71,42 +65,52 @@ if not NO_BOOST and (dylibsOnPath or dylibsInSearchDrs):
                                language='c++')
     ext_modules = [samplersModule]
 else:
-    ext_modules = []
-    print("Dynamic libraries not on path. Boost not compiled.")
+    print("*******************************************")
+    print("Boost not compiled because flag is not set.")
+    print("*******************************************")
+
 
 # compile
-setup(name='coniii',
-      version=__version__,
-      description='Convenient Interface to Inverse Ising (ConIII)',
-      long_description=long_description,
-      url='https://github.com/eltrompetero/coniii',
-      author='Edward D. Lee, Bryan C Daniels',
-      author_email='edlee@santafe.edu',
-      license='MIT',
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Intended Audience :: Science/Research',
-          'Topic :: Scientific/Engineering :: Information Analysis',
-          'License :: OSI Approved :: MIT License',
-          'Programming Language :: Python :: 3 :: Only',
-      ],
-      python_requires='>=3.7.4',
-      keywords='inverse Ising maxent maximum entropy inference',
-      packages=find_packages(),
-      install_requires=['multiprocess>=0.70.7,<1',
-                        'scipy',
-                        'matplotlib',
-                        'numpy>=1.16.2,<2',
-                        'numba>=0.45.1,<1',
-                        'mpmath>=1.1.0',
-                        'dill'],
-      include_package_data=True,  # see MANIFEST.in
-      py_modules=['coniii.enumerate',
-                  'coniii.enumerate_potts',
-                  'coniii.mean_field_ising',
-                  'coniii.pseudo_inverse_ising',
-                  'coniii.samplers',
-                  'coniii.solvers',
-                  'coniii.utils'],
-      ext_modules = ext_modules
-)
+kwargs = {'name':'coniii',
+          'version':__version__,
+          'description':'Convenient Interface to Inverse Ising (ConIII)',
+          'long_description':long_description,
+          'url':'https://github.com/eltrompetero/coniii',
+          'author':'Edward D. Lee, Bryan C Daniels',
+          'author_email':'edlee@santafe.edu',
+          'license':'MIT',
+          'classifiers':['Development Status :: 5 - Production/Stable',
+                         'Intended Audience :: Science/Research',
+                         'Topic :: Scientific/Engineering :: Information Analysis',
+                         'License :: OSI Approved :: MIT License',
+                         'Programming Language :: Python :: 3 :: Only',
+                        ],
+          'python_requires':'>=3.7.4',
+          'keywords':'inverse Ising maxent maximum entropy inference',
+          'packages':find_packages(),
+          'install_requires':['multiprocess>=0.70.7,<1',
+                              'scipy',
+                              'matplotlib',
+                              'numpy>=1.16.2,<2',
+                              'numba>=0.45.1,<1',
+                              'mpmath>=1.1.0',
+                              'dill'],
+          'include_package_data':True,  # see MANIFEST.in
+          'py_modules':['coniii.enumerate',
+                        'coniii.enumerate_potts',
+                        'coniii.mean_field_ising',
+                        'coniii.pseudo_inverse_ising',
+                        'coniii.samplers',
+                        'coniii.solvers',
+                        'coniii.utils'],
+          'ext_modules':ext_modules}
+
+try:
+    setup(**kwargs)
+except:
+    print("*****************************************************")
+    print("Boost not compiled. See above errors for g++ message.")
+    print("*****************************************************")
+
+    kwargs['ext_modules'] = []
+    setup(**kwargs)

@@ -59,6 +59,12 @@ $ ./pypi_compile.sh
 $ pip install dist/*.whl --force-reinstall --no-deps
 ```
 
+If the Boost extension refuses to compile, you may need to explicitly specify the path to
+your dynamic libraries. For example, I have installed my Boost libraries on
+`/usr/local/lib/boost_1_72_0/stage/lib`, so in `setup.py` I edit the `DEFAULT_LIBRARY_DR`
+variable to include this path on line 42. For a few more hints, see DEVREADME or open an
+issue!
+
 #### Setting up analytic solution for systems *N > 9*
 If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
 must run enumerate.py to write those files yourself. This can be run from the install

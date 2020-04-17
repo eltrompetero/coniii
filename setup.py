@@ -35,13 +35,21 @@ import platform, sys
 # flags
 NO_BOOST = False
 
+# default args (that are modified per system specs below
+EXTRA_COMPILE_ARGS = ['-std=c++11']
+DEFAULT_LIBRARY_DR=['/usr/local/lib']  # includes places to search for boost lib
+
 # setup
 here = path.abspath(path.dirname(__file__))
 system = platform.system()
 if system=='Linux':
-    DEFAULT_LIBRARY_DR=['/usr/local/lib', '/usr/lib/x86_64-linux-gnu']  # default places to search for boost lib
+    DEFAULT_LIBRARY_DR.append('/usr/lib/x86_64-linux-gnu')
+    # If Boost library was compiled and install to /usr/local/lib, the following
+    # line must be uncommented
+    #DEFAULT_LIBRARY_DR.append('/usr/local/lib/boost_1_72_0/stage/lib')
 elif system=='Darwin':
-    DEFAULT_LIBRARY_DR=['/usr/local/lib']  # default places to search for boost lib
+    # Mac OSX requires this flag for ld call to work
+    EXTRA_COMPILE_ARGS.append('-stdlib=libc++')
 else:
     raise Exception("System unrecognized.")
 dylibNames = ['boost_python37', 'boost_numpy37']
@@ -61,7 +69,7 @@ if not NO_BOOST:
                                library_dirs=DEFAULT_LIBRARY_DR,
                                sources=['./cpp/samplers.cpp', './cpp/py.cpp'],
                                extra_objects=['-l%s'%f for f in dylibNames],
-                               extra_compile_args=['-std=c++11','-stdlib=libc++'],
+                               extra_compile_args=EXTRA_COMPILE_ARGS,
                                language='c++')
     ext_modules = [samplersModule]
 else:

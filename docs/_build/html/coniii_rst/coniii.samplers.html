@@ -85,7 +85,7 @@ sample_energy_min()</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_energy_min">
-<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F4DCC0E07C0</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F8A7098F8D0</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find local energy minimum given state in angular form. Angular representation
 makes it easy to be explicit about constraints on the vectors.</p>
 <dl class="simple">
@@ -275,7 +275,7 @@ the initial sample.</p>
 <dl class="py method">
 <dt id="coniii.samplers.Metropolis.sample_metropolis">
 <code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample0</span></em>, <em class="sig-param"><span class="n">E0</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flip_site</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_e</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.sample_metropolis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Metropolis sampling given an arbitrary sampling function.</p>
+<dd><p>Metropolis sampling given an arbitrary energy function.</p>
 <dl class="simple">
 <dt>sample0<span class="classifier">ndarray</span></dt><dd><p>Sample to start with. Passed by ref and changed.</p>
 </dd>

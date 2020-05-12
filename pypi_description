@@ -1,10 +1,12 @@
-Python package for solving the inverse maximum entropy problem with a focus on the
-pairwise maximum entropy model, also known as the inverse Ising problem.
+Python 3 package for solving the inverse maximum entropy problem with a focus on
+the pairwise maximum entropy model, also known as the inverse Ising problem.
 
-See GitHub page for overview on how to install and use package.
+See GitHub page for overview on how to install and use package. Directions for
+massive speed up of Metropolis sampling with C++ are also available there.
 
 Examples are included in the Jupyter notebook "usage_guide.ipynb" and the Python
-script "usage_guide.py" (see GitHub). A somewhat outdated overview is also published in the
+script "usage_guide.py" (see GitHub). An overview for version 1 is also
+published in the
 [paper](https://github.com/eltrompetero/coniii/blob/py3/guide/guide.pdf).
 
 Authors: Edward D. Lee, Bryan C. Daniels

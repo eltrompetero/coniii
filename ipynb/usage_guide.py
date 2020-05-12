@@ -4,7 +4,7 @@
 # ```
 # MIT License
 # 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
+# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,7 @@
 # SOFTWARE.
 # ```
 
-# # Usage guide to Convenient Interface to Inverse Ising
-# Edward D. Lee, Bryan C. Daniels  
-# 
+# # Usage guide to Convenient Interface to Inverse Ising 
 # This notebook gives examples of how to use the various algorithms included in ConIII for solving the inverse Ising problem. 
 # 
 # In this problem, the goal is to match the average orientation of each spin (the magnetization) $\{\langle s_{\rm i}\rangle\}$ and the pairwise correlations $\{\langle s_{\rm i} s_{\rm j}\rangle\}$ by finding the fields $\{h_{\rm i}\}$ and couplings $\{J_{\rm ij}\}$. This problem is explained in further detail in the accompanying [paper](https://doi.org/10.5334/jors.217).
@@ -52,7 +50,7 @@
 
 
 # Setup iPython environment.
-import matplotlib.pyplot as plt
+get_ipython().run_line_magic('pylab', 'inline')
 
 
 # In[2]:
@@ -103,10 +101,7 @@ def summarize(solver):
 
 
 # # Enumeration
-# 
 # The Enumerate class implements the most direct approach to solving the inverse Ising problem by writing out all the constraint equations. This involves enumerating all the terms in the partition function $Z$.
-# 
-# As a test of the Enumerate class below, we show that fitting to the known values of $\langle\sigma_{\rm i}\rangle$ and $\langle\sigma_{\rm i}\sigma_{\rm j}\rangle$ recovers the exact values of the parameters. Unfortunately, this approach scales very poorly (exponentially in memory and time) for large systems.
 # <br><br>
 # #### Customizing the Enumerate class
 # Customizing the Enumerate class consists of a few steps.
@@ -115,8 +110,8 @@ def summarize(solver):
 # The first argument to `enumerate.py` is the system size and the 1 indicates that the equations should be written for the symmetric Ising model $\sigma_{\rm i}\in\{-1,1\}$. For $\sigma_{\rm i}\in \{0,1\}$, we would put a 0 instead. The naming convention is "ising_eqn_[n][\_sym].py" where n is the system size and "\_sym" is the suffix if the spins are symmetric. Some more details are in the __main__ block at the bottom of `enumerate.py`. Note that file size grows exponentially with the size of the system!
 # 
 # 
-# 3. Define the function for calculating the observables (usually the mean of each spin and pairwise correlations) using the parameters (Langrangian multipliers). This will be passed into `calc_observables_multipliers`.<br><br>
-# 2. Use the Enumerate class to solve the equations written in the resulting file.
+# 3. Define the function for calculating the observables (usually the mean of each spin and pairwise correlations) using the parameters (Langrangian multipliers). This will be passed into the keyword argument `calc_observables_multipliers` when initializing an instance of Enumerate.<br><br>
+# 2. Use the method Enumerate.solve to solve the problem.
 # <br>
 # 
 # #### Addenda (added April 2019)
@@ -149,11 +144,11 @@ fig.subplots_adjust(wspace=.5)
 
 
 # # Minimum probability flow (MPF)
-# MPF involves minimizing a much simpler objective function. One component that is necessary is the connectivity matrix defining which states are connected to each other such that probability can flow between them. This is defined in the `adj()` function for the Ising model.
+# MPF involves minimizing a much simpler objective function. One component that is necessary is the connectivity matrix defining which states are connected to each other such that probability can flow between them. This is defined in the `adj()` function defined in the `utils.py` module for the Ising model.
 # 
-# MPF is easily generalizable to arbitrary constraints by modifying `calc_observables()`.
+# MPF is easily generalizable to arbitrary constraints by defining the keyword argument `calc_observables`.
 # 
-# MPF is not expected to return the exact solution, but usually the estimated parameters are quite close to the ones calculated using MCH (shown below) while running faster. Note that MPF is given a finite sample from the true distribution to solve for, so we do not expect that it recover the same parameters, but it matches the correlations quite closely as measured with MCMC sampling.
+# MPF is not expected to return the exact solution, but usually the estimated parameters are quite close to the ones calculated using MCH (shown below) while running faster. Note that MPF is given a finite sample from the true distribution to solve for, so we do not expect that it recover the same parameters, but it matches the correlations quite closely as measured with MCMC (Monte Carlo Markov chain) sampling.
 
 # In[6]:
 
@@ -186,7 +181,9 @@ fig.subplots_adjust(wspace=.5)
 # 
 # As a result, there is no guarantee that pseudolikelihood comes close to the solution, but it usually does quite well as shown below.
 # 
-# The Pseudo class is written specifically for the pairwise Ising model. It requires that the user define a function `get_multipliers_r()` that retrieves the parameters from the parameters vector relevant for calculating $p_{\rm r}$ and `calc_observables_r()` that calculates $p_{\rm r}$ from a sample of states. Template functions that work for the Ising model are defined in `utils.define_pseudo_ising_helpers()`.<br><br>
+# The Pseudo class is written specifically for the pairwise Ising model. 
+# 
+# If you wish to modify this, it requires that the user define a function `get_multipliers_r()` that retrieves the parameters from the parameters vector relevant for calculating $p_{\rm r}$ and `calc_observables_r()` that calculates $p_{\rm r}$ from a sample of states. Template functions that work for the Ising model are defined in `utils.define_pseudo_ising_helpers`.<br><br>
 # 
 # ## Notes
 # - The coupling matrix is constrained to be symmetric in the code below $J_{\rm ij}=J_{\rm ji}$.
@@ -339,7 +336,7 @@ fig.subplots_adjust(wspace=.5)
 # The pairwise Ising model can be extended to include interactions between triplets of spins denoted by $K_{\rm ijk}$  
 # $\displaystyle E(\{s_{\rm i}\}) = -\sum_{\rm i<j<k} K_{\rm ijk} s_{\rm i} s_{\rm j} s_{\rm k} -\sum_{\rm i<j}J_{\rm ij}s_{\rm i}s_{\rm j} -\sum_{\rm i}^Nh_{\rm i}$
 
-# In[16]:
+# In[5]:
 
 
 from coniii.ising_eqn import ising_eqn_5_sym_triplet as ising
@@ -378,7 +375,7 @@ def summarize(solver):
 # # MPF (triplets)
 # We give an example of Minimum Probability Flow (MPF) extended to this triplet interaction model.
 
-# In[17]:
+# In[10]:
 
 
 # Declare and call solver.
@@ -389,7 +386,7 @@ solver.solve()
 summarize(solver)
 
 
-# In[18]:
+# In[11]:
 
 
 # Plot comparison of model results with the data.
@@ -408,7 +405,7 @@ fig.subplots_adjust(wspace=.5)
 # # MCH (triplets)
 # We give an example of Monte Carlo Histogram (MCH) extended to this triplet interaction model.
 
-# In[19]:
+# In[12]:
 
 
 # Redefine mch_approximation to handle triplet interactions. This involves 
@@ -453,7 +450,7 @@ solver.solve(maxiter=50,
 summarize(solver)
 
 
-# In[20]:
+# In[13]:
 
 
 # Plot comparison of model results with the data.
@@ -467,4 +464,114 @@ ax[1].plot([-1,1], [-1,1], 'k-')
 ax[1].set(xlabel='True parameters', ylabel='Solved parameters')
 
 fig.subplots_adjust(wspace=.5)
+
+
+# # Potts model
+# This is a more detailed example for solving the k-state Potts model using pseudolikelihood then refining the answer with MC histogram.
+
+# In[19]:
+
+
+from coniii.models import Potts3
+from coniii.utils import define_pseudo_potts_helper_functions, define_potts_helper_functions
+import coniii.samplers as mc
+
+np.random.seed(0)  # standardize random seed
+
+
+# In[20]:
+
+
+# set up problem
+n = 5  # system size
+k = 3  # number of possible configurations
+h = np.random.normal(size=n*k, scale=.1)
+h[(k-1)*n:] = 0.  # zero out last set of fields
+J = np.random.normal(size=n*(n-1)//2, scale=1/n)
+
+# declare some helper functions
+calc_e, calc_observables, mch_approximation = define_potts_helper_functions(k)
+get_multipliers_r, calc_observables_r = define_pseudo_potts_helper_functions(n, k)
+
+# sample from given Potts model
+sampler = mc.Potts3(n, np.concatenate([h,J]), calc_e=calc_e)
+sampler.generate_samples_parallel(1000, n_iters=500, burn_in=1000)
+X = sampler.samples
+
+# solve the inverse problem
+solver = Pseudo(X,
+                calc_observables_r=calc_observables_r,
+                get_multipliers_r=get_multipliers_r,
+                model=Potts3([h,J]),
+                calc_observables=calc_observables,
+                k=k)
+solver.solve();
+
+# Create model to hold results and generate MC sample
+model = Potts3(solver.multipliers)
+model.setup_sampler()
+model.generate_samples(500, 1_000)
+
+
+# In[21]:
+
+
+# Take a look at Pseudo approximation to solution
+fig, ax = plt.subplots(subplot_kw={'aspect':'equal'}, ncols=2, figsize=(10,4))
+ax[0].plot(calc_observables(X).mean(0), calc_observables(model.sample).mean(0), 'o')
+ax[0].plot([0,1], 'k-')
+ax[0].set(xlabel='Measured correlations', ylabel='Predicted correlations')
+
+ax[1].plot(np.concatenate([h,J]), solver.multipliers, 'o')
+ax[1].plot([-1,1], [-1,1], 'k-')
+ax[1].set(xlabel='True parameters', ylabel='Solved parameters')
+
+fig.subplots_adjust(wspace=.4)
+
+
+# In[22]:
+
+
+# Use MCH to refine solution
+# If Boost library is properly installed, then this should take about 1 second.
+solver = MCH(X,
+             sample_size=10_000,
+             rng=np.random.RandomState(0),
+             calc_observables=calc_observables,
+             model=model,
+             mch_approximation=mch_approximation)
+
+# Define function for changing learning parameters as we converge.
+def learn_settings(i):
+    """
+    Take in the iteration counter and set the maximum change allowed in any given 
+    parameter (maxdlamda) and the multiplicative factor eta, where 
+    d(parameter) = (error in observable) * eta.
+    
+    Additional option is to also return the sample size for that step by returning a 
+    tuple. Larger sample sizes are necessary for higher accuracy.
+    """
+    return {'maxdlamda':exp(-i/5.)*.5,'eta':exp(-i/5.)*.5}
+
+# Run solver.
+solver.solve(initial_guess=model.multipliers,
+             maxiter=30,
+             custom_convergence_f=learn_settings,
+             n_iters=500,
+             burn_in=1_000);
+
+
+# In[23]:
+
+
+fig, ax = plt.subplots(subplot_kw={'aspect':'equal'}, ncols=2, figsize=(10,4))
+ax[0].plot(calc_observables(X).mean(0), calc_observables(model.sample).mean(0), 'o')
+ax[0].plot([0,1], 'k-')
+ax[0].set(xlabel='Measured correlations', ylabel='Predicted correlations')
+
+ax[1].plot(np.concatenate([h,J]), solver.multipliers, 'o')
+ax[1].plot([-1,1], [-1,1], 'k-')
+ax[1].set(xlabel='True parameters', ylabel='Solved parameters')
+
+fig.subplots_adjust(wspace=.4)
 

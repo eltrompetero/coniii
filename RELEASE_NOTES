@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v2.3.0 (Scheduled release 2020/04)
+v2.3.0 (Released 2020/05)
 ----------------------------------------------------
 - Sped up Metropolis sampling using Boost C++ extension. Up to 1000x speedup
   achievable compared to Python version. This must be compiled separately and is

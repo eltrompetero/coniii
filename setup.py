@@ -37,7 +37,12 @@ NO_BOOST = False
 
 # default args (that are modified per system specs below
 EXTRA_COMPILE_ARGS = ['-std=c++11']
-DEFAULT_LIBRARY_DR=['/usr/local/lib']  # includes places to search for boost lib
+DEFAULT_LIBRARY_DR = ['/usr/local/lib']  # includes places to search for boost lib
+
+# Here's an example of a custom installation directory for the Boost library.
+# After compiling Boost myself, I installed it in the following directory which needs to
+# be added to the searched path. You may need to find where your own library is installed.
+#DEFAULT_LIBRARY_DR.append('/usr/local/lib/boost_1_72_0/stage/lib')
 
 # setup
 here = path.abspath(path.dirname(__file__))

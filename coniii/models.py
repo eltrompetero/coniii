@@ -54,7 +54,7 @@ class Model():
         
         self.sampleSize = sample_size
 
-        if sample_method=='metropolis' and type(self) is Ising:
+        if sample_method=='metropolis' and (type(self) is Ising or type(self) is Triplet):
             self.sampleMethod = sample_method
             self.sampler = Metropolis( self.n, self.multipliers, self.calc_e,
                                        n_cpus=self.nCpus,

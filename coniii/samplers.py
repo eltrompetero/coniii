@@ -1613,7 +1613,7 @@ class Metropolis(Sampler):
                           rng=None,
                           flip_site=None,
                           calc_e=None):
-        """Metropolis sampling given an arbitrary sampling function.
+        """Metropolis sampling given an arbitrary energy function.
 
         Parameters
         ----------

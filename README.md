@@ -2,20 +2,20 @@
 
 # Convenient Interface to Inverse Ising
 
-**ConIII is now on version 2. Major interface updates may break code compatibility.  See
-[release notes](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES "release
-notes").**
+**ConIII is now on version 2. Major interface updates may break code compatibility from
+version 1.  See [release
+notes](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES "release notes").**
 
 ConIII is a Python package for solving maximum entropy problems with a focus on the
 pairwise maximum entropy model, also known as the inverse Ising problem. Support for
-Python 3.7.4 and higher only.
+Python 3.7.5 and higher.
 
 If you use ConIII for your research, please consider citing the following:
 > Lee, E.D. and Daniels, B.C., 2019. Convenient Interface to Inverse Ising (ConIII): A
 > Python 3 Package for Solving Ising-Type Maximum Entropy Models. Journal of Open Research
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
-The paper also contains an overview of the module. For code documentation, see
+The paper also contains an overview of the modules. For code documentation, see
 [here](https://eddielee.co/coniii/index.html "Documentation").
 
 ## Installation
@@ -27,9 +27,9 @@ $ pip install coniii
 We highly recommend the use of virtual environments as supported through Anaconda to
 manage this package and associated ones that need to be installed.
 
-If you have trouble using `pip` and PyPI, then you can always build this package from
+If you have trouble using `pip`, then you can always build this package from
 source.  Download the latest release from GitHub. Make sure that you are running Python
-3.7 or higher.  Inside the top directory "coniii", you must run 
+3.7.5 or higher.  Inside the top directory "coniii", you must run 
 ```bash
 $ ./pypi_compile.sh
 $ pip install dist/*.whl
@@ -66,7 +66,7 @@ variable to include this path. Alternatively, you can modify the environment pat
 variables LIBRARY_PATH and LD_LIBRARY_PATH. For a few more hints, see DEVREADME or open an
 issue!
 
-#### Setting up analytic solution for systems *N > 9*
+#### Setting up exact solution for systems *N > 9*
 If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
 must run enumerate.py to write those files yourself. This can be run from the install
 directory.  If you do not know where the installation directory is, you can find it by
@@ -88,9 +88,9 @@ for the Ising model in the {0,1} basis. On the other hand,
 $ python enumerate.py [N] 1
 ```
 
-specifies that the system should be written for the {-1,1} basis. Note that the solver
-uses the {-1,1} basis. For more details, see the `__main__` block at the end of the file
-enumerate.py.
+specifies that the system should be written for the {-1,1} basis. Note that the package
+uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of
+the file enumerate.py.
 
 ## Quick guide (with Jupyter notebook)
 
@@ -157,7 +157,7 @@ $ pip install matplotlib 'multiprocess>=0.70.5,<1' matplotlib scipy 'numpy>=1.15
 ## Troubleshooting
 
 This package is only maintained for Python 3 as of v1.0.2 and has only been tested for
-Python 3.7.4 and 3.7.5. Check which version of Python you are running in your terminal
+Python 3.7.5. Check which version of Python you are running in your terminal
 with 
 ```bash
 $ python --version
@@ -166,9 +166,6 @@ $ python --version
 ConIII has been tested on the following systems
 * Ubuntu 18.04.1
 * Mac OS X 10.15 (Catalina)
-
-multiprocess module problems: `n_cpus` kwarg can be set to 0 or 1 when the algorithm class
-instance is declared.  This will disable the parallel computing functionality.
 
 ### Support
 

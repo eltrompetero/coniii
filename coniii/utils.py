@@ -1175,7 +1175,7 @@ def define_potts_helper_functions(k):
         Y = np.zeros((len(X), n*k+n*(n-1)//2), dtype=np.int8)
         
         # average orientation (magnetization)
-        # note that fields for the third state are set to 0 by default
+        # note that fields for the third state are often set to 0
         counter = 0
         for i in range(k):
             for j in range(n):

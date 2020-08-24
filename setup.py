@@ -42,7 +42,7 @@ DEFAULT_LIBRARY_DR = ['/usr/local/lib']  # includes places to search for boost l
 # Here's an example of a custom installation directory for the Boost library.
 # After compiling Boost myself, I installed it in the following directory which needs to
 # be added to the searched path. You may need to find where your own library is installed.
-#DEFAULT_LIBRARY_DR.append('/usr/local/lib/boost_1_72_0/stage/lib')
+DEFAULT_LIBRARY_DR.append('/usr/local/lib/boost_1_72_0/stage/lib')
 
 # setup
 here = path.abspath(path.dirname(__file__))

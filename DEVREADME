@@ -1,0 +1,42 @@
+# ====================================================================================== #
+# Troubleshooting notes.
+# Author: Eddie Lee, edlee@santafe.edu
+# ====================================================================================== #
+
+Notes for how to compile for PyPI
+---------------------------------
+- In your project, create a folder for your Python module. Other setup files will go in
+  the directory above that folder.
+- Write setup.py with options to specify compile options. Can use either
+  distutils.core.setup or setuptools.setup (latter is supposed to be more user friendly).
+- Delete the dist and build directories.
+- Compile module with `python setup.py bdist_wheel` This will create a dist folder in the
+  folder that will be uploaded.
+- For Linux distributions, the wheel must be renamed to be for manylinux1 as in
+  PACKAGE-VERSION-cp27-cp27mu-manylinux1_x86_64.whl
+- Upload to PyPI test server `twine upload --repository testpypi dist/*`
+- Install it with `pip install --index-url https://test.pypi.org/simple/ your-package`
+  Make sure you change out of the project direcotry otherwise pip will think the project
+  is already installed because it's currently in your path.
+- Once the project has been tested, upload to PyPI test server `twine upload --repository
+  pypi dist/*`
+
+- Settings are saved in ~/.pypirc
+
+Refs
+----
+https://setuptools.readthedocs.io/en/latest/setuptools.html#including-data-files
+
+
+Notes on Boost extension
+------------------------
+- Boost library for python and numpy must be on both LIBRARY_PATH and LD_LIBRARY_PATH for
+  module to function. The former is used by gcc for compilation and the latter is used by
+  your program after it has been compiled.
+- For compilation, these libraries must also be included in CPLUS_INCLUDE_PATH.
+- Header files paths (e.g., "boost/python/numpy.hpp") must be on include path variable.
+  These might need to be specified additionally in the include_dirs argument in setup.py
+  if the bash environment is not set up properly.
+- If you see an ld error, there is a problem with linking the dynamic libraries that
+  should be on your system. Copy the g++ call and add the "-v" flag to see what is
+  happening in detail.

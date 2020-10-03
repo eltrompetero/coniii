@@ -37,26 +37,11 @@ NO_BOOST = False
 
 # default args (that are modified per system specs below
 EXTRA_COMPILE_ARGS = ['-std=c++11']
-DEFAULT_LIBRARY_DR = ['/usr/local/lib']  # includes places to search for boost lib
-
-# Here's an example of a custom installation directory for the Boost library.
-# After compiling Boost myself, I installed it in the following directory which needs to
-# be added to the searched path. You may need to find where your own library is installed.
-DEFAULT_LIBRARY_DR.append('/usr/local/lib/boost_1_72_0/stage/lib')
+DEFAULT_LIBRARY_DR = []  # includes places to search for boost lib
 
 # setup
 here = path.abspath(path.dirname(__file__))
 system = platform.system()
-if system=='Linux':
-    DEFAULT_LIBRARY_DR.append('/usr/lib/x86_64-linux-gnu')
-    # If Boost library was compiled and install to /usr/local/lib, the following
-    # line must be uncommented
-    #DEFAULT_LIBRARY_DR.append('/usr/local/lib/boost_1_72_0/stage/lib')
-elif system=='Darwin':
-    # Mac OSX requires this flag for ld call to work
-    EXTRA_COMPILE_ARGS.append('-stdlib=libc++')
-else:
-    raise Exception("System unrecognized.")
 dylibNames = ['boost_python37', 'boost_numpy37']
 
 # copy license into package
@@ -98,7 +83,7 @@ kwargs = {'name':'coniii',
                          'License :: OSI Approved :: MIT License',
                          'Programming Language :: Python :: 3 :: Only',
                         ],
-          'python_requires':'>=3.7.4',
+          'python_requires':'>=3.7.5',
           'keywords':'inverse Ising maxent maximum entropy inference',
           'packages':find_packages(),
           'install_requires':['multiprocess>=0.70.7,<1',

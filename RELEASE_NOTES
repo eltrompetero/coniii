@@ -22,6 +22,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+v2.3.1 (Released 2020/10)
+----------------------------------------------------
+- Better linking of Boost C++ module using conda-forge instead of asking user to
+  compile.  it separately.
 
 v2.3.0 (Released 2020/05)
 ----------------------------------------------------

@@ -25,7 +25,7 @@
 # Clean previous compilation results.
 if [ ! `command -v trash` ]
 then
-    echo "trash-cli is not installed. Cannot empty dist directory properly."
+    echo "trash-cli is not installed. Cannot empty dist directory safely."
 else
     if [ -d build ]; then
         trash build

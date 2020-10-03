@@ -20,16 +20,16 @@ The paper also contains an overview of the modules. For code documentation, see
 
 ## Installation
 
-This package is available on PyPI. It can be installed by running 
+This package is available on PyPI. It can be installed by first installing the needed
+Boost C++ libraries and using pip.
 ```bash
+$ conda -c conda-forge boost==1.72
 $ pip install coniii
 ```
-We highly recommend the use of virtual environments as supported through Anaconda to
-manage this package and associated ones that need to be installed.
-
 If you have trouble using `pip`, then you can always build this package from
 source.  Download the latest release from GitHub. Make sure that you are running Python
-3.7.5 or higher.  Inside the top directory "coniii", you must run 
+3.7.5 or higher and have boost v1.72.0 installed. Inside the top directory "coniii", you
+must run 
 ```bash
 $ ./pypi_compile.sh
 $ pip install dist/*.whl
@@ -37,34 +37,6 @@ $ pip install dist/*.whl
 (Note: Using setuptools in the usual way of `python
 setup.py install` will not work because eggs are incompatible with cached jit functions
 generated using numba.)
-
-#### Speeding up Metropolis sampler
-We provide a much faster version of the Metropolis sampler from the Ising model using a
-C++ Boost library implementation. In order to compile this code, you must have Boost v1.72
-installed and compiled for Python 3.7. The dynamic libraries libboost_python and
-libboost_numpy must also be on your environment path.
-
-[For Mac users: If you do not have the Boost library installed, you can install it using
-Homebrew.
-```bash
-$ brew install boost-python3
-```
-This will symlink the necessary Boost libraries into `/usr/local/lib`.]
-
-To compile the code, download the source code, and run the compilation script.
-```bash
-$ git clone https://github.com/eltrompetero/coniii.git
-$ cd coniii
-$ ./pypi_compile.sh
-$ pip install dist/*.whl --force-reinstall --no-deps
-```
-
-If the Boost extension refuses to compile, you may need to explicitly specify the path to
-your dynamic libraries. For example, I have installed my Boost libraries on
-`/usr/local/lib/boost_1_72_0/stage/lib`, so in `setup.py` I edit the `DEFAULT_LIBRARY_DR`
-variable to include this path. Alternatively, you can modify the environment path
-variables LIBRARY_PATH and LD_LIBRARY_PATH. For a few more hints, see DEVREADME or open an
-issue!
 
 #### Setting up exact solution for systems *N > 9*
 If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
@@ -141,30 +113,16 @@ Once inside the iPython interpreter, run
 ```
 This will run all the examples sequentially, so you may want to comment out unwanted lines.
 
-## Dependencies
-
-In order to open the usage guide Jupyter notebook, you must have both Jupyter installed.
-To run the examples, you need a number of packages listed in "setup.py". These are all
-automatically installed into your Python path when you install ConIII through listed
-dependencies.
-
-If you prefer to install the packages yourself, you can use the Python package
-[pip](https://pypi.org/project/pip/).  Open a terminal and run
-```bash
-$ pip install matplotlib 'multiprocess>=0.70.5,<1' matplotlib scipy 'numpy>=1.15.4,<2' 'numba>=0.43.0,<1' 'mpmath>=1.1.0' dill joblib
-```
-
 ## Troubleshooting
 
-This package is only maintained for Python 3 as of v1.0.2 and has only been tested for
-Python 3.7.5. Check which version of Python you are running in your terminal
-with 
+This package is only maintained for Python 3 and has only been tested for Python
+3.7.5. Check which version of Python you are running in your terminal with 
 ```bash
 $ python --version
 ```
 
 ConIII has been tested on the following systems
-* Ubuntu 18.04.1
+* Ubuntu 18.04
 * Mac OS X 10.15 (Catalina)
 
 ### Support

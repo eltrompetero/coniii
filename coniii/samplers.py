@@ -1180,7 +1180,7 @@ class Metropolis(Sampler):
         self.rng = rng or np.random.RandomState()
         self._samples = None
         
-        # use boost by default
+        # use boost by default for Ising model
         if boost and IMPORTED_SAMPLERS_EXT and self.theta.size==(n*(n-1)//2+n):
             if iprint: warn("Assuming that the model is Ising.")
             self.bsampler = BoostIsing(n, theta, self.rng.randint(2**31-1))
@@ -1190,7 +1190,7 @@ class Metropolis(Sampler):
             self.generate_samples_parallel = self.generate_samples_parallel_boost
         else:
             if boost and iprint:
-                warn("Boost library not available. Defaulting to slower sampling methods.")
+                warn("Boost C++ implementation not available. Defaulting to slower sampling methods.")
             assert not self.calc_e is None
             self.generate_samples = self.generate_samples_py
             self.generate_samples_parallel = self.generate_samples_parallel_py

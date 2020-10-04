@@ -24,8 +24,7 @@ SOFTWARE.
 
 v2.3.1 (Released 2020/10)
 ----------------------------------------------------
-- Better linking of Boost C++ module using conda-forge instead of asking user to
-  compile.  it separately.
+- Automated linking of Boost C++ module using conda-forge.
 
 v2.3.0 (Released 2020/05)
 ----------------------------------------------------

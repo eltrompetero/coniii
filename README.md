@@ -123,7 +123,6 @@ $ python --version
 
 ConIII has been tested on the following systems
 * Ubuntu 18.04
-* Mac OS X 10.15 (Catalina)
 
 ### Support
 

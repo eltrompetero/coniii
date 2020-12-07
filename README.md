@@ -23,7 +23,7 @@ The paper also contains an overview of the modules. For code documentation, see
 This package is available on PyPI. It can be installed by first installing the needed
 Boost C++ libraries and using pip.
 ```bash
-$ conda -c conda-forge boost==1.72
+$ conda install -c conda-forge boost==1.72
 $ pip install coniii
 ```
 If you have trouble using `pip`, then you can always build this package from

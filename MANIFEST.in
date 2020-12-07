@@ -1,3 +1,4 @@
 include coniii/usage_guide.ipynb
 include coniii/version.py
 include coniii/LICENSE.txt
+include coniii/pypi_description

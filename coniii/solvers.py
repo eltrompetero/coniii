@@ -35,16 +35,23 @@ from .samplers import *
 from .models import Ising
 
 
+
 class Solver():
     """Base class for declaring common methods and attributes for inverse maxent
     algorithms.
     """
-    def basic_setup(self, sample=None, model=None, calc_observables=None, model_kwargs={}):
-        """
+    def basic_setup(self, sample_or_n=None, model=None, calc_observables=None, model_kwargs={}):
+        """General routine for setting up a Solver instance.
+
         Parameters
         ----------
-        sample : ndarray, None
-            Of dimensions (samples, dimension).
+        sample_or_n : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -54,30 +61,69 @@ class Solver():
             model is None. Important ones include "n_cpus" and "rng".
         """
         
-        if not sample is None and not set(np.unique(sample).tolist())<=set((-1,1)):
-            warn("Data is not only -1, 1 entries.")
-        self.sample = sample
-        self.n = None if sample is None else sample.shape[1]
-
-        if model is None:
-            self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
-            if self.model.calc_observables is None:
-                msg = ("Python file enumerating the Ising equations for system of size %d must be written to"+
-                       " use this solver.")
-                raise Exception(msg%self.n)
-        else:
+        # When neither sampler nor system size are specified
+        if sample_or_n is None:
+            self.sample = None
+            self.n = None
             self.model = model
 
-        if calc_observables is None:
-            warn("Assuming that calc_observables should be for Ising model.")
-            self.calc_observables = define_ising_helper_functions()[1]
-        else:
-            self.calc_observables = calc_observables
+            if calc_observables is None:
+                warn("Assuming that calc_observables should be for Ising model.")
+                self.calc_observables = define_ising_helper_functions()[1]
+            else:
+                self.calc_observables = calc_observables
 
-        self.constraints = None if sample is None else self.calc_observables(sample).mean(0)
-        if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any():
-            warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions from "+
-                 "diverging parameters.")
+            self.constraints = None
+
+        # When system size is specified 
+        elif isinstance(sample_or_n, int):
+            assert sample_or_n>1, "System size must be greater than 1."
+            self.sample = None
+            self.n = sample_or_n
+
+            if model is None:
+                self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
+                if self.model.calc_observables is None:
+                    msg = ("Python file enumerating the Ising equations for system of size %d must be written to"+
+                           " use this solver.")
+                    raise Exception(msg%self.n)
+            else:
+                self.model = model
+
+            if calc_observables is None:
+                warn("Assuming that calc_observables should be for Ising model.")
+                self.calc_observables = define_ising_helper_functions()[1]
+            else:
+                self.calc_observables = calc_observables
+
+            self.constraints = None
+        
+        # When data sample is specified
+        else:
+            if not set(np.unique(sample_or_n).tolist())<=set((-1,1)):
+                warn("Data is not only -1, 1 entries.")
+            self.sample = sample_or_n
+            self.n = sample_or_n.shape[1]
+
+            if model is None:
+                self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
+                if self.model.calc_observables is None:
+                    msg = ("Python file enumerating the Ising equations for system of size %d must be written to"+
+                           " use this solver.")
+                    raise Exception(msg%self.n)
+            else:
+                self.model = model
+
+            if calc_observables is None:
+                warn("Assuming that calc_observables should be for Ising model.")
+                self.calc_observables = define_ising_helper_functions()[1]
+            else:
+                self.calc_observables = calc_observables
+
+            self.constraints = self.calc_observables(sample_or_n).mean(0)
+            if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any():
+                warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions from "+
+                     "diverging parameters.")
 
     def solve(self):
         """To be defined in derivative classes."""
@@ -85,16 +131,22 @@ class Solver():
 #end Solver
 
 
+
 class Enumerate(Solver):
-    """Class for solving +/-1 symmetric Ising model maxent problems by gradient descent
-    with flexibility to put in arbitrary constraints.
+    """Class for solving fully-connected inverse Ising model problem by enumeration of the
+    partition function and then using gradient descent.
     """
     def __init__(self, sample=None, model=None, calc_observables=None, **default_model_kwargs):
         """
         Parameters
         ----------
-        sample : ndarray, None
-            Of dimensions (samples, dimension).
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -160,9 +212,10 @@ class Enumerate(Solver):
         
         if not initial_guess is None:
             assert initial_guess.size==self.constraints.size
-        else: initial_guess = np.zeros((len(self.constraints)))
+        else: initial_guess = np.zeros(self.constraints.size)
         if constraints is None:
             constraints = self.constraints
+            assert not constraints is None
         
         # default solver routine
         if use_root:
@@ -195,6 +248,183 @@ class Enumerate(Solver):
 #end Enumerate
 
 
+
+class SparseEnumerate(Solver):
+    """Class for solving Ising model with a sparse parameter set by enumeration of
+    the partition function and then using gradient descent. Unspecified parameters are
+    implicitly fixed to be zero, which corresponds to leaving the corresponding
+    correlation function unconstrained.
+    """
+    def __init__(self,
+                 sample=None,
+                 model=None,
+                 calc_observables=None,
+                 parameter_ix=None,
+                 **default_model_kwargs):
+        """
+        Parameters
+        ----------
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        parameter_ix : ndarray, None
+            Indices of Ising parameters to fit. Ones that are not specified are fixed at
+            zero. Parameters are ordered by default as all fields (indices 0 thru n-1) and
+            then all couplings (as unraveled upper triangular interaction symmetric
+            matrix).
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
+        """
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs) 
+
+        assert not parameter_ix is None, "Must specify parameter_ix."
+        assert parameter_ix.dtype==np.int64, "parameter_ix must be array of indices."
+        if np.unique(parameter_ix).size != parameter_ix.size:
+            warn("parameter_ix has repeated entries.")
+        self.parameterIx = np.unique(parameter_ix)
+        self.set_insertion_ix()
+
+    def solve(self,
+              initial_guess=None,
+              constraints=None,
+              max_param_value=50,
+              full_output=False,
+              use_root=True,
+              scipy_solver_kwargs={'method':'krylov',
+                                   'options':{'fatol':1e-13,'xatol':1e-13}}):
+        """Must specify either constraints (the correlations) or samples from which the
+        correlations will be calculated using self.calc_observables. This routine by
+        default uses scipy.optimize.root to find the solution. This is MUCH faster than
+        the scipy.optimize.minimize routine which can be used instead.
+        
+        If still too slow, try adjusting the accuracy.
+        
+        If not converging, try increasing the max number of iterations.
+
+        If receiving Jacobian error (or some other numerical estimation error), parameter
+        values may be too large for faithful evaluation. Try decreasing max_param_value.
+
+        Parameters
+        ----------
+        initial_guess : ndarray, None
+            Initial starting guess for parameters. By default, this will start with all
+            zeros if left unspecified.
+        constraints : ndarray, None
+            Can specify constraints directly instead of using the ones calculated from the
+            sample. This can be useful when the pairwise correlations are known exactly.
+            This will override the self.constraints data member.
+        max_param_value : float, 50
+            Absolute value of max parameter value. Bounds can also be set in the kwargs
+            passed to the minimizer, in which case this should be set to None.
+        full_output : bool, False
+            If True, return output from scipy.optimize.minimize.
+        use_root : bool, True
+            If False, use scipy.optimize.minimize instead. This is typically much slower.
+        scipy_solver_kwargs : dict, {'method':'krylov', 'options':{'fatol':1e-13,'xatol':1e-13}}
+            High accuracy is slower. Although default accuracy may not be so good,
+            lowering these custom presets will speed things up. Choice of the root finding
+            method can also change runtime and whether a solution is found or not.
+            Recommend playing around with different solvers and tolerances or getting a
+            close approximation using a different method if solution is hard to find.
+
+        Returns
+        -------
+        ndarray
+            Solved multipliers (parameters).
+        dict, optional
+            Output from scipy.optimize.root.
+        """
+        
+        if not initial_guess is None:
+            assert initial_guess.size==self.parameterIx.size
+        else: initial_guess = np.zeros(self.parameterIx.size)
+        if constraints is None:
+            constraints = self.constraints
+            assert not constraints is None and constraints.size==self.parameterIx.size
+        
+        # default solver routine
+        if use_root:
+            if not max_param_value is None:
+                def f(params):
+                    # fix unspecified params to zero
+                    params = self.fill_in(params)
+                
+                    if np.any(np.abs(params) > max_param_value):
+                        return np.zeros_like(constraints) + 1e30
+                    return self.model.calc_observables(params)[self.parameterIx]-constraints
+            else:
+                def f(params):
+                    # fix unspecified params to zero
+                    params = self.fill_in(params)
+                    return self.model.calc_observables(params)[self.parameterIx]-constraints
+            
+            soln = root(f, initial_guess, **scipy_solver_kwargs)
+        else:
+            if not max_param_value is None:
+                def f(params):
+                    # fix unspecified params to zero
+                    params = self.fill_in(params)
+
+                    if np.any(np.abs(params) > max_param_value):
+                        return 1e30
+                    return np.linalg.norm( self.model.calc_observables(params)[self.parameterIx]-constraints )
+            else:
+                def f(params):
+                    # fix unspecified params to zero
+                    params = self.fill_in(params)
+                    return np.linalg.norm( self.model.calc_observables(params)[self.parameterIx]-constraints )
+            
+            soln = minimize(f, initial_guess, **scipy_solver_kwargs)
+
+        self.multipliers = soln['x']
+        if full_output:
+            return soln['x'], soln
+        return soln['x']
+    
+    def set_insertion_ix(self):
+        """Calculate indices to fill in with zeros to "fool" code that takes full set of
+        params.
+        """
+
+        n2 = self.n + self.n*(self.n-1)//2
+        insertionIx = [0] * self.parameterIx[0]
+        for i, ix in enumerate(self.parameterIx[1:]):
+            insertionIx.extend([i+1] * (ix-self.parameterIx[i]-1))
+        if self.parameterIx[-1]<(n2 - 1):
+            insertionIx.extend([i+2] * (n2 - self.parameterIx[-1] - 1))
+
+        #assert np.insert(initial_guess, insertionIx, 0).size==n2
+        self.insertionIx = insertionIx
+    
+    def fill_in(self, x, fill_value=0):
+        """Helper function for filling in missing parameter values.
+
+        Parameters
+        ----------
+        x : ndarray
+        fill_value : float, 0
+
+        Returns
+        -------
+        ndarray
+            With missing entries filled in.
+        """
+
+        return np.insert(x, self.insertionIx, fill_value)
+#end SparseEnumerate
+
+
+
 def unwrap_self_worker_obj(arg, **kwarg):
     return MPF.worker_objective_task(*arg, **kwarg)
 
@@ -212,8 +442,13 @@ class MPF(Solver):
 
         Parameters
         ----------
-        sample : ndarray
-            Of dimensions (samples, dimension).
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -466,6 +701,7 @@ class MPF(Solver):
 #end MPF
 
 
+
 class MCH(Solver):
     """Class for solving maxent problems using the Monte Carlo Histogram method.
 
@@ -482,8 +718,13 @@ class MCH(Solver):
         """
         Parameters
         ----------
-        sample : ndarray
-            Of dimensions (samples, dimension).
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -752,6 +993,7 @@ class MCH(Solver):
         return estConstraints
 #end MCH
 MonteCarloHistogram = MCH  # alias
+
 
 
 class MCHIncompleteData(MCH):
@@ -1089,8 +1331,13 @@ class Pseudo(Solver):
         
         Parameters
         ----------
-        sample : ndarray
-            Of dimensions (samples, dimension).
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -1566,8 +1813,13 @@ class ClusterExpansion(Solver):
         """
         Parameters
         ----------
-        sample : ndarray
-            Of dimensions (samples, dimension).
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -1948,8 +2200,13 @@ class RegularizedMeanField(Solver):
         """
         Parameters
         ----------
-        sample : ndarray
-            Of dimensions (samples, dimension).
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None

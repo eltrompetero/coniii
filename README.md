@@ -28,7 +28,7 @@ $ pip install coniii
 ```
 If you have trouble using `pip`, then you can always build this package from
 source.  Download the latest release from GitHub. Make sure that you are running Python
-3.7.5 or higher and have boost v1.72.0 installed. Inside the top directory "coniii", you
+3.8.3 or higher and have boost v1.72.0 installed. Inside the top directory "coniii", you
 must run 
 ```bash
 $ ./pypi_compile.sh
@@ -116,7 +116,7 @@ This will run all the examples sequentially, so you may want to comment out unwa
 ## Troubleshooting
 
 This package is only maintained for Python 3 and has only been tested for Python
-3.7.5. Check which version of Python you are running in your terminal with 
+3.8.3. Check which version of Python you are running in your terminal with 
 ```bash
 $ python --version
 ```

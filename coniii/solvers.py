@@ -39,11 +39,11 @@ class Solver():
     """Base class for declaring common methods and attributes for inverse maxent
     algorithms.
     """
-    def basic_setup(self, sample, model=None, calc_observables=None, model_kwargs={}):
+    def basic_setup(self, sample=None, model=None, calc_observables=None, model_kwargs={}):
         """
         Parameters
         ----------
-        sample : ndarray
+        sample : ndarray, None
             Of dimensions (samples, dimension).
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
@@ -54,10 +54,10 @@ class Solver():
             model is None. Important ones include "n_cpus" and "rng".
         """
         
-        if not set(np.unique(sample).tolist())<=set((-1,1)):
+        if not sample is None and not set(np.unique(sample).tolist())<=set((-1,1)):
             warn("Data is not only -1, 1 entries.")
         self.sample = sample
-        self.n = sample.shape[1]
+        self.n = None if sample is None else sample.shape[1]
 
         if model is None:
             self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
@@ -74,11 +74,13 @@ class Solver():
         else:
             self.calc_observables = calc_observables
 
-        self.constraints = self.calc_observables(sample).mean(0)
+        self.constraints = None if sample is None else self.calc_observables(sample).mean(0)
         if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any():
-            warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions.")
+            warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions from "+
+                 "diverging parameters.")
 
     def solve(self):
+        """To be defined in derivative classes."""
         return
 #end Solver
 
@@ -87,11 +89,11 @@ class Enumerate(Solver):
     """Class for solving +/-1 symmetric Ising model maxent problems by gradient descent
     with flexibility to put in arbitrary constraints.
     """
-    def __init__(self, sample, model=None, calc_observables=None, **default_model_kwargs):
+    def __init__(self, sample=None, model=None, calc_observables=None, **default_model_kwargs):
         """
         Parameters
         ----------
-        sample : ndarray
+        sample : ndarray, None
             Of dimensions (samples, dimension).
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
@@ -130,9 +132,9 @@ class Enumerate(Solver):
             Initial starting guess for parameters. By default, this will start with all
             zeros if left unspecified.
         constraints : ndarray, None
-            For debugging!
             Can specify constraints directly instead of using the ones calculated from the
             sample. This can be useful when the pairwise correlations are known exactly.
+            This will override the self.constraints data member.
         max_param_value : float, 50
             Absolute value of max parameter value. Bounds can also be set in the kwargs
             passed to the minimizer, in which case this should be set to None.

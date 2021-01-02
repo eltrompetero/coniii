@@ -1,6 +1,6 @@
-# =============================================================================================== #
-# Testing for solvers.py module. See usage_guide.ipynb for comprehensive examples of testing
-# algorithms on test data.
+# ====================================================================================== #
+# Testing for solvers.py module. See usage_guide.ipynb for comprehensive examples of
+# testing algorithms on test data.
 # Released with ConIII package.
 # Author : Eddie Lee, edlee@alumni.princeton.edu
 #
@@ -25,7 +25,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# =============================================================================================== #
+# ====================================================================================== #
 from .solvers import *
 from .ising_eqn import ising_eqn_3_sym as ising
 import numpy as np
@@ -68,17 +68,34 @@ def test_init():
     
     # try initializing the solvers
     solver = Enumerate(sample)
+    solver = SparseEnumerate(sample, parameter_ix=np.array([0,1,2]))
     solver = MPF(sample)
     solver = Pseudo(sample)
     solver = ClusterExpansion(sample)
     solver = MCH(sample, sample_size=1000)
     solver = RegularizedMeanField(sample)
 
+    solver = Enumerate(n)
+    solver = SparseEnumerate(n, parameter_ix=np.array([0,1,2]))
+    solver = MPF(n)
+    solver = Pseudo(n)
+    solver = ClusterExpansion(n)
+    solver = MCH(n, sample_size=1000)
+    solver = RegularizedMeanField(n)
+
 def test_Enumerate():
     from .utils import pair_corr
 
     # Enumerate should be able to find exact solution when passed the exact correlations
     solver = Enumerate(sample)
+    soln = solver.solve(initial_guess=hJ/2, constraints=sisjTrue)
+    assert np.isclose(hJ, soln).all()
+
+def test_SparseEnumerate():
+    from .utils import pair_corr
+
+    # SparseEnumerate should be able to find exact solution when passed the exact correlations
+    solver = SparseEnumerate(sample, parameter_ix=np.array([0,1,2]))
     soln = solver.solve(initial_guess=hJ/2, constraints=sisjTrue)
     assert np.isclose(hJ, soln).all()
 
@@ -124,4 +141,4 @@ def test_pickling():
     pass
 
 if __name__=='__main__':
-    test_MPF()
+    pass

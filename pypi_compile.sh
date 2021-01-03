@@ -36,7 +36,7 @@ else
 fi
 find ./ -name *.pyc -exec rm {} \;
 
-# Update cpp code
+# Update cpp code (DEPRECATED)
 # rsync -au ../../cpp/cppsamplers/cppsamplers/*.*pp cpp/
 
 # Compile wheels into dist folder.
@@ -76,6 +76,12 @@ has_dirs() {
   false
 }
 
-if [ ! -d `has_dirs ./build/lib.*/coniii` ]; then
+if compgen -G "./build/lib.*/coniii/samplers_ext*.so" > /dev/null; then
+    echo "********************************"
+    echo "Boost module built successfully."
+    echo "********************************"
+else
+    echo "*****************************"
     echo "Failed to build Boost module."
+    echo "*****************************"
 fi

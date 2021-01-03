@@ -4,7 +4,6 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>coniii.solvers module &#8212; ConIII 1.1.9 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -169,10 +168,10 @@ sort : bool, False</p>
 
 <dl class="py class">
 <dt id="coniii.solvers.Enumerate">
-<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Enumerate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">Enumerate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
-<p>Class for solving +/-1 symmetric Ising model maxent problems by gradient descent
-with flexibility to put in arbitrary constraints.</p>
+<p>Class for solving fully-connected inverse Ising model problem by enumeration of the
+partition function and then using gradient descent.</p>
 <dl class="py method">
 <dt id="coniii.solvers.Enumerate.solve">
 <code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_param_value</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">use_root</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">scipy_solver_kwargs</span><span class="o">=</span><span class="default_value">{'method': 'krylov', 'options': {'fatol': 1e-13, 'xatol': 1e-13}}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Enumerate.solve" title="Permalink to this definition">¶</a></dt>
@@ -188,9 +187,9 @@ values may be too large for faithful evaluation. Try decreasing max_param_value.
 <dt>initial_guess<span class="classifier">ndarray, None</span></dt><dd><p>Initial starting guess for parameters. By default, this will start with all
 zeros if left unspecified.</p>
 </dd>
-<dt>constraints<span class="classifier">ndarray, None</span></dt><dd><p>For debugging!
-Can specify constraints directly instead of using the ones calculated from the
-sample. This can be useful when the pairwise correlations are known exactly.</p>
+<dt>constraints<span class="classifier">ndarray, None</span></dt><dd><p>Can specify constraints directly instead of using the ones calculated from the
+sample. This can be useful when the pairwise correlations are known exactly.
+This will override the self.constraints data member.</p>
 </dd>
 <dt>max_param_value<span class="classifier">float, 50</span></dt><dd><p>Absolute value of max parameter value. Bounds can also be set in the kwargs
 passed to the minimizer, in which case this should be set to None.</p>
@@ -692,9 +691,13 @@ into matrix format using utils.vec2mat.</p>
 algorithms.</p>
 <dl class="py method">
 <dt id="coniii.solvers.Solver.basic_setup">
-<code class="sig-name descname">basic_setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.basic_setup" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>sample<span class="classifier">ndarray</span></dt><dd><p>Of dimensions (samples, dimension).</p>
+<code class="sig-name descname">basic_setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_or_n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.basic_setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>General routine for setting up a Solver instance.</p>
+<dl>
+<dt>sample_or_n<span class="classifier">ndarray or int, None</span></dt><dd><p>If ndarray, of dimensions (samples, dimension).</p>
+<p>If int, specifies system size.</p>
+<p>If None, many of the default class members cannot be set and then must be set
+manually.</p>
 </dd>
 <dt>model<span class="classifier">class like one from models.py, None</span></dt><dd><p>By default, will be set to solve Ising model.</p>
 </dd>
@@ -709,7 +712,78 @@ model is None. Important ones include “n_cpus” and “rng”.</p>
 <dl class="py method">
 <dt id="coniii.solvers.Solver.solve">
 <code class="sig-name descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.Solver.solve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>To be defined in derivative classes.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="coniii.solvers.SparseEnumerate">
+<em class="property">class </em><code class="sig-prename descclassname">coniii.solvers.</code><code class="sig-name descname">SparseEnumerate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_observables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parameter_ix</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">default_model_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.SparseEnumerate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coniii.solvers.Solver" title="coniii.solvers.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.solvers.Solver</span></code></a></p>
+<p>Class for solving Ising model with a sparse parameter set by enumeration of
+the partition function and then using gradient descent. Unspecified parameters are
+implicitly fixed to be zero, which corresponds to leaving the corresponding
+correlation function unconstrained.</p>
+<dl class="py method">
+<dt id="coniii.solvers.SparseEnumerate.fill_in">
+<code class="sig-name descname">fill_in</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">fill_value</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.SparseEnumerate.fill_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function for filling in missing parameter values.</p>
+<p>x : ndarray
+fill_value : float, 0</p>
+<dl class="simple">
+<dt>ndarray</dt><dd><p>With missing entries filled in.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="coniii.solvers.SparseEnumerate.set_insertion_ix">
+<code class="sig-name descname">set_insertion_ix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.SparseEnumerate.set_insertion_ix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate indices to fill in with zeros to “fool” code that takes full set of
+params.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="coniii.solvers.SparseEnumerate.solve">
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_param_value</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">full_output</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">use_root</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">scipy_solver_kwargs</span><span class="o">=</span><span class="default_value">{'method': 'krylov', 'options': {'fatol': 1e-13, 'xatol': 1e-13}}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.solvers.SparseEnumerate.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Must specify either constraints (the correlations) or samples from which the
+correlations will be calculated using self.calc_observables. This routine by
+default uses scipy.optimize.root to find the solution. This is MUCH faster than
+the scipy.optimize.minimize routine which can be used instead.</p>
+<p>If still too slow, try adjusting the accuracy.</p>
+<p>If not converging, try increasing the max number of iterations.</p>
+<p>If receiving Jacobian error (or some other numerical estimation error), parameter
+values may be too large for faithful evaluation. Try decreasing max_param_value.</p>
+<dl class="simple">
+<dt>initial_guess<span class="classifier">ndarray, None</span></dt><dd><p>Initial starting guess for parameters. By default, this will start with all
+zeros if left unspecified.</p>
+</dd>
+<dt>constraints<span class="classifier">ndarray, None</span></dt><dd><p>Can specify constraints directly instead of using the ones calculated from the
+sample. This can be useful when the pairwise correlations are known exactly.
+This will override the self.constraints data member.</p>
+</dd>
+<dt>max_param_value<span class="classifier">float, 50</span></dt><dd><p>Absolute value of max parameter value. Bounds can also be set in the kwargs
+passed to the minimizer, in which case this should be set to None.</p>
+</dd>
+<dt>full_output<span class="classifier">bool, False</span></dt><dd><p>If True, return output from scipy.optimize.minimize.</p>
+</dd>
+<dt>use_root<span class="classifier">bool, True</span></dt><dd><p>If False, use scipy.optimize.minimize instead. This is typically much slower.</p>
+</dd>
+<dt>scipy_solver_kwargs<span class="classifier">dict, {‘method’:’krylov’, ‘options’:{‘fatol’:1e-13,’xatol’:1e-13}}</span></dt><dd><p>High accuracy is slower. Although default accuracy may not be so good,
+lowering these custom presets will speed things up. Choice of the root finding
+method can also change runtime and whether a solution is found or not.
+Recommend playing around with different solvers and tolerances or getting a
+close approximation using a different method if solution is hard to find.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ndarray</dt><dd><p>Solved multipliers (parameters).</p>
+</dd>
+<dt>dict, optional</dt><dd><p>Output from scipy.optimize.root.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -782,7 +856,7 @@ model is None. Important ones include “n_cpus” and “rng”.</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

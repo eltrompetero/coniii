@@ -27,10 +27,12 @@ $ conda install -c conda-forge boost==1.74
 $ pip install coniii
 ```
 If you have trouble using `pip`, then you can always build this package from
-source.  Download the latest release from GitHub. Make sure that you are running Python
-3.8.3 or higher and have boost v1.74.0 installed. Inside the top directory "coniii", you
-must run 
+source. The following code will down download the latest release from GitHub and install
+the package. Make sure that you are running Python 3.8.3 or higher and have boost v1.74.0
+installed.
 ```bash
+$ git clone https://github.com/eltrompetero/coniii.git
+$ cd coniii
 $ ./pypi_compile.sh
 $ pip install dist/*.whl
 ```

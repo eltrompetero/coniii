@@ -953,9 +953,9 @@ def define_ising_helper_functions():
     """
 
     @njit(cache=True)
-    def fast_sum(J,s):
+    def fast_sum(J, s):
         """Helper function for calculating energy in calc_e(). Iterates couplings J."""
-        e = np.zeros((s.shape[0]))
+        e = np.zeros(s.shape[0])
         for n in range(s.shape[0]):
             k = 0
             for i in range(s.shape[1]-1):
@@ -969,10 +969,10 @@ def define_ising_helper_functions():
         """
         Parameters
         ----------
-        s : 2D ndarray
+        s : 2D ndarray of ints
             state either {0,1} or {+/-1}
         params : ndarray
-            (h,J) vector
+            (h, J) vector
 
         Returns
         -------
@@ -984,7 +984,7 @@ def define_ising_helper_functions():
         e -= np.sum(s*params[:s.shape[1]],1)
         return e
     
-    def mch_approximation( samples, dlamda ):
+    def mch_approximation(samples, dlamda):
         """Function for making MCH approximation step for Ising model."""
         dE = calc_e(samples, dlamda)
         ZFraction = len(dE) / np.exp(logsumexp(-dE))

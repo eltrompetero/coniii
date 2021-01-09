@@ -128,6 +128,37 @@ class Solver():
     def solve(self):
         """To be defined in derivative classes."""
         return
+
+    def set_insertion_ix(self):
+        """Calculate indices to fill in with zeros to "fool" code that takes full set of
+        params.
+        """
+
+        n2 = self.n + self.n*(self.n-1)//2
+        insertionIx = [0] * self.parameterIx[0]
+        for i, ix in enumerate(self.parameterIx[1:]):
+            insertionIx.extend([i+1] * (ix-self.parameterIx[i]-1))
+        if self.parameterIx[-1]<(n2 - 1):
+            insertionIx.extend([i+2] * (n2 - self.parameterIx[-1] - 1))
+
+        #assert np.insert(initial_guess, insertionIx, 0).size==n2
+        self.insertionIx = insertionIx
+    
+    def fill_in(self, x, fill_value=0):
+        """Helper function for filling in missing parameter values.
+
+        Parameters
+        ----------
+        x : ndarray
+        fill_value : float, 0
+
+        Returns
+        -------
+        ndarray
+            With missing entries filled in.
+        """
+
+        return np.insert(x, self.insertionIx, fill_value)
 #end Solver
 
 
@@ -390,37 +421,6 @@ class SparseEnumerate(Solver):
         if full_output:
             return soln['x'], soln
         return soln['x']
-    
-    def set_insertion_ix(self):
-        """Calculate indices to fill in with zeros to "fool" code that takes full set of
-        params.
-        """
-
-        n2 = self.n + self.n*(self.n-1)//2
-        insertionIx = [0] * self.parameterIx[0]
-        for i, ix in enumerate(self.parameterIx[1:]):
-            insertionIx.extend([i+1] * (ix-self.parameterIx[i]-1))
-        if self.parameterIx[-1]<(n2 - 1):
-            insertionIx.extend([i+2] * (n2 - self.parameterIx[-1] - 1))
-
-        #assert np.insert(initial_guess, insertionIx, 0).size==n2
-        self.insertionIx = insertionIx
-    
-    def fill_in(self, x, fill_value=0):
-        """Helper function for filling in missing parameter values.
-
-        Parameters
-        ----------
-        x : ndarray
-        fill_value : float, 0
-
-        Returns
-        -------
-        ndarray
-            With missing entries filled in.
-        """
-
-        return np.insert(x, self.insertionIx, fill_value)
 #end SparseEnumerate
 
 
@@ -746,7 +746,7 @@ class MCH(Solver):
         """
         
         assert sample_size>0
-        if sample_size<1000: warn("Small sample size will lead to poor convergence.")
+        if sample_size < 1000: warn("Small sample size will lead to poor convergence.")
         
         self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
 
@@ -850,10 +850,10 @@ class MCH(Solver):
         # Redefine function for automatically adjusting learn_params_kwargs so that it returns the
         # MCH iterator settings and the sample size if it doesn't already.
         if custom_convergence_f is None:
-            custom_convergence_f = lambda i:learn_params_kwargs,self.model.sampleSize
+            custom_convergence_f = lambda i : (learn_params_kwargs, self.model.sampleSize)
         if type(custom_convergence_f(0)) is dict:
             custom_convergence_f_ = custom_convergence_f
-            custom_convergence_f = lambda i:(custom_convergence_f_(i),self.model.sampleSize)
+            custom_convergence_f = lambda i : (custom_convergence_f_(i), self.model.sampleSize)
         assert 'maxdlamda' and 'eta' in list(custom_convergence_f(0)[0].keys())
         assert type(custom_convergence_f(0)[1]) is int
         
@@ -863,7 +863,7 @@ class MCH(Solver):
                                      multipliers=self._multipliers,
                                      generate_kwargs=generate_kwargs )
         thisConstraints = self.calc_observables(self.model.sample).mean(0)
-        errors.append( thisConstraints - constraints )
+        errors.append(thisConstraints - constraints)
         if iprint=='detailed': print(self._multipliers)
 
 
@@ -875,7 +875,7 @@ class MCH(Solver):
             # MCH step
             if iprint:
                 print("Iterating parameters with MCH...")
-            self.learn_parameters_mch(thisConstraints,**learn_params_kwargs)
+            self.learn_parameters_mch(thisConstraints, constraints, **learn_params_kwargs)
             if iprint=='detailed':
                 print("After MCH step, the parameters are...")
                 print(self._multipliers)
@@ -889,12 +889,12 @@ class MCH(Solver):
             thisConstraints = self.calc_observables(self.model.sample).mean(0)
             counter += 1
             
-            errors.append( thisConstraints - constraints )
+            errors.append(thisConstraints - constraints)
             if iprint=='detailed':
-                print("Error is %1.4f"%np.linalg.norm(errors[-1]))
+                print(f"Error is {np.linalg.norm(errors[-1]):.4f}.")
             # Exit criteria.
             if ( np.linalg.norm(errors[-1])<tolNorm
-                 and np.all(np.abs(thisConstraints - constraints)<tol) ):
+                 and np.all(np.abs(thisConstraints - constraints) < tol) ):
                 if iprint: print("Solved.")
                 errflag = 0
                 keepLooping=False
@@ -929,10 +929,10 @@ class MCH(Solver):
         print("evaluating jac")
         for i in range(len(self._multipliers)):
             dlamda[i] += eps
-            dConstraintsPlus = self.mch_approximation(self.sample, dlamda)
+            dConstraintsPlus = self.mch_approximation(self.model.sample, dlamda)
 
             dlamda[i] -= 2*eps
-            dConstraintsMinus = self.mch_approximation(self.sample, dlamda)     
+            dConstraintsMinus = self.mch_approximation(self.model.sample, dlamda)     
 
             jac[i,:] = (dConstraintsPlus-dConstraintsMinus)/(2*eps)
             dlamda[i] += eps
@@ -940,6 +940,7 @@ class MCH(Solver):
 
     def learn_parameters_mch(self,
                              estConstraints,
+                             constraints,
                              maxdlamda=1,
                              maxdlamdaNorm=1, 
                              maxLearningSteps=50,
@@ -949,6 +950,7 @@ class MCH(Solver):
         ----------
         estConstraints : ndarray
             Constraints estimated from MCH approximation.
+        constraints : ndarray
         maxdlamda : float, 1
             Max allowed magnitude for any element of dlamda vector before exiting.
         maxdlamdaNorm : float, 1
@@ -965,7 +967,7 @@ class MCH(Solver):
         """
 
         keepLearning = True
-        dlamda = np.zeros((self.constraints.size))
+        dlamda = np.zeros(constraints.size)
         learningSteps = 0
         distance = 1
         
@@ -973,26 +975,316 @@ class MCH(Solver):
             # Get change in parameters.
             # If observable is too large, then corresponding energy term has to go down 
             # (think of double negative).
-            dlamda += -(estConstraints-self.constraints) * np.min([distance,1.]) * eta
+            dlamda += -(estConstraints - constraints) * np.min([distance,1.]) * eta
             #dMultipliers /= dMultipliers.max()
             
             # Predict distribution with new parameters.
-            estConstraints = self.mch_approximation( self.sample, dlamda )
-            distance = np.linalg.norm( estConstraints-self.constraints )
+            estConstraints = self.mch_approximation(self.model.sample, dlamda)
+            distance = np.linalg.norm(estConstraints - constraints)
                         
             # Counter.
             learningSteps += 1
 
             # Evaluate exit criteria.
-            if np.linalg.norm(dlamda)>maxdlamdaNorm or np.any(np.abs(dlamda)>maxdlamda):
+            if np.linalg.norm(dlamda) > maxdlamdaNorm or np.any(np.abs(dlamda) > maxdlamda):
                 keepLearning = False
-            elif learningSteps>maxLearningSteps:
+            elif learningSteps > maxLearningSteps:
                 keepLearning = False
 
         self._multipliers += dlamda
         return estConstraints
 #end MCH
 MonteCarloHistogram = MCH  # alias
+
+
+
+class SparseMCH(Solver):
+    """Class for solving maxent problems on sparse constraints using the Monte Carlo
+    Histogram method.
+
+    See MCH class.
+    """
+    def __init__(self, sample, 
+                 model=None,
+                 calc_observables=None,
+                 sample_size=1000,
+                 sample_method='metropolis',
+                 mch_approximation=None,
+                 parameter_ix=None,
+                 **default_model_kwargs):
+        """
+        Parameters
+        ----------
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then must be set
+            manually.
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        sample_size : int, 1000
+            Number of samples to use MCH sampling step.
+        sample_method : str, 'metropolis'
+            Only 'metropolis' allowed currently.
+        mch_approximation : function, None
+            For performing the MCH approximation step. Is specific to the maxent model.
+        parameter_ix : ndarray, None
+            Indices of Ising parameters to fit. Ones that are not specified are fixed at
+            zero. Parameters are ordered by default as all fields (indices 0 thru n-1) and
+            then all couplings (as unraveled upper triangular interaction symmetric
+            matrix).
+        rng : np.random.RandomState, None
+            Random number generator.
+        n_cpus : int, None
+            If 1 or less no parallel processing, other numbers above 0 specify number of
+            cores to use.
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
+        """
+        
+        assert sample_size>0
+        if sample_size<1000: warn("Small sample size will lead to poor convergence.")
+        
+        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+
+        # Sampling parameters.
+        self.sampleSize = sample_size
+        self.mch_approximation = mch_approximation or define_ising_helper_functions()[-1]
+        
+        self.model.setup_sampler(sample_size=sample_size)
+        
+        # set up members for sparseness constraints
+        assert not parameter_ix is None, "Must specify parameter_ix."
+        assert parameter_ix.dtype==np.int64, "parameter_ix must be array of indices."
+        if np.unique(parameter_ix).size != parameter_ix.size:
+            warn("parameter_ix has repeated entries.")
+        self.parameterIx = np.unique(parameter_ix)
+        self.set_insertion_ix()
+    
+    def solve(self,
+              initial_guess=None,
+              constraints=None,
+              tol=None,
+              tolNorm=None,
+              n_iters=30,
+              burn_in=30,
+              maxiter=10,
+              custom_convergence_f=None,
+              iprint=False,
+              full_output=False,
+              learn_params_kwargs={'maxdlamda':1, 'eta':1},
+              generate_kwargs={}):
+        """Solve for maxent model parameters using MCH routine.
+        
+        Parameters
+        ----------
+        initial_guess : ndarray, None
+            Initial starting point.
+        constraints : ndarray, None
+            For debugging!
+            Vector of correlations to fit.
+        tol : float, None
+            Maximum error allowed in any observable.
+        tolNorm : float, None
+            Norm error allowed in found solution.
+        n_iters : int, 30
+            Number of iterations to make between samples in MCMC sampling.
+        burn_in : int, 30
+            Initial burn in from random sample when MC sampling.
+        max_iter : int, 10
+            Max number of iterations of MC sampling and MCH approximation.
+        custom_convergence_f : function, None
+            Function for determining convergence criterion. At each iteration, this
+            function should return the next set of learn_params_kwargs and optionally the
+            sample size.
+
+            As an example:
+	    def learn_settings(i):
+		'''
+                Take in the iteration counter and set the maximum change allowed in any
+                given parameter (maxdlamda) and the multiplicative factor eta, where 
+		d(parameter) = (error in observable) * eta.
+		
+                Additional option is to also return the sample size for that step by
+                returning a tuple. Larger sample sizes are necessary for higher accuracy.
+		'''
+		if i<10:
+		    return {'maxdlamda':1,'eta':1}
+		else:
+		    return {'maxdlamda':.05,'eta':.05}
+        iprint : bool, False
+        full_output : bool, False
+            If True, also return the errflag and error history.
+        learn_parameters_kwargs : dict, {'maxdlamda':1,'eta':1}
+        generate_kwargs : dict, {}
+
+        Returns
+        -------
+        ndarray
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
+        int
+            Error flag.
+            0, converged within given criterion
+            1, max iterations reached
+        ndarray
+            Log of errors in matching constraints at each step of iteration.
+        """
+        
+        # check given arguments
+        if (self.n*10) > burn_in:
+            warn("Number of burn in MCMC iterations between samples may be too small for "+
+                 "convergence to stationary distribution.")
+        if (self.n*10) > n_iters:
+            warn("Number of MCMC iterations between samples may be too small for convergence to "+
+                 "stationary distribution.")
+
+        if not initial_guess is None:
+            assert initial_guess.size==self.parameterIx.size
+        else: initial_guess = np.zeros(self.parameterIx.size)
+        if constraints is None:
+            constraints = self.constraints
+            assert not constraints is None and constraints.size==self.parameterIx.size
+
+
+        # set up for solution
+        errors = []  # history of errors to track
+
+        # Set initial guess for parameters. self._multipliers is where the current guess
+        # for the parameters is stored. This is the full set of parameters including all
+        # the ones that have been set to 0.
+        if not (initial_guess is None):
+            assert len(initial_guess)==len(constraints)
+            self._multipliers = self.fill_in(initial_guess)
+        else:
+            self._multipliers = self.fill_in(np.zeros(constraints.size))
+        tol = tol or 1/np.sqrt(self.model.sampleSize)
+        tolNorm = tolNorm or np.sqrt(1/self.model.sampleSize) * len(self._multipliers)
+        
+        # Redefine function for automatically adjusting learn_params_kwargs so that it
+        # returns the MCH iterator settings and the sample size if it doesn't already.
+        if custom_convergence_f is None:
+            custom_convergence_f = lambda i : (learn_params_kwargs, self.model.sampleSize)
+        if type(custom_convergence_f(0)) is dict:
+            custom_convergence_f_ = custom_convergence_f
+            custom_convergence_f = lambda i : (custom_convergence_f_(i), self.model.sampleSize)
+        assert 'maxdlamda' and 'eta' in list(custom_convergence_f(0)[0].keys())
+        assert type(custom_convergence_f(0)[1]) is int
+        
+        # Generate initial set of samples.
+        self.model.generate_samples(n_iters, burn_in,
+                                    multipliers=self._multipliers,
+                                    generate_kwargs=generate_kwargs)
+        thisConstraints = self.calc_observables(self.model.sample).mean(0)[self.parameterIx]
+        errors.append(thisConstraints - constraints)
+        if iprint=='detailed': print(self._multipliers[self.parameterIx])
+
+
+        # MCH iterations.
+        counter = 0  # number of MCMC and MCH steps
+        keepLooping = True  # loop control
+        learn_params_kwargs, self.model.sampleSize = custom_convergence_f(counter)
+        while keepLooping:
+            # MCH step
+            if iprint:
+                print("Iterating parameters with MCH...")
+            self.learn_parameters_mch(thisConstraints, constraints, **learn_params_kwargs)
+            if iprint=='detailed':
+                print("After MCH step, the parameters are...")
+                print(self._multipliers[self.parameterIx])
+            
+            # MC sampling step
+            if iprint:
+                print("Sampling...")
+            self.model.generate_samples( n_iters, burn_in,
+                                         multipliers=self._multipliers,
+                                         generate_kwargs=generate_kwargs )
+            thisConstraints = self.calc_observables(self.model.sample).mean(0)[self.parameterIx]
+            counter += 1
+            
+            errors.append(thisConstraints - constraints)
+            if iprint=='detailed':
+                print(f"Error is {np.linalg.norm(errors[-1]):.4f}.")
+            # Exit criteria.
+            if ( np.linalg.norm(errors[-1])<tolNorm
+                 and np.all(np.abs(thisConstraints - constraints)<tol) ):
+                if iprint: print("Solved.")
+                errflag = 0
+                keepLooping=False
+            elif counter>maxiter:
+                if iprint: print("Over maxiter")
+                errflag = 1
+                keepLooping=False
+            else:
+                learn_params_kwargs, self.model.sampleSize = custom_convergence_f(counter)
+        
+        self.multipliers = self._multipliers.copy()
+        if full_output:
+            return self.multipliers[parameterIx], errflag, np.vstack((errors))
+        return self.multipliers[self.parameterIx]
+
+    def learn_parameters_mch(self,
+                             estConstraints,
+                             constraints,
+                             maxdlamda=1,
+                             maxdlamdaNorm=1, 
+                             maxLearningSteps=50,
+                             eta=1):
+        """
+        Parameters
+        ----------
+        estConstraints : ndarray
+            Constraints estimated from MCH approximation.
+        constraints : ndarray
+        maxdlamda : float, 1
+            Max allowed magnitude for any element of dlamda vector before exiting.
+        maxdlamdaNorm : float, 1
+            Max allowed norm of dlamda vector before exiting.
+        maxLearningSteps : int
+            max learning steps before ending MCH
+        eta : float, 1
+            factor for changing dlamda
+
+        Returns
+        -------
+        ndarray
+            MCH estimate for constraints from parameters lamda+dlamda.
+        """
+
+        keepLearning = True
+        dlamda = np.zeros(constraints.size)
+        learningSteps = 0
+        distance = 1
+        
+        while keepLearning:
+            # Get change in parameters.
+            # If observable is too large, then corresponding energy term has to go down 
+            # (think of double negative).
+            dlamda += -(estConstraints - constraints) * np.min([distance, 1.]) * eta
+            #dMultipliers /= dMultipliers.max()
+            
+            # Predict distribution with new parameters.
+            estConstraints = self.mch_approximation(self.model.sample.astype(np.int64),
+                                                    self.fill_in(dlamda))[self.parameterIx]
+            distance = np.linalg.norm(estConstraints - constraints)
+                        
+            # Counter.
+            learningSteps += 1
+
+            # Evaluate exit criteria.
+            if np.linalg.norm(dlamda) > maxdlamdaNorm or np.any(np.abs(dlamda) > maxdlamda):
+                keepLearning = False
+            elif learningSteps > maxLearningSteps:
+                keepLearning = False
+
+        self._multipliers += self.fill_in(dlamda)
+        return estConstraints
+#end SparseMCH
 
 
 

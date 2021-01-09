@@ -1219,12 +1219,12 @@ class Metropolis(Sampler):
             Saved array of energies at each sampling step.
         """
         
-        if self.nCpus>1: warn("Sampler's multiprocessing capability is not being used.")
+        if self.nCpus > 1: warn("Sampler's multiprocessing capability is not being used.")
         burn_in = burn_in or n_iters
         assert sample_size>0 and n_iters>0 and burn_in>0
 
         self.bsampler.generate_sample(sample_size,
-                                      n_iters,
+                                      burn_in,
                                       n_iters,
                                       systematic_iter)
         self.samples = self.bsampler.fetch_sample().astype(int)

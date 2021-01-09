@@ -988,8 +988,8 @@ def define_ising_helper_functions():
         """Function for making MCH approximation step for Ising model."""
         dE = calc_e(samples, dlamda)
         ZFraction = len(dE) / np.exp(logsumexp(-dE))
-        predsisj = pair_corr( samples, weights=np.exp(-dE)/len(dE),concat=True ) * ZFraction  
-        assert not (np.any(predsisj<-1.00000001) or
+        predsisj = pair_corr(samples, weights=np.exp(-dE)/len(dE), concat=True) * ZFraction  
+        assert not (np.any(predsisj < -1.00000001) or
             np.any(predsisj>1.000000001)),"Predicted values are beyond limits, (%1.6f,%1.6f)"%(predsisj.min(),
                                                                                                predsisj.max())
         return predsisj
@@ -998,13 +998,13 @@ def define_ising_helper_functions():
     def calc_observables(samples):
         """Observables for Ising model."""
         n = samples.shape[1]
-        obs = np.zeros((samples.shape[0],n+n*(n-1)//2))
+        obs = np.zeros((samples.shape[0], n+n*(n-1)//2))
         
         k = 0
         for i in range(n):
             obs[:,i] = samples[:,i]
             for j in range(i+1,n):
-                obs[:,n+k] = samples[:,i]*samples[:,j]
+                obs[:,n+k] = samples[:,i] * samples[:,j]
                 k += 1
         return obs
     return calc_e, calc_observables, mch_approximation

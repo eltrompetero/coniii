@@ -40,7 +40,12 @@ class Solver():
     """Base class for declaring common methods and attributes for inverse maxent
     algorithms.
     """
-    def basic_setup(self, sample_or_n=None, model=None, calc_observables=None, model_kwargs={}):
+    def basic_setup(self,
+                    sample_or_n=None,
+                    model=None,
+                    calc_observables=None,
+                    iprint=True,
+                    model_kwargs={}):
         """General routine for setting up a Solver instance.
 
         Parameters
@@ -56,6 +61,8 @@ class Solver():
             By default, will be set to solve Ising model.
         calc_observables : function, None
             For calculating observables from a set of samples.
+        iprint : str, True
+            If empty, do not display warning messages.
         model_kwargs : dict, {}
             Additional arguments that will be passed to Ising class. These only matter if
             model is None. Important ones include "n_cpus" and "rng".
@@ -68,7 +75,7 @@ class Solver():
             self.model = model
 
             if calc_observables is None:
-                warn("Assuming that calc_observables should be for Ising model.")
+                if iprint: warn("Assuming that calc_observables should be for Ising model.")
                 self.calc_observables = define_ising_helper_functions()[1]
             else:
                 self.calc_observables = calc_observables
@@ -91,7 +98,7 @@ class Solver():
                 self.model = model
 
             if calc_observables is None:
-                warn("Assuming that calc_observables should be for Ising model.")
+                if iprint: warn("Assuming that calc_observables should be for Ising model.")
                 self.calc_observables = define_ising_helper_functions()[1]
             else:
                 self.calc_observables = calc_observables
@@ -100,7 +107,7 @@ class Solver():
         
         # When data sample is specified
         else:
-            if not set(np.unique(sample_or_n).tolist())<=set((-1,1)):
+            if not set(np.unique(sample_or_n).tolist())<=set((-1,1)) and iprint:
                 warn("Data is not only -1, 1 entries.")
             self.sample = sample_or_n
             self.n = sample_or_n.shape[1]
@@ -115,15 +122,17 @@ class Solver():
                 self.model = model
 
             if calc_observables is None:
-                warn("Assuming that calc_observables should be for Ising model.")
+                if iprint: warn("Assuming that calc_observables should be for Ising model.")
                 self.calc_observables = define_ising_helper_functions()[1]
             else:
                 self.calc_observables = calc_observables
 
             self.constraints = self.calc_observables(sample_or_n).mean(0)
-            if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any():
+            if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any() and iprint:
                 warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions from "+
                      "diverging parameters.")
+
+        self.iprint = iprint
 
     def solve(self):
         """To be defined in derivative classes."""
@@ -320,7 +329,7 @@ class SparseEnumerate(Solver):
 
         assert not parameter_ix is None, "Must specify parameter_ix."
         assert parameter_ix.dtype==np.int64, "parameter_ix must be array of indices."
-        if np.unique(parameter_ix).size != parameter_ix.size:
+        if np.unique(parameter_ix).size != parameter_ix.size and self.iprint:
             warn("parameter_ix has repeated entries.")
         self.parameterIx = np.unique(parameter_ix)
         self.set_insertion_ix()
@@ -746,9 +755,9 @@ class MCH(Solver):
         """
         
         assert sample_size>0
-        if sample_size < 1000: warn("Small sample size will lead to poor convergence.")
-        
         self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+
+        if sample_size < 1000 and self.iprint: warn("Small sample size will lead to poor convergence.")
 
         # Sampling parameters.
         self.sampleSize = sample_size
@@ -826,10 +835,10 @@ class MCH(Solver):
             Log of errors in matching constraints at each step of iteration.
         """
 
-        if (self.n*10)>burn_in:
+        if (self.n*10)>burn_in and self.iprint:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
-        if (self.n*10)>n_iters:
+        if (self.n*10)>n_iters and self.iprint:
             warn("Number of MCMC iterations between samples may be too small for convergence to "+
                  "stationary distribution.")
         if constraints is None:
@@ -1048,9 +1057,9 @@ class SparseMCH(Solver):
         """
         
         assert sample_size>0
-        if sample_size<1000: warn("Small sample size will lead to poor convergence.")
-        
         self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+
+        if sample_size<1000 and self.iprint: warn("Small sample size will lead to poor convergence.")
 
         # Sampling parameters.
         self.sampleSize = sample_size
@@ -1061,7 +1070,7 @@ class SparseMCH(Solver):
         # set up members for sparseness constraints
         assert not parameter_ix is None, "Must specify parameter_ix."
         assert parameter_ix.dtype==np.int64, "parameter_ix must be array of indices."
-        if np.unique(parameter_ix).size != parameter_ix.size:
+        if np.unique(parameter_ix).size != parameter_ix.size and self.iprint:
             warn("parameter_ix has repeated entries.")
         self.parameterIx = np.unique(parameter_ix)
         self.set_insertion_ix()
@@ -1137,10 +1146,10 @@ class SparseMCH(Solver):
         """
         
         # check given arguments
-        if (self.n*10) > burn_in:
+        if (self.n*10) > burn_in and self.iprint:
             warn("Number of burn in MCMC iterations between samples may be too small for "+
                  "convergence to stationary distribution.")
-        if (self.n*10) > n_iters:
+        if (self.n*10) > n_iters and self.iprint:
             warn("Number of MCMC iterations between samples may be too small for convergence to "+
                  "stationary distribution.")
 
@@ -2129,7 +2138,7 @@ class ClusterExpansion(Solver):
         """
         
         self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
-        if sample_size<1000:
+        if sample_size < 1000 and self.iprint:
             warn("Sample size may be too small for convergence.")
         self.sampleSize = sample_size
         self.model.setup_sampler(sample_size=sample_size)
@@ -2518,10 +2527,10 @@ class RegularizedMeanField(Solver):
             model is None.
         """
         
-        assert sample_size>0
-        if sample_size<1000: warn("Small sample size will lead to poor convergence.")
-        
+        assert sample_size > 0
         self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+
+        if sample_size < 1000 and self.iprint: warn("Small sample size will lead to poor convergence.")
         self.sampleSize = sample_size
         self.verbose = verbose
 

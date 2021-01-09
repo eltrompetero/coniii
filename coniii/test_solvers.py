@@ -95,7 +95,7 @@ def test_SparseEnumerate():
     from .utils import pair_corr
 
     # SparseEnumerate should be able to find exact solution when passed the exact correlations
-    solver = SparseEnumerate(sample, parameter_ix=np.array([0,1,2]))
+    solver = SparseEnumerate(sample, parameter_ix=np.array([0,1,2,3,4,5]))
     soln = solver.solve(initial_guess=hJ/2, constraints=sisjTrue)
     assert np.isclose(hJ, soln).all()
 

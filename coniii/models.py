@@ -219,14 +219,14 @@ class Triplet(Model):
             are the fields.
         """
         
-        # parameters must be given separately
+        # parameters constraining each order correlation function must be given as separate elements of list
         self.n = len(multipliers[0])
         assert binom(self.n,2)==len(multipliers[1]), "Wrong number of couplings."
         assert binom(self.n,3)==len(multipliers[2]), "Wrong number of triplet interactions."
         multipliers = np.concatenate(multipliers)
         
         self.calc_e = define_triplet_helper_functions()[0]
-        try:
+        try:  # explicit enumeration set only if triplet file has been written
             ising = import_module('coniii.ising_eqn.ising_eqn_%d_sym_triplet'%self.n)
             self._calc_observables = ising.calc_observables
             self._calc_p = ising.p

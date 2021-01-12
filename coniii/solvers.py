@@ -143,14 +143,14 @@ class Solver():
         params.
         """
 
-        n2 = self.n + self.n*(self.n-1)//2
+        nParams = self.model.multipliers.size
         insertionIx = [0] * self.parameterIx[0]
         for i, ix in enumerate(self.parameterIx[1:]):
             insertionIx.extend([i+1] * (ix-self.parameterIx[i]-1))
-        if self.parameterIx[-1]<(n2 - 1):
-            insertionIx.extend([i+2] * (n2 - self.parameterIx[-1] - 1))
+        if self.parameterIx[-1]<(nParams - 1):
+            insertionIx.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
 
-        #assert np.insert(initial_guess, insertionIx, 0).size==n2
+        #assert np.insert(initial_guess, insertionIx, 0).size==nParams
         self.insertionIx = insertionIx
     
     def fill_in(self, x, fill_value=0):
@@ -176,7 +176,12 @@ class Enumerate(Solver):
     """Class for solving fully-connected inverse Ising model problem by enumeration of the
     partition function and then using gradient descent.
     """
-    def __init__(self, sample=None, model=None, calc_observables=None, **default_model_kwargs):
+    def __init__(self,
+                 sample=None,
+                 model=None,
+                 calc_observables=None,
+                 iprint=True,
+                 **default_model_kwargs):
         """
         Parameters
         ----------
@@ -196,7 +201,7 @@ class Enumerate(Solver):
             model is None.
         """
         
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs) 
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs) 
 
     def solve(self,
               initial_guess=None,
@@ -300,6 +305,7 @@ class SparseEnumerate(Solver):
                  model=None,
                  calc_observables=None,
                  parameter_ix=None,
+                 iprint=True,
                  **default_model_kwargs):
         """
         Parameters
@@ -325,7 +331,7 @@ class SparseEnumerate(Solver):
             model is None.
         """
         
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs) 
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs) 
 
         assert not parameter_ix is None, "Must specify parameter_ix."
         assert parameter_ix.dtype==np.int64, "parameter_ix must be array of indices."
@@ -443,6 +449,7 @@ class MPF(Solver):
                  calc_observables=None,
                  calc_de=None,
                  adj=None,
+                 iprint=True,
                  **default_model_kwargs):
         """Parallelized implementation of Minimum Probability Flow algorithm.
 
@@ -474,7 +481,7 @@ class MPF(Solver):
             model is None.
         """
         
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
         if adj is None:
             from .utils import adj
             self.adj = adj
@@ -723,6 +730,7 @@ class MCH(Solver):
                  sample_size=1000,
                  sample_method='metropolis',
                  mch_approximation=None,
+                 iprint=True,
                  **default_model_kwargs):
         """
         Parameters
@@ -755,7 +763,7 @@ class MCH(Solver):
         """
         
         assert sample_size>0
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
 
         if sample_size < 1000 and self.iprint: warn("Small sample size will lead to poor convergence.")
 
@@ -1020,6 +1028,7 @@ class SparseMCH(Solver):
                  sample_method='metropolis',
                  mch_approximation=None,
                  parameter_ix=None,
+                 iprint=True,
                  **default_model_kwargs):
         """
         Parameters
@@ -1057,7 +1066,7 @@ class SparseMCH(Solver):
         """
         
         assert sample_size>0
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
 
         if sample_size<1000 and self.iprint: warn("Small sample size will lead to poor convergence.")
 
@@ -1625,6 +1634,7 @@ class Pseudo(Solver):
                  get_multipliers_r=None,
                  calc_observables_r=None,
                  k=2,
+                 iprint=True,
                  **default_model_kwargs):
         """For this technique, must specify how to calculate the energy specific to the
         conditional probability of spin r given the rest of the spins. These will be
@@ -1656,7 +1666,7 @@ class Pseudo(Solver):
             model is None.
         """
         
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
         if calc_observables_r is None or get_multipliers_r is None:
             self.get_multipliers_r, self.calc_observables_r = define_pseudo_ising_helper_functions(self.n)
         else:
@@ -2110,6 +2120,7 @@ class ClusterExpansion(Solver):
                  model=None,
                  calc_observables=None,
                  sample_size=1000,
+                 iprint=True,
                  **default_model_kwargs):
         """
         Parameters
@@ -2137,7 +2148,7 @@ class ClusterExpansion(Solver):
             model is None.
         """
         
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
         if sample_size < 1000 and self.iprint:
             warn("Sample size may be too small for convergence.")
         self.sampleSize = sample_size
@@ -2243,7 +2254,7 @@ class ClusterExpansion(Solver):
     def deltaS(self, cluster, coocMat, 
                deltaSdict=None,
                deltaJdict=None,
-               verbose=True,
+               iprint=True,
                meanFieldRef=False,
                priorLmbda=0.,
                numSamples=None,
@@ -2257,7 +2268,7 @@ class ClusterExpansion(Solver):
         coocMat : ndarray
         deltaSdict : dict, None
         deltaJdict : dict, None
-        verbose : bool, True
+        iprint : bool, True
         meanFieldRef : bool, False
         numSamples : int, None
         independentRef : bool, False
@@ -2286,7 +2297,7 @@ class ClusterExpansion(Solver):
         if cID in deltaSdict:
             #print "deltaS: found answer for",cluster
             return deltaSdict[cID],deltaJdict[cID]
-        elif verbose:
+        elif iprint:
             print("deltaS: Calculating entropy for cluster",cluster)
         
         # start with full entropy (and J)
@@ -2313,7 +2324,7 @@ class ClusterExpansion(Solver):
           for subcluster in subclusters:
             deltaSsubcluster,deltaJsubcluster = \
                 self.deltaS(subcluster,coocMat,deltaSdict,deltaJdict,
-                       verbose=verbose,
+                       iprint=iprint,
                        meanFieldRef=meanFieldRef,priorLmbda=priorLmbda,
                        numSamples=numSamples,
                        independentRef=independentRef,
@@ -2374,7 +2385,7 @@ class ClusterExpansion(Solver):
               cluster=None,
               deltaSdict=None,
               deltaJdict=None,
-              verbose=True,
+              iprint=True,
               priorLmbda=0.,
               numSamples=None,
               meanFieldRef=False,
@@ -2436,7 +2447,7 @@ class ClusterExpansion(Solver):
         while len(clusters[size]) > 0:
             clusters[ size+1 ] = []
             numClusters = len(clusters[size])
-            if verbose:
+            if iprint:
                 print("adaptiveClusterExpansion: Clusters of size", size+1)
             for i in range(numClusters):
                 for j in range(i+1,numClusters): # some are not unique!
@@ -2447,7 +2458,7 @@ class ClusterExpansion(Solver):
                     gammaU = list(gammaU)
                     if (len(gammaI) == size-1):
                         deltaSgammaU, deltaJgammaU = self.deltaS(gammaU, coocMat, deltaSdict, deltaJdict,
-                                                                 verbose=veryVerbose,
+                                                                 iprint=veryVerbose,
                                                                  meanFieldRef=meanFieldRef,
                                                                  priorLmbda=priorLmbda,
                                                                  numSamples=numSamples,
@@ -2496,7 +2507,7 @@ class RegularizedMeanField(Solver):
                  model=None,
                  calc_observables=None,
                  sample_size=1_000,
-                 verbose=False,
+                 iprint=False,
                  **default_model_kwargs):
         """
         Parameters
@@ -2516,7 +2527,7 @@ class RegularizedMeanField(Solver):
         model : class from models.py, None
         calc_observables : function, None
         sample_size : int, 1_000
-        verbose : bool, False
+        iprint : str, False
         rng : np.random.RandomState, None
             Random number generator.
         n_cpus : int, None
@@ -2528,11 +2539,11 @@ class RegularizedMeanField(Solver):
         """
         
         assert sample_size > 0
-        self.basic_setup(sample, model, calc_observables, model_kwargs=default_model_kwargs)
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
 
         if sample_size < 1000 and self.iprint: warn("Small sample size will lead to poor convergence.")
         self.sampleSize = sample_size
-        self.verbose = verbose
+        self.iprint = iprint
 
         self.model.setup_sampler(sample_size=sample_size)
 
@@ -2668,7 +2679,7 @@ class RegularizedMeanField(Solver):
                 
                 dc = np.concatenate([dc,priorTerm])
                 
-            if self.verbose:
+            if self.iprint:
                 print("RegularizedMeanField.solve: Tried "+str(meanFieldGammaPrime))
                 print("RegularizedMeanField.solve: sum(dc**2) = "+str(np.sum(dc**2)))
                 

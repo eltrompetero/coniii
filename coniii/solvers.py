@@ -84,15 +84,15 @@ class Solver():
 
         # When system size is specified 
         elif isinstance(sample_or_n, int):
-            assert sample_or_n>1, "System size must be greater than 1."
+            assert sample_or_n > 1, "System size must be greater than 1."
             self.sample = None
             self.n = sample_or_n
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
                 if self.model.calc_observables is None:
-                    msg = ("Python file enumerating the Ising equations for system of size %d must be written to"+
-                           " use this solver.")
+                    msg = ("Python file enumerating the Ising equations for system of size %d must "+
+                           "be written to use this solver.")
                     raise Exception(msg%self.n)
             else:
                 self.model = model
@@ -108,15 +108,15 @@ class Solver():
         # When data sample is specified
         else:
             if not set(np.unique(sample_or_n).tolist())<=set((-1,1)) and iprint:
-                warn("Data is not only -1, 1 entries.")
+                warn("Data is not only (-1, 1) entries.")
             self.sample = sample_or_n
             self.n = sample_or_n.shape[1]
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
                 if self.model.calc_observables is None:
-                    msg = ("Python file enumerating the Ising equations for system of size %d must be written to"+
-                           " use this solver.")
+                    msg = ("Python file enumerating the Ising equations for system of size %d must "+
+                           "be written to use this solver.")
                     raise Exception(msg%self.n)
             else:
                 self.model = model
@@ -129,8 +129,8 @@ class Solver():
 
             self.constraints = self.calc_observables(sample_or_n).mean(0)
             if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any() and iprint:
-                warn("Some pairwise correlations have magnitude close to one. Potential for poor solutions from "+
-                     "diverging parameters.")
+                warn("Some pairwise correlations have magnitude close to one. Potential for poor "+
+                     "solutions from diverging parameters.")
 
         self.iprint = iprint
 
@@ -731,6 +731,7 @@ class MCH(Solver):
                  sample_method='metropolis',
                  mch_approximation=None,
                  iprint=True,
+                 sampler_kw={},
                  **default_model_kwargs):
         """
         Parameters
@@ -752,6 +753,9 @@ class MCH(Solver):
             Only 'metropolis' allowed currently.
         mch_approximation : function, None
             For performing the MCH approximation step. Is specific to the maxent model.
+        iprint : str, True
+        sampler_kw : dict, {}
+            To pass into self.model.setup_sampler().
         rng : np.random.RandomState, None
             Random number generator.
         n_cpus : int, None
@@ -771,7 +775,7 @@ class MCH(Solver):
         self.sampleSize = sample_size
         self.mch_approximation = mch_approximation or define_ising_helper_functions()[-1]
         
-        self.model.setup_sampler(sample_size=sample_size)
+        self.model.setup_sampler(sample_size=sample_size, sampler_kwargs=sampler_kw)
     
     def solve(self,
               initial_guess=None,
@@ -1029,6 +1033,7 @@ class SparseMCH(Solver):
                  mch_approximation=None,
                  parameter_ix=None,
                  iprint=True,
+                 sampler_kw={},
                  **default_model_kwargs):
         """
         Parameters
@@ -1055,6 +1060,9 @@ class SparseMCH(Solver):
             zero. Parameters are ordered by default as all fields (indices 0 thru n-1) and
             then all couplings (as unraveled upper triangular interaction symmetric
             matrix).
+        iprint : str, True
+        sampler_kw : dict, {}
+            To pass into self.model.setup_sampler().
         rng : np.random.RandomState, None
             Random number generator.
         n_cpus : int, None
@@ -1074,7 +1082,7 @@ class SparseMCH(Solver):
         self.sampleSize = sample_size
         self.mch_approximation = mch_approximation or define_ising_helper_functions()[-1]
         
-        self.model.setup_sampler(sample_size=sample_size)
+        self.model.setup_sampler(sample_size=sample_size, sampler_kwargs=sampler_kw)
         
         # set up members for sparseness constraints
         assert not parameter_ix is None, "Must specify parameter_ix."
@@ -1243,7 +1251,7 @@ class SparseMCH(Solver):
         
         self.multipliers = self._multipliers.copy()
         if full_output:
-            return self.multipliers[parameterIx], errflag, np.vstack((errors))
+            return self.multipliers[self.parameterIx], errflag, np.vstack((errors))
         return self.multipliers[self.parameterIx]
 
     def learn_parameters_mch(self,

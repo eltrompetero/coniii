@@ -4,14 +4,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>coniii.utils module &#8212; ConIII 1.1.9 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="coniii.samplers module" href="coniii.samplers.html" />
@@ -35,7 +35,7 @@
 <span id="coniii-utils-module"></span><h1>coniii.utils module<a class="headerlink" href="#module-coniii.utils" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="coniii.utils.adj">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">adj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">n_random_neighbors</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.adj" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">adj</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random_neighbors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.adj" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return one-flip neighbors and a set of random neighbors. This is written to be used
 with the solvers.MPF class. Use adj_sym() if symmetric spins in {-1,1} are needed.</p>
 <p>NOTE: For random neighbors, there is no check to make sure neighbors don’t repeat but
@@ -57,13 +57,13 @@ rate.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.adj_sym">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">adj_sym</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">n_random_neighbors</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.adj_sym" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">adj_sym</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random_neighbors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.adj_sym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Symmetric version of adj() where spins are in {-1,1}.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.utils.base_repr">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">base_repr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">base</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.base_repr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">base_repr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.base_repr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return decimal number in given base as list.</p>
 <p>i : int
 base : int</p>
@@ -72,7 +72,7 @@ base : int</p>
 
 <dl class="py function">
 <dt id="coniii.utils.bin_states">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">bin_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">sym</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.bin_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">bin_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.bin_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all possible binary spin states.</p>
 <dl class="simple">
 <dt>n<span class="classifier">int</span></dt><dd><p>Number of spins.</p>
@@ -85,7 +85,7 @@ base : int</p>
 
 <dl class="py function">
 <dt id="coniii.utils.calc_de">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">calc_de</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_de" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">calc_de</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_de" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the derivative of the energy wrt parameters given the state and index of
 the parameter. In this case, the parameters are the concatenated vector of {h_i,J_ij}.</p>
 <dl class="simple">
@@ -102,7 +102,7 @@ observable.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.calc_overlap">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">calc_overlap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">ignore_zeros</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_overlap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">calc_overlap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_zeros</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.calc_overlap" title="Permalink to this definition">¶</a></dt>
 <dd><p>&lt;si_a si_b&gt; between all pairs of replicas a and b</p>
 <p>sample
 ignore_zeros (bool=False)</p>
@@ -114,7 +114,7 @@ nonzero spins.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.coarse_grain_with_func">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">coarse_grain_with_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">n_times</span></em>, <em class="sig-param"><span class="n">sim_func</span></em>, <em class="sig-param"><span class="n">coarse_func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.coarse_grain_with_func" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">coarse_grain_with_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.coarse_grain_with_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iteratively coarse-grain X by combining pairs with the highest similarity. Both the
 function to measure similarity and to implement the coarse-graining must be supplied.</p>
 <dl class="simple">
@@ -139,7 +139,7 @@ the coarse X.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.convert_corr">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">convert_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">si</span></em>, <em class="sig-param"><span class="n">sisj</span></em>, <em class="sig-param"><span class="n">convert_to</span></em>, <em class="sig-param"><span class="n">concat</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_corr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">convert_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sisj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_to</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert single spin means and pairwise correlations between {0,1} and {-1,1}
 formulations.</p>
 <dl class="simple">
@@ -164,7 +164,7 @@ and &lt;sisj&gt; if concat is True.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.convert_params">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">convert_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">convert_to</span></em>, <em class="sig-param"><span class="n">concat</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">convert_params</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_to</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.convert_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert Ising model fields and couplings from {0,1} basis to {-1,1} and vice versa.</p>
 <dl class="simple">
 <dt>h<span class="classifier">ndarray</span></dt><dd><p>Fields.</p>
@@ -186,7 +186,7 @@ and &lt;sisj&gt; if concat is True.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.define_ising_helper_functions">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_ising_helper_functions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_ising_helper_functions</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions for plugging into solvers for +/-1 Ising model with fields h_i and
 couplings J_ij.</p>
 <dl class="simple">
@@ -201,7 +201,7 @@ couplings J_ij.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.define_ising_helper_functions_sym">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_ising_helper_functions_sym</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions_sym" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_ising_helper_functions_sym</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ising_helper_functions_sym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions for plugging into solvers for +/-1 Ising model with couplings J_ij and no
 fields.</p>
 <dl class="simple">
@@ -216,7 +216,7 @@ fields.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.define_potts_helper_functions">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_potts_helper_functions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_potts_helper_functions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_potts_helper_functions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_potts_helper_functions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper functions for calculating quantities in k-state Potts model.</p>
 <dl class="simple">
 <dt>k<span class="classifier">int </span></dt><dd><p>Number of possible states.</p>
@@ -234,7 +234,7 @@ fields.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.define_pseudo_ising_helper_functions">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_pseudo_ising_helper_functions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_pseudo_ising_helper_functions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_pseudo_ising_helper_functions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_pseudo_ising_helper_functions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define helper functions for using Pseudo method on Ising model.</p>
 <dl class="simple">
 <dt>N<span class="classifier">int</span></dt><dd><p>System size.</p>
@@ -250,7 +250,7 @@ fields.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.define_pseudo_potts_helper_functions">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_pseudo_potts_helper_functions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_pseudo_potts_helper_functions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_pseudo_potts_helper_functions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_pseudo_potts_helper_functions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define helper functions for using Pseudo method on Potts model with simple form for
 couplings that are only nonzero when the spins are occupying the same state.</p>
 <dl class="simple">
@@ -269,17 +269,17 @@ couplings that are only nonzero when the spins are occupying the same state.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.define_ternary_helper_functions">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_ternary_helper_functions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ternary_helper_functions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_ternary_helper_functions</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_ternary_helper_functions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="coniii.utils.define_triplet_helper_functions">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">define_triplet_helper_functions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_triplet_helper_functions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">define_triplet_helper_functions</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.define_triplet_helper_functions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="coniii.utils.ind_to_sub">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">ind_to_sub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ix</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ind_to_sub" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">ind_to_sub</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ind_to_sub" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert index from flattened upper triangular matrix to pair subindex.</p>
 <dl class="simple">
 <dt>n<span class="classifier">int</span></dt><dd><p>Dimension size of square array.</p>
@@ -295,7 +295,7 @@ couplings that are only nonzero when the spins are occupying the same state.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.ising_convert_params">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">ising_convert_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oparams</span></em>, <em class="sig-param"><span class="n">convert_to</span></em>, <em class="sig-param"><span class="n">concat</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ising_convert_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">ising_convert_params</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_to</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.ising_convert_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>General conversion of parameters from 01 to 11 basis.</p>
 <p>Take set of Ising model parameters up to nth order interactions in either {0,1} or
 {-1,1} basis and convert to other basis.</p>
@@ -316,7 +316,7 @@ Can all be concatenated together if concat switch is True.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.k_corr">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">k_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">exclude_empty</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.k_corr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">k_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.k_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate kth order correlations of spins.</p>
 <dl class="simple">
 <dt>X<span class="classifier">ndarray</span></dt><dd><p>Dimensions (n_samples, n_dim).</p>
@@ -339,7 +339,7 @@ counted for any pair. If True, the weights option doesn’t do anything.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.mat2vec">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">mat2vec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">multipliers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.mat2vec" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">mat2vec</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multipliers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.mat2vec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert matrix form of Ising parameters to a vector.</p>
 <p>This is specific to the Ising model.</p>
 <dl class="simple">
@@ -354,12 +354,12 @@ counted for any pair. If True, the weights option doesn’t do anything.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.multinomial">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">multinomial</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.multinomial" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">multinomial</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.multinomial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="coniii.utils.pair_corr">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">pair_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">concat</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">exclude_empty</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">subtract_mean</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">laplace_count</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.pair_corr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">pair_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subtract_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">laplace_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.pair_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate averages and pairwise correlations of spins.</p>
 <dl class="simple">
 <dt>X<span class="classifier">ndarray</span></dt><dd><p>Dimensions (n_samples,n_dim).</p>
@@ -387,7 +387,7 @@ counted for any pair. If True, the weights option doesn’t do anything.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.replace_diag">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">replace_diag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">newdiag</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.replace_diag" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">replace_diag</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newdiag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.replace_diag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace diagonal entries of square matrix.</p>
 <p>mat : ndarray
 newdiag : ndarray</p>
@@ -396,7 +396,7 @@ newdiag : ndarray</p>
 
 <dl class="py function">
 <dt id="coniii.utils.split_concat_params">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">split_concat_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.split_concat_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">split_concat_params</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.split_concat_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split parameters for Ising model that have all been concatenated together into a
 single list into separate lists. Assumes that the parameters are increasing in order
 of interaction and that all parameters are present.</p>
@@ -409,7 +409,7 @@ of interaction and that all parameters are present.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.state_probs">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">state_probs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="n">allstates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">normalized</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.state_probs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">state_probs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allstates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.state_probs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get probability of unique states. There is an option to allow for weighted
 counting.</p>
 <dl class="simple">
@@ -434,7 +434,7 @@ allstates kwarg is not provided.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.sub_to_ind">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">sub_to_ind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.sub_to_ind" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">sub_to_ind</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.sub_to_ind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert pair of coordinates of a symmetric square array into consecutive index of
 flattened upper triangle. This is slimmed down so it won’t throw errors like if i&gt;n or
 j&gt;n or if they’re negative. Only checking for if the returned index is negative which
@@ -450,7 +450,7 @@ could be problematic with wrapped indices.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.unique_rows">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">unique_rows</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">return_inverse</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.unique_rows" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">unique_rows</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_inverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.unique_rows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return unique rows indices of a numeric numpy array.</p>
 <p>mat : ndarray
 return_inverse : bool</p>
@@ -468,7 +468,7 @@ return the original array</p>
 
 <dl class="py function">
 <dt id="coniii.utils.unravel_index">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">unravel_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ijk</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.unravel_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">unravel_index</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ijk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.unravel_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unravel multi-dimensional index to flattened index but specifically for
 multi-dimensional analog of an upper triangular array (lower triangle indices are not
 counted).</p>
@@ -486,7 +486,7 @@ counted).</p>
 
 <dl class="py function">
 <dt id="coniii.utils.vec2mat">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">vec2mat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">multipliers</span></em>, <em class="sig-param"><span class="n">separate_fields</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.vec2mat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">vec2mat</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multipliers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separate_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.vec2mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert vector of parameters containing fields and couplings to a matrix where the
 diagonal elements are the fields and the remaining elements are the couplings. Fields
 can be returned separately with the separate_fields keyword argument.</p>
@@ -507,7 +507,7 @@ argument is True, in which case the diagonal elements are 0.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.xbin_states">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">xbin_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">sym</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.xbin_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">xbin_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.xbin_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generator for iterating through all possible binary states.</p>
 <dl class="simple">
 <dt>n<span class="classifier">int</span></dt><dd><p>Number of spins.</p>
@@ -520,7 +520,7 @@ argument is True, in which case the diagonal elements are 0.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.xpotts_states">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">xpotts_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.xpotts_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">xpotts_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.xpotts_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generator for iterating through all states for Potts model with k distinct states.
 This is a faster version of calling xbin_states(n, False) except with strings returned
 as elements instead of integers.</p>
@@ -536,7 +536,7 @@ be &lt;=36.</p>
 
 <dl class="py function">
 <dt id="coniii.utils.zero_diag">
-<code class="sig-prename descclassname">coniii.utils.</code><code class="sig-name descname">zero_diag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.zero_diag" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">coniii.utils.</span></code><code class="sig-name descname"><span class="pre">zero_diag</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.utils.zero_diag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace diagonal entries of square matrix with zeros.</p>
 <p>mat : ndarray</p>
 <p>ndarray</p>
@@ -605,7 +605,7 @@ be &lt;=36.</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

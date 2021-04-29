@@ -172,7 +172,7 @@ class Ising(Model):
         else:
             raise Exception("Unrecognized format for multipliers.")
         
-        self.calc_e, _, _ = define_ising_helper_functions()
+        self.calc_e, self.calc_observables, _ = define_ising_helper_functions()
         try:
             ising = import_module('coniii.ising_eqn.ising_eqn_%d_sym'%self.n)
             self._calc_observables = ising.calc_observables
@@ -180,7 +180,6 @@ class Ising(Model):
         except ModuleNotFoundError:
             self._calc_observables = None
             self._calc_p = None
-            self.calc_observables = None
             self.calc_p = None
         self.set_multipliers(multipliers)
 

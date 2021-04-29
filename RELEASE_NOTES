@@ -23,8 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v2.4.2 (To be released 2021/02)
+v2.4.2 (Released 2021/04)
 ----------------------------------------------------
+- Fixed instantiation bug in model.Ising (thanks to saynbabul for pointing this
+  out).
 
 v2.4.1 (Released 2021/01)
 ----------------------------------------------------

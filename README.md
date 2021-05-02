@@ -2,10 +2,6 @@
 
 # Convenient Interface to Inverse Ising
 
-**ConIII is now on version 2. Major interface updates may break code compatibility from
-version 1.  See [release
-notes](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES "release notes").**
-
 ConIII is a Python package for solving maximum entropy problems with a focus on the
 pairwise maximum entropy model, also known as the inverse Ising problem. Support for
 Python 3.8.3 and higher.
@@ -126,6 +122,11 @@ $ python --version
 ConIII has been tested on the following systems
 * Ubuntu 18.04
 * Ubuntu 20.04.1
+
+Trouble compiling the Boost extension manually? Check if your Boost library is
+included in your path. If it is not, then you can add an include directory entry
+into the `EXTRA_COMPILE_ARGS` variable in "setup.py" before compiling.
+
 
 ### Support
 

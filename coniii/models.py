@@ -27,9 +27,11 @@
 # ====================================================================================== #
 from importlib import import_module
 import multiprocess as mp
+
 from .utils import *
 from .samplers import Metropolis
 from .samplers import Potts3 as mcPotts3
+
 
 
 class Model():
@@ -56,16 +58,16 @@ class Model():
 
         if sample_method=='metropolis' and (type(self) is Ising or type(self) is Triplet):
             self.sampleMethod = sample_method
-            self.sampler = Metropolis( self.n, self.multipliers, self.calc_e,
-                                       n_cpus=self.nCpus,
-                                       rng=self.rng,
-                                       **sampler_kwargs )
+            self.sampler = Metropolis(self.n, self.multipliers, self.calc_e,
+                                      n_cpus=self.nCpus,
+                                      rng=self.rng,
+                                      **sampler_kwargs)
         elif sample_method=='metropolis' and type(self) is Potts3:
             self.sampleMethod = sample_method
-            self.sampler = mcPotts3( self.n, self.multipliers, self.calc_e,
-                                     n_cpus=self.nCpus,
-                                     rng=self.rng,
-                                     **sampler_kwargs )
+            self.sampler = mcPotts3(self.n, self.multipliers, self.calc_e,
+                                    n_cpus=self.nCpus,
+                                    rng=self.rng,
+                                    **sampler_kwargs)
         else:
            raise NotImplementedError("Unrecognized sampler %s."%sample_method)
         self.sample = None
@@ -110,27 +112,26 @@ class Model():
         # When sequential sampling should be used.
         if not self.nCpus is None and self.nCpus<=1:
             if sample_method=='metropolis':
-                self.sampler.theta = multipliers.copy()
-                # Burn in.
+                self.sampler.update_parameters(multipliers)
                 self.sampler.generate_samples(sample_size,
-                                              n_iters=burn_in)
-                self.sampler.generate_samples(sample_size,
-                                              n_iters=n_iters)
+                                              n_iters=n_iters,
+                                              burn_in=burn_in)
                 self.sample = self.sampler.samples
-
             else:
-               raise NotImplementedError("Unrecognized sampler.")
+                raise NotImplementedError("Unrecognized sampler.")
         # When parallel sampling using the multiprocess module.
         else:
             if sample_method=='metropolis':
-                self.sampler.theta = multipliers.copy()
-                self.sampler.generate_samples_parallel(sample_size,
-                                                       n_iters=burn_in+n_iters)
-                self.sample = self.sampler.samples
+                self.sampler.update_parameters(multipliers)
 
+                self.sampler.generate_samples_parallel(sample_size,
+                                                       n_iters=n_iters,
+                                                       burn_in=burn_in)
+                self.sample = self.sampler.samples
             else:
-               raise NotImplementedError("Unrecognized sampler.")
+                raise NotImplementedError("Unrecognized sampler.")
 #end Model
+
 
 
 class Ising(Model):
@@ -172,7 +173,9 @@ class Ising(Model):
         else:
             raise Exception("Unrecognized format for multipliers.")
         
-        self.calc_e, self.calc_observables, _ = define_ising_helper_functions()
+        self.calc_e, _, _ = define_ising_helper_functions()
+
+        # define functions for calculating observables with the multipliers (not from a data sample)
         try:
             ising = import_module('coniii.ising_eqn.ising_eqn_%d_sym'%self.n)
             self._calc_observables = ising.calc_observables
@@ -202,6 +205,7 @@ class Ising(Model):
 
 # alias for Ising
 PairwiseMaxent = Ising
+
 
 
 class Triplet(Model):

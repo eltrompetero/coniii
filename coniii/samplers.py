@@ -29,10 +29,11 @@ from numba import jit, njit, float64, int64
 from numpy import sin, cos, exp
 from scipy.spatial.distance import squareform
 import multiprocess as mp
-from .utils import *
 from datetime import datetime
 from multiprocess import Pool, cpu_count
 from warnings import warn
+
+from .utils import *
 try:
     from .samplers_ext import BoostIsing, BoostPotts3
     IMPORTED_SAMPLERS_EXT = True
@@ -1141,6 +1142,7 @@ def _jit_sample_metropolis(sample0, h, J, flip_site, rng):
         return de
 
 
+
 class Metropolis(Sampler):
     def __init__(self, n, theta,
                  calc_e=None,
@@ -1183,8 +1185,6 @@ class Metropolis(Sampler):
         # use boost by default for Ising model
         if boost and IMPORTED_SAMPLERS_EXT and self.theta.size==(n*(n-1)//2+n):
             if iprint: warn("Assuming that the model is Ising.")
-            self.bsampler = BoostIsing(n, theta, self.rng.randint(2**31-1))
-
             # use boost library for fast sampling
             self.generate_samples = self.generate_samples_boost
             self.generate_samples_parallel = self.generate_samples_parallel_boost
@@ -1219,15 +1219,16 @@ class Metropolis(Sampler):
             Saved array of energies at each sampling step.
         """
         
-        if self.nCpus > 1: warn("Sampler's multiprocessing capability is not being used.")
+        if self.nCpus==1: warn("Sampler's multiprocessing capability is not being used.")
         burn_in = burn_in or n_iters
         assert sample_size>0 and n_iters>0 and burn_in>0
-
-        self.bsampler.generate_sample(sample_size,
-                                      burn_in,
-                                      n_iters,
-                                      systematic_iter)
-        self.samples = self.bsampler.fetch_sample().astype(int)
+        
+        bsampler = BoostIsing(self.n, self.theta, int(self.rng.randint(0, 2**31-1)))
+        bsampler.generate_sample(sample_size,
+                                 burn_in,
+                                 n_iters,
+                                 systematic_iter)
+        self.samples = bsampler.fetch_sample().astype(int)
     
     def generate_samples_py(self,
                             sample_size,
@@ -1359,9 +1360,9 @@ class Metropolis(Sampler):
 
         # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
         def f(args, n=self.n, multipliers=self.theta):
-            nSamples, seed = args
+            sample_size, seed = args
             bsampler = BoostIsing(n, multipliers, int(seed))
-            bsampler.generate_sample(nSamples, burn_in, n_iters, systematic_iter)
+            bsampler.generate_sample(sample_size, burn_in, n_iters, systematic_iter)
             return bsampler.fetch_sample().astype(int)
         
         pool = mp.Pool(n_cpus)
@@ -1653,7 +1654,13 @@ class Metropolis(Sampler):
 
     def random_sample(self, n_samples):
         return self.rng.choice([-1,1], size=(n_samples, self.n))
+
+    def update_parameters(self, theta):
+        assert self.theta.size==theta.size, "New parameters must be of same size."
+
+        self.theta = theta.copy()
 #end Metropolis
+
 
 
 class Potts3(Metropolis):
@@ -2342,10 +2349,13 @@ def sample_ising(multipliers, n_samples,
     n = 0.5 * (-1 + np.sqrt(1 + 8*len(multipliers)) )
     assert n == int(n),"The length of multipliers vector does not correspond to an integer number of spins."
     
-    sampler = Metropolis( int(n), multipliers,
-                          n_cpus=n_cpus,
-                          rng=rng,
-                          iprint=False )
+    calc_e = define_ising_helper_functions()[0]
+
+    sampler = Metropolis(int(n), multipliers,
+                         n_cpus=n_cpus,
+                         rng=rng,
+                         iprint=False,
+                         calc_e=calc_e)
     
     # generate samples
     if n_cpus > 1:

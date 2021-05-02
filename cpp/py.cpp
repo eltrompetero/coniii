@@ -53,5 +53,6 @@ BOOST_PYTHON_MODULE(samplers_ext) {
     class_<Ising>("BoostIsing", init<int, np::ndarray, int>())
         .def("generate_sample", &Ising::generate_sample)
         .def("fetch_sample", &Ising::fetch_sample)
+        .def("readin_multipliers", &Ising::readin_multipliers)
     ;
 };

@@ -80,9 +80,9 @@ public:
     
     double calc_e(std::vector<int> const&);
     double sample_metropolis(std::vector<int>&, int const);
+    void readin_multipliers(np::ndarray);
 private:
     std::vector<int> init_sample();
-    void readin_multipliers(np::ndarray);
 };
 
 

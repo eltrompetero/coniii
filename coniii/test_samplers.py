@@ -25,19 +25,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # =============================================================================================== #
-from .samplers import *
-from .utils import define_ising_helper_functions
 import numpy as np
 import time
 
-n=5
+from .samplers import *
+from .utils import define_ising_helper_functions
+
+n = 5
+
 
 def test_sample_ising():
     assert sample_ising(np.zeros(n+n*(n-1)//2), 100).shape==(100,n)
 
 def test_Metropolis(run_timing=False):
     # Check that everything compiles and runs.
-    n = 5
     theta = np.random.normal(size=15, scale=.1)
     calc_e, _, _ = define_ising_helper_functions()
     print("Running timing suite for Metropolis sampling functions for n=%d..."%n)

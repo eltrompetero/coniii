@@ -115,10 +115,9 @@ class Solver():
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
-                if self.model.calc_observables is None:
-                    msg = (f"Python file enumerating the Ising equations for system of size {self.n} must "+
-                           "be written to use this solver.")
-                    raise Exception(msg%self.n)
+                #if self.model.calc_observables is None:
+                #    msg = (f"Python file enumerating the Ising equations for system of size {self.n} must "+
+                #           "be written to use this solver.")
             else:
                 self.model = model
 
@@ -884,9 +883,9 @@ class MCH(Solver):
         
         
         # Generate initial set of samples.
-        self.model.generate_samples( n_iters,burn_in,
-                                     multipliers=self._multipliers,
-                                     generate_kwargs=generate_kwargs )
+        self.model.generate_samples(n_iters, burn_in,
+                                    multipliers=self._multipliers,
+                                    generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.model.sample).mean(0)
         errors.append(thisConstraints - constraints)
         if iprint=='detailed': print(self._multipliers)
@@ -908,9 +907,9 @@ class MCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.model.generate_samples( n_iters, burn_in,
-                                         multipliers=self._multipliers,
-                                         generate_kwargs=generate_kwargs )
+            self.model.generate_samples(n_iters, burn_in,
+                                        multipliers=self._multipliers,
+                                        generate_kwargs=generate_kwargs)
             thisConstraints = self.calc_observables(self.model.sample).mean(0)
             counter += 1
             
@@ -918,12 +917,12 @@ class MCH(Solver):
             if iprint=='detailed':
                 print(f"Error is {np.linalg.norm(errors[-1]):.4f}.")
             # Exit criteria.
-            if ( np.linalg.norm(errors[-1])<tolNorm
-                 and np.all(np.abs(thisConstraints - constraints) < tol) ):
+            if (np.linalg.norm(errors[-1]) < tolNorm and
+                np.all(np.abs(thisConstraints - constraints) < tol)):
                 if iprint: print("Solved.")
                 errflag = 0
                 keepLooping=False
-            elif counter>maxiter:
+            elif counter > maxiter:
                 if iprint: print("Over maxiter")
                 errflag = 1
                 keepLooping=False
@@ -932,7 +931,7 @@ class MCH(Solver):
         
         self.multipliers = self._multipliers.copy()
         if full_output:
-            return self.multipliers, errflag, np.vstack((errors))
+            return self.multipliers, errflag, np.vstack(errors)
         return self.multipliers
 
     def estimate_jac(self, eps=1e-3):

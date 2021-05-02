@@ -27,9 +27,10 @@
 from scipy.optimize import minimize, fmin_ncg, minimize_scalar, root
 import multiprocess as mp
 import copy
-from . import mean_field_ising
-from warnings import warn
 from scipy.optimize import check_grad
+from warnings import warn
+
+from . import mean_field_ising
 from .utils import *
 from .samplers import *
 from .models import Ising
@@ -115,7 +116,7 @@ class Solver():
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
                 if self.model.calc_observables is None:
-                    msg = ("Python file enumerating the Ising equations for system of size %d must "+
+                    msg = (f"Python file enumerating the Ising equations for system of size {self.n} must "+
                            "be written to use this solver.")
                     raise Exception(msg%self.n)
             else:
@@ -129,8 +130,9 @@ class Solver():
 
             self.constraints = self.calc_observables(sample_or_n).mean(0)
             if np.isclose(np.abs(self.constraints), 1, atol=1e-3).any() and iprint:
-                warn("Some pairwise correlations have magnitude close to one. Potential for poor "+
-                     "solutions from diverging parameters.")
+                msg = ("Some pairwise correlations have magnitude close to one. Potential for poor "+
+                       "solutions from diverging parameters.")
+                warn(msg)
 
         self.iprint = iprint
 
@@ -848,11 +850,13 @@ class MCH(Solver):
         """
 
         if (self.n*10)>burn_in and self.iprint:
-            warn("Number of burn in MCMC iterations between samples may be too small for "+
-                 "convergence to stationary distribution.")
+            msg = ("Number of burn in MCMC iterations between samples may be too small for "+
+                   "convergence to stationary distribution.")
+            warn(msg)
         if (self.n*10)>n_iters and self.iprint:
-            warn("Number of MCMC iterations between samples may be too small for convergence to "+
-                 "stationary distribution.")
+            msg = ("Number of MCMC iterations between samples may be too small for convergence to "+
+                   "stationary distribution.")
+            warn(msg)
         if constraints is None:
             constraints = self.constraints
 

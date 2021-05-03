@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 #!/bin/bash
 
 # Code for compiling package for upload to PyPI.
@@ -66,8 +67,6 @@ then
 
     echo "rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/"
     rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
-
-    cp README.md pypi_description
 fi
 
 # check if boost module compiled

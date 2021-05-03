@@ -48,7 +48,7 @@ dylibNames = ['boost_python38', 'boost_numpy38']
 copyfile('LICENSE.txt','coniii/LICENSE.txt')
 
 # Get the long description from the README file
-with open(path.join(here, 'pypi_description'), encoding='utf-8') as f:
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # setup C++ extension
@@ -73,6 +73,7 @@ kwargs = {'name':'coniii',
           'version':__version__,
           'description':'Convenient Interface to Inverse Ising (ConIII)',
           'long_description':long_description,
+          'long_description_content_type':'text/markdown',
           'url':'https://github.com/eltrompetero/coniii',
           'author':'Edward D. Lee, Bryan C Daniels',
           'author_email':'edlee@santafe.edu',

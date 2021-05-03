@@ -66,6 +66,8 @@ then
 
     echo "rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/"
     rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
+
+    cp README.md pypi_description
 fi
 
 # check if boost module compiled

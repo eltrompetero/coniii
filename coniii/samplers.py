@@ -2320,7 +2320,7 @@ def sample_ising(multipliers, n_samples,
 
     Parameters
     ----------
-    multipliers : ndarray
+    multipliers : ndarray or twople
         N individual fields followed by N(N-1)/2 pairwise couplings.
     n_samples : int
         Number of samples to take.
@@ -2341,11 +2341,13 @@ def sample_ising(multipliers, n_samples,
         Matrix of dimensions (n_samples, n).
     """
     
-    multipliers = np.array(multipliers)
+    if len(multipliers)==2:
+        multipliers = np.concatenate(multipliers)
+    else:
+        multipliers = np.array(multipliers)
     n_cpus = n_cpus or cpu_count()
 
     rng = np.random.RandomState(seed=seed)
-    multipliers = multipliers
     n = 0.5 * (-1 + np.sqrt(1 + 8*len(multipliers)) )
     assert n == int(n),"The length of multipliers vector does not correspond to an integer number of spins."
     

@@ -33,7 +33,9 @@ Notes on Boost extension
 - Boost library for python and numpy must be on both LIBRARY_PATH and LD_LIBRARY_PATH for
   module to function. The former is used by gcc for compilation and the latter is used by
   your program after it has been compiled.
-- For compilation, these libraries must also be included in CPLUS_INCLUDE_PATH.
+- For compilation, these libraries must also be included in CPLUS_INCLUDE_PATH. While
+  including the path to the anaconda environment include directory should work, setting this
+  env variable explicitly is also a solution.
 - Header files paths (e.g., "boost/python/numpy.hpp") must be on include path variable.
   These might need to be specified additionally in the include_dirs argument in setup.py
   if the bash environment is not set up properly.

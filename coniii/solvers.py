@@ -140,8 +140,8 @@ class Solver():
         return
 
     def set_insertion_ix(self):
-        """Calculate indices to fill in with zeros to "fool" code that takes full set of
-        params.
+        """Calculate indices to fill in with zeros to "fool" code that takes
+        full set of params.
         """
 
         nParams = self.model.multipliers.size
@@ -1019,6 +1019,341 @@ class MCH(Solver):
         return estConstraints
 #end MCH
 MonteCarloHistogram = MCH  # alias
+
+
+
+class PartialMCH(Solver):
+    """Class for solving maxent problems using the Monte Carlo Histogram method
+       on partial observations of states.
+    """
+    
+    def __init__(self, sample, 
+                 model=None,
+                 calc_observables=None,
+                 sample_size=10_000,
+                 sample_method='metropolis',
+                 mch_approximation=None,
+                 iprint=True,
+                 sampler_kw={},
+                 **default_model_kwargs):
+        """
+        Parameters
+        ----------
+        sample : ndarray or int, None
+            If ndarray, of dimensions (samples, dimension). 
+
+            If int, specifies system size.
+
+            If None, many of the default class members cannot be set and then
+            must be set manually.
+        model : class like one from models.py, None
+            By default, will be set to solve Ising model.
+        calc_observables : function, None
+            For calculating observables from a set of samples.
+        sample_size : int, 10_000
+            Number of samples to use MCH sampling step.
+        sample_method : str, 'metropolis'
+            Only 'metropolis' allowed currently.
+        mch_approximation : function, None
+            For performing the MCH approximation step. Is specific to the maxent
+            model.
+        iprint : str, True
+        sampler_kw : dict, {}
+            To pass into self.model.setup_sampler().
+        rng : np.random.RandomState, None
+            Random number generator.
+        n_cpus : int, None
+            If 1 or less no parallel processing, other numbers above 0 specify number of
+            cores to use.
+        **default_model_kwargs
+            Additional arguments that will be passed to Ising class. These only matter if
+            model is None.
+        """
+        
+        assert sample_size>0
+        self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
+
+        if sample_size < 10_000 and self.iprint: warn("Small sample size will lead to poor convergence.")
+
+        # Sampling parameters.
+        self.sampleSize = sample_size
+        self.mch_approximation = mch_approximation or define_ising_helper_functions()[-1]
+        
+        self.model.setup_sampler(sample_size=sample_size, sampler_kwargs=sampler_kw)
+        
+    def cond_avg_observables(self, s=None):
+        """Conditioned on the given partial observation, calculate the
+        observables.
+        
+        Parameters
+        ----------
+        s : ndarray, None
+            A partial system observation. If not specified, average is computed
+            over self.sample.
+            
+        Returns
+        -------
+        ndarray
+            Observables conditioned on s, and calculated from self.sample
+            distribution.
+        """
+        
+        if s is None:
+            return np.vstack([self.cond_avg_observables(s) for s in self.sample]).mean(0)
+            
+        # first, we must condition on the observed subset being fixed
+        spin_ix = s!=0
+        cond_ix = (self.sample[:,spin_ix]==s[spin_ix]).all(1)
+        Xsub = self.sample[cond_ix]
+        assert cond_ix.any(), "Sample size is too small."
+        
+        # a temporary check
+        assert len(Xsub) > 0 and Xsub.ndim==2
+        
+        # then, we calculate the observables over this subset
+        return self.calc_observables(Xsub).mean(0)
+
+    def obs_update(self, dlamda, s=None):
+        """MCH approximation to change in conditional observables under
+        perturbed parameters and conditioned on the given observation.
+        
+        Parameters
+        ----------
+        dlamda : ndarray
+            Change to parameters.
+        s : ndarray, None
+            A partial system observation. If not specified, average is computed
+            over self.sample.
+        
+        Returns
+        -------
+        ndarray
+            Expected change in conditional observables given parameter
+            perturbation. Note that the changes should be fixed at 0 for any of
+            the conditioned spins.
+        """
+
+        if s is None:
+            return np.vstack([self.obs_update(dlamda, s) for s in self.sample]).mean(0)
+        
+        assert s.ndim==1
+
+        # condition on the observed subset being fixed
+        spin_ix = s!=0
+        cond_ix = (self.model.sample[:,spin_ix]==s[spin_ix][None,:]).all(1)
+        assert cond_ix.any(), "Sample size is too small."
+        Xsub = self.model.sample[cond_ix]
+
+        cond_obs = self.calc_observables(Xsub)
+        E = self.model.calc_e(Xsub, dlamda)
+        
+        d = -((E[:,None] * cond_obs).mean(0) - E.mean() * cond_obs.mean(0))
+        return d
+    
+    def solve(self,
+              initial_guess=None,
+              tol=None,
+              tolNorm=None,
+              n_iters=30,
+              burn_in=30,
+              maxiter=10,
+              custom_convergence_f=None,
+              iprint=False,
+              full_output=False,
+              learn_params_kwargs={'maxdlamda':1, 'eta':1},
+              generate_kwargs={}):
+        """Solve for maxent model parameters using MCH routine.
+        
+        Parameters
+        ----------
+        initial_guess : ndarray, None
+            Initial starting point.
+        tol : float, None
+            Maximum error allowed in any observable.
+        tolNorm : float, None
+            Norm error allowed in found solution.
+        n_iters : int, 30
+            Number of iterations to make between samples in MCMC sampling.
+        burn_in : int, 30
+            Initial burn in from random sample when MC sampling.
+        max_iter : int, 10
+            Max number of iterations of MC sampling and MCH approximation.
+        custom_convergence_f : function, None
+            Function for determining convergence criterion. At each iteration,
+            this function should return the next set of learn_params_kwargs and
+            optionally the sample size.
+
+            As an example:
+            def learn_settings(i):
+                '''
+                Take in the iteration counter and set the maximum change allowed
+                in any given parameter (maxdlamda) and the multiplicative factor
+                eta, where d(parameter) = (error in observable) * eta.
+                
+                Additional option is to also return the sample size for that
+                step by returning a tuple. Larger sample sizes are necessary for
+                higher accuracy.
+                '''
+                if i<10:
+                    return {'maxdlamda':1,'eta':1}
+                else:
+                    return {'maxdlamda':.05,'eta':.05}
+        iprint : bool, False
+        full_output : bool, False
+            If True, also return the errflag and error history.
+        learn_parameters_kwargs : dict, {'maxdlamda':1,'eta':1}
+        generate_kwargs : dict, {}
+
+        Returns
+        -------
+        ndarray
+            Solved multipliers (parameters). For Ising problem, these can be converted
+            into matrix format using utils.vec2mat.
+        int
+            Error flag.
+            0, converged within given criterion
+            1, max iterations reached
+        ndarray
+            Log of errors in matching constraints at each step of iteration.
+        """
+
+        if (self.n*10)>burn_in and self.iprint:
+            msg = ("Number of burn in MCMC iterations between samples may be too small for "+
+                   "convergence to stationary distribution.")
+            warn(msg)
+        if (self.n*10)>n_iters and self.iprint:
+            msg = ("Number of MCMC iterations between samples may be too small for convergence to "+
+                   "stationary distribution.")
+            warn(msg)
+            
+        errors = []  # history of errors to track
+
+        # Set initial guess for parameters. self._multipliers is where the current guess for the
+        # parameters is stored.
+        if not (initial_guess is None):
+            assert len(initial_guess)==self.model.multipliers.size
+            self._multipliers = initial_guess.copy()
+        else:
+            self._multipliers = self.model.multipliers.copy()
+        tol = tol or 1/np.sqrt(self.sampleSize)
+        tolNorm = tolNorm or np.sqrt(1/self.sampleSize) * len(self._multipliers)
+        
+        # Redefine function for automatically adjusting learn_params_kwargs so that it returns the
+        # MCH iterator settings and the sample size if it doesn't already.
+        if custom_convergence_f is None:
+            custom_convergence_f = lambda i : (learn_params_kwargs, self.sampleSize)
+        if type(custom_convergence_f(0)) is dict:
+            custom_convergence_f_ = custom_convergence_f
+            custom_convergence_f = lambda i : (custom_convergence_f_(i), self.sampleSize)
+        assert 'maxdlamda' and 'eta' in list(custom_convergence_f(0)[0].keys())
+        assert type(custom_convergence_f(0)[1]) is int
+        
+        
+        # Generate initial set of samples.
+        self.model.generate_samples(n_iters, burn_in,
+                                    multipliers=self._multipliers,
+                                    generate_kwargs=generate_kwargs)
+        constraints = self.calc_observables(self.model.sample).mean(0)
+        cond_constraints = self.cond_avg_observables()
+        errors.append(cond_constraints - constraints)
+        if iprint=='detailed': print(self._multipliers)
+
+
+        # MCH iterations.
+        counter = 0  # number of MCMC and MCH steps
+        keepLooping = True  # loop control
+        learn_params_kwargs, self.sampleSize = custom_convergence_f(counter)
+        while keepLooping:
+            # MCH step
+            if iprint:
+                print("Iterating parameters with MCH...")
+            self.learn_parameters_mch(cond_constraints, constraints, **learn_params_kwargs)
+            if iprint=='detailed':
+                print("After MCH step, the parameters are...")
+                print(self._multipliers)
+            
+            # MC sampling step
+            if iprint:
+                print("Sampling...")
+            self.model.generate_samples(n_iters, burn_in,
+                                        multipliers=self._multipliers,
+                                        generate_kwargs=generate_kwargs)
+            cond_constraints = self.cond_avg_observables()
+            constraints = self.calc_observables(self.model.sample).mean(0)
+            counter += 1
+            
+            errors.append(cond_constraints - constraints)
+            if iprint=='detailed':
+                print(f"Error is {np.linalg.norm(errors[-1]):.4f}.")
+            # Exit criteria.
+            if (np.linalg.norm(errors[-1]) < tolNorm and
+                np.all(np.abs(cond_constraints - constraints) < tol)):
+                if iprint: print("Solved.")
+                errflag = 0
+                keepLooping=False
+            elif counter > maxiter:
+                if iprint: print("Over maxiter")
+                errflag = 1
+                keepLooping=False
+            else:
+                learn_params_kwargs, self.sampleSize = custom_convergence_f(counter)
+        
+        self.multipliers = self._multipliers.copy()
+        if full_output:
+            return self.multipliers, errflag, np.vstack(errors)
+        return self.multipliers
+
+    def learn_parameters_mch(self,
+                             cond_constraints,
+                             constraints,
+                             maxdlamda=1,
+                             maxdlamdaNorm=1, 
+                             maxLearningSteps=50,
+                             eta=1 ):
+        """
+        Parameters
+        ----------
+        cond_constraints : ndarray
+            Conditional observables.
+        constraints : ndarray
+        maxdlamda : float, 1
+            Max allowed magnitude for any element of dlamda vector before exiting.
+        maxdlamdaNorm : float, 1
+            Max allowed norm of dlamda vector before exiting.
+        maxLearningSteps : int
+            max learning steps before ending MCH
+        eta : float, 1
+            factor for changing dlamda
+        """
+
+        keepLearning = True
+        dlamda = np.zeros(constraints.size)
+        learningSteps = 0
+        distance = 1
+        
+        while keepLearning:
+            # Get change in parameters.
+            # If observable is too large, then corresponding energy term has to go down 
+            # (think of double negative).
+            dlamda += (cond_constraints - constraints) * np.min([distance,1.]) * eta
+            #dMultipliers /= dMultipliers.max()
+            
+            # Predict distribution with new parameters.
+            cond_constraints += self.obs_update(dlamda)
+            constraints = self.mch_approximation(self.model.sample, dlamda)
+            distance = np.linalg.norm(cond_constraints - constraints)
+                        
+            # Counter.
+            learningSteps += 1
+            
+            # Evaluate exit criteria.
+            if np.linalg.norm(dlamda) > maxdlamdaNorm or np.any(np.abs(dlamda) > maxdlamda):
+                keepLearning = False
+            elif learningSteps > maxLearningSteps:
+                keepLearning = False
+
+        self._multipliers += dlamda
+#end PartialMCH
 
 
 

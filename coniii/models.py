@@ -201,6 +201,42 @@ class Ising(Model):
         if not self._calc_observables is None:
             self.calc_observables = lambda x=self.multipliers: self._calc_observables(x)
             self.calc_p = lambda x=self.multipliers: self._calc_p(x)
+
+    def cond_avg_observables(self, s=None):
+        """Conditioned on the given partial observation, calculate the
+        observables.
+        
+        Parameters
+        ----------
+        s : ndarray, None
+            A partial system observation. If not specified, average is computed
+            over self.sample.
+            
+        Returns
+        -------
+        ndarray
+            Observables conditioned on s, and calculated from self.sample
+            distribution.
+        """
+       
+        if s is None:
+            with Pool(self.nCpus) as pool:
+                return np.vstack(list(pool.map(lambda s, dlamda=dlamda: self.cond_avg_observables(s),
+                                               self.sample))).mean(0)
+        
+        assert s.ndim==1
+        
+        # first, we must condition on the observed subset being fixed
+        spin_ix = s!=0
+        cond_ix = (self.sample[:,spin_ix]==s[spin_ix]).all(1)
+        Xsub = self.sample[cond_ix]
+        assert cond_ix.any(), "Sample size is too small."
+        
+        # a temporary check
+        assert len(Xsub) > 0 and Xsub.ndim==2
+        
+        # then, we calculate the observables over this subset
+        return self.calc_observables(Xsub).mean(0)
 #end Ising
 
 # alias for Ising

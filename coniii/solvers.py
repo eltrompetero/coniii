@@ -930,6 +930,12 @@ class MCH(Solver):
                 learn_params_kwargs, self.model.sampleSize = custom_convergence_f(counter)
         
         self.multipliers = self._multipliers.copy()
+
+        # generate sample given these multipliers
+        self.model.generate_samples(n_iters, burn_in,
+                                    multipliers=self._multipliers,
+                                    generate_kwargs=generate_kwargs)
+        
         if full_output:
             return self.multipliers, errflag, np.vstack(errors)
         return self.multipliers

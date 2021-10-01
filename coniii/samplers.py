@@ -1463,6 +1463,7 @@ class Metropolis(Sampler):
                               sample_size,
                               fixed_subset,
                               burn_in=1000,
+                              n_iters=1000,
                               n_cpus=None,
                               initial_sample=None,
                               systematic_iter=False,
@@ -1478,17 +1479,18 @@ class Metropolis(Sampler):
         ----------
         sample_size : int
         fixed_subset : list of duples
-            Each duple is the index of the spin and the value to fix it at.  These should
+            Each duple is the index of the spin and the value to fix it at. These should
             be ordered by spin index.
-        burn_in : int
+        burn_in : int, 1000
             Burn in.
-        n_cpus : int
+        n_iters : int, 1000
+        n_cpus : int, None
             Number of cpus to use.
-        initial_sample : ndarray
+        initial_sample : ndarray, None
             Option to set initial random sample.
-        systematic_iter : bool
+        systematic_iter : bool, False
             Iterate through spins systematically instead of choosing them randomly.
-        parallel : bool
+        parallel : bool, True
             If True, use parallelized routine.
 
         Returns
@@ -1500,14 +1502,8 @@ class Metropolis(Sampler):
         """
 
         n_cpus = n_cpus or self.nCpus
-        nSubset = self.n-len(fixed_subset)
+        nSubset = self.n - len(fixed_subset)
 
-        # Initialize sampler.
-        if initial_sample is None:
-            self.samples = self.rng.choice([-1,1], size=(sample_size,nSubset))
-        else:
-            self.samples = initial_sample
-        
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state, theta):
             """
@@ -1524,51 +1520,57 @@ class Metropolis(Sampler):
                 Energy of state with fixed spins.
             """
 
-            fullstate = np.zeros((1,self.n))
+            fullstate = np.zeros((1, self.n), dtype=int)
             i0 = 0
             stateix = 0
             # Fill all spins in between fixed ones.
-            for i,s in fixed_subset: 
-                for ii in range(i0,i):
+            for i, s in fixed_subset: 
+                for ii in range(i0, i):
                     fullstate[0,ii] = state[0,stateix] 
                     stateix += 1
                 fullstate[0,i] = s
                 i0 = i+1
             # Any reamining spots to fill.
-            for ii in range(i0,self.n):
+            for ii in range(i0, self.n):
                 fullstate[0,ii] = state[0,stateix]
                 stateix += 1
-            return self.calc_e(fullstate,theta)
-        self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
+            return self.calc_e(fullstate, theta)
+        self.E = np.array([cond_calc_e(s[None,:], self.theta) for s in self.samples])
         
         # Parallel sample.
         if parallel:
+            # Initialize sampler.
+            if initial_sample is None:
+                self.samples = self.rng.choice([-1,1], size=(sample_size, nSubset))
+            else:
+                self.samples = initial_sample
+
             if not systematic_iter:
                 def f(args):
-                    s,E,seed = args
+                    s, E, seed = args
                     rng = np.random.RandomState(seed)
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
+                        de = self.sample_metropolis(s, E, rng=rng, calc_e=cond_calc_e)
                         E += de
-                    return s,E
+                    return s, E
             else:
                 def f(args):
-                    s,E,seed=args
+                    s, E, seed = args
                     rng = np.random.RandomState(seed)
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                        de = self.sample_metropolis(s, E, rng=rng, flip_site=j%nSubset, calc_e=cond_calc_e)
                         E += de
-                    return s,E
+                    return s, E
             
             # avoid pickling a copy of self.samples into every thread
             samples = self.samples
             self.samples = None
 
             #start = datetime.now()
-            pool=mp.Pool(n_cpus)
+            pool = mp.Pool(n_cpus)
             #poolt = datetime.now()
             args = zip(samples, self.E, self.rng.randint(0, 2**31-1, size=sample_size))
-            self.samples, self.E=list(zip(*pool.map(f, args)))
+            self.samples, self.E = list(zip(*pool.map(f, args)))
             self.samples = np.vstack(self.samples)
             #samplet = datetime.now()
             pool.close()
@@ -1578,35 +1580,46 @@ class Metropolis(Sampler):
             #                                (samplet-poolt).total_seconds(),
             #                                (poolcloset-samplet).total_seconds())
         else:
+            s = self.rng.choice([-1,1], size=nSubset)
+            E = cond_calc_e(s[None,:], self.theta)
+
             if not systematic_iter:
-                def f(args):
-                    s, E = args
-                    for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=self.rng,calc_e=cond_calc_e )
+                for j in range(burn_in):
+                    de = self.sample_metropolis(s, E, rng=self.rng, calc_e=cond_calc_e)
+                    E += de
+
+                counter = 0
+                for i in range(sample_size):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis(s, E, rng=self.rng, calc_e=cond_calc_e)
                         E += de
-                    return s, E
+                        counter += 1
+                    self.samples[i,:] = s[:]
+                    self.E[i] = E
             else:
-                def f(args):
-                    s, E=args
-                    for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=self.rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                for j in range(burn_in):
+                    de = self.sample_metropolis(s, E, rng=self.rng, flip_site=j%nSubset, calc_e=cond_calc_e)
+                    E += de
+
+                counter = 0
+                for i in range(sample_size):
+                    for j in range(n_iters):
+                        de = self.sample_metropolis(s, E, rng=self.rng, flip_site=j%nSubset, calc_e=cond_calc_e)
                         E += de
-                    return s, E
-           
-            for i in range(len(self.samples)):
-                s, E = f((self.samples[i],self.E[i]))
-                self.samples[i] = s
-                self.E[i] = E
+                        counter += 1
+                    self.samples[i,:] = s[:]
+                    self.E[i] = E
 
         # Insert fixed spins back in.
         counter = 0
         for i,s in fixed_subset:
             if i==0:
-                self.samples = np.insert(self.samples, list(range(i,self.samples.size,nSubset+counter)), s)
+                self.samples = np.insert(self.samples, list(range(i, self.samples.size, nSubset+counter)), s)
             else:
-                self.samples = np.insert(self.samples, list(range(i,self.samples.size+1,nSubset+counter)), s)
+                self.samples = np.insert(self.samples, list(range(i, self.samples.size+1, nSubset+counter)), s)
             counter += 1
-        self.samples = np.reshape(self.samples, (sample_size,self.n))
+
+        self.samples = np.reshape(self.samples, (sample_size, self.n))
         self.E = np.concatenate(self.E)
         return self.samples, self.E
 

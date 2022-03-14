@@ -618,7 +618,6 @@ class ParallelTempering(Sampler):
                  sample_size=1000,
                  replica_burnin=None,
                  rep_ex_burnin=None,
-                 n_cpus=None,
                  rng=None):
         """Run multiple replicas in parallel at different temperatures using Metropolis
         sampling to equilibrate.
@@ -646,8 +645,6 @@ class ParallelTempering(Sampler):
             (from completely uniform distribution).
         rep_ex_burnin : int, n*10
             Default number of Metropolis steps after exchange.
-        n_cpus : int, 0
-            If None, then will use all available CPUs minus 1.
         rng : RandomState, None
         """
         
@@ -659,7 +656,6 @@ class ParallelTempering(Sampler):
         self.theta = theta
         self.calc_e = calc_e
         self.nReplicas = n_replicas
-        self.nCpus = n_cpus or cpu_count()-1
         self.sampleSize = sample_size
         self.sample = None
         self.replicaBurnin = replica_burnin or n*50
@@ -686,7 +682,7 @@ class ParallelTempering(Sampler):
 
         self.replicas = []
         for i,b in enumerate(self.beta):
-            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, n_cpus=1, boost=False) )
+            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, boost=False) )
             # give each replica an index
             self.replicas[i].index = i
         self.burn_in_replicas()
@@ -708,11 +704,11 @@ class ParallelTempering(Sampler):
         
         n_iters = n_iters or self.replicaBurnin
 
-        pool = pool or Pool(self.nCpus)
         def f(args):
             rep, nIters = args
             rep.generate_sample(1, n_iters=nIters, systematic_iter=True)
             return rep
+        pool = pool or Pool()
         self.replicas = pool.map(f, zip(self.replicas, [n_iters]*len(self.replicas)))
 
         if close_pool:
@@ -769,7 +765,7 @@ class ParallelTempering(Sampler):
         """
         
         self.sample = [np.zeros((sample_size,self.n), dtype=int) for i in range(self.nReplicas)]
-        pool = Pool(self.nCpus)
+        pool = Pool()
         
         if save_exchange_trajectory:
             replicaIndexHistory = np.zeros((sample_size, self.nReplicas), dtype=int)
@@ -895,7 +891,7 @@ class ParallelTempering(Sampler):
 
         # estimate acceptance probabilities
         if n_iters>0:
-            pool = Pool(self.nCpus)
+            pool = Pool()
             for i in range(n_samples):
                 self.burn_in_replicas(pool=pool, close_pool=False, n_iters=n_iters)
                 
@@ -1522,15 +1518,15 @@ class Metropolis(Sampler):
                                                                 self.rng.randint(2**31-1, size=n_cpus)))) )
             self.sample = np.vstack(self.sample)[:sample_size]
 
-    def generate_cond_samples_py(self,
-                                 sample_size,
-                                 fixed_subset,
-                                 burn_in=1000,
-                                 n_iters=1000,
-                                 n_cpus=None,
-                                 initial_sample=None,
-                                 systematic_iter=False,
-                                 parallel=True):
+    def generate_cond_sample_py(self,
+                                sample_size,
+                                fixed_subset,
+                                burn_in=1000,
+                                n_iters=1000,
+                                n_cpus=None,
+                                initial_sample=None,
+                                systematic_iter=False,
+                                parallel=True):
         """
         Generate samples from conditional distribution (while a subset of the spins are
         held fixed).  Samples are generated in parallel.
@@ -2393,8 +2389,8 @@ def check_e_logp(sample, calc_e):
     return uniqStates,uniqueE,np.log(stateCount)
 
 def sample_ising(multipliers, n_samples,
-                 n_cpus=None,
                  seed=None,
+                 parallel=True,
                  generate_sample_kw={}):
     """Easy way to Metropolis sample from Ising model.
 
@@ -2404,10 +2400,10 @@ def sample_ising(multipliers, n_samples,
         N individual fields followed by N(N-1)/2 pairwise couplings.
     n_samples : int
         Number of samples to take.
-    n_cpus : int, None
-        Number of cpus to use. If more than one, multiprocessing invoked.
     seed : int, None
         Random number generator seed.
+    parallel : bool, True
+        If True, use parallelized sampling routine.
     generate_sample_kw : dict, {}
         Any extra arguments to send into Metropolis sampler. Default args are
              n_iters=1000
@@ -2425,7 +2421,6 @@ def sample_ising(multipliers, n_samples,
         multipliers = np.concatenate(multipliers)
     else:
         multipliers = np.array(multipliers)
-    n_cpus = n_cpus or cpu_count()
 
     rng = np.random.RandomState(seed=seed)
     n = 0.5 * (-1 + np.sqrt(1 + 8*len(multipliers)) )
@@ -2434,13 +2429,12 @@ def sample_ising(multipliers, n_samples,
     calc_e = define_ising_helper_functions()[0]
 
     sampler = Metropolis(int(n), multipliers,
-                         n_cpus=n_cpus,
                          rng=rng,
                          iprint=False,
                          calc_e=calc_e)
     
     # generate samples
-    if n_cpus > 1:
+    if parallel:
         sampler.generate_sample_parallel(n_samples, **generate_sample_kw)
     else:
         sampler.generate_sample(n_samples, **generate_sample_kw)

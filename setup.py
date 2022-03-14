@@ -36,8 +36,8 @@ import platform, sys
 NO_BOOST = False
 
 # default args (that are modified per system specs below
-EXTRA_COMPILE_ARGS = ['-std=c++11']
-DEFAULT_LIBRARY_DR = []  # includes places to search for boost lib
+EXTRA_COMPILE_ARGS = ['-std=c++11','-I/home/eddie/anaconda3/envs/coniii/include']
+DEFAULT_LIBRARY_DR = ['/home/eddie/anaconda3/envs/coniii/include']  # includes places to search for boost lib
 
 # setup
 here = path.abspath(path.dirname(__file__))

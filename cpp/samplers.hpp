@@ -62,9 +62,16 @@ public:
                          int const,
                          int const,
                          bool const=false);
+    void generate_cond_sample(np::ndarray,
+                              np::ndarray,
+                              int const,
+                              int const,
+                              int const,
+                              bool const=false);
     np::ndarray fetch_sample();
     std::vector<double> means();
     void print(int const);
+    void readin_fixed_set(std::vector<int>&, std::vector<int>&, np::ndarray, np::ndarray);
 
 private:
     virtual std::vector<int> init_sample() = 0;

@@ -883,7 +883,7 @@ class MCH(Solver):
         
         
         # Generate initial set of samples.
-        self.model.generate_samples(n_iters, burn_in,
+        self.model.generate_sample(n_iters, burn_in,
                                     multipliers=self._multipliers,
                                     generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.model.sample).mean(0)
@@ -907,7 +907,7 @@ class MCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.model.generate_samples(n_iters, burn_in,
+            self.model.generate_sample(n_iters, burn_in,
                                         multipliers=self._multipliers,
                                         generate_kwargs=generate_kwargs)
             thisConstraints = self.calc_observables(self.model.sample).mean(0)
@@ -932,7 +932,7 @@ class MCH(Solver):
         self.multipliers = self._multipliers.copy()
 
         # generate sample given these multipliers
-        self.model.generate_samples(n_iters, burn_in,
+        self.model.generate_sample(n_iters, burn_in,
                                     multipliers=self._multipliers,
                                     generate_kwargs=generate_kwargs)
         
@@ -1212,7 +1212,7 @@ class SparseMCH(Solver):
         assert type(custom_convergence_f(0)[1]) is int
         
         # Generate initial set of samples.
-        self.model.generate_samples(n_iters, burn_in,
+        self.model.generate_sample(n_iters, burn_in,
                                     multipliers=self._multipliers,
                                     generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.model.sample).mean(0)[self.parameterIx]
@@ -1236,7 +1236,7 @@ class SparseMCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.model.generate_samples( n_iters, burn_in,
+            self.model.generate_sample( n_iters, burn_in,
                                          multipliers=self._multipliers,
                                          generate_kwargs=generate_kwargs )
             thisConstraints = self.calc_observables(self.model.sample).mean(0)[self.parameterIx]
@@ -1432,7 +1432,7 @@ class MCHIncompleteData(MCH):
         # Sample.
         if disp:
             print("Sampling...")
-        self.generate_samples(n_iters,burn_in,
+        self.generate_sample(n_iters,burn_in,
                               uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                               generate_kwargs=generate_kwargs,disp=disp)
         thisConstraints = self.calc_observables(self.samples).mean(0)
@@ -1457,7 +1457,7 @@ class MCHIncompleteData(MCH):
             # Sample.
             if disp:
                 print("Sampling...")
-            self.generate_samples(n_iters,burn_in,
+            self.generate_sample(n_iters,burn_in,
                                   uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                                   generate_kwargs=generate_kwargs,disp=disp)
 
@@ -1560,7 +1560,7 @@ class MCHIncompleteData(MCH):
         self._multipliers += dlamda
         return estConstraints
 
-    def generate_samples(self, n_iters, burn_in, 
+    def generate_sample(self, n_iters, burn_in, 
                          uIncompleteStates=None,
                          f_cond_sample_size=None,
                          f_cond_sample_iters=None,
@@ -1571,7 +1571,7 @@ class MCHIncompleteData(MCH):
                          run_cond_sampler=True,
                          disp=0,
                          generate_kwargs={}):
-        """Wrapper around generate_samples_parallel() from available samplers.
+        """Wrapper around generate_sample_parallel() from available samplers.
 
         Parameters
         ----------
@@ -1603,10 +1603,10 @@ class MCHIncompleteData(MCH):
             # Generate samples from full distribution.
             if run_regular_sampler:
                 # Burn in.
-                self.sampler.generate_samples_parallel( sample_size,
+                self.sampler.generate_sample_parallel( sample_size,
                                                         n_iters=burn_in,
                                                         initial_sample=initial_sample )
-                self.sampler.generate_samples_parallel( sample_size,
+                self.sampler.generate_sample_parallel( sample_size,
                                                         n_iters=n_iters,
                                                         initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
@@ -2664,7 +2664,7 @@ class RegularizedMeanField(Solver):
            burninDefault = 100*self.n
            J = J + J.T
            self.model.set_multipliers(np.concatenate([J.diagonal(), squareform(zero_diag(-J))]))
-           self.model.generate_samples(burninDefault, 1)
+           self.model.generate_sample(burninDefault, 1)
            return self.model.sample
 
         # adapted from findJMatrixBruteForce_CoocMat

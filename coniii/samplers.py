@@ -1485,6 +1485,9 @@ class Metropolis(Sampler):
         
         burn_in = burn_in or n_iters
         assert sample_size>0 and n_iters>-1 and burn_in>-1
+        fixed_subset_ = list(zip(*fixed_subset))
+        assert (np.diff(fixed_subset_[0]) > 0).all()
+        assert frozenset((-1,1)) >= set(fixed_subset_[1])
 
         # reformat for C++ module, note that Boost still relies on 32-bit ints
         fixed_subset = list(zip(*fixed_subset))
@@ -1512,8 +1515,8 @@ class Metropolis(Sampler):
                                               systematic_iter)
                 return bsampler.fetch_sample().astype(int)
             
+            n_cpus = mp.cpu_count()
             with mp.Pool() as pool:
-                n_cpus = mp.cpu_count()
                 self.sample = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
                                                                 self.rng.randint(2**31-1, size=n_cpus)))) )
             self.sample = np.vstack(self.sample)[:sample_size]
@@ -1523,10 +1526,9 @@ class Metropolis(Sampler):
                                 fixed_subset,
                                 burn_in=1000,
                                 n_iters=1000,
-                                n_cpus=None,
                                 initial_sample=None,
                                 systematic_iter=False,
-                                parallel=True):
+                                parallel=False):
         """
         Generate samples from conditional distribution (while a subset of the spins are
         held fixed).  Samples are generated in parallel.
@@ -1543,13 +1545,11 @@ class Metropolis(Sampler):
         burn_in : int, 1000
             Burn in.
         n_iters : int, 1000
-        n_cpus : int, None
-            Number of cpus to use.
         initial_sample : ndarray, None
             Option to set initial random sample.
         systematic_iter : bool, False
             Iterate through spins systematically instead of choosing them randomly.
-        parallel : bool, True
+        parallel : bool, False
             If True, use parallelized routine.
 
         Returns
@@ -1561,7 +1561,9 @@ class Metropolis(Sampler):
         """
 
         nSubset = self.n - len(fixed_subset)
-        fixed_subset_arr = np.array(list(chain.from_iterable(fixed_subset)))  # for jit
+        fixed_subset_ = list(zip(*fixed_subset))
+        assert (np.diff(fixed_subset_[0]) > 0).all()
+        assert frozenset((-1,1)) >= set(fixed_subset_[1])
 
         # Initialize sampler.
         if initial_sample is None:
@@ -1570,11 +1572,28 @@ class Metropolis(Sampler):
             self.sample = initial_sample
         
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
-        cond_calc_e = define_jit_cond_calc_e(self.n, self.calc_e, fixed_subset_arr)
+        def cond_calc_e(state, theta):
+            fullstate = np.zeros((1, self.n), dtype=np.int64)
+            i0 = 0
+            stateix = 0
+            # Fill all spins in between fixed ones.
+            for i, s in fixed_subset:
+                for ii in range(i0, i):
+                    fullstate[0,ii] = state[0,stateix] 
+                    stateix += 1
+                fullstate[0,i] = s
+                i0 = i+1
+            # Any remaining spots to fill.
+            for ii in range(i0, self.n):
+                fullstate[0,ii] = state[0,stateix]
+                stateix += 1
+            return self.calc_e(fullstate, theta)
         self.E = np.array([cond_calc_e(s[None,:], self.theta) for s in self.sample])
 
         # Parallel sample.
         if parallel:
+            # need to recode this to use replicas
+            raise NotImplementedError
             if not systematic_iter:
                 def f(args):
                     s, E, seed = args
@@ -1603,11 +1622,11 @@ class Metropolis(Sampler):
             self.sample = np.vstack(self.sample)
 
         else:
-            s = self.rng.choice([-1,1], size=nSubset)
-            E = cond_calc_e(s[None,:], self.theta)
-            
             if not systematic_iter:
                 def loop():
+                    s = self.rng.choice([-1,1], size=nSubset)
+                    E = cond_calc_e(s[None,:], self.theta)
+ 
                     for j in range(burn_in):
                         de = self.sample_metropolis(s, E, rng=self.rng, calc_e=cond_calc_e)
                         E += de
@@ -1622,6 +1641,9 @@ class Metropolis(Sampler):
                         self.E[i] = E
             else:
                 def loop():
+                    s = self.rng.choice([-1,1], size=nSubset)
+                    E = cond_calc_e(s[None,:], self.theta)
+ 
                     for j in range(burn_in):
                         de = self.sample_metropolis(s, E, rng=self.rng, flip_site=j%nSubset, calc_e=cond_calc_e)
                         E += de
@@ -1634,6 +1656,8 @@ class Metropolis(Sampler):
                             counter += 1
                         self.sample[i,:] = s[:]
                         self.E[i] = E
+            # run sampling
+            loop()
 
         # Insert fixed spins back in.
         counter = 0
@@ -1646,7 +1670,6 @@ class Metropolis(Sampler):
 
         self.sample = np.reshape(self.sample, (sample_size, self.n))
         self.E = np.concatenate(self.E)
-        return self.sample, self.E
 
     def sample_metropolis(self, sample0, E0,
                           rng=None,

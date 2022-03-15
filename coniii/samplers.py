@@ -1492,6 +1492,8 @@ class Metropolis(Sampler):
         # reformat for C++ module, note that Boost still relies on 32-bit ints
         fixed_subset = list(zip(*fixed_subset))
         fixed_subset = np.array(fixed_subset[0], dtype=np.int32), np.array(fixed_subset[1], dtype=np.int32)
+        assert (np.diff(fixed_subset[0]) > 0).all()
+        assert frozenset((-1,1)) >= set(fixed_subset[1].tolist())
        
         if not parallel:
             bsampler = BoostIsing(self.n, self.theta, int(self.rng.randint(0, 2**31-1)))
@@ -1744,7 +1746,7 @@ def define_jit_cond_calc_e(n, calc_e, fixed_subset):
         i0 = 0
         stateix = 0
         # Fill all spins in between fixed ones.
-        for i in range(len(fixed_subset), 2):
+        for i in range(0, fixed_subset.size, 2):
             i = fixed_subset[i]
             s = fixed_subset[i+1]
             for ii in range(i0, i):

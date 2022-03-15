@@ -84,6 +84,7 @@ class Model():
                         multipliers=None,
                         sample_size=None,
                         sample_method=None,
+                        parallel=True,
                         generate_kwargs={}):
         """
         Wrapper around generate_sample() generate_sample_parallel() methods in samplers.
@@ -97,6 +98,7 @@ class Model():
         multipliers : ndarray, None
         sample_size : int, None
         sample_method : str, None
+        parallel : bool, True
         generate_kwargs : dict, {}
         """
 
@@ -108,12 +110,12 @@ class Model():
         sample_size = sample_size or self.sampleSize
         
         # When sequential sampling should be used.
-        if not self.nCpus is None and self.nCpus<=1:
+        if not parallel:
             if sample_method=='metropolis':
                 self.sampler.update_parameters(multipliers)
                 self.sampler.generate_sample(sample_size,
-                                              n_iters=n_iters,
-                                              burn_in=burn_in)
+                                             n_iters=n_iters,
+                                             burn_in=burn_in)
                 self.sample = self.sampler.sample
             else:
                 raise NotImplementedError("Unrecognized sampler.")
@@ -123,8 +125,8 @@ class Model():
                 self.sampler.update_parameters(multipliers)
 
                 self.sampler.generate_sample_parallel(sample_size,
-                                                       n_iters=n_iters,
-                                                       burn_in=burn_in)
+                                                      n_iters=n_iters,
+                                                      burn_in=burn_in)
                 self.sample = self.sampler.sample
             else:
                 raise NotImplementedError("Unrecognized sampler.")

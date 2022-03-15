@@ -178,22 +178,22 @@ void Sampler::generate_cond_sample(np::ndarray new_ix,
     for (int i=0; i<burn_in; ++i) {
         if (systematic_iter) {
             randix = non_ix[counter%(n-ix.size())];
+            counter++;
         } else {
             randix = non_ix[intrng(rd)];
         }
         e += sample_metropolis(s, randix);
-        counter++;
     }
     // record samples
     for (int i=0; i<n_samples; ++i) {
         for (int j=0; j<n_iters; ++j) {
             if (systematic_iter) {
                 randix = non_ix[counter%(n-ix.size())];
+                counter++;
             } else {
                 randix = non_ix[intrng(rd)];
             }
             e += sample_metropolis(s, randix);
-            counter++;
         }
         // copy vector
         sample[i] = s;

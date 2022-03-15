@@ -23,6 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
+v3.0.0 (Released 2022/03)
+----------------------------------------------------
+- Conditional (fixed spin) Metropolis sampling now in C++).
+- Standardized method names for generating samples and data member names for
+  sample to "generate_sample" and the singular "sample".
+
 v2.4.4 (Released 2021/10)
 ----------------------------------------------------
 - Updated conditional Metropolis sampling.

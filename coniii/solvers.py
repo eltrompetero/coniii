@@ -91,10 +91,6 @@ class Solver():
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
-                if self.model.calc_observables is None:
-                    msg = ("Python file enumerating the Ising equations for system of size %d must "+
-                           "be written to use this solver.")
-                    raise Exception(msg%self.n)
             else:
                 self.model = model
 
@@ -115,9 +111,6 @@ class Solver():
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
-                #if self.model.calc_observables is None:
-                #    msg = (f"Python file enumerating the Ising equations for system of size {self.n} must "+
-                #           "be written to use this solver.")
             else:
                 self.model = model
 

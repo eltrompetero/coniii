@@ -1450,7 +1450,6 @@ class Metropolis(Sampler):
                                    fixed_subset,
                                    burn_in=1000,
                                    n_iters=1000,
-                                   n_cpus=None,
                                    initial_sample=None,
                                    systematic_iter=False,
                                    parallel=True):
@@ -1466,8 +1465,6 @@ class Metropolis(Sampler):
         burn_in : int, 1000
             Burn in.
         n_iters : int, 1000
-        n_cpus : int, None
-            Number of cpus to use.
         initial_sample : ndarray, None
             Option to set initial random sample.
         systematic_iter : bool, False

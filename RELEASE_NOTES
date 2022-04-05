@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-v3.0.0 (Released 2022/03)
+v3.0.0 (To be released 2022/05)
 ----------------------------------------------------
 - Conditional (fixed spin) Metropolis sampling now in C++).
 - Standardized method names for generating samples and data member names for

@@ -162,6 +162,41 @@ class Solver():
         """
 
         return np.insert(x, self.insertionIx, fill_value)
+
+    def logp(self, sample=None, run_checks=True):
+        """Estimate log likelihood of given set of states using self.model.sample.
+
+        Parameters
+        ----------
+        sample : ndarray, None
+            Sample of states for which to estimate log likelihood. Default is to use
+            self.sample.
+        run_checks : bool, True
+
+        Returns
+        -------
+        ndarray
+        """
+
+        # verify input
+        sample = sample if not sample is None else self.sample
+        if run_checks:
+            assert isinstance(sample, np.ndarray)
+            assert set(np.unique(sample)) <= frozenset((-1,0,1))
+        if sample.ndim==1:
+            sample = s[None,:]
+
+        # only iterate over unique states in sample
+        us, uix = np.unique(sample, axis=0, return_inverse=True)
+
+        logp = np.zeros(sample.shape[0])
+        for i, s in enumerate(us):
+            # est probability of an observation is frequency of observed subset
+            spin_ix = s!=0
+            p = (s[spin_ix][None,:]==self.model.sample[:,spin_ix]).all(1).sum()
+            p /= self.model.sample.shape[0]
+            logp[uix==i] = p
+        return np.log(logp)
 #end Solver
 
 

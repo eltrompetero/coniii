@@ -42,7 +42,7 @@ DEFAULT_LIBRARY_DR = ['/home/eddie/anaconda3/envs/coniii/include','/home/eddie/a
 # setup
 here = path.abspath(path.dirname(__file__))
 system = platform.system()
-dylibNames = ['boost_python39', 'boost_numpy39']
+dylibNames = ['boost_python38', 'boost_numpy38']
 
 # copy license into package
 copyfile('LICENSE.txt','coniii/LICENSE.txt')

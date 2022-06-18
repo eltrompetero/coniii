@@ -35,14 +35,15 @@ import platform, sys
 # flags
 NO_BOOST = False
 
-# default args (that are modified per system specs below
-EXTRA_COMPILE_ARGS = ['-std=c++11','-I/home/eddie/anaconda3/envs/coniii/include']
-DEFAULT_LIBRARY_DR = ['/home/eddie/anaconda3/envs/coniii/include','/home/eddie/anaconda3/envs/scotus5/include']  # includes places to search for boost lib
+# default args (that are modified per system specs below)
+EXTRA_COMPILE_ARGS = ['-std=c++11',f'-I{os.environ["CONDA_PREFIX"]}/include']
+DEFAULT_LIBRARY_DR = [f'{os.environ["CONDA_PREFIX"]}/include']  # includes places to search for boost lib
 
 # setup
 here = path.abspath(path.dirname(__file__))
 system = platform.system()
-dylibNames = ['boost_python38', 'boost_numpy38']
+py_version = str(sys.version_info.major) + str(sys.version_info.minor)
+dylibNames = [f'boost_python{py_version}', f'boost_numpy{py_version}']
 
 # copy license into package
 copyfile('LICENSE.txt','coniii/LICENSE.txt')

@@ -32,6 +32,8 @@ import multiprocess as mp
 from datetime import datetime
 from multiprocess import Pool, cpu_count
 from warnings import warn
+from itertools import chain
+from numba.typed import List
 
 from .utils import *
 try:
@@ -182,7 +184,7 @@ class Sampler():
     def update_parameters(self, new_parameters):
         return
     
-    def generate_samples(self, sample_size, **kwargs):
+    def generate_sample(self, sample_size, **kwargs):
         """
         Parameters
         ----------
@@ -190,7 +192,7 @@ class Sampler():
         """
         return
 
-    def generate_samples_parallel(self, sample_size, **kwargs):
+    def generate_sample_parallel(self, sample_size, **kwargs):
         """
         Parameters
         ----------
@@ -616,7 +618,6 @@ class ParallelTempering(Sampler):
                  sample_size=1000,
                  replica_burnin=None,
                  rep_ex_burnin=None,
-                 n_cpus=None,
                  rng=None):
         """Run multiple replicas in parallel at different temperatures using Metropolis
         sampling to equilibrate.
@@ -644,8 +645,6 @@ class ParallelTempering(Sampler):
             (from completely uniform distribution).
         rep_ex_burnin : int, n*10
             Default number of Metropolis steps after exchange.
-        n_cpus : int, 0
-            If None, then will use all available CPUs minus 1.
         rng : RandomState, None
         """
         
@@ -657,9 +656,8 @@ class ParallelTempering(Sampler):
         self.theta = theta
         self.calc_e = calc_e
         self.nReplicas = n_replicas
-        self.nCpus = n_cpus or cpu_count()-1
         self.sampleSize = sample_size
-        self.samples = None
+        self.sample = None
         self.replicaBurnin = replica_burnin or n*50
         self.repExBurnin = rep_ex_burnin or n*10
         self.rng = rng or np.random.RandomState()
@@ -684,7 +682,7 @@ class ParallelTempering(Sampler):
 
         self.replicas = []
         for i,b in enumerate(self.beta):
-            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, n_cpus=1, boost=False) )
+            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, boost=False) )
             # give each replica an index
             self.replicas[i].index = i
         self.burn_in_replicas()
@@ -706,11 +704,11 @@ class ParallelTempering(Sampler):
         
         n_iters = n_iters or self.replicaBurnin
 
-        pool = pool or Pool(self.nCpus)
         def f(args):
             rep, nIters = args
-            rep.generate_samples(1, n_iters=nIters, systematic_iter=True)
+            rep.generate_sample(1, n_iters=nIters, systematic_iter=True)
             return rep
+        pool = pool or Pool()
         self.replicas = pool.map(f, zip(self.replicas, [n_iters]*len(self.replicas)))
 
         if close_pool:
@@ -728,9 +726,9 @@ class ParallelTempering(Sampler):
             exchangeProb = self._acceptance_ratio(1, 0, pairs=[(i,i+1)])
             if self.rng.rand()<exchangeProb:
                 # swap replicas (only need to swap samples)
-                temp = self.replicas[i].samples
-                self.replicas[i].samples = self.replicas[i+1].samples
-                self.replicas[i+1].samples = temp
+                temp = self.replicas[i].sample
+                self.replicas[i].sample = self.replicas[i+1].sample
+                self.replicas[i+1].sample = temp
 
                 temp = self.replicas[i]._samples
                 self.replicas[i]._samples = self.replicas[i+1]._samples
@@ -745,7 +743,7 @@ class ParallelTempering(Sampler):
                 self.replicas[i].E = self.replicas[i+1].E/self.beta[i+1]*self.beta[i]
                 self.replicas[i+1].E = temp/self.beta[i]*self.beta[i+1]
 
-    def generate_samples(self,
+    def generate_sample(self,
                          sample_size,
                          save_exchange_trajectory=False):
         """
@@ -766,8 +764,8 @@ class ParallelTempering(Sampler):
             index is located in beta space.
         """
         
-        self.samples = [np.zeros((sample_size,self.n), dtype=int) for i in range(self.nReplicas)]
-        pool = Pool(self.nCpus)
+        self.sample = [np.zeros((sample_size,self.n), dtype=int) for i in range(self.nReplicas)]
+        pool = Pool()
         
         if save_exchange_trajectory:
             replicaIndexHistory = np.zeros((sample_size, self.nReplicas), dtype=int)
@@ -777,7 +775,7 @@ class ParallelTempering(Sampler):
 
                 # save samples
                 for j in range(self.nReplicas):
-                    self.samples[j][i,:] = self.replicas[j].samples[0,:]
+                    self.sample[j][i,:] = self.replicas[j].sample[0,:]
                     replicaIndexHistory[i,j] = self.replicas[j].index
             pool.close()
 
@@ -789,7 +787,7 @@ class ParallelTempering(Sampler):
 
                 # save samples
                 for j in range(self.nReplicas):
-                    self.samples[j][i,:] = self.replicas[j].samples[0,:]
+                    self.sample[j][i,:] = self.replicas[j].sample[0,:]
             pool.close()
     
     @staticmethod
@@ -885,7 +883,7 @@ class ParallelTempering(Sampler):
         ndarray
             Estimate of acceptance ratio for each pair.
         """
-        assert all([len(r.samples)==1 for r in self.replicas])
+        assert all([len(r.sample)==1 for r in self.replicas])
         
         if pairs is None:
             pairs = [(i,i+1) for i in range(self.nReplicas-1)]
@@ -893,7 +891,7 @@ class ParallelTempering(Sampler):
 
         # estimate acceptance probabilities
         if n_iters>0:
-            pool = Pool(self.nCpus)
+            pool = Pool()
             for i in range(n_samples):
                 self.burn_in_replicas(pool=pool, close_pool=False, n_iters=n_iters)
                 
@@ -946,14 +944,14 @@ class ParallelTempering(Sampler):
 #        self.theta = theta
 #        self.h, self.J = theta[:self.n], squareform(theta[self.n:])
 #
-#    def generate_samples(self,
+#    def generate_sample(self,
 #                         sample_size,
 #                         n_iters=1000,
 #                         saveHistory=False,
 #                         initial_sample=None,
 #                         systematic_iter=False):
 #        """
-#        Generate Metropolis samples using a for loop and save samples in self.samples.
+#        Generate Metropolis samples using a for loop and save samples in self.sample.
 #
 #        Parameters
 #        ----------
@@ -984,7 +982,7 @@ class ParallelTempering(Sampler):
 #
 #        E = self.calc_e( self._samples, self.theta )
 #        self.E = np.zeros(sample_size)
-#        self.samples = np.zeros((sample_size, self.n), dtype=int)
+#        self.sample = np.zeros((sample_size, self.n), dtype=int)
 #        h, J = self.h, self.J
 #        n = self.n
 #
@@ -1013,7 +1011,7 @@ class ParallelTempering(Sampler):
 #                        history[counter] = E
 #                        counter += 1
 #                    self.E[i] = E
-#                    self.samples[i,:] = _samples[:]
+#                    self.sample[i,:] = _samples[:]
 #                return history
 #        else:
 #            @jit(locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
@@ -1026,17 +1024,17 @@ class ParallelTempering(Sampler):
 #                        de = sample_metropolis( _samples[0], h, J, get_ix(j, np.random), np.random )
 #                        E += de
 #                    self.E[i] = E
-#                    self.samples[i,:] = _samples[:]
+#                    self.sample[i,:] = _samples[:]
 #        return sample(self.rng.randint(2**32-1))
 #
-#    def generate_samples_parallel(self,
+#    def generate_sample_parallel(self,
 #                                  sample_size,
 #                                  n_iters=1000,
 #                                  n_cpus=None,
 #                                  initial_sample=None,
 #                                  systematic_iter=False):
 #        """
-#        Metropolis sample multiple states in parallel and save them into self.samples.
+#        Metropolis sample multiple states in parallel and save them into self.sample.
 #
 #        Parameters
 #        ----------
@@ -1094,11 +1092,11 @@ class ParallelTempering(Sampler):
 #
 #        # run sampling
 #        pool = mp.Pool(n_cpus)
-#        self.samples, self.E = list(zip(*pool.map(f, args)))
+#        self.sample, self.E = list(zip(*pool.map(f, args)))
 #        pool.close()
 #
 #        # save results of sampling into instance data members
-#        self.samples = np.vstack(self.samples)
+#        self.sample = np.vstack(self.sample)
 #        self.E = np.array(self.E)
 #
 #    def _sample_metropolis(self, sample0, rng=None, flip_site=None):
@@ -1146,7 +1144,6 @@ def _jit_sample_metropolis(sample0, h, J, flip_site, rng):
 class Metropolis(Sampler):
     def __init__(self, n, theta,
                  calc_e=None,
-                 n_cpus=None,
                  rng=None,
                  boost=True,
                  iprint=True):
@@ -1163,8 +1160,6 @@ class Metropolis(Sampler):
             Function for calculating the energy of any given state. Only required if
             default Boost library for sampling from Ising model is not being used.
             Of form f( states, params )
-        n_cpus : int, None
-            If None, then will use all available CPUs.
         rng : np.random.RandomState, None
             Random number generator.
         boost : bool, True 
@@ -1176,8 +1171,6 @@ class Metropolis(Sampler):
         assert type(n) is int, "n must be of type int."
         self.n = n
         self.theta = theta
-        self.nCpus = n_cpus or mp.cpu_count()-1
-        assert type(self.nCpus) is int, "n_cpus must be of type int."
         self.calc_e = calc_e
         self.rng = rng or np.random.RandomState()
         self._samples = None
@@ -1186,16 +1179,18 @@ class Metropolis(Sampler):
         if boost and IMPORTED_SAMPLERS_EXT and self.theta.size==(n*(n-1)//2+n):
             if iprint: warn("Assuming that the model is Ising.")
             # use boost library for fast sampling
-            self.generate_samples = self.generate_samples_boost
-            self.generate_samples_parallel = self.generate_samples_parallel_boost
+            self.generate_sample = self.generate_sample_boost
+            self.generate_sample_parallel = self.generate_sample_parallel_boost
+            self.generate_cond_sample = self.generate_cond_sample_boost
         else:
             if boost and iprint:
                 warn("Boost C++ implementation not available. Defaulting to slower sampling methods.")
             assert not self.calc_e is None
-            self.generate_samples = self.generate_samples_py
-            self.generate_samples_parallel = self.generate_samples_parallel_py
+            self.generate_sample = self.generate_sample_py
+            self.generate_sample_parallel = self.generate_sample_parallel_py
+            self.generate_cond_sample = self.generate_cond_sample_py
 
-    def generate_samples_boost(self,
+    def generate_sample_boost(self,
                                sample_size,
                                n_iters=1000,
                                burn_in=None,
@@ -1219,18 +1214,17 @@ class Metropolis(Sampler):
             Saved array of energies at each sampling step.
         """
         
-        if self.nCpus==1: warn("Sampler's multiprocessing capability is not being used.")
         burn_in = burn_in or n_iters
-        assert sample_size>0 and n_iters>0 and burn_in>0
+        assert sample_size>0 and n_iters>-1 and burn_in>-1
         
         bsampler = BoostIsing(self.n, self.theta, int(self.rng.randint(0, 2**31-1)))
         bsampler.generate_sample(sample_size,
                                  burn_in,
                                  n_iters,
                                  systematic_iter)
-        self.samples = bsampler.fetch_sample().astype(int)
+        self.sample = bsampler.fetch_sample().astype(int)
     
-    def generate_samples_py(self,
+    def generate_sample_py(self,
                             sample_size,
                             n_iters=1000,
                             burn_in=None,
@@ -1262,7 +1256,6 @@ class Metropolis(Sampler):
         """
         
         burn_in = burn_in or n_iters
-        if self.nCpus>1: warn("Sampler's multiprocessing capability is not being used.")
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=sample_size)):
             self._samples = self.random_sample(1)
@@ -1272,7 +1265,7 @@ class Metropolis(Sampler):
             self._samples = initial_sample.astype(int)
 
         E = self.calc_e( self._samples, self.theta )
-        self.samples = np.zeros((sample_size, self.n), dtype=int)
+        self.sample = np.zeros((sample_size, self.n), dtype=int)
         self.E = np.zeros(sample_size)
         
         # burn in
@@ -1296,7 +1289,7 @@ class Metropolis(Sampler):
                         E += de
                         history[counter] = E
                         counter += 1
-                    self.samples[i,:] = self._samples[:]
+                    self.sample[i,:] = self._samples[:]
                     self.E[i] = E
             else:
                 counter = 0
@@ -1306,7 +1299,7 @@ class Metropolis(Sampler):
                         E += de
                         history[counter]=E
                         counter += 1
-                    self.samples[i,:] = self._samples[:]
+                    self.sample[i,:] = self._samples[:]
                     self.E[i] = E
             return history
         else:
@@ -1317,7 +1310,7 @@ class Metropolis(Sampler):
                         de = self.sample_metropolis( self._samples[0], E, flip_site=j%self.n )
                         E += de
                         counter +=1
-                    self.samples[i,:] = self._samples[:]
+                    self.sample[i,:] = self._samples[:]
                     self.E[i] = E
             else:
                 counter = 0
@@ -1326,10 +1319,10 @@ class Metropolis(Sampler):
                         de = self.sample_metropolis( self._samples[0], E )
                         E += de
                         counter += 1
-                    self.samples[i,:] = self._samples[:]
+                    self.sample[i,:] = self._samples[:]
                     self.E[i] = E
 
-    def generate_samples_parallel_boost(self,
+    def generate_sample_parallel_boost(self,
                                         sample_size,
                                         n_iters=1000,
                                         burn_in=None,
@@ -1354,9 +1347,6 @@ class Metropolis(Sampler):
         """
         
         burn_in = burn_in or n_iters
-        n_cpus = self.nCpus  # alias
-        assert n_cpus>=2, "Sampler is not set up for multiprocessing, nCpus<=1."
-        assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
 
         # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
         def f(args, n=self.n, multipliers=self.theta):
@@ -1365,14 +1355,14 @@ class Metropolis(Sampler):
             bsampler.generate_sample(sample_size, burn_in, n_iters, systematic_iter)
             return bsampler.fetch_sample().astype(int)
         
-        pool = mp.Pool(n_cpus)
-        self.samples = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
-                                                        self.rng.randint(2**31-1, size=n_cpus)))) )
-        pool.close()
+        with mp.Pool() as pool:
+            n_cpus = mp.cpu_count()
+            self.sample = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
+                                                            self.rng.randint(2**31-1, size=n_cpus)))) )
 
-        self.samples = np.vstack(self.samples)[:sample_size]
+        self.sample = np.vstack(self.sample)[:sample_size]
 
-    def generate_samples_parallel_py(self,
+    def generate_sample_parallel_py(self,
                                      sample_size,
                                      n_iters=1000,
                                      burn_in=None,
@@ -1401,10 +1391,7 @@ class Metropolis(Sampler):
         """
         
         burn_in = burn_in or n_iters
-        n_cpus = self.nCpus  # alias
-        assert n_cpus>=2, "Instantiate another instance for parallel sampling."
-        assert n_cpus>=2, "Sampler is not set up for multiprocessing, nCpus<=1."
-        assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
+        n_cpus = mp.cpu_count()
         if (initial_sample is None and
             (self._samples is None or len(self._samples)!=n_cpus)):
             self._samples = self.random_sample(n_cpus)
@@ -1413,7 +1400,7 @@ class Metropolis(Sampler):
             self._samples = initial_sample.astype(int)
 
         E = self.calc_e( self._samples, self.theta )
-        self.samples = None  # delete this to speed up pickling for multiprocess
+        self.sample = None  # delete this to speed up pickling for multiprocess
        
         # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
         if not systematic_iter:
@@ -1449,24 +1436,98 @@ class Metropolis(Sampler):
                     samples[i,:] = s[:]
                 return samples, s, E
         
-        pool = mp.Pool(n_cpus)
-        self.samples, self._samples, self.E = list(zip(*pool.map(f,zip(self._samples,
-                                                        E,
-                                                        [int(np.ceil(sample_size/n_cpus))]*n_cpus,
-                                                        self.rng.randint(2**31-1,size=n_cpus)))))
-        pool.close()
+        with mp.Pool() as pool:
+            self.sample, self._samples, self.E = list(zip(*pool.map(f,zip(self._samples,
+                                                            E,
+                                                            [int(np.ceil(sample_size/n_cpus))]*n_cpus,
+                                                            self.rng.randint(2**31-1,size=n_cpus)))))
         
-        self.samples = np.vstack(self.samples)[:sample_size]
+        self.sample = np.vstack(self.sample)[:sample_size]
         self._samples = np.vstack(self._samples)
 
-    def generate_cond_samples(self,
-                              sample_size,
-                              fixed_subset,
-                              burn_in=1000,
-                              n_cpus=None,
-                              initial_sample=None,
-                              systematic_iter=False,
-                              parallel=True):
+    def generate_cond_sample_boost(self,
+                                   sample_size,
+                                   fixed_subset,
+                                   burn_in=1000,
+                                   n_iters=1000,
+                                   initial_sample=None,
+                                   systematic_iter=False,
+                                   parallel=True):
+        """Generate samples from conditional distribution (while a subset of the spins are
+        held fixed).
+
+        Parameters
+        ----------
+        sample_size : int
+        fixed_subset : list of duples
+            Each duple is the index of the spin and the value to fix it at. These should
+            be ordered by spin index.
+        burn_in : int, 1000
+            Burn in.
+        n_iters : int, 1000
+        initial_sample : ndarray, None
+            Option to set initial random sample.
+        systematic_iter : bool, False
+            Iterate through spins systematically instead of choosing them randomly.
+        parallel : bool, True
+            If True, use parallelized routine.
+
+        Returns
+        -------
+        ndarray
+            Samples from distribution.
+        ndarray
+            Energy of each sample.
+        """
+        
+        burn_in = burn_in or n_iters
+        assert sample_size>0 and n_iters>-1 and burn_in>-1
+        fixed_subset_ = list(zip(*fixed_subset))
+        assert (np.diff(fixed_subset_[0]) > 0).all()
+        assert frozenset((-1,1)) >= set(fixed_subset_[1])
+
+        # reformat for C++ module, note that Boost still relies on 32-bit ints
+        fixed_subset = list(zip(*fixed_subset))
+        fixed_subset = np.array(fixed_subset[0], dtype=np.int32), np.array(fixed_subset[1], dtype=np.int32)
+        assert (np.diff(fixed_subset[0]) > 0).all()
+        assert frozenset((-1,1)) >= set(fixed_subset[1].tolist())
+       
+        if not parallel:
+            bsampler = BoostIsing(self.n, self.theta, int(self.rng.randint(0, 2**31-1)))
+            bsampler.generate_cond_sample(fixed_subset[0],
+                                          fixed_subset[1],
+                                          sample_size,
+                                          burn_in,
+                                          n_iters,
+                                          systematic_iter)
+            self.sample = bsampler.fetch_sample().astype(int)
+        else:
+            # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
+            def f(args, n=self.n, multipliers=self.theta):
+                sample_size, seed = args
+                bsampler = BoostIsing(n, multipliers, int(seed))
+                bsampler.generate_cond_sample(fixed_subset[0],
+                                              fixed_subset[1],
+                                              sample_size,
+                                              burn_in,
+                                              n_iters,
+                                              systematic_iter)
+                return bsampler.fetch_sample().astype(int)
+            
+            n_cpus = mp.cpu_count()
+            with mp.Pool() as pool:
+                self.sample = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
+                                                                self.rng.randint(2**31-1, size=n_cpus)))) )
+            self.sample = np.vstack(self.sample)[:sample_size]
+
+    def generate_cond_sample_py(self,
+                                sample_size,
+                                fixed_subset,
+                                burn_in=1000,
+                                n_iters=1000,
+                                initial_sample=None,
+                                systematic_iter=False,
+                                parallel=False):
         """
         Generate samples from conditional distribution (while a subset of the spins are
         held fixed).  Samples are generated in parallel.
@@ -1478,17 +1539,16 @@ class Metropolis(Sampler):
         ----------
         sample_size : int
         fixed_subset : list of duples
-            Each duple is the index of the spin and the value to fix it at.  These should
+            Each duple is the index of the spin and the value to fix it at. These should
             be ordered by spin index.
-        burn_in : int
+        burn_in : int, 1000
             Burn in.
-        n_cpus : int
-            Number of cpus to use.
-        initial_sample : ndarray
+        n_iters : int, 1000
+        initial_sample : ndarray, None
             Option to set initial random sample.
-        systematic_iter : bool
+        systematic_iter : bool, False
             Iterate through spins systematically instead of choosing them randomly.
-        parallel : bool
+        parallel : bool, False
             If True, use parallelized routine.
 
         Returns
@@ -1499,116 +1559,116 @@ class Metropolis(Sampler):
             Energy of each sample.
         """
 
-        n_cpus = n_cpus or self.nCpus
-        nSubset = self.n-len(fixed_subset)
+        nSubset = self.n - len(fixed_subset)
+        fixed_subset_ = list(zip(*fixed_subset))
+        assert (np.diff(fixed_subset_[0]) > 0).all()
+        assert frozenset((-1,1)) >= set(fixed_subset_[1])
 
         # Initialize sampler.
         if initial_sample is None:
-            self.samples = self.rng.choice([-1,1], size=(sample_size,nSubset))
+            self.sample = self.rng.choice([-1,1], size=(sample_size, nSubset))
         else:
-            self.samples = initial_sample
+            self.sample = initial_sample
         
         # Redefine calc_e to calculate energy and putting back in the fixed spins.
         def cond_calc_e(state, theta):
-            """
-            Parameters
-            ----------
-            state : ndarray
-                Free spins (not fixed).
-            theta : ndarray
-                Parameters.
-
-            Returns
-            -------
-            float
-                Energy of state with fixed spins.
-            """
-
-            fullstate = np.zeros((1,self.n))
+            fullstate = np.zeros((1, self.n), dtype=np.int64)
             i0 = 0
             stateix = 0
             # Fill all spins in between fixed ones.
-            for i,s in fixed_subset: 
-                for ii in range(i0,i):
+            for i, s in fixed_subset:
+                for ii in range(i0, i):
                     fullstate[0,ii] = state[0,stateix] 
                     stateix += 1
                 fullstate[0,i] = s
                 i0 = i+1
-            # Any reamining spots to fill.
-            for ii in range(i0,self.n):
+            # Any remaining spots to fill.
+            for ii in range(i0, self.n):
                 fullstate[0,ii] = state[0,stateix]
                 stateix += 1
-            return self.calc_e(fullstate,theta)
-        self.E = np.array([ cond_calc_e( s[None,:], self.theta ) for s in self.samples ])
-        
+            return self.calc_e(fullstate, theta)
+        self.E = np.array([cond_calc_e(s[None,:], self.theta) for s in self.sample])
+
         # Parallel sample.
         if parallel:
+            # need to recode this to use replicas
+            raise NotImplementedError
             if not systematic_iter:
                 def f(args):
-                    s,E,seed = args
+                    s, E, seed = args
                     rng = np.random.RandomState(seed)
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=rng,calc_e=cond_calc_e )
+                        de = self.sample_metropolis(s, E, rng=rng, calc_e=cond_calc_e)
                         E += de
-                    return s,E
+                    return s, E
             else:
                 def f(args):
-                    s,E,seed=args
+                    s, E, seed = args
                     rng = np.random.RandomState(seed)
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                        de = self.sample_metropolis(s, E, rng=rng, flip_site=j%nSubset, calc_e=cond_calc_e)
                         E += de
-                    return s,E
+                    return s, E
             
-            # avoid pickling a copy of self.samples into every thread
-            samples = self.samples
-            self.samples = None
+            # avoid pickling a copy of self.sample into every thread
+            samples = self.sample
+            self.sample = None
 
-            #start = datetime.now()
-            pool=mp.Pool(n_cpus)
-            #poolt = datetime.now()
-            args = zip(samples, self.E, self.rng.randint(0, 2**31-1, size=sample_size))
-            self.samples, self.E=list(zip(*pool.map(f, args)))
-            self.samples = np.vstack(self.samples)
-            #samplet = datetime.now()
-            pool.close()
-            #poolcloset = datetime.now()
+            with mp.Pool() as pool:
+                # evolve each sample for burn_in steps
+                args = zip(samples, self.E, self.rng.randint(0, 2**31-1, size=sample_size))
+                self.sample, self.E = list(zip(*pool.map(f, args)))
+            self.sample = np.vstack(self.sample)
 
-            #print "%1.1fs, %1.1fs, %1.1fs"%((poolt-start).total_seconds(),
-            #                                (samplet-poolt).total_seconds(),
-            #                                (poolcloset-samplet).total_seconds())
         else:
             if not systematic_iter:
-                def f(args):
-                    s, E = args
+                def loop():
+                    s = self.rng.choice([-1,1], size=nSubset)
+                    E = cond_calc_e(s[None,:], self.theta)
+ 
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=self.rng,calc_e=cond_calc_e )
+                        de = self.sample_metropolis(s, E, rng=self.rng, calc_e=cond_calc_e)
                         E += de
-                    return s, E
+
+                    counter = 0
+                    for i in range(sample_size):
+                        for j in range(n_iters):
+                            de = self.sample_metropolis(s, E, rng=self.rng, calc_e=cond_calc_e)
+                            E += de
+                            counter += 1
+                        self.sample[i,:] = s[:]
+                        self.E[i] = E
             else:
-                def f(args):
-                    s, E=args
+                def loop():
+                    s = self.rng.choice([-1,1], size=nSubset)
+                    E = cond_calc_e(s[None,:], self.theta)
+ 
                     for j in range(burn_in):
-                        de = self.sample_metropolis( s,E,rng=self.rng,flip_site=j%nSubset,calc_e=cond_calc_e )
+                        de = self.sample_metropolis(s, E, rng=self.rng, flip_site=j%nSubset, calc_e=cond_calc_e)
                         E += de
-                    return s, E
-           
-            for i in range(len(self.samples)):
-                s, E = f((self.samples[i],self.E[i]))
-                self.samples[i] = s
-                self.E[i] = E
+
+                    counter = 0
+                    for i in range(sample_size):
+                        for j in range(n_iters):
+                            de = self.sample_metropolis(s, E, rng=self.rng, flip_site=j%nSubset, calc_e=cond_calc_e)
+                            E += de
+                            counter += 1
+                        self.sample[i,:] = s[:]
+                        self.E[i] = E
+            # run sampling
+            loop()
 
         # Insert fixed spins back in.
         counter = 0
-        for i,s in fixed_subset:
+        for i, s in fixed_subset:
             if i==0:
-                self.samples = np.insert(self.samples, list(range(i,self.samples.size,nSubset+counter)), s)
+                self.sample = np.insert(self.sample, list(range(i, self.sample.size, nSubset+counter)), s)
             else:
-                self.samples = np.insert(self.samples, list(range(i,self.samples.size+1,nSubset+counter)), s)
+                self.sample = np.insert(self.sample, list(range(i, self.sample.size+1, nSubset+counter)), s)
             counter += 1
-        self.samples = np.reshape(self.samples, (sample_size,self.n))
+
+        self.sample = np.reshape(self.sample, (sample_size, self.n))
         self.E = np.concatenate(self.E)
-        return self.samples, self.E
 
     def sample_metropolis(self, sample0, E0,
                           rng=None,
@@ -1659,6 +1719,44 @@ class Metropolis(Sampler):
         assert self.theta.size==theta.size, "New parameters must be of same size."
 
         self.theta = theta.copy()
+
+def define_jit_cond_calc_e(n, calc_e, fixed_subset):
+    """
+    Redefine calc_e to calculate energy and putting back in the fixed spins.
+
+    Parameters
+    ----------
+    state : ndarray
+        Free spins (not fixed).
+    theta : ndarray
+        Parameters.
+
+    Returns
+    -------
+    float
+        Energy of state with fixed spins.
+    """
+    
+    @njit
+    def cond_calc_e(state, theta, fixed_subset=fixed_subset):
+        fullstate = np.zeros((1, n), dtype=np.int64)
+        i0 = 0
+        stateix = 0
+        # Fill all spins in between fixed ones.
+        for i in range(0, fixed_subset.size, 2):
+            i = fixed_subset[i]
+            s = fixed_subset[i+1]
+            for ii in range(i0, i):
+                fullstate[0,ii] = state[0,stateix] 
+                stateix += 1
+            fullstate[0,i] = s
+            i0 = i+1
+        # Any remaining spots to fill.
+        for ii in range(i0, n):
+            fullstate[0,ii] = state[0,stateix]
+            stateix += 1
+        return calc_e(fullstate, theta)
+    return cond_calc_e
 #end Metropolis
 
 
@@ -1709,16 +1807,16 @@ class Potts3(Metropolis):
             self.bsampler = BoostPotts3(n, theta, self.rng.randint(2**31-1))
 
             # use boost library for fast sampling
-            self.generate_samples = self.generate_samples_boost
-            self.generate_samples_parallel = self.generate_samples_parallel_boost
+            self.generate_sample = self.generate_sample_boost
+            self.generate_sample_parallel = self.generate_sample_parallel_boost
         else:
             if boost:
                 warn("Boost library not available. Defaulting to slower sampling methods.")
             assert not self.calc_e is None
-            self.generate_samples = self.generate_samples_py
-            self.generate_samples_parallel = self.generate_samples_parallel_py
+            self.generate_sample = self.generate_sample_py
+            self.generate_sample_parallel = self.generate_sample_parallel_py
 
-    def generate_samples_parallel_boost(self,
+    def generate_sample_parallel_boost(self,
                                         sample_size,
                                         n_iters=1000,
                                         burn_in=None,
@@ -1755,11 +1853,11 @@ class Potts3(Metropolis):
             return bsampler.fetch_sample().astype(int)
         
         pool = mp.Pool(n_cpus)
-        self.samples = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
+        self.sample = np.vstack( list(pool.map(f, zip([int(np.ceil(sample_size/n_cpus))]*n_cpus,
                                                         self.rng.randint(2**31-1, size=n_cpus)))) )
         pool.close()
 
-        self.samples = np.vstack(self.samples)[:sample_size]
+        self.sample = np.vstack(self.sample)[:sample_size]
 
     def sample_metropolis(self, sample0, E0,
                           rng=None,
@@ -1900,7 +1998,7 @@ class HamiltonianMC(Sampler):
             return x,history
         return x
     
-    def generate_samples(self, nSamples, nBurn=100, fast=True, x0=None):
+    def generate_sample(self, nSamples, nBurn=100, fast=True, x0=None):
         """Generate nSamples from this Hamiltonian starting from random initial conditions
         from each sample.
         """
@@ -2010,7 +2108,7 @@ class Heisenberg3DSampler(Sampler):
 
     Methods
     -------
-    generate_samples()
+    generate_sample()
     equilibrate_samples()
     sample_metropolis()
     sample_energy_min()
@@ -2042,7 +2140,7 @@ class Heisenberg3DSampler(Sampler):
         self.random_sample = random_sample
         self.rng = np.random.RandomState()
         
-    def generate_samples(self, nSamples, n_iters=100, **kwargs):
+    def generate_sample(self, nSamples, n_iters=100, **kwargs):
         # Initialize random samples
         samples = self.random_sample(self.rng,nSamples)
         self.equilibrate_samples( samples, n_iters,**kwargs )
@@ -2313,22 +2411,22 @@ def check_e_logp(sample, calc_e):
     return uniqStates,uniqueE,np.log(stateCount)
 
 def sample_ising(multipliers, n_samples,
-                 n_cpus=None,
                  seed=None,
-                 generate_samples_kw={}):
+                 parallel=True,
+                 generate_sample_kw={}):
     """Easy way to Metropolis sample from Ising model.
 
     Parameters
     ----------
-    multipliers : ndarray
+    multipliers : ndarray or twople
         N individual fields followed by N(N-1)/2 pairwise couplings.
     n_samples : int
         Number of samples to take.
-    n_cpus : int, None
-        Number of cpus to use. If more than one, multiprocessing invoked.
     seed : int, None
         Random number generator seed.
-    generate_samples_kw : dict, {}
+    parallel : bool, True
+        If True, use parallelized sampling routine.
+    generate_sample_kw : dict, {}
         Any extra arguments to send into Metropolis sampler. Default args are
              n_iters=1000
              systematic_iter=False
@@ -2341,25 +2439,25 @@ def sample_ising(multipliers, n_samples,
         Matrix of dimensions (n_samples, n).
     """
     
-    multipliers = np.array(multipliers)
-    n_cpus = n_cpus or cpu_count()
+    if len(multipliers)==2:
+        multipliers = np.concatenate(multipliers)
+    else:
+        multipliers = np.array(multipliers)
 
     rng = np.random.RandomState(seed=seed)
-    multipliers = multipliers
     n = 0.5 * (-1 + np.sqrt(1 + 8*len(multipliers)) )
     assert n == int(n),"The length of multipliers vector does not correspond to an integer number of spins."
     
     calc_e = define_ising_helper_functions()[0]
 
     sampler = Metropolis(int(n), multipliers,
-                         n_cpus=n_cpus,
                          rng=rng,
                          iprint=False,
                          calc_e=calc_e)
     
     # generate samples
-    if n_cpus > 1:
-        sampler.generate_samples_parallel(n_samples, **generate_samples_kw)
+    if parallel:
+        sampler.generate_sample_parallel(n_samples, **generate_sample_kw)
     else:
-        sampler.generate_samples(n_samples, **generate_samples_kw)
-    return sampler.samples
+        sampler.generate_sample(n_samples, **generate_sample_kw)
+    return sampler.sample

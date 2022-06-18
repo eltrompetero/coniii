@@ -91,10 +91,6 @@ class Solver():
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
-                if self.model.calc_observables is None:
-                    msg = ("Python file enumerating the Ising equations for system of size %d must "+
-                           "be written to use this solver.")
-                    raise Exception(msg%self.n)
             else:
                 self.model = model
 
@@ -115,9 +111,6 @@ class Solver():
 
             if model is None:
                 self.model = Ising(np.zeros((self.n**2+self.n)//2), **model_kwargs)
-                #if self.model.calc_observables is None:
-                #    msg = (f"Python file enumerating the Ising equations for system of size {self.n} must "+
-                #           "be written to use this solver.")
             else:
                 self.model = model
 
@@ -169,6 +162,41 @@ class Solver():
         """
 
         return np.insert(x, self.insertionIx, fill_value)
+
+    def logp(self, sample=None, run_checks=True):
+        """Estimate log likelihood of given set of states using self.model.sample.
+
+        Parameters
+        ----------
+        sample : ndarray, None
+            Sample of states for which to estimate log likelihood. Default is to use
+            self.sample.
+        run_checks : bool, True
+
+        Returns
+        -------
+        ndarray
+        """
+
+        # verify input
+        sample = sample if not sample is None else self.sample
+        if run_checks:
+            assert isinstance(sample, np.ndarray)
+            assert set(np.unique(sample)) <= frozenset((-1,0,1))
+        if sample.ndim==1:
+            sample = s[None,:]
+
+        # only iterate over unique states in sample
+        us, uix = np.unique(sample, axis=0, return_inverse=True)
+
+        logp = np.zeros(sample.shape[0])
+        for i, s in enumerate(us):
+            # est probability of an observation is frequency of observed subset
+            spin_ix = s!=0
+            p = (s[spin_ix][None,:]==self.model.sample[:,spin_ix]).all(1).sum()
+            p /= self.model.sample.shape[0]
+            logp[uix==i] = p
+        return np.log(logp)
 #end Solver
 
 
@@ -883,7 +911,7 @@ class MCH(Solver):
         
         
         # Generate initial set of samples.
-        self.model.generate_samples(n_iters, burn_in,
+        self.model.generate_sample(n_iters, burn_in,
                                     multipliers=self._multipliers,
                                     generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.model.sample).mean(0)
@@ -907,7 +935,7 @@ class MCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.model.generate_samples(n_iters, burn_in,
+            self.model.generate_sample(n_iters, burn_in,
                                         multipliers=self._multipliers,
                                         generate_kwargs=generate_kwargs)
             thisConstraints = self.calc_observables(self.model.sample).mean(0)
@@ -930,6 +958,12 @@ class MCH(Solver):
                 learn_params_kwargs, self.model.sampleSize = custom_convergence_f(counter)
         
         self.multipliers = self._multipliers.copy()
+
+        # generate sample given these multipliers
+        self.model.generate_sample(n_iters, burn_in,
+                                    multipliers=self._multipliers,
+                                    generate_kwargs=generate_kwargs)
+        
         if full_output:
             return self.multipliers, errflag, np.vstack(errors)
         return self.multipliers
@@ -1206,7 +1240,7 @@ class SparseMCH(Solver):
         assert type(custom_convergence_f(0)[1]) is int
         
         # Generate initial set of samples.
-        self.model.generate_samples(n_iters, burn_in,
+        self.model.generate_sample(n_iters, burn_in,
                                     multipliers=self._multipliers,
                                     generate_kwargs=generate_kwargs)
         thisConstraints = self.calc_observables(self.model.sample).mean(0)[self.parameterIx]
@@ -1230,7 +1264,7 @@ class SparseMCH(Solver):
             # MC sampling step
             if iprint:
                 print("Sampling...")
-            self.model.generate_samples( n_iters, burn_in,
+            self.model.generate_sample( n_iters, burn_in,
                                          multipliers=self._multipliers,
                                          generate_kwargs=generate_kwargs )
             thisConstraints = self.calc_observables(self.model.sample).mean(0)[self.parameterIx]
@@ -1426,7 +1460,7 @@ class MCHIncompleteData(MCH):
         # Sample.
         if disp:
             print("Sampling...")
-        self.generate_samples(n_iters,burn_in,
+        self.generate_sample(n_iters,burn_in,
                               uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                               generate_kwargs=generate_kwargs,disp=disp)
         thisConstraints = self.calc_observables(self.samples).mean(0)
@@ -1451,7 +1485,7 @@ class MCHIncompleteData(MCH):
             # Sample.
             if disp:
                 print("Sampling...")
-            self.generate_samples(n_iters,burn_in,
+            self.generate_sample(n_iters,burn_in,
                                   uIncompleteStates,f_cond_sample_size,f_cond_sample_iters,
                                   generate_kwargs=generate_kwargs,disp=disp)
 
@@ -1554,7 +1588,7 @@ class MCHIncompleteData(MCH):
         self._multipliers += dlamda
         return estConstraints
 
-    def generate_samples(self, n_iters, burn_in, 
+    def generate_sample(self, n_iters, burn_in, 
                          uIncompleteStates=None,
                          f_cond_sample_size=None,
                          f_cond_sample_iters=None,
@@ -1565,7 +1599,7 @@ class MCHIncompleteData(MCH):
                          run_cond_sampler=True,
                          disp=0,
                          generate_kwargs={}):
-        """Wrapper around generate_samples_parallel() from available samplers.
+        """Wrapper around generate_sample_parallel() from available samplers.
 
         Parameters
         ----------
@@ -1597,10 +1631,10 @@ class MCHIncompleteData(MCH):
             # Generate samples from full distribution.
             if run_regular_sampler:
                 # Burn in.
-                self.sampler.generate_samples_parallel( sample_size,
+                self.sampler.generate_sample_parallel( sample_size,
                                                         n_iters=burn_in,
                                                         initial_sample=initial_sample )
-                self.sampler.generate_samples_parallel( sample_size,
+                self.sampler.generate_sample_parallel( sample_size,
                                                         n_iters=n_iters,
                                                         initial_sample=self.sampler.samples )
                 self.samples = self.sampler.samples
@@ -2658,7 +2692,7 @@ class RegularizedMeanField(Solver):
            burninDefault = 100*self.n
            J = J + J.T
            self.model.set_multipliers(np.concatenate([J.diagonal(), squareform(zero_diag(-J))]))
-           self.model.generate_samples(burninDefault, 1)
+           self.model.generate_sample(burninDefault, 1)
            return self.model.sample
 
         # adapted from findJMatrixBruteForce_CoocMat

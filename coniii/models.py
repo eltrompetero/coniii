@@ -59,13 +59,11 @@ class Model():
         if sample_method=='metropolis' and (type(self) is Ising or type(self) is Triplet):
             self.sampleMethod = sample_method
             self.sampler = Metropolis(self.n, self.multipliers, self.calc_e,
-                                      n_cpus=self.nCpus,
                                       rng=self.rng,
                                       **sampler_kwargs)
         elif sample_method=='metropolis' and type(self) is Potts3:
             self.sampleMethod = sample_method
             self.sampler = mcPotts3(self.n, self.multipliers, self.calc_e,
-                                    n_cpus=self.nCpus,
                                     rng=self.rng,
                                     **sampler_kwargs)
         else:
@@ -82,13 +80,14 @@ class Model():
         self.rng = rng
         self.sampler.rng = rng
 
-    def generate_samples(self, n_iters, burn_in,
-                         multipliers=None,
-                         sample_size=None,
-                         sample_method=None,
-                         generate_kwargs={}):
+    def generate_sample(self, n_iters, burn_in,
+                        multipliers=None,
+                        sample_size=None,
+                        sample_method=None,
+                        parallel=True,
+                        generate_kwargs={}):
         """
-        Wrapper around generate_samples() generate_samples_parallel() methods in samplers.
+        Wrapper around generate_sample() generate_sample_parallel() methods in samplers.
 
         Samples are saved to self.sample.
 
@@ -99,6 +98,7 @@ class Model():
         multipliers : ndarray, None
         sample_size : int, None
         sample_method : str, None
+        parallel : bool, True
         generate_kwargs : dict, {}
         """
 
@@ -110,13 +110,13 @@ class Model():
         sample_size = sample_size or self.sampleSize
         
         # When sequential sampling should be used.
-        if not self.nCpus is None and self.nCpus<=1:
+        if not parallel:
             if sample_method=='metropolis':
                 self.sampler.update_parameters(multipliers)
-                self.sampler.generate_samples(sample_size,
-                                              n_iters=n_iters,
-                                              burn_in=burn_in)
-                self.sample = self.sampler.samples
+                self.sampler.generate_sample(sample_size,
+                                             n_iters=n_iters,
+                                             burn_in=burn_in)
+                self.sample = self.sampler.sample
             else:
                 raise NotImplementedError("Unrecognized sampler.")
         # When parallel sampling using the multiprocess module.
@@ -124,10 +124,10 @@ class Model():
             if sample_method=='metropolis':
                 self.sampler.update_parameters(multipliers)
 
-                self.sampler.generate_samples_parallel(sample_size,
-                                                       n_iters=n_iters,
-                                                       burn_in=burn_in)
-                self.sample = self.sampler.samples
+                self.sampler.generate_sample_parallel(sample_size,
+                                                      n_iters=n_iters,
+                                                      burn_in=burn_in)
+                self.sample = self.sampler.sample
             else:
                 raise NotImplementedError("Unrecognized sampler.")
 #end Model

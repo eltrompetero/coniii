@@ -120,7 +120,6 @@ $ python --version
 ```
 
 ConIII has been tested on the following systems
-* Ubuntu 18.04
 * Ubuntu 20.04.1
 
 Trouble compiling the Boost extension manually? Check if your Boost library is

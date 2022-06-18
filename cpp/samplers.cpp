@@ -128,11 +128,77 @@ void Sampler::generate_sample(int const n_samples,
             counter++;
         }
         // copy vector
-        for (int j=0; j<n; ++j) {
-            sample[i] = s;
-        }
+        sample[i] = s;
     }
 };//end generate_sample
+
+void Sampler::generate_cond_sample(np::ndarray new_ix,
+                                   np::ndarray new_vals,
+                                   int const n_samples,
+                                   int const burn_in,
+                                   int const n_iters,
+                                   bool const systematic_iter) {
+    std::uniform_int_distribution<> unitrng(0,1);
+    std::uniform_int_distribution<int> intrng(0,n-1-new_ix.shape(0));
+    sample = std::vector<std::vector<int>> (n_samples, std::vector<int>(n,0));
+    std::vector<int> s(n);  // state that we are randomly flipping
+    std::vector<int> ix;  // indices of spins to fix
+    std::vector<int> non_ix;  // indices of variable spins
+    std::vector<int> vals;  // values of spins to fix
+    double e;  // energy of current state
+    int randix;
+    int counter = 0;
+    
+    // set up indices
+    ix.clear();
+    vals.clear();
+    readin_fixed_set(ix, vals, new_ix, new_vals);
+    for (int i=0; i<n; i++) {
+        if ((counter < ix.size()) && (i!=ix[counter])) {
+            non_ix.push_back(i);
+        } else if (counter < ix.size()) {
+            counter++;
+        } else {
+            non_ix.push_back(i);
+        }
+    }
+    // reset counter
+    counter = 0;
+    assert ((ix.size() + non_ix.size())==n);
+
+    // initialize random starting vector
+    s = init_sample();
+    for (int i=0; i<ix.size(); i++) {
+        s[ix[i]] = vals[i];
+    }
+    e = calc_e(s);
+    
+    // generate random samples
+    // burn in
+    for (int i=0; i<burn_in; ++i) {
+        if (systematic_iter) {
+            randix = non_ix[counter%(n-ix.size())];
+            counter++;
+        } else {
+            randix = non_ix[intrng(rd)];
+        }
+        e += sample_metropolis(s, randix);
+    }
+    // record samples
+    for (int i=0; i<n_samples; ++i) {
+        for (int j=0; j<n_iters; ++j) {
+            if (systematic_iter) {
+                randix = non_ix[counter%(n-ix.size())];
+                counter++;
+            } else {
+                randix = non_ix[intrng(rd)];
+            }
+            e += sample_metropolis(s, randix);
+        }
+        // copy vector
+        sample[i] = s;
+    }
+};//end generate_cond_sample
 
 np::ndarray Sampler::fetch_sample() {
     // flatten sample
@@ -190,6 +256,24 @@ void Sampler::print(int const nshow) {
     std::cout << "\n\n";
     return;
 };
+
+// read in values of fixed spins and their values
+void Sampler::readin_fixed_set(std::vector<int> &ix,
+                               std::vector<int> &vals,
+                               np::ndarray new_ix,
+                               np::ndarray new_vals) {
+    assert (new_ix.shape(0)==new_vals.shape(0));
+    int n_subset = new_ix.shape(0);
+    int* input_ptr_ix = reinterpret_cast<int*>(new_ix.get_data());
+    int* input_ptr_vals = reinterpret_cast<int*>(new_vals.get_data());
+
+    for (int i = 0; i < n_subset; i++) {
+        ix.push_back(*(input_ptr_ix + i));
+        vals.push_back(*(input_ptr_vals + i));
+    }
+};
+
+
 
 // ================
 // Ising class

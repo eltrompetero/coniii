@@ -3,15 +3,16 @@
 
 <html>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
     <title>coniii.ising.automaton module &#8212; ConIII 1.1.9 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="coniii.ising.test_automaton module" href="coniii.ising.test_automaton.html" />
@@ -32,17 +33,17 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-coniii.ising.automaton">
+  <section id="module-coniii.ising.automaton">
 <span id="coniii-ising-automaton-module"></span><h1>coniii.ising.automaton module<a class="headerlink" href="#module-coniii.ising.automaton" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="coniii.ising.automaton.Ising2D">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.ising.automaton.</span></code><code class="sig-name descname"><span class="pre">Ising2D</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.ising.automaton.</code><code class="sig-name descname">Ising2D</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dim</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simulation of the ferromagnetic Ising model on a 2D periodic lattice with quenched disorder
 in the local fields.</p>
 <dl class="py method">
 <dt id="coniii.ising.automaton.Ising2D.flip_metropolis">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">flip_metropolis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lattice</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D.flip_metropolis" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">flip_metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">h</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">lattice</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D.flip_metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flip a single lattice spin using Metropolis sampling.</p>
 <p>i : int
 j : int</p>
@@ -50,7 +51,7 @@ j : int</p>
 
 <dl class="py method">
 <dt id="coniii.ising.automaton.Ising2D.iterate">
-<code class="sig-name descname"><span class="pre">iterate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D.iterate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">iterate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">systematic</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.Ising2D.iterate" title="Permalink to this definition">¶</a></dt>
 <dd><p>n_iters : int
 systematic : bool,True</p>
 <blockquote>
@@ -62,7 +63,7 @@ systematic : bool,True</p>
 
 <dl class="py function">
 <dt id="coniii.ising.automaton.coarse_grain">
-<code class="sig-prename descclassname"><span class="pre">coniii.ising.automaton.</span></code><code class="sig-name descname"><span class="pre">coarse_grain</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lattice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.coarse_grain" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.ising.automaton.</code><code class="sig-name descname">coarse_grain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lattice</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.ising.automaton.coarse_grain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Block spin renormalization with majority rule.</p>
 <dl class="simple">
 <dt>lattice<span class="classifier">ndarray</span></dt><dd><p>+/-1</p>
@@ -72,7 +73,7 @@ systematic : bool,True</p>
 <p>renormalized_lattice : ndarray</p>
 </dd></dl>
 
-</div>
+</section>
 
 
           </div>
@@ -91,7 +92,7 @@ systematic : bool,True</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate_potts.html">coniii.enumerate_potts module</a></li>
@@ -142,7 +143,7 @@ systematic : bool,True</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

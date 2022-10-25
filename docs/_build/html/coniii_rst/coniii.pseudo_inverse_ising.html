@@ -3,15 +3,16 @@
 
 <html>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
     <title>coniii.pseudo_inverse_ising module &#8212; ConIII 1.1.9 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -30,11 +31,11 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-coniii.pseudo_inverse_ising">
+  <section id="module-coniii.pseudo_inverse_ising">
 <span id="coniii-pseudo-inverse-ising-module"></span><h1>coniii.pseudo_inverse_ising module<a class="headerlink" href="#module-coniii.pseudo_inverse_ising" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.conditionalHessian">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">conditionalHessian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Jr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairCoocRhat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalHessian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">conditionalHessian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">Jr</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">pairCoocRhat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalHessian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns d^2 conditionalLogLikelihood / d Jri d Jrj,
 with shape (dimension of system)x(dimension of system)</p>
 <dl class="simple">
@@ -48,14 +49,14 @@ if too much memory is being used.</p>
 
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.conditionalJacobian">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">conditionalJacobian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Jr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalJacobian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">conditionalJacobian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">Jr</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalJacobian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns d conditionalLogLikelihood / d Jr,
 with shape (dimension of system)</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.conditionalLogLikelihood">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">conditionalLogLikelihood</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Jr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalLogLikelihood" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">conditionalLogLikelihood</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">Jr</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.conditionalLogLikelihood" title="Permalink to this definition">¶</a></dt>
 <dd><p>(Equals -L_r from my notes.)</p>
 <p>r           : individual index
 samples     : binary matrix, (# samples) x (dimension of system)
@@ -65,7 +66,7 @@ minSize (0) : minimum number of participants (set to 2 for fights)</p>
 
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.pairCoocMat">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">pairCoocMat</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pairCoocMat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">pairCoocMat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pairCoocMat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns matrix of shape (ell)x(# samples)x(ell).</p>
 <p>For use with conditionalHessian.</p>
 <p>Slow because I haven’t thought of a better way of doing it yet.</p>
@@ -73,7 +74,7 @@ minSize (0) : minimum number of participants (set to 2 for fights)</p>
 
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.pseudoInverseIsing">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">pseudoInverseIsing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pseudoInverseIsing" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">pseudoInverseIsing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pseudoInverseIsing" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>minSize (0)<span class="classifier">minimum number of participants per sample</span></dt><dd><p>(set to 2 for fights)</p>
 </dd>
@@ -82,7 +83,7 @@ minSize (0) : minimum number of participants (set to 2 for fights)</p>
 
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.pseudoLogLikelihood">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">pseudoLogLikelihood</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pseudoLogLikelihood" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">pseudoLogLikelihood</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.pseudoLogLikelihood" title="Permalink to this definition">¶</a></dt>
 <dd><p>samples     : binary matrix, (# samples) x (dimension of system)
 J           : (dimension of system) x (dimension of system)</p>
 <blockquote>
@@ -93,10 +94,10 @@ J           : (dimension of system) x (dimension of system)</p>
 
 <dl class="py function">
 <dt id="coniii.pseudo_inverse_ising.testDerivatives">
-<code class="sig-prename descclassname"><span class="pre">coniii.pseudo_inverse_ising.</span></code><code class="sig-name descname"><span class="pre">testDerivatives</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaMax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.testDerivatives" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.pseudo_inverse_ising.</code><code class="sig-name descname">testDerivatives</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">minSize</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">deltaMax</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.pseudo_inverse_ising.testDerivatives" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</div>
+</section>
 
 
           </div>
@@ -115,7 +116,7 @@ J           : (dimension of system) x (dimension of system)</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate_potts.html">coniii.enumerate_potts module</a></li>
@@ -158,7 +159,7 @@ J           : (dimension of system) x (dimension of system)</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

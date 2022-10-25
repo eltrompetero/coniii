@@ -3,15 +3,16 @@
 
 <html>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
     <title>coniii.samplers module &#8212; ConIII 1.1.9 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="coniii.utils module" href="coniii.utils.html" />
@@ -32,22 +33,22 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-coniii.samplers">
+  <section id="module-coniii.samplers">
 <span id="coniii-samplers-module"></span><h1>coniii.samplers module<a class="headerlink" href="#module-coniii.samplers" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="coniii.samplers.HamiltonianMC">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">HamiltonianMC</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leapfrogN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nCpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">HamiltonianMC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">calc_e</span></em>, <em class="sig-param"><span class="n">random_sample</span></em>, <em class="sig-param"><span class="n">grad_e</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">leapfrogN</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">nCpus</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="py method">
-<dt id="coniii.samplers.HamiltonianMC.generate_samples">
-<code class="sig-name descname"><span class="pre">generate_samples</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nSamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nBurn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.HamiltonianMC.generate_sample">
+<code class="sig-name descname">generate_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nSamples</span></em>, <em class="sig-param"><span class="n">nBurn</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">fast</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.generate_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate nSamples from this Hamiltonian starting from random initial conditions
 from each sample.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.HamiltonianMC.sample">
-<code class="sig-name descname"><span class="pre">sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nBurn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveHistory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">nBurn</span></em>, <em class="sig-param"><span class="n">saveHistory</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.HamiltonianMC.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a single sample by MC sampling from this Hamiltonian. Slow method</p>
 </dd></dl>
 
@@ -55,27 +56,27 @@ from each sample.</p>
 
 <dl class="py class">
 <dt id="coniii.samplers.Heisenberg3DSampler">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">Heisenberg3DSampler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_sample</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Heisenberg3DSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">calc_e</span></em>, <em class="sig-param"><span class="n">random_sample</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <p>Simple MC Sampling from Heisenberg model with a lot of helpful functions.</p>
-<p>generate_samples()
+<p>generate_sample()
 equilibrate_samples()
 sample_metropolis()
 sample_energy_min()</p>
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.equilibrate_samples">
-<code class="sig-name descname"><span class="pre">equilibrate_samples</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mc'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nCpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.equilibrate_samples" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">equilibrate_samples</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'mc'</span></em>, <em class="sig-param"><span class="n">nCpus</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.equilibrate_samples" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.Heisenberg3DSampler.generate_samples">
-<code class="sig-name descname"><span class="pre">generate_samples</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nSamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Heisenberg3DSampler.generate_sample">
+<code class="sig-name descname">generate_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nSamples</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.generate_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>sample_size : int</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.grad_E">
-<code class="sig-name descname"><span class="pre">grad_E</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.grad_E" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">grad_E</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.grad_E" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gradient wrt theta and phi.</p>
 <dl class="simple">
 <dt>X<span class="classifier">ndarray</span></dt><dd><p>with dims (nSpins,2) with angles theta and phi</p>
@@ -85,7 +86,7 @@ sample_energy_min()</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_energy_min">
-<code class="sig-name descname"><span class="pre">sample_energy_min</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">nFixed=0</span></em>, <em class="sig-param"><span class="pre">rng=RandomState(MT19937)</span> <span class="pre">at</span> <span class="pre">0x7F1F256B7C00</span></em>, <em class="sig-param"><span class="pre">initialState=None</span></em>, <em class="sig-param"><span class="pre">method='powell'</span></em>, <em class="sig-param"><span class="pre">**kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_energy_min</code><span class="sig-paren">(</span><em class="sig-param">nFixed=0</em>, <em class="sig-param">rng=RandomState(MT19937) at 0x7F2730CE5140</em>, <em class="sig-param">initialState=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_energy_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find local energy minimum given state in angular form. Angular representation
 makes it easy to be explicit about constraints on the vectors.</p>
 <dl class="simple">
@@ -98,7 +99,7 @@ makes it easy to be explicit about constraints on the vectors.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_metropolis">
-<code class="sig-name descname"><span class="pre">sample_metropolis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oldState</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oldState</span></em>, <em class="sig-param"><span class="n">E0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>s<span class="classifier">ndarray</span></dt><dd><p>State to perturb randomly.</p>
 </dd>
@@ -109,7 +110,7 @@ makes it easy to be explicit about constraints on the vectors.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_nearby_sample">
-<code class="sig-name descname"><span class="pre">sample_nearby_sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_nearby_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomly move given state around for new metropolis sample.  Question is
 whether it is more efficient to push only one of the many vectors around or all of
 them simultaneously.</p>
@@ -117,7 +118,7 @@ them simultaneously.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.sample_nearby_vector">
-<code class="sig-name descname"><span class="pre">sample_nearby_vector</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nSamples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">otheta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ophi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_vector" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_nearby_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="n">nSamples</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">otheta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ophi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">0.1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.sample_nearby_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample random vector that is nearby. It is important how you choose the width sigma.
 NOTE: code might be simplified by using arctan2 instead of arctan</p>
 <dl class="simple">
@@ -136,7 +137,7 @@ NOTE: code might be simplified by using arctan2 instead of arctan</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Heisenberg3DSampler.to_dict">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">to_dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.to_dict" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">names</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Heisenberg3DSampler.to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function taking 3d array of of samples and arranging them into n x
 3 arrays in a dictionary.</p>
 </dd></dl>
@@ -145,31 +146,32 @@ NOTE: code might be simplified by using arctan2 instead of arctan</p>
 
 <dl class="py class">
 <dt id="coniii.samplers.Metropolis">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">Metropolis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iprint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">calc_e</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boost</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">iprint</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="py method">
-<dt id="coniii.samplers.Metropolis.generate_cond_samples">
-<code class="sig-name descname"><span class="pre">generate_cond_samples</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_subset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_cond_samples" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Metropolis.generate_cond_sample_boost">
+<code class="sig-name descname">generate_cond_sample_boost</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">fixed_subset</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">initial_sample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_cond_sample_boost" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate samples from conditional distribution (while a subset of the spins are
-held fixed).  Samples are generated in parallel.</p>
-<p>NOTE: There is a bug with multiprocess where many calls to the parallel sampling
-routine in a row leads to increasingly slow evaluation of the code.</p>
+held fixed).</p>
 <p>sample_size : int
 fixed_subset : list of duples</p>
 <blockquote>
-<div><p>Each duple is the index of the spin and the value to fix it at.  These should
+<div><p>Each duple is the index of the spin and the value to fix it at. These should
 be ordered by spin index.</p>
 </div></blockquote>
 <dl class="simple">
-<dt>burn_in<span class="classifier">int</span></dt><dd><p>Burn in.</p>
+<dt>burn_in<span class="classifier">int, 1000</span></dt><dd><p>Burn in.</p>
 </dd>
-<dt>n_cpus<span class="classifier">int</span></dt><dd><p>Number of cpus to use.</p>
+</dl>
+<p>n_iters : int, 1000
+initial_sample : ndarray, None</p>
+<blockquote>
+<div><p>Option to set initial random sample.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>Iterate through spins systematically instead of choosing them randomly.</p>
 </dd>
-<dt>initial_sample<span class="classifier">ndarray</span></dt><dd><p>Option to set initial random sample.</p>
-</dd>
-<dt>systematic_iter<span class="classifier">bool</span></dt><dd><p>Iterate through spins systematically instead of choosing them randomly.</p>
-</dd>
-<dt>parallel<span class="classifier">bool</span></dt><dd><p>If True, use parallelized routine.</p>
+<dt>parallel<span class="classifier">bool, True</span></dt><dd><p>If True, use parallelized routine.</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -181,8 +183,44 @@ be ordered by spin index.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.Metropolis.generate_samples_boost">
-<code class="sig-name descname"><span class="pre">generate_samples_boost</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_boost" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Metropolis.generate_cond_sample_py">
+<code class="sig-name descname">generate_cond_sample_py</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">fixed_subset</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">initial_sample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_cond_sample_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples from conditional distribution (while a subset of the spins are
+held fixed).  Samples are generated in parallel.</p>
+<p>NOTE: There is a bug with multiprocess where many calls to the parallel sampling
+routine in a row leads to increasingly slow evaluation of the code.</p>
+<p>sample_size : int
+fixed_subset : list of duples</p>
+<blockquote>
+<div><p>Each duple is the index of the spin and the value to fix it at. These should
+be ordered by spin index.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>burn_in<span class="classifier">int, 1000</span></dt><dd><p>Burn in.</p>
+</dd>
+</dl>
+<p>n_iters : int, 1000
+initial_sample : ndarray, None</p>
+<blockquote>
+<div><p>Option to set initial random sample.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>systematic_iter<span class="classifier">bool, False</span></dt><dd><p>Iterate through spins systematically instead of choosing them randomly.</p>
+</dd>
+<dt>parallel<span class="classifier">bool, False</span></dt><dd><p>If True, use parallelized routine.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ndarray</dt><dd><p>Samples from distribution.</p>
+</dd>
+<dt>ndarray</dt><dd><p>Energy of each sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="coniii.samplers.Metropolis.generate_sample_boost">
+<code class="sig-name descname">generate_sample_boost</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_sample_boost" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Metropolis samples using C++ and boost.</p>
 <dl class="simple">
 <dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
@@ -201,8 +239,8 @@ be ordered by spin index.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.Metropolis.generate_samples_parallel_boost">
-<code class="sig-name descname"><span class="pre">generate_samples_parallel_boost</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel_boost" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Metropolis.generate_sample_parallel_boost">
+<code class="sig-name descname">generate_sample_parallel_boost</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_sample_parallel_boost" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
 and a sample is generated every n_iters.</p>
 <p>In order to control the random number generator, we pass in seeds that are samples
@@ -221,8 +259,8 @@ randomly.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.Metropolis.generate_samples_parallel_py">
-<code class="sig-name descname"><span class="pre">generate_samples_parallel_py</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_parallel_py" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Metropolis.generate_sample_parallel_py">
+<code class="sig-name descname">generate_sample_parallel_py</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_sample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_sample_parallel_py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
 and a sample is generated every n_iters.</p>
 <p>In order to control the random number generator, we pass in seeds that are samples
@@ -243,8 +281,8 @@ randomly.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.Metropolis.generate_samples_py">
-<code class="sig-name descname"><span class="pre">generate_samples_py</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveHistory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_samples_py" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Metropolis.generate_sample_py">
+<code class="sig-name descname">generate_sample_py</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">saveHistory</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">initial_sample</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.generate_sample_py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Metropolis samples using a for loop.</p>
 <dl class="simple">
 <dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples.</p>
@@ -269,12 +307,12 @@ the initial sample.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Metropolis.random_sample">
-<code class="sig-name descname"><span class="pre">random_sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.random_sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">random_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.random_sample" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.Metropolis.sample_metropolis">
-<code class="sig-name descname"><span class="pre">sample_metropolis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip_site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample0</span></em>, <em class="sig-param"><span class="n">E0</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flip_site</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_e</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.sample_metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Metropolis sampling given an arbitrary energy function.</p>
 <dl class="simple">
 <dt>sample0<span class="classifier">ndarray</span></dt><dd><p>Sample to start with. Passed by ref and changed.</p>
@@ -296,24 +334,24 @@ the initial sample.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Metropolis.update_parameters">
-<code class="sig-name descname"><span class="pre">update_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.update_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Metropolis.update_parameters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="coniii.samplers.ParallelTempering">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">ParallelTempering</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_replicas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tbds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">3.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replica_burnin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_ex_burnin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">ParallelTempering</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">calc_e</span></em>, <em class="sig-param"><span class="n">n_replicas</span></em>, <em class="sig-param"><span class="n">Tbds</span><span class="o">=</span><span class="default_value">1.0, 3.0</span></em>, <em class="sig-param"><span class="n">sample_size</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">replica_burnin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rep_ex_burnin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.burn_and_exchange">
-<code class="sig-name descname"><span class="pre">burn_and_exchange</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.burn_and_exchange" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">burn_and_exchange</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pool</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.burn_and_exchange" title="Permalink to this definition">¶</a></dt>
 <dd><p>pool : mp.multiprocess.Pool</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.burn_in_replicas">
-<code class="sig-name descname"><span class="pre">burn_in_replicas</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">close_pool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.burn_in_replicas" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">burn_in_replicas</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pool</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">close_pool</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.burn_in_replicas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run each replica separately.</p>
 <p>pool : multiprocess.Pool, None
 close_pool : bool, True</p>
@@ -327,8 +365,8 @@ close_pool : bool, True</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.ParallelTempering.generate_samples">
-<code class="sig-name descname"><span class="pre">generate_samples</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_exchange_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.ParallelTempering.generate_sample">
+<code class="sig-name descname">generate_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">save_exchange_trajectory</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.generate_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Burn in, run replica exchange simulation, then sample.</p>
 <dl class="simple">
 <dt>sample_size<span class="classifier">int</span></dt><dd><p>Number of samples to take for each replica.</p>
@@ -346,13 +384,13 @@ index is located in beta space.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.initialize_beta">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">initialize_beta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_replicas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.initialize_beta" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">initialize_beta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">b0</span></em>, <em class="sig-param"><span class="n">b1</span></em>, <em class="sig-param"><span class="n">n_replicas</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.initialize_beta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use linear interpolation of temperature range.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.iterate_beta">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">iterate_beta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceptance_ratio</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.iterate_beta" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">iterate_beta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">acceptance_ratio</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.iterate_beta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply algorithm from Hukushima but reversed to maintain one replica at T=1.</p>
 <dl class="simple">
 <dt>beta<span class="classifier">ndarray</span></dt><dd><p>Inverse temperature.</p>
@@ -368,7 +406,7 @@ index is located in beta space.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.optimize_beta">
-<code class="sig-name descname"><span class="pre">optimize_beta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.optimize_beta" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">optimize_beta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.optimize_beta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find suitable temperature range for replicas. Sets self.beta.</p>
 <dl class="simple">
 <dt>n_samples<span class="classifier">int</span></dt><dd><p>Number of samples to use to estimate acceptance ratio. Acceptance ratio is
@@ -386,7 +424,7 @@ sampling from replicas.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.setup_replicas">
-<code class="sig-name descname"><span class="pre">setup_replicas</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.setup_replicas" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">setup_replicas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.setup_replicas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise a set of replicas at different temperatures using the Metropolis
 algorithm and optimize the temperatures. Replicas are burned in and ready to
 sample.</p>
@@ -394,7 +432,7 @@ sample.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.ParallelTempering.update_replica_parameters">
-<code class="sig-name descname"><span class="pre">update_replica_parameters</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.update_replica_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_replica_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.ParallelTempering.update_replica_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update parameters for each replica. Remember that the parameters include the
 factor of beta.</p>
 </dd></dl>
@@ -403,11 +441,11 @@ factor of beta.</p>
 
 <dl class="py class">
 <dt id="coniii.samplers.Potts3">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">Potts3</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Potts3</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">calc_e</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_cpus</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boost</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Metropolis" title="coniii.samplers.Metropolis"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Metropolis</span></code></a></p>
 <dl class="py method">
-<dt id="coniii.samplers.Potts3.generate_samples_parallel_boost">
-<code class="sig-name descname"><span class="pre">generate_samples_parallel_boost</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.generate_samples_parallel_boost" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Potts3.generate_sample_parallel_boost">
+<code class="sig-name descname">generate_sample_parallel_boost</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">n_iters</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">burn_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">systematic_iter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.generate_sample_parallel_boost" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate samples in parallel. Each replica in self._samples runs on its own thread
 and a sample is generated every n_iters.</p>
 <p>In order to control the random number generator, we pass in seeds that are samples
@@ -427,12 +465,12 @@ randomly.</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Potts3.random_sample">
-<code class="sig-name descname"><span class="pre">random_sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.random_sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">random_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.random_sample" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.Potts3.sample_metropolis">
-<code class="sig-name descname"><span class="pre">sample_metropolis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip_site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample0</span></em>, <em class="sig-param"><span class="n">E0</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flip_site</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">calc_e</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Potts3.sample_metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Metropolis sampling given an arbitrary sampling function.</p>
 <dl class="simple">
 <dt>sample0<span class="classifier">ndarray</span></dt><dd><p>Sample to start with. Passed by ref and changed.</p>
@@ -456,11 +494,11 @@ randomly.</p>
 
 <dl class="py class">
 <dt id="coniii.samplers.SWIsing">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">SWIsing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nCpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">SWIsing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">calc_e</span></em>, <em class="sig-param"><span class="n">nCpus</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rng</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="py method">
 <dt id="coniii.samplers.SWIsing.generate_sample">
-<code class="sig-name descname"><span class="pre">generate_sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.generate_sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">initial_state</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.generate_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>n_samples
 n_iters
 initial_state : ndarray,None</p>
@@ -468,7 +506,7 @@ initial_state : ndarray,None</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.SWIsing.generate_sample_parallel">
-<code class="sig-name descname"><span class="pre">generate_sample_parallel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_sample_parallel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">initial_state</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_cpus</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><p>n_samples
 n_iters
 initial_state : ndarray,None</p>
@@ -476,47 +514,47 @@ initial_state : ndarray,None</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.SWIsing.get_clusters">
-<code class="sig-name descname"><span class="pre">get_clusters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.get_clusters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_clusters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.get_clusters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a random sample of clusters.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.SWIsing.one_step">
-<code class="sig-name descname"><span class="pre">one_step</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.one_step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">one_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.one_step" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.SWIsing.print_cluster_size">
-<code class="sig-name descname"><span class="pre">print_cluster_size</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.print_cluster_size" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">print_cluster_size</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_iters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.print_cluster_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.SWIsing.randomly_flip_clusters">
-<code class="sig-name descname"><span class="pre">randomly_flip_clusters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.randomly_flip_clusters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">randomly_flip_clusters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">clusters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.SWIsing.randomly_flip_clusters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="coniii.samplers.Sampler">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">Sampler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">Sampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for MCMC sampling.</p>
 <dl class="py method">
-<dt id="coniii.samplers.Sampler.generate_samples">
-<code class="sig-name descname"><span class="pre">generate_samples</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Sampler.generate_sample">
+<code class="sig-name descname">generate_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.generate_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>sample_size : int</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="coniii.samplers.Sampler.generate_samples_parallel">
-<code class="sig-name descname"><span class="pre">generate_samples_parallel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.generate_samples_parallel" title="Permalink to this definition">¶</a></dt>
+<dt id="coniii.samplers.Sampler.generate_sample_parallel">
+<code class="sig-name descname">generate_sample_parallel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><p>sample_size : int</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.Sampler.sample_metropolis">
-<code class="sig-name descname"><span class="pre">sample_metropolis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.sample_metropolis" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_metropolis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">energy</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.sample_metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>s<span class="classifier">ndarray</span></dt><dd><p>State to perturb randomly.</p>
 </dd>
@@ -527,24 +565,24 @@ initial_state : ndarray,None</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.Sampler.update_parameters">
-<code class="sig-name descname"><span class="pre">update_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.update_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_parameters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.Sampler.update_parameters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="coniii.samplers.WolffIsing">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">WolffIsing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">WolffIsing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">h</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#coniii.samplers.Sampler" title="coniii.samplers.Sampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">coniii.samplers.Sampler</span></code></a></p>
 <dl class="py method">
 <dt id="coniii.samplers.WolffIsing.build_cluster">
-<code class="sig-name descname"><span class="pre">build_cluster</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialsite</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.build_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">build_cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">initialsite</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.build_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grow cluster from initial site.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.WolffIsing.find_neighbors">
-<code class="sig-name descname"><span class="pre">find_neighbors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alreadyMarked</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.find_neighbors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">find_neighbors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">site</span></em>, <em class="sig-param"><span class="n">alreadyMarked</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.find_neighbors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return neighbors of given site that need to be visited excluding sites that
 have already been visited.  This is the implementation of the Wolff algorithm for
 finding neighbors such that detailed balance is satisfied. I have modified to
@@ -557,33 +595,33 @@ alreadyMarked</p>
 
 <dl class="py method">
 <dt id="coniii.samplers.WolffIsing.generate_sample">
-<code class="sig-name descname"><span class="pre">generate_sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samplesize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialSample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_history</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.generate_sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samplesize</span></em>, <em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">initialSample</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">save_history</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.generate_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate samples by starting from random initial states.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.WolffIsing.generate_sample_parallel">
-<code class="sig-name descname"><span class="pre">generate_sample_parallel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samplesize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialSample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_sample_parallel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samplesize</span></em>, <em class="sig-param"><span class="n">n_iters</span></em>, <em class="sig-param"><span class="n">initialSample</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.generate_sample_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate samples by starting from random or given initial states.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.WolffIsing.one_step">
-<code class="sig-name descname"><span class="pre">one_step</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialsite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.one_step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">one_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">initialsite</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.one_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run one iteration of the Wolff algorithm that involves finding a cluster and
 possibly flipping it.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="coniii.samplers.WolffIsing.update_parameters">
-<code class="sig-name descname"><span class="pre">update_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">J</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.update_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">J</span></em>, <em class="sig-param"><span class="n">h</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.WolffIsing.update_parameters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.calc_e">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">calc_e</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.calc_e" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">calc_e</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.calc_e" title="Permalink to this definition">¶</a></dt>
 <dd><p>Heisenberg model.</p>
 <dl class="simple">
 <dt>theta<span class="classifier">ndarray</span></dt><dd><p>List of couplings Jij</p>
@@ -595,7 +633,7 @@ possibly flipping it.</p>
 
 <dl class="py function">
 <dt id="coniii.samplers.check_e_logp">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">check_e_logp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.check_e_logp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">check_e_logp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">calc_e</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.check_e_logp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Boltzmann type model with discrete state space should have E propto -logP.
 Calculate these quantities for comparison.</p>
 <p>sample
@@ -604,37 +642,53 @@ calc_e</p>
 
 <dl class="py function">
 <dt id="coniii.samplers.cross">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">cross</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.cross" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">cross</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vec1</span></em>, <em class="sig-param"><span class="n">vec2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.cross" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the cross product of two 3d vectors.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.cross_">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">cross_</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.cross_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">cross_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vec1</span></em>, <em class="sig-param"><span class="n">vec2</span></em>, <em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.cross_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the cross product of two 3d vectors.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="coniii.samplers.define_jit_cond_calc_e">
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">define_jit_cond_calc_e</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">calc_e</span></em>, <em class="sig-param"><span class="n">fixed_subset</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.define_jit_cond_calc_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redefine calc_e to calculate energy and putting back in the fixed spins.</p>
+<dl class="simple">
+<dt>state<span class="classifier">ndarray</span></dt><dd><p>Free spins (not fixed).</p>
+</dd>
+<dt>theta<span class="classifier">ndarray</span></dt><dd><p>Parameters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>float</dt><dd><p>Energy of state with fixed spins.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="coniii.samplers.grad_e">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">grad_e</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.grad_e" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">grad_e</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.grad_e" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivatives wrt the angles of the spins.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.grad_e_theta">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">grad_e_theta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.grad_e_theta" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">grad_e_theta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.grad_e_theta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivatives wrt the couplings theta.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.iter_cluster">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">iter_cluster</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.iter_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">iter_cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adj</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.iter_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cycle through all spins to get clusters.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.iterate_neighbors">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">iterate_neighbors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expdJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.iterate_neighbors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">iterate_neighbors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ix</span></em>, <em class="sig-param"><span class="n">expdJ</span></em>, <em class="sig-param"><span class="n">r</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.iterate_neighbors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate through all neighbors of a particular site and see if a bond should be
 formed between them.</p>
 <dl class="simple">
@@ -651,7 +705,7 @@ formed between them.</p>
 
 <dl class="py function">
 <dt id="coniii.samplers.jit_sample">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">jit_sample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nBurn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leapfrogN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randNormal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randUnif</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.jit_sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">jit_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">nBurn</span></em>, <em class="sig-param"><span class="n">dt</span></em>, <em class="sig-param"><span class="n">leapfrogN</span></em>, <em class="sig-param"><span class="n">randNormal</span></em>, <em class="sig-param"><span class="n">randUnif</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.jit_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a single sample by MC sampling from this Hamiltonian.</p>
 <dl class="simple">
 <dt>theta<span class="classifier">ndarray</span></dt><dd><p>Parameters</p>
@@ -674,17 +728,17 @@ randNormal : ndarray</p>
 
 <dl class="py function">
 <dt id="coniii.samplers.jit_sample_nearby_vector">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">jit_sample_nearby_vector</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rseed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nSamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">otheta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ophi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.jit_sample_nearby_vector" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">jit_sample_nearby_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rseed</span></em>, <em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="n">nSamples</span></em>, <em class="sig-param"><span class="n">otheta</span></em>, <em class="sig-param"><span class="n">ophi</span></em>, <em class="sig-param"><span class="n">sigma</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.jit_sample_nearby_vector" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.pairwise_prod">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">pairwise_prod</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.pairwise_prod" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">pairwise_prod</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.pairwise_prod" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="coniii.samplers.sample_bonds">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">sample_bonds</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">J</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.sample_bonds" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">sample_bonds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">J</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.sample_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>p<span class="classifier">ndarray</span></dt><dd><p>Probability of bond formation.</p>
 </dd>
@@ -697,18 +751,18 @@ J</p>
 
 <dl class="py function">
 <dt id="coniii.samplers.sample_ising">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">sample_ising</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multipliers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_samples_kw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.sample_ising" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">sample_ising</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">multipliers</span></em>, <em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">generate_sample_kw</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.sample_ising" title="Permalink to this definition">¶</a></dt>
 <dd><p>Easy way to Metropolis sample from Ising model.</p>
 <dl class="simple">
-<dt>multipliers<span class="classifier">ndarray</span></dt><dd><p>N individual fields followed by N(N-1)/2 pairwise couplings.</p>
+<dt>multipliers<span class="classifier">ndarray or twople</span></dt><dd><p>N individual fields followed by N(N-1)/2 pairwise couplings.</p>
 </dd>
 <dt>n_samples<span class="classifier">int</span></dt><dd><p>Number of samples to take.</p>
 </dd>
-<dt>n_cpus<span class="classifier">int, None</span></dt><dd><p>Number of cpus to use. If more than one, multiprocessing invoked.</p>
-</dd>
 <dt>seed<span class="classifier">int, None</span></dt><dd><p>Random number generator seed.</p>
 </dd>
-<dt>generate_samples_kw<span class="classifier">dict, {}</span></dt><dd><dl class="simple">
+<dt>parallel<span class="classifier">bool, True</span></dt><dd><p>If True, use parallelized sampling routine.</p>
+</dd>
+<dt>generate_sample_kw<span class="classifier">dict, {}</span></dt><dd><dl class="simple">
 <dt>Any extra arguments to send into Metropolis sampler. Default args are</dt><dd><p>n_iters=1000
 systematic_iter=False
 saveHistory=False
@@ -725,14 +779,14 @@ initial_sample=None</p>
 
 <dl class="py function">
 <dt id="coniii.samplers.spec_cluster">
-<code class="sig-prename descclassname"><span class="pre">coniii.samplers.</span></code><code class="sig-name descname"><span class="pre">spec_cluster</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.spec_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">coniii.samplers.</code><code class="sig-name descname">spec_cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">L</span></em>, <em class="sig-param"><span class="n">exact</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#coniii.samplers.spec_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>L<span class="classifier">ndarray</span></dt><dd><p>Graph Laplacian</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
           </div>
@@ -751,7 +805,7 @@ initial_sample=None</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate_potts.html">coniii.enumerate_potts module</a></li>
@@ -796,7 +850,7 @@ initial_sample=None</p>
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

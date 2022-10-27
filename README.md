@@ -3,8 +3,7 @@
 # Convenient Interface to Inverse Ising
 
 ConIII is a Python package for solving maximum entropy problems with a focus on the
-pairwise maximum entropy model, also known as the inverse Ising problem. Support for
-Python 3.8.3 and higher.
+pairwise maximum entropy model, also known as the inverse Ising problem.
 
 If you use ConIII for your research, please consider citing the following:
 > Lee, E.D. and Daniels, B.C., 2019. Convenient Interface to Inverse Ising (ConIII): A
@@ -16,15 +15,14 @@ The paper also contains an overview of the modules. For code documentation, see
 
 ## Installation
 
-This package is available on PyPI. It can be installed by first installing the needed
-Boost C++ libraries and using pip.
+To set up an Anaconda environment called "test" and install from pip, run the following code. The openblas package is only recommended for AMD users.
 ```bash
-$ conda install -c conda-forge boost==1.74
+$ conda create -n test -c conda-forge python=3.10 numpy scipy numba cython jupyter ipython multiprocess boost==1.74 matplotlib mpmath blas=*=openblas
 $ pip install coniii
 ```
 If you have trouble using `pip`, then you can always build this package from
 source. The following code will down download the latest release from GitHub and install
-the package. Make sure that you are running Python 3.8.3 or higher and have boost v1.74.0
+the package. Make sure that you are running Python 3.10 and have boost v1.74.0
 installed.
 ```bash
 $ git clone https://github.com/eltrompetero/coniii.git
@@ -32,9 +30,6 @@ $ cd coniii
 $ ./pypi_compile.sh
 $ pip install dist/*.whl
 ```
-(Note: Using setuptools in the usual way of `python
-setup.py install` will not work because eggs are incompatible with cached jit functions
-generated using numba.)
 
 #### Setting up exact solution for systems *N > 9*
 If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
@@ -48,79 +43,40 @@ starting a Python terminal and running
 
 Once inside the install directory, you can run in your bash shell
 ```bash
-$ python enumerate.py [N]
-```
-
-where `[N]` should be replaced by the size of the system. This will write the equations
-for the Ising model in the {0,1} basis. On the other hand,
-
-```bash
 $ python enumerate.py [N] 1
 ```
 
-specifies that the system should be written for the {-1,1} basis. Note that the package
-uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of
-the file enumerate.py.
+where `[N]` should be replaced by the size of the system. This specifies that the system should be written for the {-1,1} basis. Note that the package uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of the file enumerate.py.
 
-## Quick guide (with Jupyter notebook)
+For the {0,1} basis, use
+```bash
+$ python enumerate.py [N]
+```
+
+## Quick guide with Jupyter notebook
 
 A [Jupyter
 notebook](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.ipynb) with a
-brief introduction and examples for how to use ConIII is available. An HTML version is
-[here](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.html). The
-notebook is installed into your package directory if you used pip.
+brief introduction and examples for how to use ConIII is available. The
+notebook is also installed into your package directory if you used pip.
 
-To use the notebook, install jupyter. 
-```bash
-$ pip install jupyter
-```
-or if you are using the Conda package manager
-```bash
-$ conda install jupyter
-```
-
-Then, first copy the notebook file "usage_guide.ipynb" into a directory outside the
-"coniii" directory.  Change to this directory and run
+To use the notebook, install jupyter such as by following the setup instructions above. Then, copy the notebook file "usage_guide.ipynb" into a directory outside the "coniii" directory. Change to this directory and run
 ```bash
 $ jupyter notebook
 ```
 
 This should open the notebook in your default web browser.
 
-## Quick guide (console)
-
-First, install iPython for a console-based interpreter and start it.
-```bash
-$ pip install ipython
-```
-or if you are using the Conda package manager
-```bash
-$ conda install ipython
-```
-
-Then, first copy the notebook file
-["usage_guide.py"](https://github.com/eltrompetero/coniii/blob/py3/ipynb/usage_guide.py)
-into a directory outside the "coniii" directory.  Change to this directory and run
-```bash
-$ ipython
-```
-
-Once inside the iPython interpreter, run
-```python
->>> %run usage_guide.py
-```
-This will run all the examples sequentially, so you may want to comment out unwanted lines.
-
 ## Troubleshooting
 
 This package is only maintained for Python 3 and has only been tested for Python
-3.8.3. Check which version of Python you are running in your terminal with 
+3.10. Check which version of Python you are running in your terminal with 
 ```bash
 $ python --version
 ```
 
 ConIII has been tested on the following systems
-* Ubuntu 20.04.1
+* Ubuntu 20.04.5
 
 Trouble compiling the Boost extension manually? Check if your Boost library is
 included in your path. If it is not, then you can add an include directory entry
@@ -146,7 +102,7 @@ The package directory can be found by running inside python
 
 You may also need to install pytest.
 ```bash
-$ pip install pytest
+$ conda install -c conda-forge pytest
 ```
 
 ### Updating

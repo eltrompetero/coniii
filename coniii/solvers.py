@@ -114,14 +114,15 @@ class Solver():
         """Calculate indices to fill in with zeros to "fool" code that takes full set of
         params.
         """
-
         nParams = self.model.multipliers.size
         insertion_ix = [0] * self.parameterIx[0]
-        if self.parameterIx.size>1:
-            for i, ix in enumerate(self.parameterIx[1:]):
-                insertion_ix.extend([i+1] * (ix-self.parameterIx[i]-1))
-            if self.parameterIx[-1]<(nParams - 1):
-                insertion_ix.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
+        for i, ix in enumerate(self.parameterIx[1:]):
+            insertion_ix.extend([i+1] * (ix-self.parameterIx[i]-1))
+        if self.parameterIx.size==1:
+            # give i a value since above for loop didn't iterate
+            i = -1
+        if self.parameterIx[-1]<(nParams - 1):
+            insertion_ix.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
 
         #assert np.insert(initial_guess, insertion_ix, 0).size==nParams
         self.insertion_ix = insertion_ix
@@ -139,7 +140,6 @@ class Solver():
         ndarray
             With missing entries filled in.
         """
-
         return np.insert(x, self.insertionIx, fill_value)
 
     def logp(self, sample=None, run_checks=True):
@@ -156,7 +156,6 @@ class Solver():
         -------
         ndarray
         """
-
         # verify input
         sample = sample if not sample is None else self.sample
         if run_checks:

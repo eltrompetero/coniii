@@ -116,14 +116,15 @@ class Solver():
         """
 
         nParams = self.model.multipliers.size
-        insertionIx = [0] * self.parameterIx[0]
-        for i, ix in enumerate(self.parameterIx[1:]):
-            insertionIx.extend([i+1] * (ix-self.parameterIx[i]-1))
-        if self.parameterIx[-1]<(nParams - 1):
-            insertionIx.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
+        insertion_ix = [0] * self.parameterIx[0]
+        if self.parameterIx.size>1:
+            for i, ix in enumerate(self.parameterIx[1:]):
+                insertion_ix.extend([i+1] * (ix-self.parameterIx[i]-1))
+            if self.parameterIx[-1]<(nParams - 1):
+                insertion_ix.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
 
-        #assert np.insert(initial_guess, insertionIx, 0).size==nParams
-        self.insertionIx = insertionIx
+        #assert np.insert(initial_guess, insertion_ix, 0).size==nParams
+        self.insertion_ix = insertion_ix
     
     def fill_in(self, x, fill_value=0):
         """Helper function for filling in missing parameter values.

@@ -1,7 +1,9 @@
-# =============================================================================================== #
+# ====================================================================================== #
 # ConIII module for algorithms for solving the inverse Ising problem.
-# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels (bryan.daniels.1@asu.edu)
-# =============================================================================================== #
+# 
+# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
+#          (bryan.daniels.1@asu.edu)
+# ====================================================================================== #
 from scipy.optimize import minimize, fmin_ncg, minimize_scalar, root
 import multiprocess as mp
 import copy
@@ -34,8 +36,8 @@ class Solver():
 
             If int, specifies system size.
 
-            If None, many of the default class members cannot be set and then must be set
-            manually.
+            If None, many of the default class members cannot be set and then must be
+            set manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -43,10 +45,9 @@ class Solver():
         iprint : str, True
             If empty, do not display warning messages.
         model_kwargs : dict, {}
-            Additional arguments that will be passed to Ising class. These only matter if
-            model is None. Important ones include "n_cpus" and "rng".
+            Additional arguments that will be passed to Ising class. These only
+            matter if model is None. Important ones include "n_cpus" and "rng".
         """
-        
         # When neither sampler nor system size are specified
         if sample_or_n is None:
             self.sample = None
@@ -108,7 +109,7 @@ class Solver():
 
     def solve(self):
         """To be defined in derivative classes."""
-        return
+        raise NotImplementedError
 
     def set_insertion_ix(self):
         """Calculate indices to fill in with zeros to "fool" code that takes full set of
@@ -125,7 +126,7 @@ class Solver():
             insertion_ix.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
 
         #assert np.insert(initial_guess, insertion_ix, 0).size==nParams
-        self.insertion_ix = insertion_ix
+        self.insertionIx = insertion_ix
     
     def fill_in(self, x, fill_value=0):
         """Helper function for filling in missing parameter values.
@@ -180,8 +181,8 @@ class Solver():
 
 
 class Enumerate(Solver):
-    """Class for solving fully-connected inverse Ising model problem by enumeration of the
-    partition function and then using gradient descent.
+    """Class for solving fully-connected inverse Ising model problem by enumeration
+    of the partition function and then using gradient descent.
     """
     def __init__(self,
                  sample=None,
@@ -197,17 +198,16 @@ class Enumerate(Solver):
 
             If int, specifies system size.
 
-            If None, many of the default class members cannot be set and then must be set
-            manually.
+            If None, many of the default class members cannot be set and then must be
+            set manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
             For calculating observables from a set of samples.
         **default_model_kwargs
-            Additional arguments that will be passed to Ising class. These only matter if
-            model is None.
+            Additional arguments that will be passed to Ising class. These only
+            matter if model is None.
         """
-        
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs) 
 
     def solve(self,
@@ -218,50 +218,53 @@ class Enumerate(Solver):
               use_root=True,
               scipy_solver_kwargs={'method':'krylov',
                                    'options':{'fatol':1e-13,'xatol':1e-13}}):
-        """Must specify either constraints (the correlations) or samples from which the
-        correlations will be calculated using self.calc_observables. This routine by
-        default uses scipy.optimize.root to find the solution. This is MUCH faster than
-        the scipy.optimize.minimize routine which can be used instead.
+        """Must specify either constraints (the correlations) or samples from which
+        the correlations will be calculated using self.calc_observables. This routine
+        by default uses scipy.optimize.root to find the solution. This is MUCH faster
+        than the scipy.optimize.minimize routine which can be used instead.
         
         If still too slow, try adjusting the accuracy.
         
         If not converging, try increasing the max number of iterations.
 
-        If receiving Jacobian error (or some other numerical estimation error), parameter
-        values may be too large for faithful evaluation. Try decreasing max_param_value.
+        If receiving Jacobian error (or some other numerical estimation error),
+        parameter values may be too large for faithful evaluation. Try decreasing
+        max_param_value.
 
         Parameters
         ----------
         initial_guess : ndarray, None
-            Initial starting guess for parameters. By default, this will start with all
-            zeros if left unspecified.
+            Initial starting guess for parameters. By default, this will start with
+            all zeros if left unspecified.
         constraints : ndarray, None
-            Can specify constraints directly instead of using the ones calculated from the
-            sample. This can be useful when the pairwise correlations are known exactly.
-            This will override the self.constraints data member.
+            Can specify constraints directly instead of using the ones calculated
+            from the sample. This can be useful when the pairwise correlations are
+            known exactly.  This will override the self.constraints data member.
         max_param_value : float, 50
-            Absolute value of max parameter value. Bounds can also be set in the kwargs
-            passed to the minimizer, in which case this should be set to None.
+            Absolute value of max parameter value. Bounds can also be set in the
+            kwargs passed to the minimizer, in which case this should be set to None.
         full_output : bool, False
             If True, return output from scipy.optimize.minimize.
         use_root : bool, True
-            If False, use scipy.optimize.minimize instead. This is typically much slower.
-        scipy_solver_kwargs : dict, {'method':'krylov', 'options':{'fatol':1e-13,'xatol':1e-13}}
+            If False, use scipy.optimize.minimize instead. This is typically much
+            slower.
+        scipy_solver_kwargs : dict, {'method':'krylov',
+                                     'options':{'fatol':1e-13,'xatol':1e-13}}
             High accuracy is slower. Although default accuracy may not be so good,
-            lowering these custom presets will speed things up. Choice of the root finding
-            method can also change runtime and whether a solution is found or not.
-            Recommend playing around with different solvers and tolerances or getting a
-            close approximation using a different method if solution is hard to find.
+            lowering these custom presets will speed things up. Choice of the root
+            finding method can also change runtime and whether a solution is found or
+            not.  Recommend playing around with different solvers and tolerances or
+            getting a close approximation using a different method if solution is
+            hard to find.
 
         Returns
         -------
         ndarray
-            Solved multipliers (parameters). For Ising problem, these can be converted
-            into matrix format using utils.vec2mat.
+            Solved multipliers (parameters). For Ising problem, these can be
+            converted into matrix format using utils.vec2mat.
         dict, optional
             Output from scipy.optimize.root.
         """
-        
         if not initial_guess is None:
             assert initial_guess.size==self.constraints.size
         else: initial_guess = np.zeros(self.constraints.size)
@@ -297,6 +300,36 @@ class Enumerate(Solver):
         if full_output:
             return soln['x'], soln
         return soln['x']
+
+    def logp(self, sample=None, run_checks=True):
+        """Log likelihood of given set of states using self.model.calc_p().
+
+        Parameters
+        ----------
+        sample : ndarray, None
+            Sample of states for which to estimate log likelihood. Default is to use
+            self.sample.
+        run_checks : bool, True
+
+        Returns
+        -------
+        ndarray
+        """
+        # verify input
+        sample = sample if not sample is None else self.sample
+        if run_checks:
+            assert isinstance(sample, np.ndarray)
+            assert set(np.unique(sample)) <= frozenset((-1,0,1))
+        if sample.ndim==1:
+            sample = s[None,:]
+
+        logp = np.zeros(sample.shape[0])
+        all_states = bin_states(self.n, sym=True)
+        p = self.model.calc_p(self.multipliers)
+        for i, s in enumerate(sample):
+            # est probability of an observation is frequency of observed subset
+            logp[i] = p[(s[None,:]==all_states).all(1)]
+        return np.log(logp)
 #end Enumerate
 
 
@@ -337,7 +370,6 @@ class SparseEnumerate(Solver):
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
         """
-        
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs) 
 
         assert not parameter_ix is None, "Must specify parameter_ix."
@@ -397,7 +429,6 @@ class SparseEnumerate(Solver):
         dict, optional
             Output from scipy.optimize.root.
         """
-        
         if not initial_guess is None:
             assert initial_guess.size==self.parameterIx.size
         else: initial_guess = np.zeros(self.parameterIx.size)
@@ -443,6 +474,40 @@ class SparseEnumerate(Solver):
         if full_output:
             return soln['x'], soln
         return soln['x']
+
+    def logp(self, sample=None, run_checks=True):
+        """Log likelihood of given set of states using self.model.calc_p().
+
+        Parameters
+        ----------
+        sample : ndarray, None
+            Sample of states for which to estimate log likelihood. Default is to use
+            self.sample.
+        run_checks : bool, True
+
+        Returns
+        -------
+        ndarray
+        """
+        # verify input
+        sample = sample if not sample is None else self.sample
+        if run_checks:
+            assert isinstance(sample, np.ndarray)
+            assert set(np.unique(sample)) <= frozenset((-1,0,1))
+        if sample.ndim==1:
+            sample = s[None,:]
+
+        logp = np.zeros(sample.shape[0])
+        all_states = bin_states(self.n, sym=True)
+        p = self.model.calc_p(self.fill_in(self.multipliers))
+        for i, s in enumerate(sample):
+            # est probability of an observation is frequency of observed subset
+            missing_spin_ix = s==0
+            if missing_spin_ix.any():
+                logp[i] = p[(s[~missing_spin_ix][None,:]==all_states[:,~missing_spin_ix]).all(1)].sum()
+            else:
+                logp[i] = p[(s[None,:]==all_states).all(1)]
+        return np.log(logp)
 #end SparseEnumerate
 
 
@@ -487,7 +552,6 @@ class MPF(Solver):
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
         """
-        
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
         if adj is None:
             from .utils import adj
@@ -519,7 +583,6 @@ class MPF(Solver):
         -------
         K : float
         """
-
         obj = 0.
         objGrad = np.zeros((params.size))
         for i,s in enumerate(Xuniq):
@@ -555,7 +618,6 @@ class MPF(Solver):
         returned J's will be halved and the energy calculation should include a 1/2 factor
         in front of h's.
         """
-
         nbatch, ndims = X.shape
         X = X.T
         
@@ -595,7 +657,6 @@ class MPF(Solver):
         -------
         logK : float
         """
-
         obj = 0.
         objGrad = np.zeros((params.size))
         power = np.zeros((len(Xuniq), len(adjacentStates[0])))  # energy differences
@@ -634,7 +695,6 @@ class MPF(Solver):
         -------
         adjacentStates
         """
-
         adjacentStates = []
         for s in Xuniq:
             adjacentStates.append( self.adj(s).astype(int) )
@@ -686,7 +746,6 @@ class MPF(Solver):
         dict (optional)
             Output from scipy.optimize.minimize returned if full_output is True.
         """
-        
         assert parameter_limits>0
         # Convert from {+/-1} to {0,1} axis.
         X = (self.sample+1)//2
@@ -772,7 +831,6 @@ class MCH(Solver):
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
         """
-        
         assert sample_size>0
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
 
@@ -2748,3 +2806,4 @@ class RegularizedMeanField(Solver):
         gridBracket = (gridBracket1,gridMin,gridBracket2)
         return gridBracket
 #end RegularizedMeanField
+

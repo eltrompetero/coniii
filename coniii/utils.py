@@ -1,7 +1,7 @@
-# ========================================================================================================= #
-# Miscellaneous functions used for various computations.
+# ====================================================================================== #
+# Miscellaneous functions.
 # Author : Edward Lee, edlee@santafe.edu
-# ========================================================================================================= #
+# ====================================================================================== #
 import numpy as np
 from numba import jit,njit
 from scipy.special import logsumexp
@@ -11,6 +11,7 @@ from scipy.special import binom
 from warnings import warn
 NUMERALS = '0123456789'
 ALPHNUM = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
+
 
 
 @njit(cache=True)
@@ -31,7 +32,6 @@ def sub_to_ind(n, i, j):
     -------
     int
     """
-
     if i<j:
         k = 0
         for l in range(1,i+2):
@@ -1410,5 +1410,5 @@ def mat2vec(multipliers):
     ndarray
         Vector of fields and couplings, respectively.
     """
-
     return np.concatenate([multipliers.diagonal(), squareform(zero_diag(multipliers))])
+

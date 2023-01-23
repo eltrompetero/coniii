@@ -1,7 +1,6 @@
 # ====================================================================================== #
 # ConIII module for maxent models.
-# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
-#          (bryan.daniels.1@asu.edu)
+# Authors: Edward Lee (edlee@alumni.princeton.edu)
 # ====================================================================================== #
 from importlib import import_module
 import multiprocess as mp
@@ -24,7 +23,6 @@ class Model():
             couplings], a vector of fields and couplings concatenated together, or a
             matrix of parameters where the diagonal entries are the fields.
         """
-        
         self.multipliers = multipliers
         
         self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
@@ -45,7 +43,6 @@ class Model():
         sampler_kwargs : dict, {}
             Kwargs that can be passed into the initialization function for the sampler.
         """
-        
         self.sampleSize = sample_size
 
         if sample_method=='metropolis' and (type(self) is Ising or type(self) is Triplet):

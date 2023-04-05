@@ -18,13 +18,8 @@ find ./ -name *.pyc -exec rm {} \;
 # Update cpp code (DEPRECATED)
 # rsync -au ../../cpp/cppsamplers/cppsamplers/*.*pp cpp/
 
-# Apply current conda environment
-conda init $CONDA_DEFAULT_ENV
-
-# Compile wheels into dist folder.
-python setup.py bdist_wheel
-# Make source available
-python setup.py sdist
+# Compile wheels into dist folder and make source available
+python setup.py bdist_wheel sdist
 
 # Rename Linux wheel for upload to PyPI.
 unamestr=`uname`

@@ -1786,7 +1786,8 @@ class Pseudo(Solver):
     def _solve_ising(self,
                      initial_guess=None,
                      full_output=False,
-                     solver_kwargs={}):
+                     solver_kwargs={},
+                     scale=100):
         """Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
         Parameters
@@ -1805,7 +1806,6 @@ class Pseudo(Solver):
         dict (optional)
             Output from scipy.optimize.minimize.
         """
-
         if initial_guess is None:
             initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
             
@@ -1831,8 +1831,9 @@ class Pseudo(Solver):
                 guess[multipliersrix] = params
                 multipliers = self.get_multipliers_r(r, guess)[0]
                 E = -obs[r].dot(multipliers)
-                loglikelihood = -np.log( 1+np.exp(2*E) ).sum()
-                dloglikelihood = ( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs[r] ).sum(0)
+                loglikelihood = -np.log( 1+np.exp(2*E) ).sum() + np.abs(multipliers).sum() * scale
+                dloglikelihood = (( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs[r] ).sum(0) +
+                                  np.sign(multipliers) * scale)
                 return -loglikelihood, dloglikelihood
         
             soln.append(minimize(f, initial_guessAsMat[r], jac=True, **solver_kwargs))

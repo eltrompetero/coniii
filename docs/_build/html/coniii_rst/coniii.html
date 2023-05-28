@@ -1,18 +1,16 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>coniii package &#8212; ConIII 1.1.9 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -32,14 +30,22 @@
           <div class="body" role="main">
             
   <section id="coniii-package">
-<h1>coniii package<a class="headerlink" href="#coniii-package" title="Permalink to this headline">¶</a></h1>
+<h1>coniii package<a class="headerlink" href="#coniii-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="coniii.ising.html">coniii.ising package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="coniii.ising.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="coniii.ising.automaton.html">coniii.ising.automaton module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.ising.automaton.html">coniii.ising.automaton module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.Ising2D"><code class="docutils literal notranslate"><span class="pre">Ising2D</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.Ising2D.flip_metropolis"><code class="docutils literal notranslate"><span class="pre">Ising2D.flip_metropolis()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.Ising2D.iterate"><code class="docutils literal notranslate"><span class="pre">Ising2D.iterate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.coarse_grain"><code class="docutils literal notranslate"><span class="pre">coarse_grain()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="coniii.ising.test_automaton.html">coniii.ising.test_automaton module</a></li>
 </ul>
 </li>
@@ -50,14 +56,35 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.fast_logsumexp"><code class="docutils literal notranslate"><span class="pre">fast_logsumexp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.get_3idx"><code class="docutils literal notranslate"><span class="pre">get_3idx()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.get_nidx"><code class="docutils literal notranslate"><span class="pre">get_nidx()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.get_terms"><code class="docutils literal notranslate"><span class="pre">get_terms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.get_terms01"><code class="docutils literal notranslate"><span class="pre">get_terms01()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.get_terms11"><code class="docutils literal notranslate"><span class="pre">get_terms11()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.mp_fast_logsumexp"><code class="docutils literal notranslate"><span class="pre">mp_fast_logsumexp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.pairwise"><code class="docutils literal notranslate"><span class="pre">pairwise()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.triplet"><code class="docutils literal notranslate"><span class="pre">triplet()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.write_eqns"><code class="docutils literal notranslate"><span class="pre">write_eqns()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.enumerate.html#coniii.enumerate.write_py"><code class="docutils literal notranslate"><span class="pre">write_py()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.general_model_rmc.html">coniii.general_model_rmc module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.ising.html">coniii.ising package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="coniii.ising.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="coniii.ising.automaton.html">coniii.ising.automaton module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.ising.automaton.html">coniii.ising.automaton module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.Ising2D"><code class="docutils literal notranslate"><span class="pre">Ising2D</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.Ising2D.flip_metropolis"><code class="docutils literal notranslate"><span class="pre">Ising2D.flip_metropolis()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.Ising2D.iterate"><code class="docutils literal notranslate"><span class="pre">Ising2D.iterate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="coniii.ising.automaton.html#coniii.ising.automaton.coarse_grain"><code class="docutils literal notranslate"><span class="pre">coarse_grain()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="coniii.ising.test_automaton.html">coniii.ising.test_automaton module</a></li>
 </ul>
 </li>
@@ -65,19 +92,286 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.mc_hist.html">coniii.mc_hist module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.mean_field_ising.html">coniii.mean_field_ising module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.pseudo_inverse_ising.html">coniii.pseudo_inverse_ising module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.samplers.html">coniii.samplers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.solvers.html">coniii.solvers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.test_samplers.html">coniii.test_samplers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.test_solvers.html">coniii.test_solvers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.test_utils.html">coniii.test_utils module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coniii.utils.html">coniii.utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.mean_field_ising.html">coniii.mean_field_ising module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.FHomogeneous"><code class="docutils literal notranslate"><span class="pre">FHomogeneous()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.JfullFromCluster"><code class="docutils literal notranslate"><span class="pre">JfullFromCluster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.JmeanField"><code class="docutils literal notranslate"><span class="pre">JmeanField()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.SHomogeneous"><code class="docutils literal notranslate"><span class="pre">SHomogeneous()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.SmeanField"><code class="docutils literal notranslate"><span class="pre">SmeanField()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.aboveDiagFlat"><code class="docutils literal notranslate"><span class="pre">aboveDiagFlat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.analyticEntropy"><code class="docutils literal notranslate"><span class="pre">analyticEntropy()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.avgE"><code class="docutils literal notranslate"><span class="pre">avgE()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.avgmHomogeneous"><code class="docutils literal notranslate"><span class="pre">avgmHomogeneous()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.avgxHomogeneous"><code class="docutils literal notranslate"><span class="pre">avgxHomogeneous()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.coocCluster"><code class="docutils literal notranslate"><span class="pre">coocCluster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.coocExpectations"><code class="docutils literal notranslate"><span class="pre">coocExpectations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.coocMatBayesianMean"><code class="docutils literal notranslate"><span class="pre">coocMatBayesianMean()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.coocSampleCovariance"><code class="docutils literal notranslate"><span class="pre">coocSampleCovariance()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.coocStdevsFlat"><code class="docutils literal notranslate"><span class="pre">coocStdevsFlat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.cooccurrence_matrix"><code class="docutils literal notranslate"><span class="pre">cooccurrence_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.dFdT"><code class="docutils literal notranslate"><span class="pre">dFdT()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.diagFlatIndex"><code class="docutils literal notranslate"><span class="pre">diagFlatIndex()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.dmdT"><code class="docutils literal notranslate"><span class="pre">dmdT()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.fightPossibilities"><code class="docutils literal notranslate"><span class="pre">fightPossibilities()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.findJmatrixAnalytic_CoocMat"><code class="docutils literal notranslate"><span class="pre">findJmatrixAnalytic_CoocMat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.fourthOrderCoocMat"><code class="docutils literal notranslate"><span class="pre">fourthOrderCoocMat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.independentEntropyHomogeneous"><code class="docutils literal notranslate"><span class="pre">independentEntropyHomogeneous()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.independentEntropyHomogeneous2"><code class="docutils literal notranslate"><span class="pre">independentEntropyHomogeneous2()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.isingDeltaCooc"><code class="docutils literal notranslate"><span class="pre">isingDeltaCooc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.logCosh"><code class="docutils literal notranslate"><span class="pre">logCosh()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.m"><code class="docutils literal notranslate"><span class="pre">m()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.meanFieldStability"><code class="docutils literal notranslate"><span class="pre">meanFieldStability()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.multiInfoHomogeneous"><code class="docutils literal notranslate"><span class="pre">multiInfoHomogeneous()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.replaceDiag"><code class="docutils literal notranslate"><span class="pre">replaceDiag()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.seedGenerator"><code class="docutils literal notranslate"><span class="pre">seedGenerator()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.specificHeat"><code class="docutils literal notranslate"><span class="pre">specificHeat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.susc"><code class="docutils literal notranslate"><span class="pre">susc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.symmetrizeUsingUpper"><code class="docutils literal notranslate"><span class="pre">symmetrizeUsingUpper()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.unflatten"><code class="docutils literal notranslate"><span class="pre">unflatten()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.unsummedLogZ"><code class="docutils literal notranslate"><span class="pre">unsummedLogZ()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.unsummedZ"><code class="docutils literal notranslate"><span class="pre">unsummedZ()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.mean_field_ising.html#coniii.mean_field_ising.zeroDiag"><code class="docutils literal notranslate"><span class="pre">zeroDiag()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.pseudo_inverse_ising.html">coniii.pseudo_inverse_ising module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.conditionalHessian"><code class="docutils literal notranslate"><span class="pre">conditionalHessian()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.conditionalJacobian"><code class="docutils literal notranslate"><span class="pre">conditionalJacobian()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.conditionalLogLikelihood"><code class="docutils literal notranslate"><span class="pre">conditionalLogLikelihood()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.pairCoocMat"><code class="docutils literal notranslate"><span class="pre">pairCoocMat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.pseudoInverseIsing"><code class="docutils literal notranslate"><span class="pre">pseudoInverseIsing()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.pseudoLogLikelihood"><code class="docutils literal notranslate"><span class="pre">pseudoLogLikelihood()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.pseudo_inverse_ising.html#coniii.pseudo_inverse_ising.testDerivatives"><code class="docutils literal notranslate"><span class="pre">testDerivatives()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.samplers.html">coniii.samplers module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.HamiltonianMC"><code class="docutils literal notranslate"><span class="pre">HamiltonianMC</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.HamiltonianMC.generate_sample"><code class="docutils literal notranslate"><span class="pre">HamiltonianMC.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.HamiltonianMC.sample"><code class="docutils literal notranslate"><span class="pre">HamiltonianMC.sample()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.equilibrate_samples"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.equilibrate_samples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.generate_sample"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.grad_E"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.grad_E()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.sample_energy_min"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.sample_energy_min()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.sample_metropolis"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.sample_metropolis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.sample_nearby_sample"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.sample_nearby_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.sample_nearby_vector"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.sample_nearby_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Heisenberg3DSampler.to_dict"><code class="docutils literal notranslate"><span class="pre">Heisenberg3DSampler.to_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis"><code class="docutils literal notranslate"><span class="pre">Metropolis</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.generate_cond_sample_boost"><code class="docutils literal notranslate"><span class="pre">Metropolis.generate_cond_sample_boost()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.generate_cond_sample_py"><code class="docutils literal notranslate"><span class="pre">Metropolis.generate_cond_sample_py()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.generate_sample_boost"><code class="docutils literal notranslate"><span class="pre">Metropolis.generate_sample_boost()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.generate_sample_parallel_boost"><code class="docutils literal notranslate"><span class="pre">Metropolis.generate_sample_parallel_boost()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.generate_sample_parallel_py"><code class="docutils literal notranslate"><span class="pre">Metropolis.generate_sample_parallel_py()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.generate_sample_py"><code class="docutils literal notranslate"><span class="pre">Metropolis.generate_sample_py()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.random_sample"><code class="docutils literal notranslate"><span class="pre">Metropolis.random_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.sample_metropolis"><code class="docutils literal notranslate"><span class="pre">Metropolis.sample_metropolis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Metropolis.update_parameters"><code class="docutils literal notranslate"><span class="pre">Metropolis.update_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering"><code class="docutils literal notranslate"><span class="pre">ParallelTempering</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.burn_and_exchange"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.burn_and_exchange()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.burn_in_replicas"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.burn_in_replicas()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.generate_sample"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.initialize_beta"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.initialize_beta()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.iterate_beta"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.iterate_beta()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.optimize_beta"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.optimize_beta()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.setup_replicas"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.setup_replicas()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.ParallelTempering.update_replica_parameters"><code class="docutils literal notranslate"><span class="pre">ParallelTempering.update_replica_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Potts3"><code class="docutils literal notranslate"><span class="pre">Potts3</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Potts3.generate_sample_parallel_boost"><code class="docutils literal notranslate"><span class="pre">Potts3.generate_sample_parallel_boost()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Potts3.random_sample"><code class="docutils literal notranslate"><span class="pre">Potts3.random_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Potts3.sample_metropolis"><code class="docutils literal notranslate"><span class="pre">Potts3.sample_metropolis()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing"><code class="docutils literal notranslate"><span class="pre">SWIsing</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing.generate_sample"><code class="docutils literal notranslate"><span class="pre">SWIsing.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing.generate_sample_parallel"><code class="docutils literal notranslate"><span class="pre">SWIsing.generate_sample_parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing.get_clusters"><code class="docutils literal notranslate"><span class="pre">SWIsing.get_clusters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing.one_step"><code class="docutils literal notranslate"><span class="pre">SWIsing.one_step()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing.print_cluster_size"><code class="docutils literal notranslate"><span class="pre">SWIsing.print_cluster_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.SWIsing.randomly_flip_clusters"><code class="docutils literal notranslate"><span class="pre">SWIsing.randomly_flip_clusters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Sampler"><code class="docutils literal notranslate"><span class="pre">Sampler</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Sampler.generate_sample"><code class="docutils literal notranslate"><span class="pre">Sampler.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Sampler.generate_sample_parallel"><code class="docutils literal notranslate"><span class="pre">Sampler.generate_sample_parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Sampler.sample_metropolis"><code class="docutils literal notranslate"><span class="pre">Sampler.sample_metropolis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.Sampler.update_parameters"><code class="docutils literal notranslate"><span class="pre">Sampler.update_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing"><code class="docutils literal notranslate"><span class="pre">WolffIsing</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing.build_cluster"><code class="docutils literal notranslate"><span class="pre">WolffIsing.build_cluster()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing.find_neighbors"><code class="docutils literal notranslate"><span class="pre">WolffIsing.find_neighbors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing.generate_sample"><code class="docutils literal notranslate"><span class="pre">WolffIsing.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing.generate_sample_parallel"><code class="docutils literal notranslate"><span class="pre">WolffIsing.generate_sample_parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing.one_step"><code class="docutils literal notranslate"><span class="pre">WolffIsing.one_step()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.WolffIsing.update_parameters"><code class="docutils literal notranslate"><span class="pre">WolffIsing.update_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.calc_e"><code class="docutils literal notranslate"><span class="pre">calc_e()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.check_e_logp"><code class="docutils literal notranslate"><span class="pre">check_e_logp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.cross"><code class="docutils literal notranslate"><span class="pre">cross()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.cross_"><code class="docutils literal notranslate"><span class="pre">cross_()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.define_jit_cond_calc_e"><code class="docutils literal notranslate"><span class="pre">define_jit_cond_calc_e()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.grad_e"><code class="docutils literal notranslate"><span class="pre">grad_e()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.grad_e_theta"><code class="docutils literal notranslate"><span class="pre">grad_e_theta()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.iter_cluster"><code class="docutils literal notranslate"><span class="pre">iter_cluster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.iterate_neighbors"><code class="docutils literal notranslate"><span class="pre">iterate_neighbors()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.jit_sample"><code class="docutils literal notranslate"><span class="pre">jit_sample()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.jit_sample_nearby_vector"><code class="docutils literal notranslate"><span class="pre">jit_sample_nearby_vector()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.pairwise_prod"><code class="docutils literal notranslate"><span class="pre">pairwise_prod()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.sample_bonds"><code class="docutils literal notranslate"><span class="pre">sample_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.sample_ising"><code class="docutils literal notranslate"><span class="pre">sample_ising()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.samplers.html#coniii.samplers.spec_cluster"><code class="docutils literal notranslate"><span class="pre">spec_cluster()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.solvers.html">coniii.solvers module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion.S"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion.S()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion.Sindependent"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion.Sindependent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion.clusterID"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion.clusterID()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion.deltaS"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion.deltaS()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion.solve"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion.solve()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.ClusterExpansion.subsets"><code class="docutils literal notranslate"><span class="pre">ClusterExpansion.subsets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Enumerate"><code class="docutils literal notranslate"><span class="pre">Enumerate</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Enumerate.logp"><code class="docutils literal notranslate"><span class="pre">Enumerate.logp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Enumerate.solve"><code class="docutils literal notranslate"><span class="pre">Enumerate.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCH"><code class="docutils literal notranslate"><span class="pre">MCH</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCH.estimate_jac"><code class="docutils literal notranslate"><span class="pre">MCH.estimate_jac()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCH.learn_parameters_mch"><code class="docutils literal notranslate"><span class="pre">MCH.learn_parameters_mch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCH.solve"><code class="docutils literal notranslate"><span class="pre">MCH.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCHIncompleteData"><code class="docutils literal notranslate"><span class="pre">MCHIncompleteData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCHIncompleteData.generate_sample"><code class="docutils literal notranslate"><span class="pre">MCHIncompleteData.generate_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCHIncompleteData.learn_parameters_mch"><code class="docutils literal notranslate"><span class="pre">MCHIncompleteData.learn_parameters_mch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MCHIncompleteData.solve"><code class="docutils literal notranslate"><span class="pre">MCHIncompleteData.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MPF"><code class="docutils literal notranslate"><span class="pre">MPF</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MPF.K"><code class="docutils literal notranslate"><span class="pre">MPF.K()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MPF.list_adjacent_states"><code class="docutils literal notranslate"><span class="pre">MPF.list_adjacent_states()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MPF.logK"><code class="docutils literal notranslate"><span class="pre">MPF.logK()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MPF.solve"><code class="docutils literal notranslate"><span class="pre">MPF.solve()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MPF.worker_objective_task"><code class="docutils literal notranslate"><span class="pre">MPF.worker_objective_task()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.MonteCarloHistogram"><code class="docutils literal notranslate"><span class="pre">MonteCarloHistogram</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo"><code class="docutils literal notranslate"><span class="pre">Pseudo</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo.cond_hess"><code class="docutils literal notranslate"><span class="pre">Pseudo.cond_hess()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo.cond_jac"><code class="docutils literal notranslate"><span class="pre">Pseudo.cond_jac()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo.cond_log_likelihood"><code class="docutils literal notranslate"><span class="pre">Pseudo.cond_log_likelihood()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo.pair_cooc_mat"><code class="docutils literal notranslate"><span class="pre">Pseudo.pair_cooc_mat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo.pseudo_log_likelihood"><code class="docutils literal notranslate"><span class="pre">Pseudo.pseudo_log_likelihood()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Pseudo.solve"><code class="docutils literal notranslate"><span class="pre">Pseudo.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.RegularizedMeanField"><code class="docutils literal notranslate"><span class="pre">RegularizedMeanField</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.RegularizedMeanField.bracket1d"><code class="docutils literal notranslate"><span class="pre">RegularizedMeanField.bracket1d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.RegularizedMeanField.solve"><code class="docutils literal notranslate"><span class="pre">RegularizedMeanField.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Solver"><code class="docutils literal notranslate"><span class="pre">Solver</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Solver.basic_setup"><code class="docutils literal notranslate"><span class="pre">Solver.basic_setup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Solver.fill_in"><code class="docutils literal notranslate"><span class="pre">Solver.fill_in()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Solver.logp"><code class="docutils literal notranslate"><span class="pre">Solver.logp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Solver.set_insertion_ix"><code class="docutils literal notranslate"><span class="pre">Solver.set_insertion_ix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.Solver.solve"><code class="docutils literal notranslate"><span class="pre">Solver.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.SparseEnumerate"><code class="docutils literal notranslate"><span class="pre">SparseEnumerate</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.SparseEnumerate.logp"><code class="docutils literal notranslate"><span class="pre">SparseEnumerate.logp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.SparseEnumerate.solve"><code class="docutils literal notranslate"><span class="pre">SparseEnumerate.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.SparseMCH"><code class="docutils literal notranslate"><span class="pre">SparseMCH</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.SparseMCH.learn_parameters_mch"><code class="docutils literal notranslate"><span class="pre">SparseMCH.learn_parameters_mch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.SparseMCH.solve"><code class="docutils literal notranslate"><span class="pre">SparseMCH.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.solvers.html#coniii.solvers.unwrap_self_worker_obj"><code class="docutils literal notranslate"><span class="pre">unwrap_self_worker_obj()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.test_samplers.html">coniii.test_samplers module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_samplers.html#coniii.test_samplers.compare_samplers"><code class="docutils literal notranslate"><span class="pre">compare_samplers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_samplers.html#coniii.test_samplers.test_Metropolis"><code class="docutils literal notranslate"><span class="pre">test_Metropolis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_samplers.html#coniii.test_samplers.test_ParallelTempering"><code class="docutils literal notranslate"><span class="pre">test_ParallelTempering()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_samplers.html#coniii.test_samplers.test_Potts3"><code class="docutils literal notranslate"><span class="pre">test_Potts3()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_samplers.html#coniii.test_samplers.test_sample_ising"><code class="docutils literal notranslate"><span class="pre">test_sample_ising()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.test_solvers.html">coniii.test_solvers module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_solvers.html#coniii.test_solvers.test_Enumerate"><code class="docutils literal notranslate"><span class="pre">test_Enumerate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_solvers.html#coniii.test_solvers.test_MPF"><code class="docutils literal notranslate"><span class="pre">test_MPF()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_solvers.html#coniii.test_solvers.test_Pseudo"><code class="docutils literal notranslate"><span class="pre">test_Pseudo()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_solvers.html#coniii.test_solvers.test_SparseEnumerate"><code class="docutils literal notranslate"><span class="pre">test_SparseEnumerate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_solvers.html#coniii.test_solvers.test_init"><code class="docutils literal notranslate"><span class="pre">test_init()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_solvers.html#coniii.test_solvers.test_pickling"><code class="docutils literal notranslate"><span class="pre">test_pickling()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.test_utils.html">coniii.test_utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_adj"><code class="docutils literal notranslate"><span class="pre">test_adj()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_base_repr"><code class="docutils literal notranslate"><span class="pre">test_base_repr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_calc_de"><code class="docutils literal notranslate"><span class="pre">test_calc_de()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_convert_corr"><code class="docutils literal notranslate"><span class="pre">test_convert_corr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_convert_params"><code class="docutils literal notranslate"><span class="pre">test_convert_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_define_ising_helper_functions"><code class="docutils literal notranslate"><span class="pre">test_define_ising_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_pair_corr"><code class="docutils literal notranslate"><span class="pre">test_pair_corr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_state_gen_and_count"><code class="docutils literal notranslate"><span class="pre">test_state_gen_and_count()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_sub_to_ind"><code class="docutils literal notranslate"><span class="pre">test_sub_to_ind()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.test_utils.html#coniii.test_utils.test_vec2mat"><code class="docutils literal notranslate"><span class="pre">test_vec2mat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coniii.utils.html">coniii.utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.adj"><code class="docutils literal notranslate"><span class="pre">adj()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.adj_sym"><code class="docutils literal notranslate"><span class="pre">adj_sym()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.base_repr"><code class="docutils literal notranslate"><span class="pre">base_repr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.bin_states"><code class="docutils literal notranslate"><span class="pre">bin_states()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.calc_de"><code class="docutils literal notranslate"><span class="pre">calc_de()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.calc_overlap"><code class="docutils literal notranslate"><span class="pre">calc_overlap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.coarse_grain_with_func"><code class="docutils literal notranslate"><span class="pre">coarse_grain_with_func()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.convert_corr"><code class="docutils literal notranslate"><span class="pre">convert_corr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.convert_params"><code class="docutils literal notranslate"><span class="pre">convert_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_ising_helper_functions"><code class="docutils literal notranslate"><span class="pre">define_ising_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_ising_helper_functions_sym"><code class="docutils literal notranslate"><span class="pre">define_ising_helper_functions_sym()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_potts_helper_functions"><code class="docutils literal notranslate"><span class="pre">define_potts_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_pseudo_ising_helper_functions"><code class="docutils literal notranslate"><span class="pre">define_pseudo_ising_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_pseudo_potts_helper_functions"><code class="docutils literal notranslate"><span class="pre">define_pseudo_potts_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_ternary_helper_functions"><code class="docutils literal notranslate"><span class="pre">define_ternary_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.define_triplet_helper_functions"><code class="docutils literal notranslate"><span class="pre">define_triplet_helper_functions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.ind_to_sub"><code class="docutils literal notranslate"><span class="pre">ind_to_sub()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.ising_convert_params"><code class="docutils literal notranslate"><span class="pre">ising_convert_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.k_corr"><code class="docutils literal notranslate"><span class="pre">k_corr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.mat2vec"><code class="docutils literal notranslate"><span class="pre">mat2vec()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.multinomial"><code class="docutils literal notranslate"><span class="pre">multinomial()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.pair_corr"><code class="docutils literal notranslate"><span class="pre">pair_corr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.replace_diag"><code class="docutils literal notranslate"><span class="pre">replace_diag()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.split_concat_params"><code class="docutils literal notranslate"><span class="pre">split_concat_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.state_probs"><code class="docutils literal notranslate"><span class="pre">state_probs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.sub_to_ind"><code class="docutils literal notranslate"><span class="pre">sub_to_ind()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.unique_rows"><code class="docutils literal notranslate"><span class="pre">unique_rows()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.unravel_index"><code class="docutils literal notranslate"><span class="pre">unravel_index()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.vec2mat"><code class="docutils literal notranslate"><span class="pre">vec2mat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.xbin_states"><code class="docutils literal notranslate"><span class="pre">xbin_states()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.xpotts_states"><code class="docutils literal notranslate"><span class="pre">xpotts_states()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="coniii.utils.html#coniii.utils.zero_diag"><code class="docutils literal notranslate"><span class="pre">zero_diag()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="module-coniii">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coniii" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coniii" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -98,7 +392,7 @@
 
 
 <h3>Navigation</h3>
-<p><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate.html">coniii.enumerate module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coniii.enumerate_potts.html">coniii.enumerate_potts module</a></li>
@@ -119,12 +413,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -141,8 +435,8 @@
       &copy;2018, Edward D. Lee, Bryan C. Daniels.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="../_sources/coniii_rst/coniii.rst.txt"

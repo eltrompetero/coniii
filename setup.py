@@ -10,8 +10,8 @@ from shutil import copyfile
 import platform, sys
 
 # set os environment default to be conda env path
-os.environ['CC'] = os.environ['CONDA_PREFIX']+'/bin/'+os.environ['CC'].split('/')[-1]
-os.environ['CXX'] = os.environ['CONDA_PREFIX']+'/bin/'+os.environ['CXX'].split('/')[-1]
+os.environ['CC'] = os.environ['CONDA_PREFIX']+'/bin/gcc'
+os.environ['CXX'] = os.environ['CONDA_PREFIX']+'/bin/g++'
 
 # flags
 NO_BOOST = False

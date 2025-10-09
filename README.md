@@ -11,7 +11,7 @@ If you use ConIII for your research, please consider citing the following:
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
 The paper also contains an overview of the modules. For code documentation, see
-[here](https://eddielee.co/coniii/index.html "Documentation").
+[here](https://eltrompetero.github.io/coniii/index.html "Documentation").
 
 ## Installation
 
@@ -111,4 +111,4 @@ When updating, please read the [RELEASE_NOTES](https://github.com/eltrompetero/c
 be modifications to the interface including parameter names as we make future versions
 more user friendly.
 
-[Documentation](https://eddielee.co/coniii/index.html "Documentation").
+[Documentation](https://eltrompetero.github.io/coniii/index.html "Documentation").

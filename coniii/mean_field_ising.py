@@ -2,14 +2,17 @@
 # meanFieldIsing.py
 # Author : Bryan Daniels
 # =============================================================================================== #
-import scipy
+import scipy.integrate
+import scipy.linalg
 import scipy.optimize
 import copy
 import numpy as np
-#import scipy.weave # for efficient fourth-order matrix calculation
+# scipy.weave was retired in scipy 1.0; the only consumer was the
+# slowMethod=False path in fourthOrderCoocMat, which now raises
+# NotImplementedError.
 
-exp, cosh = scipy.exp, scipy.cosh
-dot = scipy.dot
+exp, cosh = np.exp, np.cosh
+dot = np.dot
 
 # 4.8.2011
 # 8.16.2012 moved from generateFightData.py
@@ -23,29 +26,29 @@ def aboveDiagFlat(mat, keepDiag=False, offDiagMult=None):
 
     m = copy.copy(mat)
     if offDiagMult is not None:
-        m *= offDiagMult*(1.-scipy.tri(len(m)))+scipy.diag(scipy.ones(len(m))) 
+        m *= offDiagMult*(1.-np.tri(len(m)))+np.diag(np.ones(len(m))) 
     if keepDiag: begin=0
     else: begin=1
-    return scipy.concatenate([ scipy.diagonal(m,i)                          \
+    return np.concatenate([ np.diagonal(m,i)                          \
                               for i in range(begin,len(m)) ])
 
-# 9.15.2014 updated for new scipy.diag behavior
+# 9.15.2014 updated for new np.diag behavior
 # 1.17.2013 moved from criticalPoint.py
 # 1.31.2012
 def replaceDiag(mat, lst):
-    if len(scipy.shape(lst)) > 1:
+    if len(np.shape(lst)) > 1:
         raise Exception("Lst should be 1-dimensional")
-    if scipy.shape(mat) != (len(lst),len(lst)):
+    if np.shape(mat) != (len(lst),len(lst)):
         raise Exception("Incorrect dimensions."+                   \
-            "  shape(mat) = "+str(scipy.shape(mat))+                \
+            "  shape(mat) = "+str(np.shape(mat))+                \
             ", len(lst) = "+str(len(lst)))
-    return mat - scipy.diag(scipy.diag(mat).copy()).copy()          \
-        + scipy.diag(lst).copy()
+    return mat - np.diag(np.diag(mat).copy()).copy()          \
+        + np.diag(lst).copy()
 
 # 2.15.2013 moved from branchingProcess.py
 # 2.11.2013
 def zeroDiag(mat):
-    return replaceDiag(mat,scipy.zeros(len(mat)))
+    return replaceDiag(mat,np.zeros(len(mat)))
 
 
 def m(h,J,ell,T):
@@ -56,7 +59,7 @@ def m(h,J,ell,T):
     #dfunc = lambda m: 1. - (ell-1.)*J/T /                   \
     #    ( cosh((h-(ell-1.)*m*J)/(2.*T)) )**2
     #***
-    #ms = scipy.linspace(-0.1,1.1,100)
+    #ms = np.linspace(-0.1,1.1,100)
     #pylab.plot(ms,[func(m) for m in ms])
     #***
     #mRoot0 = 0.5
@@ -98,7 +101,7 @@ def susc(h,J,ell,T):
 def coocCluster(coocMat, cluster):
     """Sort coocMat by the cluster indices"""
     orderedIndices = cluster
-    sortedMat = scipy.array(coocMat)[:]
+    sortedMat = np.array(coocMat)[:]
     sortedMat = sortedMat[orderedIndices,:]
     sortedMat = sortedMat[:,orderedIndices]
     return sortedMat
@@ -108,7 +111,7 @@ def JfullFromCluster(Jcluster,cluster,N):
     """
     NOTE: There is perhaps a faster way of doing this?
     """
-    J = scipy.zeros((N,N))
+    J = np.zeros((N,N))
     for i,iFull in enumerate(cluster):
         for j,jFull in enumerate(cluster):
             J[iFull,jFull] = Jcluster[i,j]
@@ -117,8 +120,8 @@ def JfullFromCluster(Jcluster,cluster,N):
 # 3.27.2014 moved from selectiveClusterExpansion.py
 def symmetrizeUsingUpper(mat):
     if len(mat) != len(mat[0]): raise Exception
-    d = scipy.diag(mat)
-    matTri = (1.-scipy.tri(len(mat)))*mat
+    d = np.diag(mat)
+    matTri = (1.-np.tri(len(mat)))*mat
     matSym = replaceDiag(matTri+matTri.T,d)
     return matSym
 
@@ -142,19 +145,19 @@ def SmeanField(cluster,coocMat,meanFieldPriorLmbda=0.,
     # in case we're given an upper-triangular coocMat:
     coocMatCluster = symmetrizeUsingUpper(coocMatCluster)
     
-    outer = scipy.outer
+    outer = np.outer
     N = len(cluster)
     
-    freqs = scipy.diag(coocMatCluster)
+    freqs = np.diag(coocMatCluster)
     c = coocMatCluster - outer(freqs,freqs)
     
-    Mdenom = scipy.sqrt( outer(freqs*(1.-freqs),freqs*(1-freqs)) )
+    Mdenom = np.sqrt( outer(freqs*(1.-freqs),freqs*(1-freqs)) )
     M = c / Mdenom
     
     if indTerm:
-        Sinds = -freqs*scipy.log(freqs)             \
-            -(1.-freqs)*scipy.log(1.-freqs)
-        Sind = scipy.sum(Sinds)
+        Sinds = -freqs*np.log(freqs)             \
+            -(1.-freqs)*np.log(1.-freqs)
+        Sind = np.sum(Sinds)
     else:
         Sind = 0.
     
@@ -167,31 +170,31 @@ def SmeanField(cluster,coocMat,meanFieldPriorLmbda=0.,
             gamma = 0.
         mq,vq = scipy.linalg.eig(M)
         mqhat = 0.5*( mq-gamma +                        \
-                scipy.sqrt((mq-gamma)**2 + 4.*gamma) )
+                np.sqrt((mq-gamma)**2 + 4.*gamma) )
         jq = 1./mqhat #1. - 1./mqhat
-        Jprime = scipy.real_if_close(                   \
-                dot( vq , dot(scipy.diag(jq),vq.T) ) )
+        Jprime = np.real_if_close(                   \
+                dot( vq , dot(np.diag(jq),vq.T) ) )
         JMF = zeroDiag( Jprime / Mdenom )
         
-        ent = scipy.real_if_close(                      \
-                Sind + 0.5*scipy.sum( scipy.log(mqhat)  \
+        ent = np.real_if_close(                      \
+                Sind + 0.5*np.sum( np.log(mqhat)  \
                 + 1. - mqhat ) )
     else:
         # use non-regularized equations
         Minv = scipy.linalg.inv(M)
         JMF = zeroDiag( Minv/Mdenom )
         
-        logMvals = scipy.log( scipy.linalg.svdvals(M) )
-        ent = Sind + 0.5*scipy.sum(logMvals)
+        logMvals = np.log( scipy.linalg.svdvals(M) )
+        ent = Sind + 0.5*np.sum(logMvals)
     
     # calculate diagonal (h) parameters
-    piFactor = scipy.repeat( [(freqs-0.5)/(freqs*(1.-freqs))],
+    piFactor = np.repeat( [(freqs-0.5)/(freqs*(1.-freqs))],
                             N, axis=0).T
-    pjFactor = scipy.repeat( [freqs], N, axis=0 )
+    pjFactor = np.repeat( [freqs], N, axis=0 )
     factor2 = c*piFactor - pjFactor
-    hMF = scipy.diag( scipy.dot( JMF, factor2.T  ) ).copy()
+    hMF = np.diag( np.dot( JMF, factor2.T  ) ).copy()
     if indTerm:
-        hMF -= scipy.log(freqs/(1.-freqs))
+        hMF -= np.log(freqs/(1.-freqs))
     
     J = replaceDiag( 0.5*JMF, hMF )
     
@@ -219,8 +222,8 @@ def JmeanField(coocMat,**kwargs):
 # 11.21.2014
 def meanFieldStability(J,freqs):
     # 6.26.2013
-    #freqs = scipy.mean(samples,axis=0)
-    f = scipy.repeat([freqs],len(freqs),axis=0)
+    #freqs = np.mean(samples,axis=0)
+    f = np.repeat([freqs],len(freqs),axis=0)
     m = -2.*zeroDiag(J)*f*(1.-f)
     stabilityValue = max(abs( scipy.linalg.eigvals(m) ))
     return stabilityValue
@@ -229,7 +232,7 @@ def meanFieldStability(J,freqs):
 # 3.6.2015
 # exact form of log(cosh(x)) that doesn't die at large x
 def logCosh(x):
-    return abs(x) + scipy.log(1. + scipy.exp(-2.*abs(x))) - scipy.log(2.)
+    return abs(x) + np.log(1. + np.exp(-2.*abs(x))) - np.log(2.)
 
 # 3.6.2015
 # see notes 3.4.2015
@@ -240,14 +243,14 @@ def FHomogeneous(h,J,N,m):
     field m (m equals the mean field as N -> infinity?).
     """
     Jbar = N*J
-    s = scipy.sqrt(scipy.pi/(N*Jbar))
-    L = Jbar * m*m - scipy.log(2.) - logCosh(2.*Jbar*m + h)
-    return N*L + scipy.log(s)
+    s = np.sqrt(np.pi/(N*Jbar))
+    L = Jbar * m*m - np.log(2.) - logCosh(2.*Jbar*m + h)
+    return N*L + np.log(s)
 
 # 3.6.2015
 def dFdT(h,J,N,m):
     Jbar = N*J
-    return -N*Jbar*m*m + N*(2.*Jbar*m + h)*scipy.tanh(2.*Jbar*m + h) + 0.5
+    return -N*Jbar*m*m + N*(2.*Jbar*m + h)*np.tanh(2.*Jbar*m + h) + 0.5
 
 # 3.6.2015
 def SHomogeneous(h,J,N):
@@ -255,32 +258,32 @@ def SHomogeneous(h,J,N):
     Use Hubbard-Stratonovich (auxiliary field) to numerically 
     calculate entropy of a homogeneous system.
     """
-    Zfunc = lambda m: scipy.exp(-FHomogeneous(h,J,N,m))
-    Z = scipy.integrate.quad(Zfunc,-scipy.inf,scipy.inf)[0]
+    Zfunc = lambda m: np.exp(-FHomogeneous(h,J,N,m))
+    Z = scipy.integrate.quad(Zfunc,-np.inf,np.inf)[0]
 
-    dFdTFunc = lambda m: dFdT(h,J,N,m) * scipy.exp(-FHomogeneous(h,J,N,m))
-    avgdFdT = scipy.integrate.quad(dFdTFunc,-scipy.inf,scipy.inf)[0] / Z
+    dFdTFunc = lambda m: dFdT(h,J,N,m) * np.exp(-FHomogeneous(h,J,N,m))
+    avgdFdT = scipy.integrate.quad(dFdTFunc,-np.inf,np.inf)[0] / Z
 
-    return scipy.log(Z) - avgdFdT
+    return np.log(Z) - avgdFdT
 
 # 3.6.2015
 def avgmHomogeneous(h,J,N):
-    Zfunc = lambda m: scipy.exp(-FHomogeneous(h,J,N,m))
-    Z = scipy.integrate.quad(Zfunc,-scipy.inf,scipy.inf)[0]
+    Zfunc = lambda m: np.exp(-FHomogeneous(h,J,N,m))
+    Z = scipy.integrate.quad(Zfunc,-np.inf,np.inf)[0]
     
-    mFunc = lambda m: m * scipy.exp(-FHomogeneous(h,J,N,m))
-    avgm = scipy.integrate.quad(mFunc,-scipy.inf,scipy.inf)[0] / Z
+    mFunc = lambda m: m * np.exp(-FHomogeneous(h,J,N,m))
+    avgm = scipy.integrate.quad(mFunc,-np.inf,np.inf)[0] / Z
 
     return avgm
 
 # 3.6.2015
 def avgxHomogeneous(h,J,N):
-    Zfunc = lambda m: scipy.exp(-FHomogeneous(h,J,N,m))
-    Z = scipy.integrate.quad(Zfunc,-scipy.inf,scipy.inf)[0]
+    Zfunc = lambda m: np.exp(-FHomogeneous(h,J,N,m))
+    Z = scipy.integrate.quad(Zfunc,-np.inf,np.inf)[0]
     
     Jbar = N*J
-    xFunc = lambda m: scipy.tanh(2.*Jbar*m+h) * scipy.exp(-FHomogeneous(h,J,N,m))
-    avgx = scipy.integrate.quad(xFunc,-scipy.inf,scipy.inf)[0] / Z
+    xFunc = lambda m: np.tanh(2.*Jbar*m+h) * np.exp(-FHomogeneous(h,J,N,m))
+    avgx = scipy.integrate.quad(xFunc,-np.inf,np.inf)[0] / Z
     
     return avgx
 
@@ -293,15 +296,15 @@ def multiInfoHomogeneous(h,J,N):
 # 3.6.2015
 def independentEntropyHomogeneous(h,J,N):
     avgx = avgxHomogeneous(h,J,N)
-    S1 = - (1.+avgx)/2. * scipy.log((1.+avgx)/2.) \
-        - (1.-avgx)/2. * scipy.log((1.-avgx)/2.)
+    S1 = - (1.+avgx)/2. * np.log((1.+avgx)/2.) \
+        - (1.-avgx)/2. * np.log((1.-avgx)/2.)
     return N*S1
 
 # 3.6.2015
 def independentEntropyHomogeneous2(h,J,N):
     avgx = avgxHomogeneous(h,J,N)
-    heff = scipy.arctanh(avgx)
-    return N*(scipy.log(2.) + scipy.log(scipy.cosh(heff)) - avgx*heff)
+    heff = np.arctanh(avgx)
+    return N*(np.log(2.) + np.log(np.cosh(heff)) - avgx*heff)
 
 
 # 7.18.2017 moved from inverseIsing.py
@@ -327,21 +330,21 @@ def findJmatrixAnalytic_CoocMat(coocMatData,
     
     if Jinit is None:
         # 1.17.2012 try starting from frequency model
-        freqs = scipy.diag(coocMatDesired)
-        hList = -scipy.log(freqs/(1.-freqs))
-        Jinit = scipy.diag(hList)
+        freqs = np.diag(coocMatDesired)
+        hList = -np.log(freqs/(1.-freqs))
+        Jinit = np.diag(hList)
     
     def deltaCooc(Jflat):
         J = unflatten(Jflat,ell)
         cooc = coocExpectations(J,minSize=minSize)
         dCooc = aboveDiagFlat(cooc - coocMatDesired,keepDiag=True)
         if (lmbda > 0.) and (ell > 1):
-            freqs = scipy.diag(coocMatDesired)
-            factor = scipy.outer(freqs*(1.-freqs),freqs*(1.-freqs))
+            freqs = np.diag(coocMatDesired)
+            factor = np.outer(freqs*(1.-freqs),freqs*(1.-freqs))
             factorFlat = aboveDiagFlat(factor)
             # 3.24.2014 changed from lmbda/2. to lmbda
             priorTerm = lmbda * factorFlat * Jflat[ell:]**2 
-            dCooc = scipy.concatenate([dCooc,priorTerm])
+            dCooc = np.concatenate([dCooc,priorTerm])
         return dCooc
     
     JinitFlat = aboveDiagFlat(Jinit,keepDiag=True)
@@ -356,7 +359,7 @@ def unflatten(flatList, ell, symmetrize=False):
     Inverse of aboveDiagFlat with keepDiag=True.
     """
     
-    mat = scipy.sum([ scipy.diag(flatList[diagFlatIndex(0,j,ell):diagFlatIndex(0,j+1,ell)], k=j)
+    mat = np.sum([ np.diag(flatList[diagFlatIndex(0,j,ell):diagFlatIndex(0,j+1,ell)], k=j)
                       for j in range(ell)], axis=0)
     if symmetrize:
         return 0.5*(mat + mat.T)
@@ -378,8 +381,8 @@ def analyticEntropy(J):
     In nats.
     """
     Z = unsummedZ(J)
-    p = Z / scipy.sum(Z)
-    return - scipy.sum( p * scipy.log(p) )
+    p = Z / np.sum(Z)
+    return - np.sum( p * np.log(p) )
 
 # 7.20.2017 moved from inverseIsing.py
 # 2.7.2014
@@ -395,15 +398,15 @@ def coocSampleCovariance(samples, bayesianMean=True, includePrior=True):
         #coocs4mean = coocMatBayesianMean(coocs4,len(samples))
         print("coocSampleCovariance : WARNING : using ad-hoc 'Laplace' correction")
         N = len(samples)
-        newDiag = (scipy.diag(coocs4)*N + 1.)/(N + 2.)
+        newDiag = (np.diag(coocs4)*N + 1.)/(N + 2.)
         coocs4mean = replaceDiag(coocs4, newDiag)
     else:
         coocs4mean = coocs4
     cov = coocs4mean*(1.-coocs4mean)
     if includePrior:
         ell = len(samples[0])
-        one = scipy.ones(ell*(ell-1)//2)
-        return scipy.linalg.block_diag( cov, scipy.diag(one) )
+        one = np.ones(ell*(ell-1)//2)
+        return scipy.linalg.block_diag( cov, np.diag(one) )
     else:
         return cov
 
@@ -442,46 +445,27 @@ def cooccurrence_matrix(samples, keep_diag=True):
 # 2.17.2012
 def fourthOrderCoocMat(samples, slowMethod=True):
     ell = len(samples[0])
-    samples = scipy.array(samples)
+    samples = np.array(samples)
     jdim = (ell+1)*ell//2
-    f = scipy.zeros((jdim, jdim))
+    f = np.zeros((jdim, jdim))
     
-    if slowMethod:
-        for i in range(ell):
-          for j in range(i,ell):
-            for m in range(i,ell):
-              for n in range(m,ell):
-                coocIndex1 = diagFlatIndex(i,j,ell)
-                coocIndex2 = diagFlatIndex(m,n,ell)
-                cooc = scipy.sum(                                           \
-                    samples[:,i]*samples[:,j]*samples[:,m]*samples[:,n])
-                f[coocIndex1,coocIndex2] = cooc
-                f[coocIndex2,coocIndex1] = cooc
-    else:
-        code = """
-        int coocIndex1,coocIndex2;
-        float coocSum;
-        for (int i=0; i<ell; i++){
-          for (int j=i; j<ell; j++){
-            for (int m=i; m<ell; m++){
-              for (int n=m; n<ell; n++){
-                coocIndex1 = i + (j-i)*ell - (j-i)*(j-i-1)/2;
-                coocIndex2 = m + (n-m)*ell - (n-m)*(n-m-1)/2;
-                coocSum = 0.;
-                for (int k=0; k<numFights; k++){
-                  coocSum += samples(k,i)*samples(k,j)*samples(k,m)*samples(k,n);
-                }
-                f(coocIndex1,coocIndex2) = coocSum;
-                f(coocIndex2,coocIndex1) = coocSum;
-              }
-            }
-          }
-        }
-        """
-        numFights = len(samples)
-        err = scipy.weave.inline(code,                                      \
-            ['f','samples','numFights','ell'],                              \
-            type_converters = scipy.weave.converters.blitz)
+    if not slowMethod:
+        # The fast path was originally implemented with scipy.weave.inline,
+        # which was retired in scipy 1.0. The pure-Python fallback below
+        # is the only supported path.
+        raise NotImplementedError(
+            "The scipy.weave-based fast path was retired in scipy 1.0; "
+            "only slowMethod=True is supported.")
+    for i in range(ell):
+      for j in range(i,ell):
+        for m in range(i,ell):
+          for n in range(m,ell):
+            coocIndex1 = diagFlatIndex(i,j,ell)
+            coocIndex2 = diagFlatIndex(m,n,ell)
+            cooc = np.sum(                                           \
+                samples[:,i]*samples[:,j]*samples[:,m]*samples[:,n])
+            f[coocIndex1,coocIndex2] = cooc
+            f[coocIndex2,coocIndex1] = cooc
     return f/float(len(samples))
 
 # 7.20.2017 moved from inverseIsing.py
@@ -500,7 +484,7 @@ def coocStdevsFlat(coocMat,numFights):
     """
     coocMatMean = coocMatBayesianMean(coocMat,numFights)
     varianceMatFlat = aboveDiagFlat(coocMatMean*(1.-coocMatMean)/numFights,keepDiag=True)
-    return scipy.sqrt(varianceMatFlat)
+    return np.sqrt(varianceMatFlat)
 
 # 7.25.2017 moved from inverseIsing.py
 # 3.5.2013
@@ -525,12 +509,12 @@ def isingDeltaCooc(isingSamples,coocMatDesired):
 # 7.18.2017 moved from inverseIsing.py
 def coocExpectations(J,hext=0,zeroBelowDiag=True,minSize=0):
     ell = len(J)
-    fp = scipy.array( fightPossibilities(ell,minSize) )
-    coocp = scipy.array([ scipy.outer(f,f) for f in fp ])
+    fp = np.array( fightPossibilities(ell,minSize) )
+    coocp = np.array([ np.outer(f,f) for f in fp ])
     Z = unsummedZ(J,hext,minSize)
     coocSym = dot(coocp.T,Z)/sum(Z)
     if zeroBelowDiag:
-        coocTri = coocSym * scipy.tri(ell).T
+        coocTri = coocSym * np.tri(ell).T
         return coocTri
     else:
         return coocSym
@@ -540,7 +524,7 @@ def unsummedZ(J,hext=0,minSize=0):
     """
     J should have h on the diagonal.
     """
-    return scipy.exp( unsummedLogZ(J,hext=hext,minSize=minSize) )
+    return np.exp( unsummedLogZ(J,hext=hext,minSize=minSize) )
 
 # 7.18.2017 moved from inverseIsing.py
 def unsummedLogZ(J,hext=0,minSize=0):
@@ -548,16 +532,16 @@ def unsummedLogZ(J,hext=0,minSize=0):
     J should have h on the diagonal.
     """
     ell = len(J)
-    h = scipy.diag(J)
-    JnoDiag = J - scipy.diag(h)
-    fp = scipy.array( fightPossibilities(ell,minSize) )
-    return -dot(fp,h-hext)-1.0*scipy.sum(dot(fp,JnoDiag)*fp,axis=1)
+    h = np.diag(J)
+    JnoDiag = J - np.diag(h)
+    fp = np.array( fightPossibilities(ell,minSize) )
+    return -dot(fp,h-hext)-1.0*np.sum(dot(fp,JnoDiag)*fp,axis=1)
 
 # 7.18.2017 moved from inverseIsing.py
 def fightPossibilities(ell,minSize=0):
     fightNumbers = list(range(2**ell))
-    fp = [ [ int(x) for x in scipy.binary_repr(fN,ell) ]                  \
+    fp = [ [ int(x) for x in np.binary_repr(fN,ell) ]                  \
              for fN in fightNumbers ]
     if minSize > 0:
-        fp = scipy.array( [x for x in fp if sum(x)>=minSize] )
+        fp = np.array( [x for x in fp if sum(x)>=minSize] )
     return fp

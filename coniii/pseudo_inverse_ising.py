@@ -7,13 +7,14 @@
 # described in
 # Aurell and Ekeberg, PRL 108, 090201 (2012)
 
-#import scipy.weave
+#import scipy.weave  # retired in scipy 1.0
 #import sys
 import scipy.optimize
+import numpy as np
 
 import pylab # for testing
 
-exp,log,sum,array = scipy.exp,scipy.log,scipy.sum,scipy.array
+exp,log,sum,array = np.exp,np.log,np.sum,np.array
 
 def pseudoInverseIsing(samples,minSize=0):
     """
@@ -26,21 +27,21 @@ def pseudoInverseIsing(samples,minSize=0):
     ell = len(data[0])
     
     # start at freq. model params?
-    freqs = scipy.mean(data,axis=0)
-    hList = -scipy.log(freqs/(1.-freqs))
+    freqs = np.mean(data,axis=0)
+    hList = -np.log(freqs/(1.-freqs))
 
-    Jfinal = scipy.zeros((ell,ell))
+    Jfinal = np.zeros((ell,ell))
 
     for r in range(ell):
         
         print("Minimizing for r =",r)
         
-        Jr0 = scipy.zeros(ell) #scipy.ones(ell)
+        Jr0 = np.zeros(ell) #np.ones(ell)
         Jr0[r] = hList[r]
         
         # 12.10.2013
         samplesRhat = data.copy()
-        samplesRhat[:,r] = scipy.ones(len(data))
+        samplesRhat[:,r] = np.ones(len(data))
         # calculate once and pass to hessian algorithm for speed
         pairCoocRhat = pairCoocMat(samplesRhat)
         
@@ -77,8 +78,8 @@ def conditionalLogLikelihood(r,samples,Jr,minSize=0):
     
     sigmaRtilde = (2.*samples[:,r] - 1.)
     samplesRhat = 2.*samples.copy()
-    samplesRhat[:,r] = scipy.ones(len(samples))
-    localFields = scipy.dot(Jr,samplesRhat.T) # (# samples)x(1)
+    samplesRhat[:,r] = np.ones(len(samples))
+    localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
     energies = sigmaRtilde * localFields # (# samples)x(1)
     
     # vector with zeros on samples affected by minSize
@@ -87,7 +88,7 @@ def conditionalLogLikelihood(r,samples,Jr,minSize=0):
     invPs = 1. + exp( energies )
     logLs = - filterVec * log( invPs )
 
-    return scipy.sum( logLs )
+    return np.sum( logLs )
 
 def conditionalJacobian(r,samples,Jr,minSize=0):
     """
@@ -99,16 +100,16 @@ def conditionalJacobian(r,samples,Jr,minSize=0):
     
     sigmaRtilde = (2.*samples[:,r] - 1.)
     samplesRhat = 2.*samples.copy()
-    samplesRhat[:,r] = scipy.ones(len(samples))
-    localFields = scipy.dot(Jr,samplesRhat.T) # (# samples)x(1)
+    samplesRhat[:,r] = np.ones(len(samples))
+    localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
     energies = sigmaRtilde * localFields # (# samples)x(1)
     
     # vector with zeros on samples affected by minSize
     filterVec = 1 - samples[:,r] * ( sum(samples,axis=1) <= minSize )
     
-    coocs = scipy.repeat([sigmaRtilde],ell,axis=0).T * samplesRhat # (#samples)x(ell)
+    coocs = np.repeat([sigmaRtilde],ell,axis=0).T * samplesRhat # (#samples)x(ell)
 
-    return scipy.dot( coocs.T, filterVec * 1./(1. + exp(-energies)) )
+    return np.dot( coocs.T, filterVec * 1./(1. + exp(-energies)) )
 
 def conditionalHessian(r,samples,Jr,minSize=0,pairCoocRhat=None):
     """
@@ -127,8 +128,8 @@ def conditionalHessian(r,samples,Jr,minSize=0,pairCoocRhat=None):
     
     sigmaRtilde = (2.*samples[:,r] - 1.)
     samplesRhat = 2.*samples.copy()
-    samplesRhat[:,r] = scipy.ones(len(samples))
-    localFields = scipy.dot(Jr,samplesRhat.T) # (# samples)x(1)
+    samplesRhat[:,r] = np.ones(len(samples))
+    localFields = np.dot(Jr,samplesRhat.T) # (# samples)x(1)
     energies = sigmaRtilde * localFields # (# samples)x(1)
     
     # pairCooc has shape (# samples)x(ell)x(ell)
@@ -143,16 +144,16 @@ def conditionalHessian(r,samples,Jr,minSize=0,pairCoocRhat=None):
     filteredSigmaRtildeSq = filterVec # (sigmaRtildeSq = 1)
 
     #return energyMults,filteredSigmaR
-    return scipy.dot( filteredSigmaRtildeSq * energyMults, pairCoocRhat )
+    return np.dot( filteredSigmaRtildeSq * energyMults, pairCoocRhat )
 
 def testDerivatives(r,i,samples,J,minSize=0,deltaMax=1):
     Jr0 = J[r]
     ell = len(Jr0)
     
     # set up perturbations
-    v = scipy.zeros(ell)
+    v = np.zeros(ell)
     v[i] = 1
-    deltas = scipy.linspace(-deltaMax,deltaMax,101)
+    deltas = np.linspace(-deltaMax,deltaMax,101)
     Jrs = [ Jr0 + v*delta for delta in deltas ]
 
     # calculate numerically
@@ -183,8 +184,8 @@ def pairCoocMat(samples):
     
     Slow because I haven't thought of a better way of doing it yet.
     """
-    p = [ scipy.outer(f,f) for f in samples ]
-    return scipy.transpose(p,(1,0,2))
+    p = [ np.outer(f,f) for f in samples ]
+    return np.transpose(p,(1,0,2))
 
 
 def pseudoLogLikelihood(samples,J,minSize=0):
@@ -195,7 +196,7 @@ def pseudoLogLikelihood(samples,J,minSize=0):
                 
     (Could probably be made more efficient.)
     """
-    return scipy.sum([ conditionalLogLikelihood(r,samples,J,minSize) \
+    return np.sum([ conditionalLogLikelihood(r,samples,J,minSize) \
                        for r in range(len(J)) ])
 
 

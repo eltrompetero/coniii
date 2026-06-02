@@ -13,6 +13,36 @@ NUMERALS = '0123456789'
 ALPHNUM = '0123456789ABCDEFGHJIKLMNOPQRSTUVWXYZ'
 
 
+# Public API. Anything not in __all__ is internal — including the
+# numpy / numba / itertools / scipy re-exports above.
+__all__ = [
+    # indexing & state generation
+    'sub_to_ind', 'ind_to_sub',
+    'bin_states', 'xbin_states', 'xpotts_states',
+    'base_repr', 'unique_rows',
+    'vec2mat', 'mat2vec',
+    # correlations
+    'pair_corr', 'k_corr', 'calc_de', 'calc_overlap',
+    'convert_corr', 'state_probs',
+    # parameter conversion
+    'convert_params', 'ising_convert_params', 'split_concat_params',
+    # helper-function factories
+    'define_ising_helper_functions',
+    'define_ising_helper_functions_sym',
+    'define_potts_helper_functions',
+    'define_pseudo_ising_helper_functions',
+    'define_pseudo_potts_helper_functions',
+    'define_ternary_helper_functions',
+    'define_triplet_helper_functions',
+    # graph / matrix helpers
+    'adj', 'adj_sym',
+    'replace_diag', 'zero_diag',
+    'coarse_grain_with_func',
+    # numerical
+    'logsumexp',
+]
+
+
 
 @njit(cache=True)
 def sub_to_ind(n, i, j):

@@ -25,6 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ====================================================================================== #
+import numpy as np
 from numba import jit, njit, float64, int64
 from numpy import sin, cos, exp
 from scipy.spatial.distance import squareform
@@ -41,6 +42,25 @@ try:
     IMPORTED_SAMPLERS_EXT = True
 except ModuleNotFoundError:
     IMPORTED_SAMPLERS_EXT = False
+
+
+# Public API. BoostIsing / BoostPotts3 are not listed because their
+# availability depends on whether the optional C++ extension compiled.
+# Users who need them should import them directly:
+#     from coniii.samplers_ext import BoostIsing
+__all__ = [
+    'Sampler',
+    'Metropolis',
+    'WolffIsing',
+    'ParallelTempering',
+    'Potts3',
+    # Experimental — scheduled to move to coniii.experimental:
+    'SWIsing',
+    'HamiltonianMC',
+    'Heisenberg3DSampler',
+    # Convenience entry point:
+    'sample_ising',
+]
 
 
 # ------------------------------------------------------------------------------- #

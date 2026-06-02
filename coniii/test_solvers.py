@@ -5,6 +5,10 @@
 # Author : Eddie Lee, edlee@alumni.princeton.edu
 # ====================================================================================== #
 from .solvers import *
+from .utils import (bin_states, pair_corr, logsumexp,
+                    define_ising_helper_functions,
+                    define_pseudo_ising_helper_functions,
+                    unique_rows)
 from .ising_eqn import ising_eqn_3_sym as ising
 import numpy as np
 calc_observables_multipliers = ising.calc_observables

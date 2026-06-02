@@ -3,11 +3,20 @@
 # Authors: Edward Lee (edlee@alumni.princeton.edu)
 # ====================================================================================== #
 from importlib import import_module
+import numpy as np
 import multiprocess as mp
 
 from .utils import *
 from .samplers import Metropolis
 from .samplers import Potts3 as mcPotts3
+
+
+__all__ = [
+    'Model',
+    'Ising', 'PairwiseMaxent',  # PairwiseMaxent is an alias for Ising
+    'Triplet',
+    'Potts3',
+]
 
 
 

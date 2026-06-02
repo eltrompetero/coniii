@@ -29,7 +29,7 @@ import numpy as np
 import time
 
 from .samplers import *
-from .utils import define_ising_helper_functions
+from .utils import define_ising_helper_functions, define_potts_helper_functions
 
 n = 5
 

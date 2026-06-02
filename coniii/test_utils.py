@@ -4,6 +4,9 @@
 # Author : Eddie Lee, edlee@alumni.princeton.edu
 # =============================================================================================== #
 from .utils import *
+from .utils import unravel_index
+import numpy as np
+from itertools import combinations
 import sys
 version = sys.version_info
 assert version.major>=3 and version.minor>=6

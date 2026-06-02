@@ -942,13 +942,13 @@ def define_ising_helper_functions():
                     k += 1
         return e
 
-    @njit("float64[:](int64[:,:],float64[:])")
+    @njit
     def calc_e(s, params):
         """
         Parameters
         ----------
         s : 2D ndarray of ints
-            state either {0,1} or {+/-1}
+            state either {0,1} or {+/-1}; any integer width
         params : ndarray
             (h, J) vector
 
@@ -957,7 +957,7 @@ def define_ising_helper_functions():
         E : ndarray
             Energies of all given states.
         """
-        
+
         e = -fast_sum(params[s.shape[1]:],s)
         e -= np.sum(s*params[:s.shape[1]],1)
         return e
@@ -1013,13 +1013,13 @@ def define_ising_helper_functions_sym():
                     k += 1
         return e
     
-    @njit("float64[:](int64[:,:],float64[:])")
+    @njit
     def calc_e(s, params):
         """
         Parameters
         ----------
         s : 2D ndarray
-            state either {0,1} or {+/-1}
+            state either {0,1} or {+/-1}; any integer width
         params : ndarray
             (h,J) vector
 

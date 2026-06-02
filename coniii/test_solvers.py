@@ -7,14 +7,6 @@
 from .solvers import *
 from .ising_eqn import ising_eqn_3_sym as ising
 import numpy as np
-import pytest
-
-try:
-    from . import samplers_ext  # Boost C++ extension
-    HAVE_BOOST = True
-except ImportError:
-    HAVE_BOOST = False
-
 calc_observables_multipliers = ising.calc_observables
 
 
@@ -126,10 +118,6 @@ def test_Pseudo():
     assert np.isclose(ising.calc_observables(solver.multipliers), sisj, atol=2e-2).all()
 
 
-@pytest.mark.skipif(not HAVE_BOOST,
-                    reason="MCH internal sampling uses int8 from the pure-Python "
-                           "Metropolis path; calc_e numba signature requires int64. "
-                           "Latent bug on the Boost-less path; skip until fixed.")
 def test_MCH():
     """Smoke test: MCH solver runs and produces multipliers of the expected shape."""
     solver = MCH(sample, sample_size=1000, iprint=False)

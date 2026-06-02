@@ -590,7 +590,7 @@ def split_concat_params(p, n):
         i += 1
     return splitp
 
-def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
+def convert_corr(si, sisj, convert_to, concat=False):
     """Convert single spin means and pairwise correlations between {0,1} and {-1,1}
     formulations.
 
@@ -614,13 +614,6 @@ def convert_corr(si, sisj, convert_to, concat=False, **kwargs):
     ndarray, optional
         Pairwise correlations <si*sj>. Converted to appropriate basis.
     """
-
-    if 'convertTo' in kwargs.keys():
-        from warnings import warn
-        warn("convertTo kwarg is deprecated as of v1.1.2. Use convert_to instead.")
-        convert_to = convertTo
-    elif len(kwargs.keys())>0:
-        raise TypeError("Unexpected keyword argument.")
 
     if convert_to=='11':
         newsisj = np.zeros(sisj.shape)

@@ -1,6 +1,57 @@
 Log for major changes in releases
 
 
+v4.0.0 (Not yet released) — BREAKS COMPATIBILITY, READ NOTES
+----------------------------------------------------
+- Cleanup release. See RELEASE_NOTES for details.
+
+Removed (breaking)
+~~~~~~~~~~~~~~~~~~
+- `utils.convert_corr`: removed the `convertTo` keyword. It was
+  renamed to `convert_to` in v1.1.2 (Dec 2018) and warned for 6+
+  years. Migration: rename the keyword.
+- `solvers.Pseudo`: removed the deprecated implementation methods
+  `_solve_ising_deprecated`, `cond_log_likelihood`, `cond_jac`,
+  `cond_hess`, `pair_cooc_mat`, `pseudo_log_likelihood`. These were
+  superseded by the standard algorithm introduced in v2.1.0
+  (Nov 2019).
+- `enumerate._write_matlab`: removed. Dead since it was added
+  (no in-tree callers; the docstring already said "DEPRECATED:
+  code here for future referencing").
+- `from coniii import *` no longer re-exports `np`, `jit`, `njit`,
+  `warn`, `ALPHNUM`, `NUMERALS`, `combinations`, `binom`,
+  `multinomial`, `squareform`. Import them directly from their
+  source modules.
+
+Moved
+~~~~~
+- `coniii.mean_field_ising` → `coniii.legacy.mean_field_ising`.
+  Direct imports emit a `DeprecationWarning`. Used internally by
+  `ClusterExpansion` and `RegularizedMeanField` (silently).
+- `coniii.pseudo_inverse_ising` → `coniii.legacy.pseudo_inverse_ising`.
+  Direct imports emit a `DeprecationWarning`. Not wrapped by any
+  solver class.
+- `samplers.SWIsing`, `samplers.HamiltonianMC`,
+  `samplers.Heisenberg3DSampler` → `coniii.experimental.samplers`.
+  These had been raising `NotImplementedError` on construction and
+  are kept out of the top-level namespace until validated.
+
+Other
+~~~~~
+- Build modernized: real `pyproject.toml` (PEP 517/518), slimmer
+  `setup.py` that only declares the optional Boost C++ extension.
+  Boost is now optional in CI and on systems without conda.
+- GitHub Actions CI runs pytest on push to dev/py3.
+- Each public module now declares an explicit `__all__`. The names
+  available via `from coniii import *` are now a curated 39 instead
+  of 55 wildcard re-exports.
+- Internal: `calc_e` numba signature was relaxed from
+  `int64[:,:]` to accept any integer width; this unblocks MCH on
+  systems where the Boost C++ extension is not compiled.
+- Internal: dozens of `scipy.X` aliases that scipy 2.0 will remove
+  were replaced with their `numpy.X` equivalents.
+
+
 v3.0.2 (Not yet released)
 ----------------------------------------------------
 - Improvements to setup script and compatibility with Python 3.10.

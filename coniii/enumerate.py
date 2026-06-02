@@ -447,56 +447,6 @@ def triplet(n, sym=0, **kwargs):
                    suffix='_triplet',
                    **kwargs)
 
-def _write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
-    """
-    DEPRECATED: code here for future referencing
-    Write out equations to solve for matlab.
-    """
-
-    import time
-    abc = 'HJKLMNOPQRSTUVWXYZABCDE'
-    vardec = ''
-
-    # Write function to solve to file.
-    f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
-    f.write("% Equations of %d-spin Ising model.\n\n"%n)
-    f.write(time.strftime("%Y/%m/%d")+"\n")
-    f.write("% Give each set of parameters concatenated into one array.\n\n")
-
-    # Keep these as string because they need to grow in the loop and then can just be
-    # added all at once at the end.
-    f.write("function Cout = calc_observables(params)\n")
-    f.write('\tCout = zeros('+str(sum([len(i) for i in fitterms]))+',1);\n') # string of variable declarations
-    eqns = '' # string of equations to compute
-    ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))+1
-
-    for i in range(len(terms)):
-        vardec += '\t'+abc[i]+' = params('+str(ix[i])+':'+str(ix[i+1]-1)+');\n'
-    k = 0
-    for i in range(len(terms)):
-        for j in range(len(fitterms[i])):
-            eqns += "\tCout("+str(k+1)+") = ("+fitterms[i][j]+")/Z;\n"
-            k += 1
-
-    f.write(vardec)
-    f.write("\tZ = "+Z+";\n")
-    f.write(eqns)
-    f.close()
-
-    g = open('probs'+str(n)+'.m','w')
-    g.write("% File for getting the probabilities of Ising model.\n% ")
-    g.write(time.strftime("%Y/%m/%d")+"\n")
-    # Write equations for probabilities of all states.
-    g.write("function Pout = p(params)\n")
-    g.write(vardec)
-    g.write('    Pout = zeros('+str(2**n)+',1);\n') # string of variable declarations
-
-    g.write('    Z = '+Z+';\n')
-    for i in range(len(expterms)):
-        g.write('    Pout('+str(i+1)+') = '+expterms[i]+'/Z;\n')
-
-    g.close()
-
 def fast_logsumexp(X, coeffs=None):
     """Simplified version of logsumexp to do correlation calculation in Ising equation
     files. Scipy's logsumexp can be around 10x slower in comparison.

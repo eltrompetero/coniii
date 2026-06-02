@@ -1,7 +1,24 @@
-# =============================================================================================== #
-# meanFieldIsing.py
-# Author : Bryan Daniels
-# =============================================================================================== #
+"""Mean-field Ising solver helpers — LEGACY.
+
+This module predates modern numpy/scipy idioms. It is kept because
+:class:`coniii.solvers.ClusterExpansion` and
+:class:`coniii.solvers.RegularizedMeanField` still call into it.
+Direct imports emit a :class:`DeprecationWarning`; internal callers
+in coniii.solvers suppress the warning via
+:func:`warnings.catch_warnings`.
+
+Originally authored by Bryan Daniels.
+"""
+import warnings as _warnings
+
+_warnings.warn(
+    "coniii.legacy.mean_field_ising is legacy code retained for "
+    "ClusterExpansion and RegularizedMeanField; it may be removed in "
+    "coniii v5. Prefer the high-level solver classes in coniii.solvers.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import scipy.integrate
 import scipy.linalg
 import scipy.optimize

@@ -1,11 +1,24 @@
-# ===================================================================================== #
-# Test suite for enumerate.py
-# Author : Bryan C. Daniels
-# ===================================================================================== #
-# Attempting to do inverse ising using
-# the 'pseudolikelihood' approach
-# described in
-# Aurell and Ekeberg, PRL 108, 090201 (2012)
+"""Pseudolikelihood inverse-Ising prototype — LEGACY.
+
+A stand-alone implementation of the pseudolikelihood approach to the
+inverse Ising problem (Aurell and Ekeberg, PRL 108, 090201 (2012)).
+Not wrapped by any solver class in :mod:`coniii.solvers` and not
+exported from the top-level :mod:`coniii`. Kept for reference;
+scheduled for removal in coniii v5.
+
+Direct imports emit a :class:`DeprecationWarning`.
+
+Originally authored by Bryan C. Daniels.
+"""
+import warnings as _warnings
+
+_warnings.warn(
+    "coniii.legacy.pseudo_inverse_ising is legacy code that no "
+    "solver class wraps. It may be removed in coniii v5. For "
+    "pseudo-likelihood inverse Ising, use coniii.solvers.Pseudo.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 #import scipy.weave  # retired in scipy 1.0
 #import sys

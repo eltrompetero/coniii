@@ -5,13 +5,20 @@
 #          (bryan.daniels.1@asu.edu)
 # ====================================================================================== #
 import copy
+import warnings as _warnings
 import numpy as np
 import multiprocess as mp
 from warnings import warn
 from scipy.optimize import minimize, fmin_ncg, minimize_scalar, root, check_grad
 from scipy.spatial.distance import squareform
 
-from . import mean_field_ising
+# mean_field_ising lives in coniii.legacy and emits a DeprecationWarning on
+# import; suppress it for internal use because ClusterExpansion and
+# RegularizedMeanField legitimately need the module.
+with _warnings.catch_warnings():
+    _warnings.simplefilter("ignore", DeprecationWarning)
+    from .legacy import mean_field_ising
+
 from .utils import *
 from .samplers import *
 from .models import Ising

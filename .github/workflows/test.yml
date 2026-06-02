@@ -1,0 +1,37 @@
+name: tests
+
+on:
+  push:
+    branches: [dev, py3]
+  pull_request:
+    branches: [dev, py3]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install package
+        # setup.py probes for Boost and falls back to ext_modules=[]
+        # when it isn't found, so this build runs on the pure-Python
+        # path. The Boost C++ extension is exercised manually before
+        # release; the pure-Python sampler implementations are covered
+        # here.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[test]
+
+      - name: Show installed package info
+        run: pip show coniii
+
+      - name: Run tests
+        run: pytest coniii/ -v

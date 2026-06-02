@@ -10,11 +10,16 @@ import os
 import importlib
 np.random.seed(0)
 
+# Resolve ising_eqn/ relative to this test file, not cwd, so the test
+# is invariant to where pytest is launched from.
+_ISING_EQN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'ising_eqn')
+
 
 def single_pass(n,k):
     # write equations file for testing
     writer = SpecificFieldGenericCouplings(n, k)
-    writer.write('ising_eqn/_test_enumerate_potts%d.py'%n)
+    writer.write(os.path.join(_ISING_EQN_DIR, '_test_enumerate_potts%d.py'%n))
 
     ising = importlib.import_module('.ising_eqn._test_enumerate_potts%d'%n, package='coniii')
     hJ = np.random.normal(size=n*k+n*(n-1)//2, scale=.2)
@@ -43,7 +48,7 @@ def test_basic():
         single_pass(n,k)
     finally:    
         # cleanup
-        os.remove('ising_eqn/_test_enumerate_potts%d.py'%n)
+        os.remove(os.path.join(_ISING_EQN_DIR, '_test_enumerate_potts%d.py'%n))
     
     try:
         n = 4
@@ -51,4 +56,4 @@ def test_basic():
         single_pass(n,k)
     finally:    
         # cleanup
-        os.remove('ising_eqn/_test_enumerate_potts%d.py'%n)
+        os.remove(os.path.join(_ISING_EQN_DIR, '_test_enumerate_potts%d.py'%n))

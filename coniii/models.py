@@ -24,6 +24,8 @@ Public API (see ``__all__``)
 from importlib import import_module
 import numpy as np
 import multiprocess as mp
+from scipy.special import binom
+from scipy.spatial.distance import squareform
 
 from .utils import *
 from .samplers import Metropolis

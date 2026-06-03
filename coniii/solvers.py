@@ -602,11 +602,12 @@ class MPF(Solver):
             model is None.
         """
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
+        # Use the supplied neighbor function, or the default Ising adj from utils.
         if adj is None:
             from .utils import adj
-            self.adj = adj
-        if calc_de is None:
-            self.calc_de = calc_de  # imported from utils.py
+        self.adj = adj
+        # calc_de is optional; None means the calc_de speed-up is disabled.
+        self.calc_de = calc_de
         
     @staticmethod
     def worker_objective_task( s, Xcount, adjacentStates, params, calc_e ):

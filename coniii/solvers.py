@@ -2568,8 +2568,6 @@ class RegularizedMeanField(Solver):
             into matrix format using utils.vec2mat.
         """
 
-        from scipy import transpose
-        
         if reset_rng:
             # return same rng in initial state every time
             rseed = self.model.rng.randint(2**32-1)

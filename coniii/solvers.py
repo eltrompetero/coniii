@@ -1881,12 +1881,29 @@ class Pseudo(Solver):
                 guess[multipliersrix] = params
                 multipliers = self.get_multipliers_r(r, guess)[0]
                 E = -obs[r].dot(multipliers)
-                loglikelihood = -np.log( 1+np.exp(2*E) ).sum() + np.abs(multipliers).sum() * scale
+                # objective value and gradient both describe (negative conditional
+                # log-likelihood) + scale*L1 penalty; the L1 sign on the value used to be
+                # inverted relative to the gradient, which made the optimizer converge to a
+                # poor solution.
+                loglikelihood = -np.log( 1+np.exp(2*E) ).sum() - np.abs(multipliers).sum() * scale
                 dloglikelihood = (( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs[r] ).sum(0) +
                                   np.sign(multipliers) * scale)
                 return -loglikelihood, dloglikelihood
-        
-            soln.append(minimize(f, initial_guessAsMat[r], jac=True, **solver_kwargs))
+
+            def hess(params):
+                # Hessian of the (smooth) negative conditional log-likelihood. The L1 term
+                # is piecewise linear and contributes zero. This is the standard logistic
+                # form obs^T diag(4 p (1-p)) obs (Aurell & Ekeberg 2012), enabling a Newton
+                # solve that converges in far fewer iterations.
+                guess[multipliersrix] = params
+                multipliers = self.get_multipliers_r(r, guess)[0]
+                E = -obs[r].dot(multipliers)
+                p = 1 / (1 + np.exp(-2*E))
+                w = 4 * p * (1-p)
+                return (obs[r] * w[:,None]).T.dot(obs[r])
+
+            soln.append(minimize(f, initial_guessAsMat[r], jac=True, hess=hess,
+                                 **{'method':'Newton-CG', **solver_kwargs}))
             thisMultipliers = soln[-1]['x']
             Jmat[r,r] = thisMultipliers[0]
             Jmat[r,np.delete(np.arange(self.n),r)] = thisMultipliers[1:]
@@ -1951,8 +1968,24 @@ class Pseudo(Solver):
                                                     np.exp(2*E))[:,None] *
                                                     2*obs[r] ).sum(0)
             return -loglikelihood, dloglikelihood
-        
-        soln = minimize(f, initial_guess, jac=True, **solver_kwargs)
+
+        def hess(params):
+            # Full Hessian of the summed negative conditional log-likelihood. Each spin r
+            # contributes obs[r]^T diag(4 p (1-p)) obs[r] to the block of parameters it
+            # involves (its field and couplings), so we scatter that block into place.
+            H = np.zeros((params.size, params.size))
+            for r in range(self.n):
+                multipliers, multipliersrix = self.get_multipliers_r(r, params)
+                E = -obs[r].dot(multipliers)
+                p = 1 / (1 + np.exp(-2*E))
+                w = 4 * p * (1-p)
+                Hr = (obs[r] * w[:,None]).T.dot(obs[r])
+                ix = np.asarray(multipliersrix)
+                H[ix[:,None], ix[None,:]] += Hr
+            return H
+
+        soln = minimize(f, initial_guess, jac=True, hess=hess,
+                        **{'method':'Newton-CG', **solver_kwargs})
         self.multipliers = soln['x']
         if full_output:
             return soln['x'], soln

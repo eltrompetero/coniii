@@ -23,6 +23,13 @@ Removed (breaking)
   `multinomial`, `squareform`. Import them directly from their
   source modules.
 
+Fixed
+~~~~~
+- `solvers.MPF`: passing a custom `adj` (or `calc_de`) to the
+  constructor previously left `self.adj`/`self.calc_de` unset and
+  raised `AttributeError` during `solve()`. The default path was
+  unaffected. Both attributes are now always assigned.
+
 Moved
 ~~~~~
 - `coniii.mean_field_ising` → `coniii.legacy.mean_field_ising`.
@@ -58,11 +65,13 @@ Other
   stable/experimental/legacy modules; documentation links now point
   to https://coniii.readthedocs.io. The stale `pypi_description`
   file was removed (README is the PyPI long description).
-
-
-v3.0.2 (Not yet released)
-----------------------------------------------------
-- Improvements to setup script and compatibility with Python 3.10.
+- Docs build configured for Read the Docs: added `.readthedocs.yaml`
+  and a `[docs]` install extra; Sphinx now uses `napoleon` (for the
+  numpy-style docstrings), `viewcode`, and the Read the Docs theme;
+  the API reference toctree was rewritten to match the current
+  module layout.
+- Includes the previously-unreleased v3.0.2 work: setup-script
+  improvements and Python 3.10 compatibility.
 
 v3.0.1 (Released 2022/10)
 ----------------------------------------------------

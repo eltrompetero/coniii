@@ -901,7 +901,7 @@ class Metropolis(Sampler):
         
         assert type(n) is int, "n must be of type int."
         self.n = n
-        self.theta = theta
+        self.theta = np.asarray(theta, dtype=float)  # int theta gave wrong energies/sampling (#34)
         self.calc_e = calc_e
         self.rng = rng or np.random.RandomState()
         self._samples = None
@@ -1448,6 +1448,7 @@ class Metropolis(Sampler):
 
     def update_parameters(self, theta):
         assert self.theta.size==theta.size, "New parameters must be of same size."
+        theta = np.asarray(theta, dtype=float)  # ensure float (#34)
 
         self.theta = theta.copy()
 

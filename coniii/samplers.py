@@ -324,7 +324,7 @@ def iterate_neighbors(n,ix,expdJ,r):
     """
 
     counter=0
-    neighbors=np.zeros((n), dtype=int)
+    neighbors=np.zeros(n, dtype=np.int64)
     for i in range(n):
         # Don't include neighbors that are already marked.
         # Check against probability as specified in Wolff's paper for forming link.

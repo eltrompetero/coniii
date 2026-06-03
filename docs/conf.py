@@ -20,13 +20,14 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'ConIII'
-copyright = '2018, Edward D. Lee, Bryan C. Daniels'
+copyright = '2018-2026, Edward D. Lee, Bryan C. Daniels'
 author = 'Edward D. Lee, Bryan C. Daniels'
 
-# The short X.Y version
-version = '1.1'
-# The full version, including alpha/beta/rc tags
-release = '1.1.9'
+# The full version, including alpha/beta/rc tags, sourced from the package
+# so the docs always match the installed version.
+from coniii.version import version as release
+# The short X.Y version.
+version = '.'.join(release.split('.')[:2])
 
 
 # -- General configuration ---------------------------------------------------
@@ -40,9 +41,17 @@ release = '1.1.9'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',   # parse numpy-style docstrings
+    'sphinx.ext.viewcode',   # add [source] links
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
 ]
+
+# autodoc: keep source order and don't choke on optional/heavy imports.
+autodoc_member_order = 'bysource'
+autodoc_mock_imports = []
+napoleon_numpy_docstring = True
+napoleon_google_docstring = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -61,7 +70,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -75,9 +84,13 @@ pygments_style = None
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'alabaster'
+# a list of builtin themes. Fall back to alabaster if sphinx_rtd_theme is not
+# installed (e.g. a bare local build).
+try:
+    import sphinx_rtd_theme  # noqa: F401
+    html_theme = 'sphinx_rtd_theme'
+except ImportError:
+    html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

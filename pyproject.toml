@@ -33,6 +33,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
+docs = ["sphinx", "sphinx-rtd-theme"]
 
 [project.urls]
 Homepage = "https://github.com/eltrompetero/coniii"

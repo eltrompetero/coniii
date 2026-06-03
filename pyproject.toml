@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coniii"
+description = "Convenient Interface to Inverse Ising (ConIII)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Edward D. Lee", email = "edlee@csh.ac.at"},
+    {name = "Bryan C Daniels", email = "bryan.daniels.1@asu.edu"},
+]
+keywords = ["inverse", "Ising", "maxent", "maximum entropy", "inference"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+    "multiprocess>=0.70.7",
+    "scipy>=1.9",
+    "matplotlib",
+    # numpy 2.x is supported. numba bounds the numpy upper version itself,
+    # so we only set a floor here; numba>=0.60 is the first release with
+    # numpy 2.0 support.
+    "numpy>=1.24",
+    "numba>=0.60",
+    "mpmath>=1.1.0",
+    "dill",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+docs = ["sphinx", "sphinx-rtd-theme"]
+
+[project.urls]
+Homepage = "https://github.com/eltrompetero/coniii"
+"Bug Tracker" = "https://github.com/eltrompetero/coniii/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["coniii*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "coniii.version.version"}

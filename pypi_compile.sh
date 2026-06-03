@@ -15,16 +15,10 @@ else
 fi
 find ./ -name *.pyc -exec rm {} \;
 
-# Update cpp code (DEPRECATED)
-# rsync -au ../../cpp/cppsamplers/cppsamplers/*.*pp cpp/
-
-# Apply current conda environment
-conda init $CONDA_DEFAULT_ENV
-
-# Compile wheels into dist folder.
-python setup.py bdist_wheel
-# Make source available
-python setup.py sdist
+# Compile wheels into dist folder and make source available.
+# Metadata is read from pyproject.toml; setup.py only declares the
+# optional Boost C++ extension.
+python -m build
 
 # Rename Linux wheel for upload to PyPI.
 unamestr=`uname`
@@ -46,8 +40,10 @@ then
     # Compile docs
     sphinx-build ./docs/ ./docs/_build/html
 
-    echo "rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/"
-    rsync -au docs/_build/html/* ~/Dropbox/Documents/eltrompetero.github.io/coniii/
+    # NOTE: the docs publish step was previously an rsync into a
+    # personal Dropbox-backed clone of eltrompetero.github.io. That
+    # path was specific to one machine and has been removed. See
+    # DEVREADME for the current publish flow.
 fi
 
 # check if boost module compiled

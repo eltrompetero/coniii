@@ -1,4 +1,4 @@
-[![PyPI version fury.io](https://badge.fury.io/py/coniii.svg)](https://pypi.python.org/pypi/coniii/) [![PyPI license](https://img.shields.io/pypi/l/coniii.svg)](https://pypi.python.org/pypi/coniii/)
+[![tests](https://github.com/eltrompetero/coniii/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/eltrompetero/coniii/actions/workflows/test.yml) [![PyPI version fury.io](https://badge.fury.io/py/coniii.svg)](https://pypi.python.org/pypi/coniii/) [![PyPI license](https://img.shields.io/pypi/l/coniii.svg)](https://pypi.python.org/pypi/coniii/)
 
 # Convenient Interface to Inverse Ising
 
@@ -11,7 +11,21 @@ If you use ConIII for your research, please consider citing the following:
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
 The paper also contains an overview of the modules. For code documentation, see
-[here](https://eddielee.co/coniii/index.html "Documentation").
+[coniii.readthedocs.io](https://coniii.readthedocs.io/en/latest/ "Documentation").
+
+## Package layout
+
+| Area | Status | What's there |
+| --- | --- | --- |
+| `coniii.solvers` | stable | Inverse-Ising solvers: `Enumerate`, `SparseEnumerate`, `MPF`, `MCH`, `Pseudo`, `ClusterExpansion`, `RegularizedMeanField`. |
+| `coniii.samplers` | stable | Monte Carlo samplers: `Metropolis`, `WolffIsing`, `ParallelTempering`, `Potts3`, and the `sample_ising` helper. |
+| `coniii.models` | stable | Maxent model classes: `Ising`, `Triplet`, `Potts3`. |
+| `coniii.utils` | stable | Indexing, correlation, parameter-conversion, and helper-function utilities. |
+| `coniii.enumerate`, `coniii.enumerate_potts`, `coniii.ising_eqn` | stable | Exact enumeration and the generated equation files it produces. |
+| `coniii.experimental` | work in progress | Unvalidated samplers (`SWIsing`, `HamiltonianMC`, `Heisenberg3DSampler`) and an entropy stub. Not imported by `import coniii`; import explicitly. |
+| `coniii.legacy` | deprecated | `mean_field_ising` (still used internally by `ClusterExpansion`/`RegularizedMeanField`) and `pseudo_inverse_ising`. Direct imports warn. |
+
+The top-level names available via `from coniii import *` are listed in `coniii.__all__`.
 
 ## Installation
 
@@ -20,38 +34,28 @@ To set up an Anaconda environment called "test" and install from pip, run the fo
 $ conda create -n test -c conda-forge python=3.10 numpy scipy numba cython jupyter ipython multiprocess boost==1.74 matplotlib mpmath blas=*=openblas
 $ pip install coniii
 ```
-If you have trouble using `pip`, then you can always build this package from
-source. The following code will down download the latest release from GitHub and install
-the package. Make sure that you are running Python 3.10 and have boost v1.74.0
-installed.
+If you have trouble using `pip`, you can build from source. Make sure you are running
+Python 3.10 and have boost v1.74.0 installed.
 ```bash
 $ git clone https://github.com/eltrompetero/coniii.git
 $ cd coniii
-$ ./pypi_compile.sh
-$ pip install dist/*.whl
+$ pip install .
 ```
+The build probes for Boost and compiles the optional C++ samplers extension if it is
+found; without Boost it falls back to the (slower) pure-Python samplers. To build
+distributable wheels instead, run `python -m build` (or the convenience wrapper
+`./pypi_compile.sh`).
 
 #### Setting up exact solution for systems *N > 9*
-If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
-must run enumerate.py to write those files yourself. This can be run from the install
-directory.  If you do not know where the installation directory is, you can find it by
-starting a Python terminal and running
-```python
->>> import coniii
->>> coniii.__path__
-```
-
-Once inside the install directory, you can run in your bash shell
+`Enumerate` ships with precomputed equation files up to N = 9. For larger systems,
+generate the file yourself by running the `enumerate` module (works from any directory):
 ```bash
-$ python enumerate.py [N] 1
+$ python -m coniii.enumerate [N] 1
 ```
 
-where `[N]` should be replaced by the size of the system. This specifies that the system should be written for the {-1,1} basis. Note that the package uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of the file enumerate.py.
-
-For the {0,1} basis, use
-```bash
-$ python enumerate.py [N]
-```
+where `[N]` is the system size. The trailing `1` selects the {-1,1} basis (the package
+default); omit it for the {0,1} basis. See the `__main__` block at the end of
+`enumerate.py` for more options.
 
 ## Quick guide with Jupyter notebook
 
@@ -69,8 +73,8 @@ This should open the notebook in your default web browser.
 
 ## Troubleshooting
 
-This package is only maintained for Python 3 and has only been tested for Python
-3.10. Check which version of Python you are running in your terminal with 
+This package is maintained for Python 3 and has been tested on Python 3.10. Check which
+version you are running with
 ```bash
 $ python --version
 ```
@@ -78,9 +82,9 @@ $ python --version
 ConIII has been tested on the following systems
 * Ubuntu 20.04.5
 
-Trouble compiling the Boost extension manually? Check if your Boost library is
-included in your path. If it is not, then you can add an include directory entry
-into the `EXTRA_COMPILE_ARGS` variable in "setup.py" before compiling.
+Trouble compiling the Boost extension? Check that your Boost library is on the include
+path. If it is not, add the include directory to `include_dirs` in the `_detect_boost()`
+function in "setup.py" before compiling.
 
 
 ### Support
@@ -109,6 +113,5 @@ $ conda install -c conda-forge pytest
 
 When updating, please read the [RELEASE_NOTES](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES). There may
 be modifications to the interface including parameter names as we make future versions
-more user friendly.
-
-[Documentation](https://eddielee.co/coniii/index.html "Documentation").
+more user friendly. **Note:** v4.0.0 contains breaking changes — see the RELEASE_NOTES
+before upgrading.

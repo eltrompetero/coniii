@@ -1,17 +1,68 @@
-# =============================================================================================== #
+# ====================================================================================== #
 # ConIII module for algorithms for solving the inverse Ising problem.
-# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels (bryan.daniels.1@asu.edu)
-# =============================================================================================== #
-from scipy.optimize import minimize, fmin_ncg, minimize_scalar, root
-import multiprocess as mp
-import copy
-from scipy.optimize import check_grad
-from warnings import warn
+#
+# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
+#          (bryan.daniels.1@asu.edu)
+# ====================================================================================== #
+"""Inverse-Ising / maximum-entropy solvers.
 
-from . import mean_field_ising
+This is the central module of ConIII. Each solver takes a sample of
+observations (or a system size) and fits the maximum-entropy model
+whose pairwise correlations match the data. The solvers share the
+:class:`Solver` base class and the ``basic_setup`` machinery; they
+differ in the algorithm used to find the Lagrange multipliers.
+
+Public API (see ``__all__``)
+----------------------------
+:class:`Enumerate`
+    Exact solution by enumeration; feasible for small systems.
+:class:`SparseEnumerate`
+    Enumerate with a restricted set of constrained parameters.
+:class:`MPF`
+    Minimum Probability Flow.
+:class:`MCH`
+    Monte Carlo Histogram (Broderick et al., 2007). Relies on the
+    samplers in :mod:`coniii.samplers`.
+:class:`Pseudo`
+    Pseudolikelihood maximization.
+:class:`ClusterExpansion`
+    Adaptive cluster expansion (Barton & Cocco, 2013).
+:class:`RegularizedMeanField`
+    Regularized mean-field inversion.
+
+The mean-field helpers used by ``ClusterExpansion`` and
+``RegularizedMeanField`` live in :mod:`coniii.legacy.mean_field_ising`.
+See ``usage_guide.ipynb`` for worked examples of each solver.
+"""
+import copy
+import warnings as _warnings
+import numpy as np
+import multiprocess as mp
+from warnings import warn
+from scipy.optimize import minimize, fmin_ncg, minimize_scalar, root, check_grad
+from scipy.spatial.distance import squareform
+
+# mean_field_ising lives in coniii.legacy and emits a DeprecationWarning on
+# import; suppress it for internal use because ClusterExpansion and
+# RegularizedMeanField legitimately need the module.
+with _warnings.catch_warnings():
+    _warnings.simplefilter("ignore", DeprecationWarning)
+    from .legacy import mean_field_ising
+
 from .utils import *
 from .samplers import *
 from .models import Ising
+
+
+__all__ = [
+    'Solver',
+    'Enumerate', 'SparseEnumerate',
+    'MPF',
+    'MCH', 'MCHIncompleteData', 'SparseMCH',
+    'Pseudo',
+    'ClusterExpansion',
+    'RegularizedMeanField',
+]
 
 
 
@@ -34,8 +85,8 @@ class Solver():
 
             If int, specifies system size.
 
-            If None, many of the default class members cannot be set and then must be set
-            manually.
+            If None, many of the default class members cannot be set and then must be
+            set manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
@@ -43,10 +94,9 @@ class Solver():
         iprint : str, True
             If empty, do not display warning messages.
         model_kwargs : dict, {}
-            Additional arguments that will be passed to Ising class. These only matter if
-            model is None. Important ones include "n_cpus" and "rng".
+            Additional arguments that will be passed to Ising class. These only
+            matter if model is None. Important ones include "n_cpus" and "rng".
         """
-        
         # When neither sampler nor system size are specified
         if sample_or_n is None:
             self.sample = None
@@ -108,22 +158,24 @@ class Solver():
 
     def solve(self):
         """To be defined in derivative classes."""
-        return
+        raise NotImplementedError
 
     def set_insertion_ix(self):
         """Calculate indices to fill in with zeros to "fool" code that takes full set of
         params.
         """
-
         nParams = self.model.multipliers.size
-        insertionIx = [0] * self.parameterIx[0]
+        insertion_ix = [0] * self.parameterIx[0]
         for i, ix in enumerate(self.parameterIx[1:]):
-            insertionIx.extend([i+1] * (ix-self.parameterIx[i]-1))
+            insertion_ix.extend([i+1] * (ix-self.parameterIx[i]-1))
+        if self.parameterIx.size==1:
+            # give i a value since above for loop didn't iterate
+            i = -1
         if self.parameterIx[-1]<(nParams - 1):
-            insertionIx.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
+            insertion_ix.extend([i+2] * (nParams - self.parameterIx[-1] - 1))
 
-        #assert np.insert(initial_guess, insertionIx, 0).size==nParams
-        self.insertionIx = insertionIx
+        #assert np.insert(initial_guess, insertion_ix, 0).size==nParams
+        self.insertionIx = insertion_ix
     
     def fill_in(self, x, fill_value=0):
         """Helper function for filling in missing parameter values.
@@ -138,7 +190,6 @@ class Solver():
         ndarray
             With missing entries filled in.
         """
-
         return np.insert(x, self.insertionIx, fill_value)
 
     def logp(self, sample=None, run_checks=True):
@@ -155,7 +206,6 @@ class Solver():
         -------
         ndarray
         """
-
         # verify input
         sample = sample if not sample is None else self.sample
         if run_checks:
@@ -180,8 +230,8 @@ class Solver():
 
 
 class Enumerate(Solver):
-    """Class for solving fully-connected inverse Ising model problem by enumeration of the
-    partition function and then using gradient descent.
+    """Class for solving fully-connected inverse Ising model problem by enumeration
+    of the partition function and then using gradient descent.
     """
     def __init__(self,
                  sample=None,
@@ -197,17 +247,16 @@ class Enumerate(Solver):
 
             If int, specifies system size.
 
-            If None, many of the default class members cannot be set and then must be set
-            manually.
+            If None, many of the default class members cannot be set and then must be
+            set manually.
         model : class like one from models.py, None
             By default, will be set to solve Ising model.
         calc_observables : function, None
             For calculating observables from a set of samples.
         **default_model_kwargs
-            Additional arguments that will be passed to Ising class. These only matter if
-            model is None.
+            Additional arguments that will be passed to Ising class. These only
+            matter if model is None.
         """
-        
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs) 
 
     def solve(self,
@@ -218,50 +267,53 @@ class Enumerate(Solver):
               use_root=True,
               scipy_solver_kwargs={'method':'krylov',
                                    'options':{'fatol':1e-13,'xatol':1e-13}}):
-        """Must specify either constraints (the correlations) or samples from which the
-        correlations will be calculated using self.calc_observables. This routine by
-        default uses scipy.optimize.root to find the solution. This is MUCH faster than
-        the scipy.optimize.minimize routine which can be used instead.
+        """Must specify either constraints (the correlations) or samples from which
+        the correlations will be calculated using self.calc_observables. This routine
+        by default uses scipy.optimize.root to find the solution. This is MUCH faster
+        than the scipy.optimize.minimize routine which can be used instead.
         
         If still too slow, try adjusting the accuracy.
         
         If not converging, try increasing the max number of iterations.
 
-        If receiving Jacobian error (or some other numerical estimation error), parameter
-        values may be too large for faithful evaluation. Try decreasing max_param_value.
+        If receiving Jacobian error (or some other numerical estimation error),
+        parameter values may be too large for faithful evaluation. Try decreasing
+        max_param_value.
 
         Parameters
         ----------
         initial_guess : ndarray, None
-            Initial starting guess for parameters. By default, this will start with all
-            zeros if left unspecified.
+            Initial starting guess for parameters. By default, this will start with
+            all zeros if left unspecified.
         constraints : ndarray, None
-            Can specify constraints directly instead of using the ones calculated from the
-            sample. This can be useful when the pairwise correlations are known exactly.
-            This will override the self.constraints data member.
+            Can specify constraints directly instead of using the ones calculated
+            from the sample. This can be useful when the pairwise correlations are
+            known exactly.  This will override the self.constraints data member.
         max_param_value : float, 50
-            Absolute value of max parameter value. Bounds can also be set in the kwargs
-            passed to the minimizer, in which case this should be set to None.
+            Absolute value of max parameter value. Bounds can also be set in the
+            kwargs passed to the minimizer, in which case this should be set to None.
         full_output : bool, False
             If True, return output from scipy.optimize.minimize.
         use_root : bool, True
-            If False, use scipy.optimize.minimize instead. This is typically much slower.
-        scipy_solver_kwargs : dict, {'method':'krylov', 'options':{'fatol':1e-13,'xatol':1e-13}}
+            If False, use scipy.optimize.minimize instead. This is typically much
+            slower.
+        scipy_solver_kwargs : dict, {'method':'krylov',
+                                     'options':{'fatol':1e-13,'xatol':1e-13}}
             High accuracy is slower. Although default accuracy may not be so good,
-            lowering these custom presets will speed things up. Choice of the root finding
-            method can also change runtime and whether a solution is found or not.
-            Recommend playing around with different solvers and tolerances or getting a
-            close approximation using a different method if solution is hard to find.
+            lowering these custom presets will speed things up. Choice of the root
+            finding method can also change runtime and whether a solution is found or
+            not.  Recommend playing around with different solvers and tolerances or
+            getting a close approximation using a different method if solution is
+            hard to find.
 
         Returns
         -------
         ndarray
-            Solved multipliers (parameters). For Ising problem, these can be converted
-            into matrix format using utils.vec2mat.
+            Solved multipliers (parameters). For Ising problem, these can be
+            converted into matrix format using utils.vec2mat.
         dict, optional
             Output from scipy.optimize.root.
         """
-        
         if not initial_guess is None:
             assert initial_guess.size==self.constraints.size
         else: initial_guess = np.zeros(self.constraints.size)
@@ -297,6 +349,36 @@ class Enumerate(Solver):
         if full_output:
             return soln['x'], soln
         return soln['x']
+
+    def logp(self, sample=None, run_checks=True):
+        """Log likelihood of given set of states using self.model.calc_p().
+
+        Parameters
+        ----------
+        sample : ndarray, None
+            Sample of states for which to estimate log likelihood. Default is to use
+            self.sample.
+        run_checks : bool, True
+
+        Returns
+        -------
+        ndarray
+        """
+        # verify input
+        sample = sample if not sample is None else self.sample
+        if run_checks:
+            assert isinstance(sample, np.ndarray)
+            assert set(np.unique(sample)) <= frozenset((-1,0,1))
+        if sample.ndim==1:
+            sample = s[None,:]
+
+        logp = np.zeros(sample.shape[0])
+        all_states = bin_states(self.n, sym=True)
+        p = self.model.calc_p(self.multipliers)
+        for i, s in enumerate(sample):
+            # est probability of an observation is frequency of observed subset
+            logp[i] = p[(s[None,:]==all_states).all(1)]
+        return np.log(logp)
 #end Enumerate
 
 
@@ -337,7 +419,6 @@ class SparseEnumerate(Solver):
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
         """
-        
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs) 
 
         assert not parameter_ix is None, "Must specify parameter_ix."
@@ -397,7 +478,6 @@ class SparseEnumerate(Solver):
         dict, optional
             Output from scipy.optimize.root.
         """
-        
         if not initial_guess is None:
             assert initial_guess.size==self.parameterIx.size
         else: initial_guess = np.zeros(self.parameterIx.size)
@@ -443,6 +523,40 @@ class SparseEnumerate(Solver):
         if full_output:
             return soln['x'], soln
         return soln['x']
+
+    def logp(self, sample=None, run_checks=True):
+        """Log likelihood of given set of states using self.model.calc_p().
+
+        Parameters
+        ----------
+        sample : ndarray, None
+            Sample of states for which to estimate log likelihood. Default is to use
+            self.sample.
+        run_checks : bool, True
+
+        Returns
+        -------
+        ndarray
+        """
+        # verify input
+        sample = sample if not sample is None else self.sample
+        if run_checks:
+            assert isinstance(sample, np.ndarray)
+            assert set(np.unique(sample)) <= frozenset((-1,0,1))
+        if sample.ndim==1:
+            sample = s[None,:]
+
+        logp = np.zeros(sample.shape[0])
+        all_states = bin_states(self.n, sym=True)
+        p = self.model.calc_p(self.fill_in(self.multipliers))
+        for i, s in enumerate(sample):
+            # est probability of an observation is frequency of observed subset
+            missing_spin_ix = s==0
+            if missing_spin_ix.any():
+                logp[i] = p[(s[~missing_spin_ix][None,:]==all_states[:,~missing_spin_ix]).all(1)].sum()
+            else:
+                logp[i] = p[(s[None,:]==all_states).all(1)]
+        return np.log(logp)
 #end SparseEnumerate
 
 
@@ -487,13 +601,13 @@ class MPF(Solver):
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
         """
-        
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
+        # Use the supplied neighbor function, or the default Ising adj from utils.
         if adj is None:
             from .utils import adj
-            self.adj = adj
-        if calc_de is None:
-            self.calc_de = calc_de  # imported from utils.py
+        self.adj = adj
+        # calc_de is optional; None means the calc_de speed-up is disabled.
+        self.calc_de = calc_de
         
     @staticmethod
     def worker_objective_task( s, Xcount, adjacentStates, params, calc_e ):
@@ -519,7 +633,6 @@ class MPF(Solver):
         -------
         K : float
         """
-
         obj = 0.
         objGrad = np.zeros((params.size))
         for i,s in enumerate(Xuniq):
@@ -555,7 +668,6 @@ class MPF(Solver):
         returned J's will be halved and the energy calculation should include a 1/2 factor
         in front of h's.
         """
-
         nbatch, ndims = X.shape
         X = X.T
         
@@ -595,7 +707,6 @@ class MPF(Solver):
         -------
         logK : float
         """
-
         obj = 0.
         objGrad = np.zeros((params.size))
         power = np.zeros((len(Xuniq), len(adjacentStates[0])))  # energy differences
@@ -634,7 +745,6 @@ class MPF(Solver):
         -------
         adjacentStates
         """
-
         adjacentStates = []
         for s in Xuniq:
             adjacentStates.append( self.adj(s).astype(int) )
@@ -656,7 +766,7 @@ class MPF(Solver):
               full_output=False,
               all_connected=True,
               parameter_limits=100,
-              solver_kwargs={'maxiter':100,'disp':False,'ftol':1e-15},
+              solver_kwargs={'maxiter':100,'ftol':1e-15},
               uselog=True):
         """Minimize MPF objective function using scipy.optimize.minimize.
 
@@ -672,7 +782,7 @@ class MPF(Solver):
             2011).
         parameter_limits : float, 100
             Maximum allowed magnitude of any single parameter.
-        solver_kwargs : dict, {'maxiter':100,'disp':False,'ftol':1e-15}
+        solver_kwargs : dict, {'maxiter':100,'ftol':1e-15}
             For scipy.optimize.minimize.
         uselog : bool, True
             If True, calculate log of the objective function. This can help with numerical
@@ -686,7 +796,6 @@ class MPF(Solver):
         dict (optional)
             Output from scipy.optimize.minimize returned if full_output is True.
         """
-        
         assert parameter_limits>0
         # Convert from {+/-1} to {0,1} axis.
         X = (self.sample+1)//2
@@ -772,7 +881,6 @@ class MCH(Solver):
             Additional arguments that will be passed to Ising class. These only matter if
             model is None.
         """
-        
         assert sample_size>0
         self.basic_setup(sample, model, calc_observables, iprint, model_kwargs=default_model_kwargs)
 
@@ -1728,7 +1836,8 @@ class Pseudo(Solver):
     def _solve_ising(self,
                      initial_guess=None,
                      full_output=False,
-                     solver_kwargs={}):
+                     solver_kwargs={},
+                     scale=100):
         """Solve for Langrangian parameters according to pseudolikelihood algorithm.
 
         Parameters
@@ -1747,7 +1856,6 @@ class Pseudo(Solver):
         dict (optional)
             Output from scipy.optimize.minimize.
         """
-
         if initial_guess is None:
             initial_guess = np.zeros(self.calc_observables(self.sample[0][None,:]).size)
             
@@ -1773,8 +1881,9 @@ class Pseudo(Solver):
                 guess[multipliersrix] = params
                 multipliers = self.get_multipliers_r(r, guess)[0]
                 E = -obs[r].dot(multipliers)
-                loglikelihood = -np.log( 1+np.exp(2*E) ).sum()
-                dloglikelihood = ( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs[r] ).sum(0)
+                loglikelihood = -np.log( 1+np.exp(2*E) ).sum() + np.abs(multipliers).sum() * scale
+                dloglikelihood = (( -(1/(1+np.exp(2*E)) * np.exp(2*E))[:,None] * 2*obs[r] ).sum(0) +
+                                  np.sign(multipliers) * scale)
                 return -loglikelihood, dloglikelihood
         
             soln.append(minimize(f, initial_guessAsMat[r], jac=True, **solver_kwargs))
@@ -1972,164 +2081,6 @@ class Pseudo(Solver):
             return soln['x'], soln
         return soln['x']
 
-    def _solve_ising_deprecated(self, initial_guess=None, full_output=False):
-        """Deprecated.
-
-        Parameters
-        ----------
-        initial_guess : ndarray, None
-            Pseudo for Ising doesn't use a starting point. This is syntactic sugar.
-        full_output : bool, False
-
-        Returns
-        -------
-        ndarray
-            Solved multipliers.
-        """
-        
-        X = self.sample
-        X = (X + 1)/2  # change from {-1,1} to {0,1}
-        
-        # start at freq. model params?
-        freqs = np.mean(X, axis=0)
-        hList = -np.log(freqs / (1. - freqs))
-        Jfinal = np.zeros((self.n,self.n))
-
-        for r in range(self.n):
-            Jr0 = np.zeros(self.n)
-            Jr0[r] = hList[r]
-            
-            XRhat = X.copy()
-            XRhat[:,r] = np.ones(len(X))
-            # calculate once and pass to hessian algorithm for speed
-            pairCoocRhat = self.pair_cooc_mat(XRhat)
-            
-            Lr = lambda Jr: - self.cond_log_likelihood(r, X, Jr)
-            fprime = lambda Jr: self.cond_jac(r, X, Jr)
-            fhess = lambda Jr: self.cond_hess(r, X, Jr, pairCoocRhat=pairCoocRhat)
-            
-            Jr = fmin_ncg(Lr, Jr0, fprime, fhess=fhess, disp=False)
-            Jfinal[r] = Jr
-
-        Jfinal = -0.5*( Jfinal + Jfinal.T )
-        hfinal = Jfinal[np.diag_indices(self.n)]
-
-        # Convert parameters into {-1,1} basis as is standard for this package.
-        Jfinal[np.diag_indices(self.n)] = 0
-        self.multipliers = convert_params( hfinal, squareform(Jfinal)*2, '11', concat=True )
-
-        return self.multipliers
-
-    def cond_log_likelihood(self, r, X, Jr):
-        """Equals the conditional log likelihood -L_r.
-
-        Deprecated.
-        
-        Parameters
-        ----------
-        r : int
-            individual index
-        X : ndarray
-            binary matrix, (# X) x (dimension of system)
-        Jr : ndarray
-            (dimension of system) x (1)
-
-        Returns
-        -------
-        float
-        """
-
-        X, Jr = np.array(X), np.array(Jr)
-        
-        sigmaRtilde = (2.*X[:,r] - 1.)
-        samplesRhat = 2.*X.copy()
-        samplesRhat[:,r] = np.ones(len(X))
-        localFields = np.dot(Jr,samplesRhat.T) # (# X)x(1)
-        energies = sigmaRtilde * localFields # (# X)x(1)
-        
-        invPs = 1. + np.exp( energies )
-        logLs = np.log( invPs )
-
-        return -logLs.sum()
-
-    def cond_jac(self, r, X, Jr):
-        """Returns d cond_log_likelihood / d Jr, with shape (dimension of system)
-
-        Deprecated.
-        """
-
-        X,Jr = np.array(X),np.array(Jr)
-        
-        sigmaRtilde = (2.*X[:,r] - 1.)
-        samplesRhat = 2.*X.copy()
-        samplesRhat[:,r] = np.ones(len(X))
-        localFields = np.dot(Jr,samplesRhat.T) # (# X)x(1)
-        energies = sigmaRtilde * localFields # (# X)x(1)
-        
-        coocs = np.repeat([sigmaRtilde],self.n,axis=0).T * samplesRhat # (#X)x(self.n)
-
-        return np.dot( coocs.T, 1./(1. + np.exp(-energies)) )
-
-    def cond_hess(self, r, X, Jr, pairCoocRhat=None):
-        """Returns d^2 cond_log_likelihood / d Jri d Jrj, with shape (dimension of
-        system)x(dimension of system)
-
-        Current implementation uses more memory for speed.  For large sample size, it may
-        make sense to break up differently if too much memory is being used.
-
-        Deprecated.
-
-        Parameters
-        ----------
-        pairCooc : ndarray, None
-            Pass pair_cooc_mat(X) to speed calculation.
-        """
-
-        X, Jr = np.array(X), np.array(Jr)
-        
-        sigmaRtilde = (2.*X[:,r] - 1.)
-        samplesRhat = 2.*X.copy()
-        samplesRhat[:,r] = np.ones(len(X))
-        localFields = np.dot(Jr,samplesRhat.T) # (# X)x(1)
-        energies = sigmaRtilde * localFields # (# X)x(1)
-        
-        # pairCooc has shape (# X)x(n)x(n)
-        if pairCoocRhat is None:
-            pairCoocRhat = self.pair_cooc_mat(samplesRhat)
-        
-        energyMults = np.exp(-energies)/( (1.+np.exp(-energies))**2 ) # (# X)x(1)
-        #filteredSigmaRtildeSq = filterVec * (2.*X[:,r] + 1.) # (# X)x(1)
-        return np.dot( energyMults, pairCoocRhat )
-
-    def pair_cooc_mat(self, X):
-        """
-        Returns matrix of shape (self.n)x(# X)x(self.n).
-        
-        For use with cond_hess.
-        
-        Slow because I haven't thought of a better way of doing it yet.
-
-        Deprecated.
-        """
-
-        p = [ np.outer(f,f) for f in X ]
-        return np.transpose(p,(1,0,2))
-
-    def pseudo_log_likelihood(self, X, J):
-        """TODO: Could probably be made more efficient.
-
-        Deprecated.
-
-        Parameters
-        ----------
-        X : ndarray
-            binary matrix, (# of samples) x (dimension of system)
-        J : ndarray
-            (dimension of system) x (dimension of system)
-            J should be symmetric
-        """
-
-        return np.sum([ cond_log_likelihood(r,X,J) for r in range(len(J)) ])
 #end Pseudo
 
 
@@ -2617,8 +2568,6 @@ class RegularizedMeanField(Solver):
             into matrix format using utils.vec2mat.
         """
 
-        from scipy import transpose
-        
         if reset_rng:
             # return same rng in initial state every time
             rseed = self.model.rng.randint(2**32-1)
@@ -2748,3 +2697,4 @@ class RegularizedMeanField(Solver):
         gridBracket = (gridBracket1,gridMin,gridBracket2)
         return gridBracket
 #end RegularizedMeanField
+

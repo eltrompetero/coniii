@@ -1,6 +1,41 @@
+# OS / editor
 .DS_Store
-.ipynb_checkpoints/
+*.swp
+*.swo
+*~
+
+# Python
 __pycache__/
-
 *.pyc
+*.pyo
 
+# Compiled C/C++ extensions (e.g. the optional Boost samplers_ext)
+*.so
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build & packaging
+build/
+dist/
+*.egg-info/
+.cache/
+.pytest_cache/
+
+# Sphinx
+docs/_build/
+
+# LaTeX build artifacts (guide/)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.top
+*.tui
+*.project.vim

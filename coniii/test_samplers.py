@@ -29,7 +29,7 @@ import numpy as np
 import time
 
 from .samplers import *
-from .utils import define_ising_helper_functions
+from .utils import define_ising_helper_functions, define_potts_helper_functions
 
 n = 5
 
@@ -153,12 +153,73 @@ def test_Potts3():
     X2 = sampler.sample.copy()
     assert np.array_equal(X1, X2)
 
+def test_WolffIsing():
+    """The Wolff single-cluster sampler should reproduce the exact distribution.
+
+    Regression: the jitted helper iterate_neighbors built its output with
+    np.zeros(dtype=int), which modern numba refuses to compile, so the sampler
+    crashed on first use.
+    """
+    from .ising_eqn import ising_eqn_3_sym as ising
+    from .utils import pair_corr
+
+    rng = np.random.RandomState(0)
+    nn = 3
+    h = rng.normal(scale=.4, size=nn)
+    J = rng.normal(scale=.4, size=nn*(nn-1)//2)             # mixed-sign couplings
+    exact = ising.calc_observables(np.concatenate((h, J)))
+
+    # NOTE: the WolffIsing constructor takes (couplings, fields), in that order.
+    w = WolffIsing(J, h)
+    w.rng = np.random.RandomState(0)
+    X = w.generate_sample(30000, n_iters=30)
+    assert X.shape == (30000, nn)
+    assert set(np.unique(X).tolist()) <= {-1., 1.}
+    # empirical means and pairwise correlations match the exact ones (the field
+    # acceptance and arbitrary-sign bond rule are exercised here)
+    emp = pair_corr(X, concat=True)
+    assert np.abs(exact - emp).max() < 0.02, np.abs(exact - emp)
+
+    # serial sampling is reproducible given a seeded rng
+    wa = WolffIsing(J, h); wa.rng = np.random.RandomState(1)
+    wb = WolffIsing(J, h); wb.rng = np.random.RandomState(1)
+    assert np.array_equal(wa.generate_sample(200, n_iters=10),
+                          wb.generate_sample(200, n_iters=10))
+
+    # the parallel path runs and produces valid output
+    Xp = WolffIsing(J, h).generate_sample_parallel(500, n_iters=10)
+    assert Xp.shape == (500, nn)
+    assert set(np.unique(Xp).tolist()) <= {-1., 1.}
+
+
 def test_ParallelTempering():
-    # basic functionality
-    theta = np.random.normal(size=n+n*(n-1)//2, scale=.1)
+    """Replica exchange should run end to end and the target (beta=1) replica
+    should reproduce the exact distribution."""
+    from .ising_eqn import ising_eqn_3_sym as ising
+    from .utils import pair_corr
+
+    rng = np.random.RandomState(0)
+    nn = 3
+    h = rng.normal(scale=.4, size=nn)
+    J = rng.normal(scale=.4, size=nn*(nn-1)//2)
+    hJ = np.concatenate((h, J))
+    exact = ising.calc_observables(hJ)
     calc_e = define_ising_helper_functions()[0]
-    sampler = ParallelTempering(n, theta, calc_e, 4, (1,3))
-    sampler.generate_sample(100)
+
+    pt = ParallelTempering(nn, hJ, calc_e, 3, (1., 3.), rng=np.random.RandomState(0))
+    # temperature ladder: strictly increasing beta with the target fixed at beta == 1
+    assert (np.diff(pt.beta) > 0).all(), pt.beta
+    assert np.isclose(pt.beta[-1], 1.), pt.beta
+
+    pt.generate_sample(2500)
+    # samples are stored per replica; the target distribution is the highest-beta one
+    assert len(pt.sample) == 3
+    Xtarget = pt.sample[-1]
+    assert Xtarget.shape == (2500, nn)
+    assert set(np.unique(Xtarget).tolist()) <= {-1, 1}
+    # mean error over observables is a stable statistic (less noisy than the max)
+    emp = pair_corr(Xtarget, concat=True)
+    assert np.abs(exact - emp).mean() < 0.03, np.abs(exact - emp)
 
 
 #if __name__=='__main__':

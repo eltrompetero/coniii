@@ -1,34 +1,34 @@
 # ===================================================================================== #
 # Module for solving Ising models exactly.
-# 
+#
 # Distributed with ConIII.
-# 
-# NOTE: This code needs cleanup.
 #
 # Author : Edward Lee, edlee@alumni.princeton.edu
 # ===================================================================================== #
-#
-# MIT License
-# 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""Exact enumeration of Ising models and code generation.
+
+This module computes, symbolically, the partition function and
+observables for an Ising system of fixed size N, and writes them out
+as importable Python modules under :mod:`coniii.ising_eqn` (see
+``write_ising_files.sh``). It backs :class:`coniii.solvers.Enumerate`.
+
+Run as a script to (re)generate an equation file::
+
+    python -m coniii.enumerate N [sym] [order] [-hp=true]
+
+where ``sym`` selects the {-1,+1} basis, ``order`` adds higher-order
+interactions, and ``-hp=true`` writes arbitrary-precision equations
+using :mod:`mpmath`.
+
+Key functions
+-------------
+:func:`pairwise`, :func:`triplet`
+    Generate equation files for pairwise / triplet models.
+:func:`fast_logsumexp`, :func:`mp_fast_logsumexp`
+    Lightweight ``logsumexp`` used inside the generated equation files
+    (faster than scipy's for this purpose).
+"""
+
 import numpy as np
 import mpmath as mp
 import scipy.special as ss
@@ -57,7 +57,6 @@ def write_eqns(n, sym, corrTermsIx, suffix='', high_prec=False):
     suffix : str, ''
     high_prec : bool, False
     """
-
     import re
 
     assert sym in [0,1], "sym argument must be 0 or 1."
@@ -468,56 +467,6 @@ def triplet(n, sym=0, **kwargs):
                           list(zip(*list(combinations(range(n),3))))],
                    suffix='_triplet',
                    **kwargs)
-
-def _write_matlab(n, terms, fitterms, expterms, Z, suffix=''):
-    """
-    DEPRECATED: code here for future referencing
-    Write out equations to solve for matlab.
-    """
-
-    import time
-    abc = 'HJKLMNOPQRSTUVWXYZABCDE'
-    vardec = ''
-
-    # Write function to solve to file.
-    f = open('ising_eqn_%d%s.m'%(n,suffix),'w')
-    f.write("% Equations of %d-spin Ising model.\n\n"%n)
-    f.write(time.strftime("%Y/%m/%d")+"\n")
-    f.write("% Give each set of parameters concatenated into one array.\n\n")
-
-    # Keep these as string because they need to grow in the loop and then can just be
-    # added all at once at the end.
-    f.write("function Cout = calc_observables(params)\n")
-    f.write('\tCout = zeros('+str(sum([len(i) for i in fitterms]))+',1);\n') # string of variable declarations
-    eqns = '' # string of equations to compute
-    ix = np.hstack(( 0,np.cumsum([len(i) for i in fitterms]) ))+1
-
-    for i in range(len(terms)):
-        vardec += '\t'+abc[i]+' = params('+str(ix[i])+':'+str(ix[i+1]-1)+');\n'
-    k = 0
-    for i in range(len(terms)):
-        for j in range(len(fitterms[i])):
-            eqns += "\tCout("+str(k+1)+") = ("+fitterms[i][j]+")/Z;\n"
-            k += 1
-
-    f.write(vardec)
-    f.write("\tZ = "+Z+";\n")
-    f.write(eqns)
-    f.close()
-
-    g = open('probs'+str(n)+'.m','w')
-    g.write("% File for getting the probabilities of Ising model.\n% ")
-    g.write(time.strftime("%Y/%m/%d")+"\n")
-    # Write equations for probabilities of all states.
-    g.write("function Pout = p(params)\n")
-    g.write(vardec)
-    g.write('    Pout = zeros('+str(2**n)+',1);\n') # string of variable declarations
-
-    g.write('    Z = '+Z+';\n')
-    for i in range(len(expterms)):
-        g.write('    Pout('+str(i+1)+') = '+expterms[i]+'/Z;\n')
-
-    g.close()
 
 def fast_logsumexp(X, coeffs=None):
     """Simplified version of logsumexp to do correlation calculation in Ising equation

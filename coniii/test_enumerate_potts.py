@@ -1,28 +1,6 @@
 # ===================================================================================== #
 # Test suite for enumerate_potts.py
 # Author : Edward Lee, edlee@alumni.princeton.edu
-#
-# MIT License
-# 
-# Copyright (c) 2019 Edward D. Lee, Bryan C. Daniels
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 # ===================================================================================== #
 import numpy as np
 import mpmath as mp
@@ -32,11 +10,16 @@ import os
 import importlib
 np.random.seed(0)
 
+# Resolve ising_eqn/ relative to this test file, not cwd, so the test
+# is invariant to where pytest is launched from.
+_ISING_EQN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'ising_eqn')
+
 
 def single_pass(n,k):
     # write equations file for testing
     writer = SpecificFieldGenericCouplings(n, k)
-    writer.write('ising_eqn/_test_enumerate_potts%d.py'%n)
+    writer.write(os.path.join(_ISING_EQN_DIR, '_test_enumerate_potts%d.py'%n))
 
     ising = importlib.import_module('.ising_eqn._test_enumerate_potts%d'%n, package='coniii')
     hJ = np.random.normal(size=n*k+n*(n-1)//2, scale=.2)
@@ -65,7 +48,7 @@ def test_basic():
         single_pass(n,k)
     finally:    
         # cleanup
-        os.remove('ising_eqn/_test_enumerate_potts%d.py'%n)
+        os.remove(os.path.join(_ISING_EQN_DIR, '_test_enumerate_potts%d.py'%n))
     
     try:
         n = 4
@@ -73,4 +56,4 @@ def test_basic():
         single_pass(n,k)
     finally:    
         # cleanup
-        os.remove('ising_eqn/_test_enumerate_potts%d.py'%n)
+        os.remove(os.path.join(_ISING_EQN_DIR, '_test_enumerate_potts%d.py'%n))

@@ -1,6 +1,78 @@
 Log for major changes in releases
 
 
+v4.0.0 (Released 2026/06) — BREAKS COMPATIBILITY, READ NOTES
+----------------------------------------------------
+- Cleanup release. See RELEASE_NOTES for details.
+
+Removed (breaking)
+~~~~~~~~~~~~~~~~~~
+- `utils.convert_corr`: removed the `convertTo` keyword. It was
+  renamed to `convert_to` in v1.1.2 (Dec 2018) and warned for 6+
+  years. Migration: rename the keyword.
+- `solvers.Pseudo`: removed the deprecated implementation methods
+  `_solve_ising_deprecated`, `cond_log_likelihood`, `cond_jac`,
+  `cond_hess`, `pair_cooc_mat`, `pseudo_log_likelihood`. These were
+  superseded by the standard algorithm introduced in v2.1.0
+  (Nov 2019).
+- `enumerate._write_matlab`: removed. Dead since it was added
+  (no in-tree callers; the docstring already said "DEPRECATED:
+  code here for future referencing").
+- `from coniii import *` no longer re-exports `np`, `jit`, `njit`,
+  `warn`, `ALPHNUM`, `NUMERALS`, `combinations`, `binom`,
+  `multinomial`, `squareform`. Import them directly from their
+  source modules.
+
+Fixed
+~~~~~
+- `solvers.MPF`: passing a custom `adj` (or `calc_de`) to the
+  constructor previously left `self.adj`/`self.calc_de` unset and
+  raised `AttributeError` during `solve()`. The default path was
+  unaffected. Both attributes are now always assigned.
+
+Moved
+~~~~~
+- `coniii.mean_field_ising` → `coniii.legacy.mean_field_ising`.
+  Direct imports emit a `DeprecationWarning`. Used internally by
+  `ClusterExpansion` and `RegularizedMeanField` (silently).
+- `coniii.pseudo_inverse_ising` → `coniii.legacy.pseudo_inverse_ising`.
+  Direct imports emit a `DeprecationWarning`. Not wrapped by any
+  solver class.
+- `samplers.SWIsing`, `samplers.HamiltonianMC`,
+  `samplers.Heisenberg3DSampler` → `coniii.experimental.samplers`.
+  These had been raising `NotImplementedError` on construction and
+  are kept out of the top-level namespace until validated.
+
+Other
+~~~~~
+- Build modernized: real `pyproject.toml` (PEP 517/518), slimmer
+  `setup.py` that only declares the optional Boost C++ extension.
+  Boost is now optional in CI and on systems without conda.
+- GitHub Actions CI runs pytest on push to dev/py3.
+- Each public module now declares an explicit `__all__`. The names
+  available via `from coniii import *` are now a curated 39 instead
+  of 55 wildcard re-exports.
+- Internal: `calc_e` numba signature was relaxed from
+  `int64[:,:]` to accept any integer width; this unblocks MCH on
+  systems where the Boost C++ extension is not compiled.
+- Internal: dozens of `scipy.X` aliases that scipy 2.0 will remove
+  were replaced with their `numpy.X` equivalents.
+- `coniii.utils` is now a package split into focused submodules
+  (`_indexing`, `_correlations`, `_params`, `_graph`). The public
+  API is unchanged.
+- Every module now has a proper module-level docstring.
+- Docs: README has a new "Package layout" table flagging
+  stable/experimental/legacy modules; documentation links now point
+  to https://coniii.readthedocs.io. The stale `pypi_description`
+  file was removed (README is the PyPI long description).
+- Docs build configured for Read the Docs: added `.readthedocs.yaml`
+  and a `[docs]` install extra; Sphinx now uses `napoleon` (for the
+  numpy-style docstrings), `viewcode`, and the Read the Docs theme;
+  the API reference toctree was rewritten to match the current
+  module layout.
+- Includes the previously-unreleased v3.0.2 work: setup-script
+  improvements and Python 3.10 compatibility.
+
 v3.0.1 (Released 2022/10)
 ----------------------------------------------------
 - Bug fix in setup script.

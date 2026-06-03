@@ -1,25 +1,79 @@
-# MIT License
-# 
-# Copyright (c) 2020 Edward D. Lee, Bryan C. Daniels
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""Convenient Interface to Inverse Ising (ConIII).
 
-from .solvers import MCH,MPF,Pseudo,ClusterExpansion,Enumerate,RegularizedMeanField
-from .utils import *
+A Python package for solving maximum entropy problems with a focus on
+the pairwise (Ising) inverse problem. See the README and
+``usage_guide.ipynb`` for documentation and examples.
+
+The top-level namespace re-exports the solver classes (used through
+``from coniii import MCH`` etc.) and the most common utility
+functions. Sampler classes live in :mod:`coniii.samplers`, model
+classes in :mod:`coniii.models`, and the exact symbolic equations for
+small Ising systems in :mod:`coniii.ising_eqn`.
+"""
+from .solvers import (
+    Enumerate,
+    SparseEnumerate,
+    MPF,
+    MCH,
+    Pseudo,
+    ClusterExpansion,
+    RegularizedMeanField,
+)
+from .utils import (
+    # indexing & state generation
+    sub_to_ind, ind_to_sub,
+    bin_states, xbin_states, xpotts_states,
+    base_repr, unique_rows,
+    vec2mat, mat2vec,
+    # correlations
+    pair_corr, k_corr, calc_de, calc_overlap,
+    convert_corr, state_probs,
+    # parameter conversion
+    convert_params, ising_convert_params, split_concat_params,
+    # helper-function factories
+    define_ising_helper_functions,
+    define_ising_helper_functions_sym,
+    define_potts_helper_functions,
+    define_pseudo_ising_helper_functions,
+    define_pseudo_potts_helper_functions,
+    define_ternary_helper_functions,
+    define_triplet_helper_functions,
+    # graph / matrix helpers
+    adj, adj_sym,
+    replace_diag, zero_diag,
+    coarse_grain_with_func,
+    # numerical
+    logsumexp,
+)
 from .version import version as __version__
+
+
+__all__ = [
+    '__version__',
+    # Solvers (also accessible via `coniii.solvers`)
+    'Enumerate', 'SparseEnumerate',
+    'MPF',
+    'MCH',
+    'Pseudo',
+    'ClusterExpansion',
+    'RegularizedMeanField',
+    # Utilities (also accessible via `coniii.utils`)
+    'sub_to_ind', 'ind_to_sub',
+    'bin_states', 'xbin_states', 'xpotts_states',
+    'base_repr', 'unique_rows',
+    'vec2mat', 'mat2vec',
+    'pair_corr', 'k_corr', 'calc_de', 'calc_overlap',
+    'convert_corr', 'state_probs',
+    'convert_params', 'ising_convert_params', 'split_concat_params',
+    'define_ising_helper_functions',
+    'define_ising_helper_functions_sym',
+    'define_potts_helper_functions',
+    'define_pseudo_ising_helper_functions',
+    'define_pseudo_potts_helper_functions',
+    'define_ternary_helper_functions',
+    'define_triplet_helper_functions',
+    'adj', 'adj_sym',
+    'replace_diag', 'zero_diag',
+    'coarse_grain_with_func',
+    'logsumexp',
+]

@@ -1,14 +1,43 @@
 # ====================================================================================== #
 # ConIII module for maxent models.
-# Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
-#          (bryan.daniels.1@asu.edu)
+# Authors: Edward Lee (edlee@alumni.princeton.edu)
 # ====================================================================================== #
+"""Maximum-entropy model classes.
+
+A :class:`Model` bundles a Hamiltonian (the energy / observable
+functions) with a sampler, providing a single object that can evaluate
+energies and draw samples for a given set of multipliers. The solvers
+in :mod:`coniii.solvers` construct a model internally; users can also
+instantiate one directly to sample from a known model.
+
+Public API (see ``__all__``)
+----------------------------
+:class:`Model`
+    Base class outlining the model interface.
+:class:`Ising` (alias :class:`PairwiseMaxent`)
+    Pairwise maximum-entropy (Ising) model.
+:class:`Triplet`
+    Maxent model with third-order interactions.
+:class:`Potts3`
+    Three-state Potts model.
+"""
 from importlib import import_module
+import numpy as np
 import multiprocess as mp
+from scipy.special import binom
+from scipy.spatial.distance import squareform
 
 from .utils import *
 from .samplers import Metropolis
 from .samplers import Potts3 as mcPotts3
+
+
+__all__ = [
+    'Model',
+    'Ising', 'PairwiseMaxent',  # PairwiseMaxent is an alias for Ising
+    'Triplet',
+    'Potts3',
+]
 
 
 
@@ -24,7 +53,6 @@ class Model():
             couplings], a vector of fields and couplings concatenated together, or a
             matrix of parameters where the diagonal entries are the fields.
         """
-        
         self.multipliers = multipliers
         
         self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
@@ -45,7 +73,6 @@ class Model():
         sampler_kwargs : dict, {}
             Kwargs that can be passed into the initialization function for the sampler.
         """
-        
         self.sampleSize = sample_size
 
         if sample_method=='metropolis' and (type(self) is Ising or type(self) is Triplet):

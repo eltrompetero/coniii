@@ -86,12 +86,17 @@ def unique_rows(mat, return_inverse=False):
         row indices of given mat that will give unique array
     """
 
-    b = np.ascontiguousarray(mat).view(np.dtype((np.void, mat.dtype.itemsize * mat.shape[1])))
+    # Collapse each row to a single void scalar and ravel to 1-D. The ravel
+    # matters under numpy >= 2.0, where np.unique(return_inverse=True) returns
+    # the inverse with the same shape as its input; without a 1-D input the
+    # inverse comes back 2-D and breaks downstream np.bincount calls.
+    b = np.ascontiguousarray(mat).view(
+        np.dtype((np.void, mat.dtype.itemsize * mat.shape[1]))).ravel()
     if not return_inverse:
         _, idx = np.unique(b, return_index=True)
     else:
         _, idx = np.unique(b, return_inverse=True)
-    
+
     return idx
 
 

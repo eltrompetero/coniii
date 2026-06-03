@@ -68,7 +68,10 @@ from .utils import *
 try:
     from .samplers_ext import BoostIsing, BoostPotts3
     IMPORTED_SAMPLERS_EXT = True
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
+    # ModuleNotFoundError: the extension was never built (pure-Python install).
+    # ImportError: the extension exists but a runtime dependency (e.g. a Boost
+    # shared library) cannot be loaded. Either way, fall back to pure Python.
     IMPORTED_SAMPLERS_EXT = False
 
 
@@ -293,7 +296,7 @@ class WolffIsing(Sampler):
         # (1-exp(-2*J))
 
         # Find neighbors but keep only neighbors that have not already been visited.
-        ix = np.zeros((self.n),dtype=np.bool)
+        ix = np.zeros((self.n),dtype=bool)
         ix[alreadyMarked] = True
         ix[site] = True
         neighbors = iterate_neighbors(self.n,ix,self.expdJ[:,site],self.rng.rand(self.n)).tolist()
@@ -622,14 +625,16 @@ class ParallelTempering(Sampler):
                 self.burn_in_replicas(pool=pool, close_pool=False, n_iters=n_iters)
                 
                 for j,p in enumerate(pairs):
-                    # must divide out self.beta to get energies
-                    dE = self.replicas[p[0]].E/self.beta[p[0]] - self.replicas[p[1]].E/self.beta[p[1]]
+                    # must divide out self.beta to get energies; each replica holds a
+                    # single current sample, so .E is length-1 -> take the scalar
+                    dE = self.replicas[p[0]].E[0]/self.beta[p[0]] - self.replicas[p[1]].E[0]/self.beta[p[1]]
                     acceptanceRatio[j,i] = min(1, np.exp( dE * (self.beta[p[0]]-self.beta[p[1]]) ))
             pool.close()
         else:
             for j,p in enumerate(pairs):
-                # must divide out self.beta to get energies
-                dE = self.replicas[p[0]].E/self.beta[p[0]] - self.replicas[p[1]].E/self.beta[p[1]]
+                # must divide out self.beta to get energies; each replica holds a
+                # single current sample, so .E is length-1 -> take the scalar
+                dE = self.replicas[p[0]].E[0]/self.beta[p[0]] - self.replicas[p[1]].E[0]/self.beta[p[1]]
                 acceptanceRatio[j,0] = min(1, np.exp( dE * (self.beta[p[0]]-self.beta[p[1]]) ))
 
         return acceptanceRatio.mean(1) 
@@ -990,7 +995,7 @@ class Metropolis(Sampler):
             assert np.array_equal((1,self.n), initial_sample.shape), msg
             self._samples = initial_sample.astype(int)
 
-        E = self.calc_e( self._samples, self.theta )
+        E = self.calc_e( self._samples, self.theta )[0]  # scalar energy of the single replica
         self.sample = np.zeros((sample_size, self.n), dtype=int)
         self.E = np.zeros(sample_size)
         
@@ -1125,7 +1130,7 @@ class Metropolis(Sampler):
             assert np.array_equal((n_cpus,self.n), initial_sample.shape), "initial_sample wrong size"
             self._samples = initial_sample.astype(int)
 
-        E = self.calc_e( self._samples, self.theta )
+        E = self.calc_e( self._samples, self.theta )  # one energy per replica (length n_cpus)
         self.sample = None  # delete this to speed up pickling for multiprocess
        
         # Parallel sample. Each thread needs to return sample_size/n_cpus samples.
@@ -1427,7 +1432,7 @@ class Metropolis(Sampler):
         calc_e = calc_e or self.calc_e
 
         sample0[flip_site] *= -1
-        E1 = calc_e( sample0[None,:], self.theta )
+        E1 = calc_e( sample0[None,:], self.theta )[0]  # scalar energy of single state
         de = E1-E0
 
         # Only accept flip if dE<=0 or probability exp(-dE)
@@ -1617,7 +1622,7 @@ class Potts3(Metropolis):
         
         oState = sample0[flip_site]
         sample0[flip_site] = (oState+rng.randint(1,3))%3
-        E1 = calc_e( sample0[None,:], self.theta )
+        E1 = calc_e( sample0[None,:], self.theta )[0]  # scalar energy of single state
         de = E1-E0
 
         # Only accept flip if dE<=0 or probability exp(-dE)

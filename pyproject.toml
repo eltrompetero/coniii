@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "coniii"
 description = "Convenient Interface to Inverse Ising (ConIII)"
 readme = "README.md"
-requires-python = ">=3.8.3"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Edward D. Lee", email = "edlee@csh.ac.at"},
@@ -21,11 +21,14 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-    "multiprocess>=0.70.7,<1",
-    "scipy",
+    "multiprocess>=0.70.7",
+    "scipy>=1.9",
     "matplotlib",
-    "numpy>=1.16.2,<2",
-    "numba>=0.45.1,<1",
+    # numpy 2.x is supported. numba bounds the numpy upper version itself,
+    # so we only set a floor here; numba>=0.60 is the first release with
+    # numpy 2.0 support.
+    "numpy>=1.24",
+    "numba>=0.60",
     "mpmath>=1.1.0",
     "dill",
 ]

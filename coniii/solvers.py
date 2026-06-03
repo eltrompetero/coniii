@@ -766,7 +766,7 @@ class MPF(Solver):
               full_output=False,
               all_connected=True,
               parameter_limits=100,
-              solver_kwargs={'maxiter':100,'disp':False,'ftol':1e-15},
+              solver_kwargs={'maxiter':100,'ftol':1e-15},
               uselog=True):
         """Minimize MPF objective function using scipy.optimize.minimize.
 
@@ -782,7 +782,7 @@ class MPF(Solver):
             2011).
         parameter_limits : float, 100
             Maximum allowed magnitude of any single parameter.
-        solver_kwargs : dict, {'maxiter':100,'disp':False,'ftol':1e-15}
+        solver_kwargs : dict, {'maxiter':100,'ftol':1e-15}
             For scipy.optimize.minimize.
         uselog : bool, True
             If True, calculate log of the objective function. This can help with numerical

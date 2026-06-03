@@ -107,8 +107,8 @@ def test_MPF():
     assert np.isclose(f(hJ), g(hJ)), (f(hJ), g(hJ))
  
     # Check that found solutions agree closely
-    assert np.isclose( solver.solve(solver_kwargs={'disp':False}),
-                       solver.solve(solver_kwargs={'disp':False}, uselog=False),
+    assert np.isclose( solver.solve(),
+                       solver.solve(uselog=False),
                        atol=1e-3 ).all()
 
 def test_Pseudo():

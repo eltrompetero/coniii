@@ -53,7 +53,7 @@ class Model():
             couplings], a vector of fields and couplings concatenated together, or a
             matrix of parameters where the diagonal entries are the fields.
         """
-        self.multipliers = multipliers
+        self.multipliers = np.asarray(multipliers, dtype=float)  # ensure float (int multipliers gave wrong sampling, #34)
         
         self.rng = rng or np.random.RandomState()  # this will get passed to sampler if it is set up
         self.verbose = verbose
@@ -219,7 +219,7 @@ class Ising(Model):
         copy of self.multipliers.
         """
 
-        self.multipliers = multipliers
+        self.multipliers = np.asarray(multipliers, dtype=float)  # ensure float (int multipliers gave wrong sampling, #34)
 
         # if system is small enough, we can use enumeration to calculate observables from the multipliers
         if not self._calc_observables is None:
@@ -273,7 +273,7 @@ class Triplet(Model):
         copy of self.multipliers.
         """
 
-        self.multipliers = multipliers
+        self.multipliers = np.asarray(multipliers, dtype=float)  # ensure float (int multipliers gave wrong sampling, #34)
 
         # if system is small enough, we can use enumeration to calculate observables from the multipliers
         if not self._calc_observables is None:
@@ -328,7 +328,7 @@ class Potts3(Model):
         copy of self.multipliers.
         """
 
-        self.multipliers = multipliers
+        self.multipliers = np.asarray(multipliers, dtype=float)  # ensure float (int multipliers gave wrong sampling, #34)
 
         # if system is small enough, we can use enumeration to calculate observables from the multipliers
         if not self._calc_observables is None:

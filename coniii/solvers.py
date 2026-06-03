@@ -2657,19 +2657,37 @@ class RegularizedMeanField(Solver):
                 
             return np.sum(dc**2)
 
+        # The regularization strength is non-negative, and for (nearly) degenerate data
+        # (correlations at +/-1) the mean-field J can blow up to nan/inf for small
+        # gamma, which previously crashed scipy's bracketing routine (issue #16). Wrap
+        # the objective so non-finite values / exceptions become a large finite penalty,
+        # steering the optimizer toward gammas that yield a finite solution.
+        def safe_func(gammaPrime):
+            try:
+                val = func(gammaPrime)
+            except Exception:
+                return 1e30
+            return val if np.isfinite(val) else 1e30
+
         if bracket is not None:
             gridPoints = np.linspace(bracket[0], bracket[1], n_grid_points)
-            gridResults = [ func(p) for p in gridPoints ]
+            gridResults = [ safe_func(p) for p in gridPoints ]
             gridBracket = self.bracket1d(gridPoints, gridResults)
-            solution = minimize_scalar(func, bracket=gridBracket)
+            solution = minimize_scalar(safe_func, bracket=gridBracket)
         else:
-            solution = minimize_scalar(func)
+            # bounded search avoids the bracketing step that fails on non-finite values
+            solution = minimize_scalar(safe_func, method='bounded', bounds=(0, 1))
 
         gammaPrimeMin = solution['x']
         meanFieldPriorLmbdaMin = gammaPrimeMin / (pmean**2 * (1.-pmean)**2)
         J = mean_field_ising.JmeanField(coocMatData,
                                         meanFieldPriorLmbda=meanFieldPriorLmbdaMin,
                                         numSamples=numDataSamples)
+        if not np.isfinite(J).all():
+            raise RuntimeError(
+                "RegularizedMeanField could not find a finite solution; the data may be "
+                "(nearly) degenerate (pairwise correlations at +/-1). Consider removing "
+                "perfectly correlated/anti-correlated spins or regularizing the data.")
         J = J + J.T
 
         # convert J to {-1,1} basis

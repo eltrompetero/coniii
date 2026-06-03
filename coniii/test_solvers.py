@@ -153,6 +153,34 @@ def test_RegularizedMeanField():
     assert np.isfinite(multipliers).all()
 
 
+def test_MCH_reproducible():
+    """MCH with a fixed rng must be deterministic (issue #28)."""
+    def run():
+        solver = MCH(sample, sample_size=1000, rng=np.random.RandomState(0), iprint=False)
+        solver.solve(initial_guess=np.zeros(n*(n-1)//2 + n),
+                     maxiter=3, n_iters=20, burn_in=50, iprint=False)
+        return solver.multipliers.copy()
+    a = run()
+    b = run()
+    assert np.array_equal(a, b), np.abs(a - b).max()
+
+
+def test_RegularizedMeanField_degenerate():
+    """RMF must not crash on (near-)degenerate data (issue #16).
+
+    Near-perfectly-correlated spins drive the mean-field J toward singular/nan,
+    which used to crash scipy's bracketing (or squareform). The solver should now
+    return a finite solution instead.
+    """
+    rng = np.random.RandomState(3)
+    X = rng.choice([-1, 1], size=(2000, 3))
+    X[:, 1] = np.where(rng.rand(2000) < 0.97, X[:, 0], X[:, 1])  # corr(s0,s1) ~ 0.94
+    solver = RegularizedMeanField(X, sample_size=500, iprint=False)
+    out = solver.solve()
+    assert out.shape == (n*(n-1)//2 + n,)
+    assert np.isfinite(out).all()
+
+
 def test_pickling():
     pass
 

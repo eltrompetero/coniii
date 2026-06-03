@@ -1,6 +1,22 @@
 Log for major changes in releases
 
 
+v4.0.1 (Released 2026/06)
+----------------------------------------------------
+Bug fixes:
+- Integer-typed multipliers are now coerced to float in the model and
+  sampler classes. Previously an int multiplier vector made calc_e do
+  integer arithmetic, giving wrong energies and badly wrong samples
+  (e.g. from MCH). (#34)
+- solvers.RegularizedMeanField no longer crashes on (nearly)
+  degenerate data (pairwise correlations at +/-1). The objective is
+  guarded against non-finite values, the default search is bounded
+  (avoiding the fragile bracketing step), and a clear error is raised
+  if no finite solution exists. (#16)
+- Added a regression test confirming MCH is reproducible with a fixed
+  random number generator. (#28)
+
+
 v4.0.0 (Released 2026/06) — BREAKS COMPATIBILITY, READ NOTES
 ----------------------------------------------------
 - Cleanup release. See RELEASE_NOTES for details.

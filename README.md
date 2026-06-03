@@ -11,7 +11,21 @@ If you use ConIII for your research, please consider citing the following:
 > Software, 7(1), p.3. DOI: http://doi.org/10.5334/jors.217.
 
 The paper also contains an overview of the modules. For code documentation, see
-[here](https://eltrompetero.github.io/coniii/index.html "Documentation").
+[coniii.readthedocs.io](https://coniii.readthedocs.io/en/latest/ "Documentation").
+
+## Package layout
+
+| Area | Status | What's there |
+| --- | --- | --- |
+| `coniii.solvers` | stable | Inverse-Ising solvers: `Enumerate`, `SparseEnumerate`, `MPF`, `MCH`, `Pseudo`, `ClusterExpansion`, `RegularizedMeanField`. |
+| `coniii.samplers` | stable | Monte Carlo samplers: `Metropolis`, `WolffIsing`, `ParallelTempering`, `Potts3`, and the `sample_ising` helper. |
+| `coniii.models` | stable | Maxent model classes: `Ising`, `Triplet`, `Potts3`. |
+| `coniii.utils` | stable | Indexing, correlation, parameter-conversion, and helper-function utilities. |
+| `coniii.enumerate`, `coniii.enumerate_potts`, `coniii.ising_eqn` | stable | Exact enumeration and the generated equation files it produces. |
+| `coniii.experimental` | work in progress | Unvalidated samplers (`SWIsing`, `HamiltonianMC`, `Heisenberg3DSampler`) and an entropy stub. Not imported by `import coniii`; import explicitly. |
+| `coniii.legacy` | deprecated | `mean_field_ising` (still used internally by `ClusterExpansion`/`RegularizedMeanField`) and `pseudo_inverse_ising`. Direct imports warn. |
+
+The top-level names available via `from coniii import *` are listed in `coniii.__all__`.
 
 ## Installation
 
@@ -20,16 +34,17 @@ To set up an Anaconda environment called "test" and install from pip, run the fo
 $ conda create -n test -c conda-forge python=3.10 numpy scipy numba cython jupyter ipython multiprocess boost==1.74 matplotlib mpmath blas=*=openblas
 $ pip install coniii
 ```
-If you have trouble using `pip`, then you can always build this package from
-source. The following code will down download the latest release from GitHub and install
-the package. Make sure that you are running Python 3.10 and have boost v1.74.0
-installed.
+If you have trouble using `pip`, you can build from source. Make sure you are running
+Python 3.10 and have boost v1.74.0 installed.
 ```bash
 $ git clone https://github.com/eltrompetero/coniii.git
 $ cd coniii
-$ ./pypi_compile.sh
-$ pip install dist/*.whl
+$ pip install .
 ```
+The build probes for Boost and compiles the optional C++ samplers extension if it is
+found; without Boost it falls back to the (slower) pure-Python samplers. To build
+distributable wheels instead, run `python -m build` (or the convenience wrapper
+`./pypi_compile.sh`).
 
 #### Setting up exact solution for systems *N > 9*
 If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
@@ -41,16 +56,16 @@ starting a Python terminal and running
 >>> coniii.__path__
 ```
 
-Once inside the install directory, you can run in your bash shell
+You can run the generator from anywhere as a module:
 ```bash
-$ python enumerate.py [N] 1
+$ python -m coniii.enumerate [N] 1
 ```
 
-where `[N]` should be replaced by the size of the system. This specifies that the system should be written for the {-1,1} basis. Note that the package uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of the file enumerate.py.
+where `[N]` should be replaced by the size of the system. The trailing `1` specifies the {-1,1} basis. Note that the package uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of `enumerate.py`.
 
 For the {0,1} basis, use
 ```bash
-$ python enumerate.py [N]
+$ python -m coniii.enumerate [N]
 ```
 
 ## Quick guide with Jupyter notebook
@@ -109,6 +124,7 @@ $ conda install -c conda-forge pytest
 
 When updating, please read the [RELEASE_NOTES](https://github.com/eltrompetero/coniii/blob/py3/RELEASE_NOTES). There may
 be modifications to the interface including parameter names as we make future versions
-more user friendly.
+more user friendly. **Note:** v4.0.0 contains breaking changes — see the RELEASE_NOTES
+before upgrading.
 
-[Documentation](https://eltrompetero.github.io/coniii/index.html "Documentation").
+[Documentation](https://coniii.readthedocs.io/en/latest/ "Documentation").

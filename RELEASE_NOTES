@@ -50,6 +50,14 @@ Other
   systems where the Boost C++ extension is not compiled.
 - Internal: dozens of `scipy.X` aliases that scipy 2.0 will remove
   were replaced with their `numpy.X` equivalents.
+- `coniii.utils` is now a package split into focused submodules
+  (`_indexing`, `_correlations`, `_params`, `_graph`). The public
+  API is unchanged.
+- Every module now has a proper module-level docstring.
+- Docs: README has a new "Package layout" table flagging
+  stable/experimental/legacy modules; documentation links now point
+  to https://coniii.readthedocs.io. The stale `pypi_description`
+  file was removed (README is the PyPI long description).
 
 
 v3.0.2 (Not yet released)

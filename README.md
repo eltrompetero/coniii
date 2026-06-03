@@ -47,26 +47,15 @@ distributable wheels instead, run `python -m build` (or the convenience wrapper
 `./pypi_compile.sh`).
 
 #### Setting up exact solution for systems *N > 9*
-If you would like to use the `Enumerate` solver for system sizes greater than 9 spins, you
-must run enumerate.py to write those files yourself. This can be run from the install
-directory.  If you do not know where the installation directory is, you can find it by
-starting a Python terminal and running
-```python
->>> import coniii
->>> coniii.__path__
-```
-
-You can run the generator from anywhere as a module:
+`Enumerate` ships with precomputed equation files up to N = 9. For larger systems,
+generate the file yourself by running the `enumerate` module (works from any directory):
 ```bash
 $ python -m coniii.enumerate [N] 1
 ```
 
-where `[N]` should be replaced by the size of the system. The trailing `1` specifies the {-1,1} basis. Note that the package uses the {-1,1} basis by default. For more details, see the `__main__` block at the end of `enumerate.py`.
-
-For the {0,1} basis, use
-```bash
-$ python -m coniii.enumerate [N]
-```
+where `[N]` is the system size. The trailing `1` selects the {-1,1} basis (the package
+default); omit it for the {0,1} basis. See the `__main__` block at the end of
+`enumerate.py` for more options.
 
 ## Quick guide with Jupyter notebook
 
@@ -84,8 +73,8 @@ This should open the notebook in your default web browser.
 
 ## Troubleshooting
 
-This package is only maintained for Python 3 and has only been tested for Python
-3.10. Check which version of Python you are running in your terminal with 
+This package is maintained for Python 3 and has been tested on Python 3.10. Check which
+version you are running with
 ```bash
 $ python --version
 ```
@@ -93,9 +82,9 @@ $ python --version
 ConIII has been tested on the following systems
 * Ubuntu 20.04.5
 
-Trouble compiling the Boost extension manually? Check if your Boost library is
-included in your path. If it is not, then you can add an include directory entry
-into the `EXTRA_COMPILE_ARGS` variable in "setup.py" before compiling.
+Trouble compiling the Boost extension? Check that your Boost library is on the include
+path. If it is not, add the include directory to `include_dirs` in the `_detect_boost()`
+function in "setup.py" before compiling.
 
 
 ### Support
@@ -126,5 +115,3 @@ When updating, please read the [RELEASE_NOTES](https://github.com/eltrompetero/c
 be modifications to the interface including parameter names as we make future versions
 more user friendly. **Note:** v4.0.0 contains breaking changes — see the RELEASE_NOTES
 before upgrading.
-
-[Documentation](https://coniii.readthedocs.io/en/latest/ "Documentation").

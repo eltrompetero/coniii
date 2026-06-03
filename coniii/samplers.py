@@ -25,6 +25,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ====================================================================================== #
+"""Monte Carlo samplers for Boltzmann-type (maxent) models.
+
+This module provides the sampling machinery used by the iterative
+solvers in :mod:`coniii.solvers` (notably :class:`~coniii.solvers.MCH`)
+and exposed to users through the convenience function
+:func:`sample_ising`.
+
+Public API (see ``__all__``)
+----------------------------
+:class:`Sampler`
+    Abstract base class for all samplers.
+:class:`Metropolis`
+    Single-spin-flip Metropolis sampler for the Ising model. The
+    workhorse; accelerated by the optional Boost C++ extension
+    (``coniii.samplers_ext``) when it is compiled, otherwise a
+    numba-jitted pure-Python path is used.
+:class:`WolffIsing`
+    Wolff cluster sampler.
+:class:`ParallelTempering`
+    Replica-exchange (parallel tempering) wrapper around Metropolis.
+:class:`Potts3`
+    Three-state Potts variant of :class:`Metropolis`.
+:func:`sample_ising`
+    One-call helper to draw Metropolis samples from an Ising model.
+
+Work-in-progress samplers (``SWIsing``, ``HamiltonianMC``,
+``Heisenberg3DSampler``) live in :mod:`coniii.experimental.samplers`.
+"""
 import numpy as np
 from numba import jit, njit, float64, int64
 from numpy import sin, cos, exp

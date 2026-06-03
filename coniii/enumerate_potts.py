@@ -29,6 +29,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ====================================================================================== #
+"""Exact enumeration and code generation for Potts models.
+
+The Potts analogue of :mod:`coniii.enumerate`. Potts models admit
+several parameterizations, especially under limited data; this module
+implements a few useful ones (e.g.
+:class:`SpecificFieldGenericCouplings`) and writes the corresponding
+equation files into :mod:`coniii.ising_eqn`.
+"""
 import sys
 import numpy as np
 import re

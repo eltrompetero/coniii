@@ -2,6 +2,25 @@
 # ConIII module for maxent models.
 # Authors: Edward Lee (edlee@alumni.princeton.edu)
 # ====================================================================================== #
+"""Maximum-entropy model classes.
+
+A :class:`Model` bundles a Hamiltonian (the energy / observable
+functions) with a sampler, providing a single object that can evaluate
+energies and draw samples for a given set of multipliers. The solvers
+in :mod:`coniii.solvers` construct a model internally; users can also
+instantiate one directly to sample from a known model.
+
+Public API (see ``__all__``)
+----------------------------
+:class:`Model`
+    Base class outlining the model interface.
+:class:`Ising` (alias :class:`PairwiseMaxent`)
+    Pairwise maximum-entropy (Ising) model.
+:class:`Triplet`
+    Maxent model with third-order interactions.
+:class:`Potts3`
+    Three-state Potts model.
+"""
 from importlib import import_module
 import numpy as np
 import multiprocess as mp

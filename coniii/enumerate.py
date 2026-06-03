@@ -1,12 +1,33 @@
 # ===================================================================================== #
 # Module for solving Ising models exactly.
-# 
+#
 # Distributed with ConIII.
-# 
-# NOTE: This code needs cleanup.
 #
 # Author : Edward Lee, edlee@alumni.princeton.edu
 # ===================================================================================== #
+"""Exact enumeration of Ising models and code generation.
+
+This module computes, symbolically, the partition function and
+observables for an Ising system of fixed size N, and writes them out
+as importable Python modules under :mod:`coniii.ising_eqn` (see
+``write_ising_files.sh``). It backs :class:`coniii.solvers.Enumerate`.
+
+Run as a script to (re)generate an equation file::
+
+    python -m coniii.enumerate N [sym] [order] [-hp=true]
+
+where ``sym`` selects the {-1,+1} basis, ``order`` adds higher-order
+interactions, and ``-hp=true`` writes arbitrary-precision equations
+using :mod:`mpmath`.
+
+Key functions
+-------------
+:func:`pairwise`, :func:`triplet`
+    Generate equation files for pairwise / triplet models.
+:func:`fast_logsumexp`, :func:`mp_fast_logsumexp`
+    Lightweight ``logsumexp`` used inside the generated equation files
+    (faster than scipy's for this purpose).
+"""
 
 import numpy as np
 import mpmath as mp

@@ -1,9 +1,39 @@
 # ====================================================================================== #
 # ConIII module for algorithms for solving the inverse Ising problem.
-# 
+#
 # Authors: Edward Lee (edlee@alumni.princeton.edu) and Bryan Daniels
 #          (bryan.daniels.1@asu.edu)
 # ====================================================================================== #
+"""Inverse-Ising / maximum-entropy solvers.
+
+This is the central module of ConIII. Each solver takes a sample of
+observations (or a system size) and fits the maximum-entropy model
+whose pairwise correlations match the data. The solvers share the
+:class:`Solver` base class and the ``basic_setup`` machinery; they
+differ in the algorithm used to find the Lagrange multipliers.
+
+Public API (see ``__all__``)
+----------------------------
+:class:`Enumerate`
+    Exact solution by enumeration; feasible for small systems.
+:class:`SparseEnumerate`
+    Enumerate with a restricted set of constrained parameters.
+:class:`MPF`
+    Minimum Probability Flow.
+:class:`MCH`
+    Monte Carlo Histogram (Broderick et al., 2007). Relies on the
+    samplers in :mod:`coniii.samplers`.
+:class:`Pseudo`
+    Pseudolikelihood maximization.
+:class:`ClusterExpansion`
+    Adaptive cluster expansion (Barton & Cocco, 2013).
+:class:`RegularizedMeanField`
+    Regularized mean-field inversion.
+
+The mean-field helpers used by ``ClusterExpansion`` and
+``RegularizedMeanField`` live in :mod:`coniii.legacy.mean_field_ising`.
+See ``usage_guide.ipynb`` for worked examples of each solver.
+"""
 import copy
 import warnings as _warnings
 import numpy as np

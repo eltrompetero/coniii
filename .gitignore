@@ -9,6 +9,10 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Compiled C/C++ extensions (e.g. the optional Boost samplers_ext)
+*.so
+*.pyd
+
 # Jupyter
 .ipynb_checkpoints/
 

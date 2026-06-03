@@ -1,6 +1,19 @@
 Log for major changes in releases
 
 
+v4.0.2 (Released 2026/06)
+----------------------------------------------------
+- solvers.Pseudo now computes the analytic Hessian and solves with a
+  Newton method (Newton-CG) by default, converging in fewer iterations
+  (per Aurell & Ekeberg 2012). The optimizer is overridable via
+  solver_kwargs={'method': ...}. (#21)
+- Fixed a sign inconsistency in the per-spin (Ising) pseudolikelihood
+  objective: the L1 penalty was added to the objective value but
+  subtracted in the gradient, so the optimizer converged to a poor
+  solution. Value and gradient now agree, substantially improving the
+  default Pseudo solution.
+
+
 v4.0.1 (Released 2026/06)
 ----------------------------------------------------
 Bug fixes:

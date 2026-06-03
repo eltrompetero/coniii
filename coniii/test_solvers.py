@@ -153,6 +153,27 @@ def test_RegularizedMeanField():
     assert np.isfinite(multipliers).all()
 
 
+def test_Pseudo_hessian():
+    """Pseudo now supplies an analytic Hessian and solves with Newton-CG by default
+    (issue #21). On the smooth 'general' objective the Hessian-based optimum must match
+    a gradient-only (BFGS) optimum, which confirms the Hessian is correct.
+    """
+    nparams = n + n*(n-1)//2
+
+    s_hess = Pseudo(sample, iprint=False)
+    s_hess.solve(force_general=True, initial_guess=np.zeros(nparams))             # Newton-CG + hess
+    s_grad = Pseudo(sample, iprint=False)
+    s_grad.solve(force_general=True, initial_guess=np.zeros(nparams),
+                 solver_kwargs={'method': 'BFGS'})                                # gradient only
+    assert np.allclose(s_hess.multipliers, s_grad.multipliers, atol=1e-3), \
+        np.abs(s_hess.multipliers - s_grad.multipliers).max()
+
+    # the default (per-spin Ising) path also converges to a finite solution
+    s_ising = Pseudo(sample, iprint=False)
+    s_ising.solve(initial_guess=np.zeros(nparams))
+    assert np.isfinite(s_ising.multipliers).all()
+
+
 def test_MCH_reproducible():
     """MCH with a fixed rng must be deterministic (issue #28)."""
     def run():

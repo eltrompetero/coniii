@@ -3,4 +3,4 @@
 Read by pyproject.toml (``[tool.setuptools.dynamic]``) and re-exported
 as ``coniii.__version__``.
 """
-version = '4.0.1'
+version = '4.0.2'

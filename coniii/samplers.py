@@ -411,7 +411,7 @@ class ParallelTempering(Sampler):
 
         self.replicas = []
         for i,b in enumerate(self.beta):
-            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, boost=False) )
+            self.replicas.append( Metropolis(self.n, self.theta*b, self.calc_e, boost=False, rng=np.random.RandomState(self.rng.randint(2**31-1))) )
             # give each replica an index
             self.replicas[i].index = i
         self.burn_in_replicas()

@@ -55,7 +55,14 @@ def generate():
                 m.generate_sample_parallel(SAMPLE_SIZE, systematic_iter=sys_iter, **kw)
                 out[f"{key}_parallel"] = m.sample.astype(np.int8)
 
-                # Potts3 parallel only (serial is #42); uses n_cpus, not cpu_count
+                # two consecutive serial calls: checks the rng advances correctly
+                p = Potts3(n, theta3, n_cpus=N_CPUS, rng=np.random.RandomState(seed))
+                p.generate_sample(SAMPLE_SIZE, systematic_iter=sys_iter, **kw)
+                out[f"{key}_potts3_serial1"] = p.sample.astype(np.int8)
+                p.generate_sample(SAMPLE_SIZE, systematic_iter=sys_iter, **kw)
+                out[f"{key}_potts3_serial2"] = p.sample.astype(np.int8)
+
+                # parallel uses n_cpus, not cpu_count
                 p = Potts3(n, theta3, n_cpus=N_CPUS, rng=np.random.RandomState(seed))
                 p.generate_sample_parallel(SAMPLE_SIZE, systematic_iter=sys_iter, **kw)
                 out[f"{key}_potts3_parallel"] = p.sample.astype(np.int8)

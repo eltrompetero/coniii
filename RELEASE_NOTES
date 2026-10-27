@@ -18,6 +18,14 @@ Bug fixes:
   seeded run was not reproducible. Seeded runs are now reproducible.
   Seeded output differs from v4.0.2; unseeded behavior is unchanged.
   (#43)
+- samplers.Potts3.generate_sample() returned Ising spins (+/-1)
+  instead of Potts states (0, 1, 2) when the Boost C++ extension was
+  built. It now samples with BoostPotts3, created on each call and
+  seeded from the instance's rng, as generate_sample_parallel()
+  already did. The unused Potts3.bsampler attribute was removed.
+  Seeded output of serial Potts3 sampling differs from v4.0.2.
+  Parallel Potts3 sampling, pure-Python installs and the solvers are
+  unaffected, and their seeded output is unchanged. (#42)
 
 Testing:
 - CI now runs the test suite on Linux, macOS and Windows for Python
@@ -27,6 +35,9 @@ Testing:
   seeded output against stored reference samples. This is the first
   automated test of the C++ samplers. (#44)
 - test_ParallelTempering no longer fails intermittently. (#43)
+- test_Potts3 now checks that sampled values are Potts states, and no
+  longer fails on 2-core machines. Serial Potts3 output is now
+  included in the Boost reference samples. (#42)
 
 Documentation:
 - The docs site now has a ConIII logo and favicon.

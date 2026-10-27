@@ -1536,7 +1536,9 @@ class Potts3(Metropolis):
         
         # use boost by default
         if boost and IMPORTED_SAMPLERS_EXT:
-            self.bsampler = BoostPotts3(n, theta, self.rng.randint(2**31-1))
+            # Preserve the RNG draw formerly used to seed self.bsampler so
+            # seeded output of other Potts3 sampling paths is unchanged
+            self.rng.randint(2**31-1)
 
             # use boost library for fast sampling
             self.generate_sample = self.generate_sample_boost
@@ -1547,6 +1549,35 @@ class Potts3(Metropolis):
             assert not self.calc_e is None
             self.generate_sample = self.generate_sample_py
             self.generate_sample_parallel = self.generate_sample_parallel_py
+
+    def generate_sample_boost(self,
+                              sample_size,
+                              n_iters=1000,
+                              burn_in=None,
+                              systematic_iter=False):
+        """Generate samples by running a single Boost Potts3 sampler. A sample is taken
+        every n_iters.
+
+        A new BoostPotts3 is created on each call, seeded from the class instance's rng,
+        as in generate_sample_parallel_boost.
+
+        Parameters
+        ----------
+        sample_size : int
+            Number of samples.
+        n_iters : int, 1000
+            Number of iterations between taking a random sample.
+        burn_in : int, None
+            If None, n_iters is used.
+        systematic_iter : bool, False
+            If True, iterate through spins systematically instead of choosing them
+            randomly.
+        """
+        burn_in = burn_in or n_iters
+        assert sample_size > 0 and n_iters > -1 and burn_in > -1
+        bsampler = BoostPotts3(self.n, self.theta, int(self.rng.randint(2**31-1)))
+        bsampler.generate_sample(sample_size, burn_in, n_iters, systematic_iter)
+        self.sample = bsampler.fetch_sample().astype(int)
 
     def generate_sample_parallel_boost(self,
                                         sample_size,

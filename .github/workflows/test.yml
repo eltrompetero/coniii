@@ -15,6 +15,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        exclude:
+          # ubuntu-latest is Ubuntu 26.04, which has no Python 3.9 build.
+          # Test 3.9 on 24.04 until requires-python moves to 3.10.
+          - os: ubuntu-latest
+            python-version: '3.9'
+        include:
+          - os: ubuntu-24.04
+            python-version: '3.9'
     timeout-minutes: 30
     steps:
       - name: Checkout

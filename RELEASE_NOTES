@@ -1,6 +1,40 @@
 Log for major changes in releases
 
 
+v4.0.3 (Unreleased)
+----------------------------------------------------
+Bug fixes:
+- solvers.RegularizedMeanField.solve() no longer raises "ValueError:
+  high is out of bounds for int32" on Windows. The random seed it
+  draws is now generated as a 64-bit integer on every platform. The
+  seed values themselves are unchanged, so seeded results on Linux
+  and macOS are identical to v4.0.2, and Windows now matches them.
+  The same latent bug was fixed in
+  experimental.samplers.Heisenberg3DSampler, which is not yet usable.
+  (#38, #39)
+- samplers.ParallelTempering now seeds each replica from its own rng.
+  Previously each replica was seeded from the operating system, so
+  only the replica-exchange decisions followed the given rng and a
+  seeded run was not reproducible. Seeded runs are now reproducible.
+  Seeded output differs from v4.0.2; unseeded behavior is unchanged.
+  (#43)
+
+Testing:
+- CI now runs the test suite on Linux, macOS and Windows for Python
+  3.9 through 3.13. Previously it ran only on Linux with Python 3.10,
+  which is why #38 went unnoticed. (#40)
+- A separate CI job builds the Boost C++ extension and checks its
+  seeded output against stored reference samples. This is the first
+  automated test of the C++ samplers. (#44)
+- test_ParallelTempering no longer fails intermittently. (#43)
+
+Documentation:
+- The docs site now has a ConIII logo and favicon.
+
+Thanks to Austin Long (@alifelongwork) for the fixes and CI work in
+this release.
+
+
 v4.0.2 (Released 2026/06)
 ----------------------------------------------------
 - solvers.Pseudo now computes the analytic Hessian and solves with a

@@ -5,8 +5,9 @@ to regenerate coniii/test_data/boost_reference.npz. The test compares fresh
 output against that file, so any change to the C++ sampling path (e.g. a
 pybind11 port) must reproduce it exactly on the same platform.
 
-Potts3 is covered through the parallel path only: with the extension built,
-serial Potts3 currently samples via BoostIsing (#42).
+Metropolis (Ising) and Potts3 are covered through both the serial and
+parallel paths. Serial Potts3 references were added with the fix for #42;
+before it, serial Potts3 sampled via BoostIsing.
 """
 from pathlib import Path
 from unittest import mock

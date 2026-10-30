@@ -1,5 +1,36 @@
 Log for major changes in releases
 
+v4.1.0 (Unreleased)
+----------------------------------------------------
+New features:
+- samplers.Metropolis (pairwise Ising models) and samplers.Potts3
+  now sample with compiled nopython (numba) kernels when the Boost
+  C++ extension is not available, instead of the pure-Python
+  fallback. They take the same arguments as the pure-Python methods
+  (initial_sample, and saveHistory for serial sampling) and set the
+  same attributes (sample, E, and _samples for continuing the
+  parallel chains between calls). Installs with the extension still
+  use it by default. (#41)
+- calc_e is no longer required for pairwise Metropolis or Potts3 on
+  these installs; it is filled in when not given, so conditional
+  sampling, which stays in pure Python, still works. Potts3 also
+  accepts theta as (fields, couplings) there. (#41)
+
+Changes:
+- Seeded output on installs without the C++ extension differs from
+  v4.0.x. With systematic_iter=True the site order now continues
+  across samples instead of restarting at the first site for each
+  sample; both are valid chains. Installs with the extension are
+  unaffected. (#41)
+- Removed the unused samplers._jit_sample_metropolis and the
+  commented-out FastMCIsing class. (#41)
+
+Testing:
+- The nopython samplers are compared against exact enumeration on
+  all CI platforms, and their seeded output is checked against
+  recorded fingerprints for each numba version. test_samplers also
+  exercises the nopython path when the extension is built. (#41)
+  
 
 v4.0.3 (Released 2026/11)
 ----------------------------------------------------

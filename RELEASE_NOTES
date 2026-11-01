@@ -1,6 +1,67 @@
 Log for major changes in releases
 
 
+v4.0.3 (Released 2026/11)
+----------------------------------------------------
+Bug fixes:
+- solvers.RegularizedMeanField.solve() no longer raises "ValueError:
+  high is out of bounds for int32" on Windows. The random seed it
+  draws is now generated as a 64-bit integer on every platform. The
+  seed values themselves are unchanged, so seeded results on Linux
+  and macOS are identical to v4.0.2, and Windows now matches them.
+  The same latent bug was fixed in
+  experimental.samplers.Heisenberg3DSampler, which is not yet usable.
+  (#38, #39)
+- samplers.ParallelTempering now seeds each replica from its own rng.
+  Previously each replica was seeded from the operating system, so
+  only the replica-exchange decisions followed the given rng and a
+  seeded run was not reproducible. Seeded runs are now reproducible.
+  Seeded output differs from v4.0.2; unseeded behavior is unchanged.
+  (#43)
+- samplers.Potts3.generate_sample() returned Ising spins (+/-1)
+  instead of Potts states (0, 1, 2) when the Boost C++ extension was
+  built. It now samples with BoostPotts3, created on each call and
+  seeded from the instance's rng, as generate_sample_parallel()
+  already did. The unused Potts3.bsampler attribute was removed.
+  Seeded output of serial Potts3 sampling differs from v4.0.2.
+  Parallel Potts3 sampling, pure-Python installs and the solvers are
+  unaffected, and their seeded output is unchanged. (#42)
+
+Testing:
+- CI now runs the test suite on Linux, macOS and Windows for Python
+  3.9 through 3.13. Previously it ran only on Linux with Python 3.10,
+  which is why #38 went unnoticed. (#40)
+- A separate CI job builds the Boost C++ extension and checks its
+  seeded output against stored reference samples. This is the first
+  automated test of the C++ samplers. (#44)
+- test_ParallelTempering no longer fails intermittently. (#43)
+- test_Potts3 now checks that sampled values are Potts states, and no
+  longer fails on 2-core machines. Serial Potts3 output is now
+  included in the Boost reference samples. (#42)
+
+Packaging:
+- This is the first 4.x release on PyPI; v4.0.0 to v4.0.2 were
+  released on GitHub only. The PyPI wheel is pure Python and does not
+  include the optional C++ samplers. To use them, build from source
+  with Boost installed.
+- The Boost reference samples are now included in the source
+  distribution and the wheel.
+
+Documentation:
+- The docs site now has a ConIII logo and favicon.
+
+Known issues:
+- On Linux, building from source against the system's Boost packages
+  (e.g. Ubuntu's libboost-python-dev) links the C++ extension to a
+  Boost.NumPy library compiled for NumPy 1.x, and "import coniii"
+  then crashes with a segmentation fault under NumPy 2. Install
+  numpy<2 in that environment. This also affects v4.0.0 to v4.0.2 and
+  goes away when the C++ extension is replaced (#41). (#46)
+
+Thanks to Austin Long (@alifelongwork) for the fixes and CI work in
+this release.
+
+
 v4.0.2 (Released 2026/06)
 ----------------------------------------------------
 - solvers.Pseudo now computes the analytic Hessian and solves with a

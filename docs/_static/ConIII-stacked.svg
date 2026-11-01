@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 240" width="740" height="240" role="img" aria-label="ConIII — inverse ising">
+  <text x="24" y="150" font-family="&#39;Space Grotesk&#39;, sans-serif" font-weight="600" font-size="150" letter-spacing="-6" fill="#2a2620">Con</text>
+  <line x1="330" y1="44" x2="330" y2="196" stroke="#d8d3ca" stroke-width="4" stroke-linecap="round"></line>
+  <g fill="#2a2620">
+    <circle cx="374" cy="58" r="19"></circle>
+    <circle cx="439" cy="58" r="16.5" fill="none" stroke="#2a2620" stroke-width="6.5"></circle>
+    <circle cx="504" cy="58" r="19"></circle>
+    <rect x="365" y="90" width="18" height="80" rx="9"></rect>
+    <rect x="430" y="90" width="18" height="80" rx="9"></rect>
+    <rect x="495" y="90" width="18" height="80" rx="9"></rect>
+  </g>
+  <text x="362" y="207" font-family="&#39;IBM Plex Mono&#39;, monospace" font-weight="500" font-size="30" letter-spacing="7" fill="#807a72">INVERSE ISING</text>
+</svg>

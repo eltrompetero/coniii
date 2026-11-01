@@ -606,7 +606,7 @@ class Heisenberg3DSampler(Sampler):
             else:
                 ophi = 2*np.pi - np.arccos( v[0]/r )
 
-        return jit_sample_nearby_vector( self.rng.randint(2**32-1),v,nSamples,otheta,ophi,sigma )
+        return jit_sample_nearby_vector( self.rng.randint(2**32-1, dtype=np.int64),v,nSamples,otheta,ophi,sigma )
 
     def _sample_nearby_vector(self, v, nSamples=1, otheta=None, ophi=None, sigma=.1):
         """

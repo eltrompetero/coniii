@@ -2603,7 +2603,7 @@ class RegularizedMeanField(Solver):
 
         if reset_rng:
             # return same rng in initial state every time
-            rseed = self.model.rng.randint(2**32-1)
+            rseed = self.model.rng.randint(2**32-1, dtype=np.int64)
             get_rng = lambda rseed=rseed: np.random.RandomState(rseed)
         else:
             get_rng = lambda: self.model.rng

@@ -113,10 +113,12 @@ def test_Potts3():
     sampler = Potts3(n, theta, calc_e, n_cpus=1)
     print("Running sampler.generate_sample(n)")
     sampler.generate_sample(100)
+    assert set(np.unique(sampler.sample)) <= {0, 1, 2}
     print("Done.")
 
     print("Running sampler.generate_sample(n, systematic_iter=True)")
     sampler.generate_sample(100, systematic_iter=True)
+    assert set(np.unique(sampler.sample)) <= {0, 1, 2}
     print("Done.")
 
     # test control over rng
@@ -131,24 +133,25 @@ def test_Potts3():
    
     # parallelization
     print("Running sampler.generate_sample_parallel(100, systematic_iter=True)")
-    sampler = Potts3(n, theta, calc_e, rng=np.random.RandomState(0))
+    sampler = Potts3(n, theta, calc_e, n_cpus=2, rng=np.random.RandomState(0))
     sampler.generate_sample_parallel(100, systematic_iter=True)
     X1 = sampler.sample.copy()
+    assert set(np.unique(X1)) <= {0, 1, 2}
 
     print("Running sampler.generate_sample_parallel(100, systematic_iter=True)")
-    sampler = Potts3(n, theta, calc_e, rng=np.random.RandomState(0))
+    sampler = Potts3(n, theta, calc_e, n_cpus=2, rng=np.random.RandomState(0))
     sampler.generate_sample_parallel(100, systematic_iter=True)
     X2 = sampler.sample.copy()
     assert np.array_equal(X1, X2)
 
     # parallelization without systematic iter
     print("Running sampler.generate_sample_parallel(100, systematic_iter=False)")
-    sampler = Potts3(n, theta, calc_e, rng=np.random.RandomState(0))
+    sampler = Potts3(n, theta, calc_e, n_cpus=2, rng=np.random.RandomState(0))
     sampler.generate_sample_parallel(100, systematic_iter=False)
     X1 = sampler.sample.copy()
 
     print("Running sampler.generate_sample_parallel(100, systematic_iter=False)")
-    sampler = Potts3(n, theta, calc_e, rng=np.random.RandomState(0))
+    sampler = Potts3(n, theta, calc_e, n_cpus=2, rng=np.random.RandomState(0))
     sampler.generate_sample_parallel(100, systematic_iter=False)
     X2 = sampler.sample.copy()
     assert np.array_equal(X1, X2)

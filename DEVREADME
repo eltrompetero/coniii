@@ -6,8 +6,8 @@
 Branches
 --------
 - Development happens on `dev`. Releases are merged into `py3`.
-- CI (.github/workflows/test.yml) runs pytest on Python 3.10 for pushes and PRs to
-  both branches.
+- CI (.github/workflows/test.yml) runs pytest on Python 3.9-3.13 across Linux, macOS, and Windows
+  for pushes and PRs to both branches. It can also be run manually on any branch from the Actions tab (workflow_dispatch).
 
 
 Project layout

@@ -34,8 +34,11 @@ To set up an Anaconda environment called "test" and install from pip, run the fo
 $ conda create -n test -c conda-forge python=3.10 numpy scipy numba cython jupyter ipython multiprocess boost==1.74 matplotlib mpmath blas=*=openblas
 $ pip install coniii
 ```
-If you have trouble using `pip`, you can build from source. Make sure you are running
-Python 3.10 and have boost v1.74.0 installed.
+The wheel on PyPI is pure Python and does not include the optional C++ samplers. To use
+them, build from source with Boost installed.
+
+If you have trouble using `pip`, you can build from source. ConIII supports Python 3.9
+and newer.
 ```bash
 $ git clone https://github.com/eltrompetero/coniii.git
 $ cd coniii
@@ -45,6 +48,13 @@ The build probes for Boost and compiles the optional C++ samplers extension if i
 found; without Boost it falls back to the (slower) pure-Python samplers. To build
 distributable wheels instead, run `python -m build` (or the convenience wrapper
 `./pypi_compile.sh`).
+
+**Known issue ([#46](https://github.com/eltrompetero/coniii/issues/46)):** on Linux,
+building against the system's Boost packages (e.g. Ubuntu's `libboost-python-dev`) links
+the extension to a Boost.NumPy library compiled for NumPy 1.x, and `import coniii` then
+crashes with a segmentation fault under NumPy 2. Install `numpy<2` in that environment.
+This goes away when the C++ extension is replaced
+([#41](https://github.com/eltrompetero/coniii/issues/41)).
 
 #### Setting up exact solution for systems *N > 9*
 `Enumerate` ships with precomputed equation files up to N = 9. For larger systems,

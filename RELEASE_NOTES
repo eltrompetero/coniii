@@ -1,7 +1,7 @@
 Log for major changes in releases
 
 
-v4.0.3 (Unreleased)
+v4.0.3 (Released 2026/11)
 ----------------------------------------------------
 Bug fixes:
 - solvers.RegularizedMeanField.solve() no longer raises "ValueError:
@@ -39,8 +39,24 @@ Testing:
   longer fails on 2-core machines. Serial Potts3 output is now
   included in the Boost reference samples. (#42)
 
+Packaging:
+- This is the first 4.x release on PyPI; v4.0.0 to v4.0.2 were
+  released on GitHub only. The PyPI wheel is pure Python and does not
+  include the optional C++ samplers. To use them, build from source
+  with Boost installed.
+- The Boost reference samples are now included in the source
+  distribution and the wheel.
+
 Documentation:
 - The docs site now has a ConIII logo and favicon.
+
+Known issues:
+- On Linux, building from source against the system's Boost packages
+  (e.g. Ubuntu's libboost-python-dev) links the C++ extension to a
+  Boost.NumPy library compiled for NumPy 1.x, and "import coniii"
+  then crashes with a segmentation fault under NumPy 2. Install
+  numpy<2 in that environment. This also affects v4.0.0 to v4.0.2 and
+  goes away when the C++ extension is replaced (#41). (#46)
 
 Thanks to Austin Long (@alifelongwork) for the fixes and CI work in
 this release.

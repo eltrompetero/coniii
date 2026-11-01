@@ -2,3 +2,4 @@ include coniii/usage_guide.ipynb
 include coniii/version.py
 include coniii/LICENSE.txt
 include coniii/test_data/*.npz
+include cpp/*.cpp cpp/*.hpp

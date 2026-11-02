@@ -95,7 +95,7 @@ except ImportError:
 # The ConIII wordmark, shown at the top of the sidebar. The SVG already
 # contains the "ConIII" wordmark, so hide the redundant text title via
 # ``logo_only`` (handled below for the RTD theme).
-html_logo = '_static/ConIII-stacked.svg'
+html_logo = '_static/ConIII-logo.svg'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

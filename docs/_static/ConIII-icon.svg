@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="ConIII">
+  <title>ConIII</title>
+  <rect width="64" height="64" rx="10" fill="#f4efe7"/>
+  <g fill="#2a2620">
+    <rect x="14" y="22" width="6" height="28" rx="3"/>
+    <path d="M9.18 24.43L16.18 14.43A1 1 0 0 1 17.82 14.43L24.82 24.43A1 1 0 0 1 24 26L10 26A1 1 0 0 1 9.18 24.43Z"/>
+    <rect x="44" y="22" width="6" height="28" rx="3"/>
+    <path d="M39.18 24.43L46.18 14.43A1 1 0 0 1 47.82 14.43L54.82 24.43A1 1 0 0 1 54 26L40 26A1 1 0 0 1 39.18 24.43Z"/>
+  </g>
+  <g fill="#d0602a">
+    <rect x="29" y="14" width="6" height="28" rx="3"/>
+    <path d="M24.18 39.57L31.18 49.57A1 1 0 0 0 32.82 49.57L39.82 39.57A1 1 0 0 0 39 38L25 38A1 1 0 0 0 24.18 39.57Z"/>
+  </g>
+</svg>

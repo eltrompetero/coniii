@@ -1,4 +1,4 @@
-/* ConIII docs — tweaks so the dark "ConIII-stacked" wordmark sits cleanly
+/* ConIII docs — tweaks so the dark "ConIII-logo" wordmark sits cleanly
  * in the sidebar header. The header background itself is set to a warm cream
  * via the theme option ``style_nav_header_background`` in conf.py; here we
  * recolor the elements that the RTD theme normally draws in white (which would
@@ -11,12 +11,12 @@
     padding: 14px 0 8px;
 }
 
-/* Version string under the logo: use the muted gray from the logo's subtitle. */
+/* Version string under the logo: a muted warm gray. */
 .wy-side-nav-search > div.version {
     color: #807a72;
 }
 
-/* Search box: a light border that matches the logo's divider rule. */
+/* Search box: a light warm border. */
 .wy-side-nav-search input[type="text"] {
     border-color: #d8d3ca;
 }

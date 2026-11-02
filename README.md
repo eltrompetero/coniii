@@ -1,3 +1,10 @@
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/eltrompetero/coniii/py3/docs/_static/ConIII-logo-dark.svg">
+    <img src="https://raw.githubusercontent.com/eltrompetero/coniii/py3/docs/_static/ConIII-logo.svg" alt="ConIII" width="300">
+  </picture>
+</p>
+
 [![tests](https://github.com/eltrompetero/coniii/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/eltrompetero/coniii/actions/workflows/test.yml)
 [![PyPI](https://img.shields.io/pypi/v/coniii.svg)](https://pypi.org/project/coniii/)
 [![docs](https://readthedocs.org/projects/coniii/badge/?version=latest)](https://coniii.readthedocs.io/en/latest/)

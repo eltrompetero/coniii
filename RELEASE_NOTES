@@ -1,6 +1,6 @@
 Log for major changes in releases
 
-v4.1.0 (Unreleased)
+v4.1.0 (Released 2026/11)
 ----------------------------------------------------
 New features:
 - samplers.Metropolis (pairwise Ising models) and samplers.Potts3
@@ -40,7 +40,14 @@ Testing:
   all CI platforms, and their seeded output is checked against
   recorded fingerprints for each numba version. test_samplers also
   exercises the nopython path when the extension is built. (#41)
-  
+
+Packaging:
+- Python 3.10 or newer is now required. CI tests Python 3.10 through
+  3.13 on Linux, macOS and Windows.
+
+Thanks to Austin Long (@alifelongwork) for the nopython samplers and
+their tests.
+
 
 v4.0.3 (Released 2026/11)
 ----------------------------------------------------

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "coniii"
 description = "Convenient Interface to Inverse Ising (ConIII)"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Edward D. Lee", email = "edlee@csh.ac.at"},

@@ -65,6 +65,7 @@ from itertools import chain
 from numba.typed import List
 
 from .utils import *
+from . import njit_samplers
 try:
     from .samplers_ext import BoostIsing, BoostPotts3
     IMPORTED_SAMPLERS_EXT = True
@@ -641,245 +642,20 @@ class ParallelTempering(Sampler):
 #end ParallelTempering
 
 
-#class FastMCIsing(Sampler):
-#    def __init__(self, n, theta,
-#                 n_cpus=None,
-#                 rng=None):
-#        """
-#        MC sample on Ising model with +/-1 formulation. Fast metropolis sampling by assuming form of
-#        Hamiltonian is an Ising model.
-#
-#        Parameters
-#        ----------
-#        n : int
-#            Number of elements in system.
-#        theta : ndarray
-#            Concatenated vector of the field hi and couplings Jij. They should be ordered in
-#            ascending order 0<=i<n and for Jij in order of 0<=i<j<n.
-#        n_cpus : int, 0
-#            If None, then will use all available CPUs minus 1.
-#        rng : RandomState, None
-#        """
-#
-#        warn("At the moment, Metropolis is much faster for sampling.")
-#        self.n = n
-#        self.update_parameters(theta)
-#        self.nCpus = n_cpus or mp.cpu_count()-1
-#
-#        self.calc_e, calc_observables, mchApproximation = define_ising_helper_functions()
-#        self.sample_metropolis = _jit_sample_metropolis
-#        self.rng = rng or np.random.RandomState()
-#        self._samples = None
-#
-#    def update_parameters(self, theta):
-#        self.theta = theta
-#        self.h, self.J = theta[:self.n], squareform(theta[self.n:])
-#
-#    def generate_sample(self,
-#                         sample_size,
-#                         n_iters=1000,
-#                         saveHistory=False,
-#                         initial_sample=None,
-#                         systematic_iter=False):
-#        """
-#        Generate Metropolis samples using a for loop and save samples in self.sample.
-#
-#        Parameters
-#        ----------
-#        sample_size : int
-#            Number of samples to take.
-#        n_iters : int, 1000
-#            Number of iterations to run Metropolis sampler.
-#        saveHistory : bool, False
-#            If True, the energy of the system after each Metropolis sampling step will be recorded.
-#            This can be useful for making sure that the system has reached equilibrium.
-#        initial_sample : ndarray, None
-#            If this is given, then this is used as the starting point for the Markov chain instead
-#            of a random sample.
-#        systematic_iter : bool, False
-#            If True, will iterate through each spin in a fixed sequence. This ensures that all spins
-#            receive in equal number of chances to flip.
-#        """
-#
-#        sample_metropolis = self.sample_metropolis  # alias
-#
-#        if (initial_sample is None and
-#            (self._samples is None or len(self._samples)!=1)):
-#            self._samples = self.rng.choice([-1,1], size=(1, self.n))
-#        elif not initial_sample is None:
-#            msg = "Sequential sample generation requires initial sample of dim (1, n)."
-#            assert np.array_equal((1,self.n), initial_sample.shape), msg
-#            self._samples = initial_sample.astype(int)
-#
-#        E = self.calc_e( self._samples, self.theta )
-#        self.E = np.zeros(sample_size)
-#        self.sample = np.zeros((sample_size, self.n), dtype=int)
-#        h, J = self.h, self.J
-#        n = self.n
-#
-#        if systematic_iter:
-#            @jit(forceobj=True)
-#            def get_ix(j, rng):
-#                return j%n
-#        else:
-#            @jit(forceobj=True)
-#            def get_ix(j, rng):
-#                return rng.randint(n)
-#
-#        if saveHistory:
-#            @jit('float64[:,:]()', locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
-#            def sample(seed, E=E, _samples=self._samples):
-#                # set rng for jit environment
-#                np.random.seed(seed)
-#
-#                history = np.zeros(sample_size*n_iters+1)
-#                history[0] = E
-#                counter = 1
-#                for i in range(sample_size):
-#                    for j in range(n_iters):
-#                        de = sample_metropolis( _samples[0], h, J, get_ix(j, np.random), np.random )
-#                        E += de
-#                        history[counter] = E
-#                        counter += 1
-#                    self.E[i] = E
-#                    self.sample[i,:] = _samples[:]
-#                return history
-#        else:
-#            @jit(locals={'_samples':int64[:,:], 'E':float64[:]}, forceobj=True)
-#            def sample(seed, E=E, _samples=self._samples):
-#                # set rng for jit environment
-#                np.random.seed(seed)
-#
-#                for i in range(sample_size):
-#                    for j in range(n_iters):
-#                        de = sample_metropolis( _samples[0], h, J, get_ix(j, np.random), np.random )
-#                        E += de
-#                    self.E[i] = E
-#                    self.sample[i,:] = _samples[:]
-#        return sample(self.rng.randint(2**32-1))
-#
-#    def generate_sample_parallel(self,
-#                                  sample_size,
-#                                  n_iters=1000,
-#                                  n_cpus=None,
-#                                  initial_sample=None,
-#                                  systematic_iter=False):
-#        """
-#        Metropolis sample multiple states in parallel and save them into self.sample.
-#
-#        Parameters
-#        ----------
-#        sample_size : int
-#            Number of samples to take.
-#        n_iters : int, 1000
-#            Number of iterations to run Metropolis sampler.
-#        initial_sample : ndarray, None
-#            If this is given, then this is used as the starting point for the Markov chain instead
-#            of a random sample.
-#        systematic_iter : bool, False
-#            If True, will iterate through each spin in a fixed sequence. This ensures that all spins
-#            receive in equal number of chances to flip.
-#        """
-#
-#        n_cpus = self.nCpus  # alias
-#        assert n_cpus>=2
-#        assert sample_size>n_cpus, "Parallelization only helps if many samples are generated per thread."
-#        if (initial_sample is None and
-#            (self._samples is None or len(self._samples)!=n_cpus)):
-#            self._samples = self.rng.choice([-1,1], size=(n_cpus, self.n))
-#        elif not initial_sample is None:
-#            assert np.array_equal((n_cpus,self.n), initial_sample.shape), "initial_sample wrong  size"
-#            self._samples = initial_sample.astype(int)
-#
-#        n_cpus = n_cpus or self.nCpus
-#        sample_metropolis = _jit_sample_metropolis
-#        h, J = self.h, self.J
-#        n = self.n
-#        calc_e = self.calc_e
-#        theta = self.theta
-#
-#        if systematic_iter:
-#            @jit(forceobj=True)
-#            def get_ix(j, rng):
-#                return j%n
-#        else:
-#            @jit(forceobj=True)
-#            def get_ix(j, rng):
-#                return rng.randint(n)
-#
-#        @njit(locals={'seed':int64, 'theta':float64[:], 's':int64[:,:], 'E':float64[:]})
-#        def f(args):
-#            seed, theta, s = args
-#            np.random.seed(seed)
-#
-#            E = calc_e(s, theta)
-#
-#            for j in range(n_iters):
-#                de = sample_metropolis( s[0], h, J, get_ix(j, np.random), np.random )
-#                E += de
-#            return s, E
-#
-#        args=((self.rng.randint(2**32-1),theta,self._samples[i][None,:]) for i in range(n_cpus))
-#
-#        # run sampling
-#        pool = mp.Pool(n_cpus)
-#        self.sample, self.E = list(zip(*pool.map(f, args)))
-#        pool.close()
-#
-#        # save results of sampling into instance data members
-#        self.sample = np.vstack(self.sample)
-#        self.E = np.array(self.E)
-#
-#    def _sample_metropolis(self, sample0, rng=None, flip_site=None):
-#        """
-#        Metropolis sampling.
-#        """
-#
-#        rng = rng or self.rng
-#        flipSite = flip_site or rng.randint(sample0.size)
-#        sample0[flipSite] *= -1
-#        de = -2*sample0[flipSite]*self.h[flipSite] - 2*self.J[flipSite].dot(sample0[flipSite]*sample0)
-#
-#        # Only accept flip if dE<=0 or probability exp(-dE)
-#        # Thus reject flip if dE>0 and with probability (1-exp(-dE))
-#        if de<0:
-#            return de
-#        elif rng.rand()>np.exp(-de):
-#            sample0[flipSite] *= -1
-#            return 0.
-#        else:
-#            return de
-#end FastMCIsing
-
-@jit(forceobj=True)
-def _jit_sample_metropolis(sample0, h, J, flip_site, rng):
-    """
-    Metropolis sampling.
-    """
-    
-    sample0[flip_site] *= -1
-    de = -2*sample0[flip_site]*h[flip_site] - np.dot(2*J[flip_site], 1.*sample0[flip_site]*sample0)
-
-    # Only accept flip if dE<=0 or probability exp(-dE)
-    # Thus reject flip if dE>0 and with probability (1-exp(-dE))
-    if de < 0:
-        return de
-    elif rng.rand() > np.exp(-de):
-        sample0[flip_site] *= -1
-        return 0.
-    else:
-        return de
-
-
-
 class Metropolis(Sampler):
+    # nopython chains used by the generate_sample*_njit methods (Potts3 overrides these)
+    _njit_chain = staticmethod(njit_samplers.ising_chain)
+    _njit_chain_parallel = staticmethod(njit_samplers.ising_chain_parallel)
+
     def __init__(self, n, theta,
                  calc_e=None,
                  rng=None,
                  boost=True,
                  iprint=True):
-        """MC sample on Ising model with +/-1 formulation. Attempts to use Boost library
-        but defaults back to pure Python methods if it is unavailable.
+        """MC sample on Ising model with +/-1 formulation. Uses the Boost library if it
+        is available. Otherwise, pairwise Ising models are sampled with the compiled
+        nopython samplers in njit_samplers, and other energy functions with pure Python
+        methods.
 
         Parameters
         ----------
@@ -888,13 +664,15 @@ class Metropolis(Sampler):
         theta : ndarray
             Vector of parameters in Hamiltonian.
         calc_e : function, None
-            Function for calculating the energy of any given state. Only required if
-            default Boost library for sampling from Ising model is not being used.
-            Of form f( states, params )
+            Function for calculating the energy of any given state. Of form
+            f( states, params ). Only required if theta is not a pairwise Ising model
+            (n fields followed by n(n-1)/2 couplings) or boost is False. For pairwise
+            Ising models, it is filled in when needed.
         rng : np.random.RandomState, None
             Random number generator.
-        boost : bool, True 
-            If True, use boost library.
+        boost : bool, True
+            If True, use the Boost library or, if it is unavailable, the nopython
+            samplers. If False, use the pure Python methods.
         iprint : bool, True
             If True, print details when code is run.
         """
@@ -913,6 +691,15 @@ class Metropolis(Sampler):
             self.generate_sample = self.generate_sample_boost
             self.generate_sample_parallel = self.generate_sample_parallel_boost
             self.generate_cond_sample = self.generate_cond_sample_boost
+        elif boost and self.theta.size==(n*(n-1)//2+n):
+            if iprint: warn("Assuming that the model is Ising.")
+            # Boost not available: use the nopython samplers. Conditional sampling stays
+            # in Python, which needs calc_e.
+            if self.calc_e is None:
+                self.calc_e = define_ising_helper_functions()[0]
+            self.generate_sample = self.generate_sample_njit
+            self.generate_sample_parallel = self.generate_sample_parallel_njit
+            self.generate_cond_sample = self.generate_cond_sample_py
         else:
             if boost and iprint:
                 warn("Boost C++ implementation not available. Defaulting to slower sampling methods.")
@@ -988,7 +775,7 @@ class Metropolis(Sampler):
         
         burn_in = burn_in or n_iters
         if (initial_sample is None and
-            (self._samples is None or len(self._samples)!=sample_size)):
+            (self._samples is None or len(self._samples)!=1)):
             self._samples = self.random_sample(1)
         elif not initial_sample is None:
             msg = "Initial sample can only be one state for sequential sampling."
@@ -1052,6 +839,61 @@ class Metropolis(Sampler):
                         counter += 1
                     self.sample[i,:] = self._samples[:]
                     self.E[i] = E
+
+    def generate_sample_njit(self,
+                             sample_size,
+                             n_iters=1000,
+                             burn_in=None,
+                             systematic_iter=False,
+                             saveHistory=False,
+                             initial_sample=None):
+        """Generate Metropolis samples using the nopython samplers in njit_samplers.
+
+        Arguments and attributes set are the same as for generate_sample_py.
+
+        Parameters
+        ----------
+        sample_size : int
+            Number of samples.
+        n_iters : int, 1000
+            Number of iterations between samples.
+        burn_in : int, None
+            If None, n_iters is used.
+        systematic_iter : bool, False
+            If True, iterate through each element of system by increment index by one.
+        saveHistory : bool, False
+            If True, also save the energy of each sample at each sampling step.
+        initial_sample : ndarray, None
+            Start with this sample (i.e. to avoid warming up). Otherwise, self._samples is
+            the initial sample.
+
+        Returns
+        -------
+        ndarray, optional
+            Saved array of energies at each sampling step.
+        """
+
+        burn_in = burn_in or n_iters
+        assert sample_size>0 and n_iters>-1 and burn_in>-1
+        # same rule for reusing self._samples as generate_sample_py
+        if (initial_sample is None and
+            (self._samples is None or len(self._samples)!=1)):
+            self._samples = self.random_sample(1)
+        elif not initial_sample is None:
+            msg = "Initial sample can only be one state for sequential sampling."
+            assert np.array_equal((1,self.n), initial_sample.shape), msg
+            self._samples = initial_sample.astype(int)
+
+        njit_samplers.seed(int(self.rng.randint(0, 2**31-1)))
+        sample, E, final, history = self._njit_chain(self.n, self.theta, sample_size,
+                                                     burn_in, n_iters, systematic_iter,
+                                                     initial_state=self._samples[0],
+                                                     save_history=saveHistory)
+        self.sample = sample.astype(int)
+        self.E = E
+        self._samples = final[None,:].astype(int)
+        if saveHistory:
+            return history
 
     def generate_sample_parallel_boost(self,
                                         sample_size,
@@ -1175,6 +1017,50 @@ class Metropolis(Sampler):
         
         self.sample = np.vstack(self.sample)[:sample_size]
         self._samples = np.vstack(self._samples)
+
+    def generate_sample_parallel_njit(self,
+                                      sample_size,
+                                      n_iters=1000,
+                                      burn_in=None,
+                                      initial_sample=None,
+                                      systematic_iter=False):
+        """Generate samples in parallel using the nopython samplers in njit_samplers.
+        Each replica in self._samples runs in its own process and a sample is generated
+        every n_iters.
+
+        Arguments and attributes set are the same as for generate_sample_parallel_py.
+
+        Parameters
+        ----------
+        sample_size : int
+            Number of samples.
+        n_iters : int, 1000
+            Number of iterations between taking a random sample.
+        burn_in : int, None
+            If None, n_iters is used.
+        initial_sample : ndarray, None
+            Starting set of replicas otherwise self._samples is used.
+        systematic_iter : bool, False
+            If True, iterate through spins systematically instead of choosing them
+            randomly.
+        """
+
+        burn_in = burn_in or n_iters
+        n_cpus = mp.cpu_count()
+        if (initial_sample is None and
+            (self._samples is None or len(self._samples)!=n_cpus)):
+            self._samples = self.random_sample(n_cpus)
+        elif not initial_sample is None:
+            assert np.array_equal((n_cpus,self.n), initial_sample.shape), "initial_sample wrong size"
+            self._samples = initial_sample.astype(int)
+
+        sample, _, final, final_E = self._njit_chain_parallel(
+            self.n, self.theta, sample_size, burn_in, n_iters, systematic_iter,
+            self.rng.randint(2**31-1, size=n_cpus), initial_states=self._samples)
+        # same types as generate_sample_parallel_py
+        self.sample = sample.astype(np.int8)
+        self._samples = final.astype(int)
+        self.E = tuple(final_E)
 
     def generate_cond_sample_boost(self,
                                    sample_size,
@@ -1494,13 +1380,17 @@ def define_jit_cond_calc_e(n, calc_e, fixed_subset):
 
 
 class Potts3(Metropolis):
+    # nopython chains used by the inherited generate_sample*_njit methods
+    _njit_chain = staticmethod(njit_samplers.potts3_chain)
+    _njit_chain_parallel = staticmethod(njit_samplers.potts3_chain_parallel)
+
     def __init__(self, n, theta,
                  calc_e=None,
                  n_cpus=None,
                  rng=None,
                  boost=True):
-        """MC sample 3-state Potts model. Attempts to use Boost library but defaults back
-        to pure Python methods if it is unavailable.
+        """MC sample 3-state Potts model. Uses the Boost library if it is available, and
+        otherwise the compiled nopython samplers in njit_samplers.
 
         Parameters
         ----------
@@ -1509,15 +1399,16 @@ class Potts3(Metropolis):
         theta : ndarray
             Vector of parameters in Hamiltonian.
         calc_e : function, None
-            Function for calculating the energy of any given state. Only required if
-            default Boost library for sampling from Ising model is not being used.
-            Of form f( states, params )
+            Function for calculating the energy of any given state. Of form
+            f( states, params ). Only required if boost is False; otherwise, it is
+            filled in when needed.
         n_cpus : int, None
             If None, then will use all available CPUs.
         rng : np.random.RandomState, None
             Random number generator.
-        boost : bool, True 
-            If True, use boost library.
+        boost : bool, True
+            If True, use the Boost library or, if it is unavailable, the nopython
+            samplers. If False, use the pure Python methods.
         """
         
         assert type(n) is int, "n must be of type int."
@@ -1543,6 +1434,15 @@ class Potts3(Metropolis):
             # use boost library for fast sampling
             self.generate_sample = self.generate_sample_boost
             self.generate_sample_parallel = self.generate_sample_parallel_boost
+        elif boost:
+            # Boost not available: use the nopython samplers, which take theta as one
+            # vector
+            if not type(self.theta) is np.ndarray:
+                self.theta = np.concatenate(self.theta)
+            if self.calc_e is None:
+                self.calc_e = define_potts_helper_functions(3)[0]
+            self.generate_sample = self.generate_sample_njit
+            self.generate_sample_parallel = self.generate_sample_parallel_njit
         else:
             if boost:
                 warn("Boost library not available. Defaulting to slower sampling methods.")

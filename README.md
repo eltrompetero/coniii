@@ -27,7 +27,7 @@ If you use ConIII in your research, please [cite the paper](#citing-coniii).
 $ pip install coniii
 ```
 
-ConIII requires Python 3.9 or newer and runs on Linux, macOS and Windows. It is not on
+ConIII requires Python 3.10 or newer and runs on Linux, macOS and Windows. It is not on
 conda-forge; in a conda environment, install it with pip.
 
 ## Quick start
@@ -117,8 +117,12 @@ The top-level names available via `from coniii import *` are listed in `coniii._
 
 ## Optional C++ samplers
 
-The `Metropolis` and `Potts3` samplers have an optional C++ extension built with
-Boost.Python. The wheel on PyPI does not include it. To build it, install from source in
+The `Metropolis` and `Potts3` samplers run compiled numba code, which is included in the
+pip package. They also have an optional C++ extension built with Boost.Python, which is
+used instead when it is built. It is about as fast as the numba samplers and will be
+removed in a later release
+([#41](https://github.com/eltrompetero/coniii/issues/41)), so most users don't need it.
+The wheel on PyPI does not include it. To build it, install from source in
 an environment that has the Boost headers and the Boost.Python and Boost.NumPy libraries
 for your Python version:
 
@@ -130,7 +134,7 @@ $ pip install .
 
 The build looks for Boost in the active conda environment, `/usr/include` and
 `/usr/local/include`. If it doesn't find Boost, it installs without the extension and the
-pure-Python samplers are used. To check whether the extension was built, run
+numba samplers are used. To check whether the extension was built, run
 
 ```bash
 $ python -c "from coniii import samplers; print(samplers.IMPORTED_SAMPLERS_EXT)"
@@ -142,11 +146,9 @@ the `_detect_boost()` function in `setup.py`.
 **Known issue ([#46](https://github.com/eltrompetero/coniii/issues/46)):** on Linux,
 building against the system's Boost packages (e.g. Ubuntu's `libboost-python-dev`) links
 the extension to a Boost.NumPy library compiled for NumPy 1.x, and `import coniii` then
-crashes with a segmentation fault under NumPy 2. Install `numpy<2` in that environment.
-
-The C++ samplers are being replaced by numba versions that need no compiler and are
-included in the pip package
-([#41](https://github.com/eltrompetero/coniii/issues/41)), which also removes this issue.
+crashes with a segmentation fault under NumPy 2. Install `numpy<2` in that environment,
+or install the wheel from PyPI, which has no extension. Removing the extension will also
+remove this issue.
 
 ## Running the tests
 
@@ -155,7 +157,7 @@ $ pip install "coniii[test]"
 $ pytest --pyargs coniii
 ```
 
-CI runs the tests on Linux, macOS and Windows for Python 3.9 through 3.13.
+CI runs the tests on Linux, macOS and Windows for Python 3.10 through 3.13.
 
 ## Getting help and contributing
 

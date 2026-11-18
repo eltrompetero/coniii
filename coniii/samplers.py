@@ -652,8 +652,10 @@ class Metropolis(Sampler):
                  rng=None,
                  boost=True,
                  iprint=True):
-        """MC sample on Ising model with +/-1 formulation. Attempts to use Boost library
-        but defaults back to pure Python methods if it is unavailable.
+        """MC sample on Ising model with +/-1 formulation. Uses the Boost library if it
+        is available. Otherwise, pairwise Ising models are sampled with the compiled
+        nopython samplers in njit_samplers, and other energy functions with pure Python
+        methods.
 
         Parameters
         ----------
@@ -662,13 +664,15 @@ class Metropolis(Sampler):
         theta : ndarray
             Vector of parameters in Hamiltonian.
         calc_e : function, None
-            Function for calculating the energy of any given state. Only required if
-            default Boost library for sampling from Ising model is not being used.
-            Of form f( states, params )
+            Function for calculating the energy of any given state. Of form
+            f( states, params ). Only required if theta is not a pairwise Ising model
+            (n fields followed by n(n-1)/2 couplings) or boost is False. For pairwise
+            Ising models, it is filled in when needed.
         rng : np.random.RandomState, None
             Random number generator.
-        boost : bool, True 
-            If True, use boost library.
+        boost : bool, True
+            If True, use the Boost library or, if it is unavailable, the nopython
+            samplers. If False, use the pure Python methods.
         iprint : bool, True
             If True, print details when code is run.
         """
@@ -1385,8 +1389,8 @@ class Potts3(Metropolis):
                  n_cpus=None,
                  rng=None,
                  boost=True):
-        """MC sample 3-state Potts model. Attempts to use Boost library but defaults back
-        to pure Python methods if it is unavailable.
+        """MC sample 3-state Potts model. Uses the Boost library if it is available, and
+        otherwise the compiled nopython samplers in njit_samplers.
 
         Parameters
         ----------
@@ -1395,15 +1399,16 @@ class Potts3(Metropolis):
         theta : ndarray
             Vector of parameters in Hamiltonian.
         calc_e : function, None
-            Function for calculating the energy of any given state. Only required if
-            default Boost library for sampling from Ising model is not being used.
-            Of form f( states, params )
+            Function for calculating the energy of any given state. Of form
+            f( states, params ). Only required if boost is False; otherwise, it is
+            filled in when needed.
         n_cpus : int, None
             If None, then will use all available CPUs.
         rng : np.random.RandomState, None
             Random number generator.
-        boost : bool, True 
-            If True, use boost library.
+        boost : bool, True
+            If True, use the Boost library or, if it is unavailable, the nopython
+            samplers. If False, use the pure Python methods.
         """
         
         assert type(n) is int, "n must be of type int."

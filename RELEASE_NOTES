@@ -25,6 +25,16 @@ Changes:
 - Removed the unused samplers._jit_sample_metropolis and the
   commented-out FastMCIsing class. (#41)
 
+Bug fixes:
+- Serial Metropolis.generate_sample() and Potts3.generate_sample()
+  started a new chain from a random state on every call unless
+  sample_size was 1, although they are documented to continue from
+  self._samples. They now continue from the previous call's final
+  state, as the parallel methods already did. Pass initial_sample to
+  start elsewhere. This applies wherever the C++ extension is not
+  used (not built, boost=False, or a non-pairwise calc_e). The
+  solvers sample in parallel and are unaffected. (#41)
+
 Testing:
 - The nopython samplers are compared against exact enumeration on
   all CI platforms, and their seeded output is checked against

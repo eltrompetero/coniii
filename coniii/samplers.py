@@ -775,7 +775,7 @@ class Metropolis(Sampler):
         
         burn_in = burn_in or n_iters
         if (initial_sample is None and
-            (self._samples is None or len(self._samples)!=sample_size)):
+            (self._samples is None or len(self._samples)!=1)):
             self._samples = self.random_sample(1)
         elif not initial_sample is None:
             msg = "Initial sample can only be one state for sequential sampling."
@@ -877,7 +877,7 @@ class Metropolis(Sampler):
         assert sample_size>0 and n_iters>-1 and burn_in>-1
         # same rule for reusing self._samples as generate_sample_py
         if (initial_sample is None and
-            (self._samples is None or len(self._samples)!=sample_size)):
+            (self._samples is None or len(self._samples)!=1)):
             self._samples = self.random_sample(1)
         elif not initial_sample is None:
             msg = "Initial sample can only be one state for sequential sampling."

@@ -228,13 +228,35 @@ def test_ParallelTempering():
     assert np.abs(exact - emp).mean() < 0.03, np.abs(exact - emp)
 
 
+def _continuation_check(sampler):
+    """A serial call continues the chain from the previous call's final state, whatever
+    the sample sizes."""
+    last = sampler.sample[-1].copy()
+    sampler.generate_sample(3, n_iters=0, burn_in=0)
+    assert np.array_equal(sampler.sample, np.tile(last, (3, 1)))
+
+
+def test_serial_continuation_py():
+    """Same for the pure-Python serial path."""
+    rng = np.random.RandomState(0)
+    for sampler in (Metropolis(n, rng.normal(size=n+n*(n-1)//2, scale=.3),
+                               calc_e=define_ising_helper_functions()[0], boost=False,
+                               iprint=False),
+                    Potts3(n, rng.normal(size=3*n+n*(n-1)//2, scale=.3),
+                           calc_e=define_potts_helper_functions(3)[0], boost=False)):
+        sampler.generate_sample(20, n_iters=10)
+        _continuation_check(sampler)
+
+
 def _energy_history_checks(sampler, theta, calc_e, n_iters):
-    """Serial nopython sampling: energies, history and starting state."""
+    """Serial nopython sampling: energies, history, chain continuation and starting
+    state."""
     history = sampler.generate_sample(50, n_iters=n_iters, saveHistory=True)
     assert np.allclose(sampler.E, calc_e(sampler.sample, theta))
     assert history.size == 50*n_iters + 1
     assert np.allclose(history[n_iters-1:-1:n_iters], sampler.E)
     assert np.array_equal(sampler._samples, sampler.sample[-1:])
+    _continuation_check(sampler)
 
     s0 = sampler.random_sample(1)
     sampler.generate_sample(3, n_iters=0, burn_in=0, initial_sample=s0)
